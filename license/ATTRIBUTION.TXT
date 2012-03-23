@@ -1,0 +1,3 @@
+I request that I am attributed in every file for any derived works (where possible) based off off this project.
+
+This includes a visible attribution (silkscreen or equivalent) on the PCB. However, it should be clear on the files and PCB that I am NOT the one providing your product. Ie "Based on design by Steven Casagrande" or something equivalent.
