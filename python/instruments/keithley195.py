@@ -17,7 +17,8 @@ class Keithley195(Instrument):
 		self.write('YX') # Removes the termination CRLF characters from the instrument
 		
 	def read(self):
-		return self.query('+read')
+		self.write('+read')
+		return self.readline()
 	
 	def trigger(self):
 		self.write('X')
