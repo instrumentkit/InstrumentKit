@@ -77,7 +77,7 @@ class Keithley195(Instrument):
 			
 		self.write('R' + voltage + 'X')
 			
-	def setCurrentRange(self,current)
+	def setCurrentRange(self,current):
 		if isinstance(current,str):
 			current = current.lower()
 			if current == 'auto':
@@ -95,7 +95,7 @@ class Keithley195(Instrument):
 			
 		self.write('R' + current + 'X')
 			
-	def setResistanceRange(self,res)
+	def setResistanceRange(self,res):
 		if isinstance(res,str):
 			res = res.lower()
 			if res == 'auto':
@@ -113,10 +113,8 @@ class Keithley195(Instrument):
 			
 		self.write('R' + res + 'X')
 			
-	def autoRange(self)
-		self.write('R0X')		
-			
-	def 		
+	def autoRange(self):
+		self.write('R0X')
 			
 			
 			
