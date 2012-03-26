@@ -1,6 +1,6 @@
 
 This python code requires the following:
 
-- Python 2.6 (note that pyserial in 2.7 does not work correctly)
+- Python 2.6 or 2.7
 - numpy (required for the oscilloscope classes)
 - matpltlib (for graphing)
