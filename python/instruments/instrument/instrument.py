@@ -13,17 +13,17 @@ import serial
 import time
 from numpy import *
 import struct
+import serialManager
 
 class Instrument:
 	def __init__(self, port, address,timeout_length):
 		self.port = port
 		self.address = address
 		self.timeout = timeout_length
-		self.ser = serial.Serial(port,460800,timeout=self.timeout)
-		#self.ser.open()
+		#self.ser = serial.Serial(port,460800,timeout=self.timeout)
+		self.ser = serialManager.newSerialConnection(port) 
 		
 	def write(self, msg):
-		#print msg
 		self.ser.write("+a:" + str(self.address) + "\r")
 		time.sleep(0.02)
 		self.ser.write(msg + "\r")
