@@ -9,6 +9,6 @@
 
 from instruments import *
 
-keithley = Keithley195('/dev/ttyUSB.GPIB1',16,30)
+keithley = Keithley195('/dev/ttyUSB0',16,30)
 
 print keithley.read()

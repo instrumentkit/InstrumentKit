@@ -10,7 +10,7 @@
 from instruments import *
 import time
 
-tek = Tektds224('/dev/ttyUSB1',1,30)
+tek = Tektds224('/dev/ttyUSB0',1,30)
 idn = tek.query('*idn?')
 print idn
 

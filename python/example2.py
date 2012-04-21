@@ -13,7 +13,7 @@ from instruments import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-tek = Tektds224('/dev/ttyUSB1',1,30)
+tek = Tektds224('/dev/ttyUSB0',1,30)
 
 [x,y] = tek.readWaveform('CH1','BINARY')
 freq = np.fft.fft(y) # Calculate FFT

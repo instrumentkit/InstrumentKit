@@ -20,11 +20,11 @@ import serial
 
 serialObjDict = {}
 
-def newSerialConnection(port):
+def newSerialConnection(port,timeout_length=5):
 	if not isinstance(port,str):
 		raise Exception('Serial port must be specified as a string.')
 	
 	if port not in serialObjDict:
-		serialObjDict[port] = serial.Serial(port,460800,timeout=30)
+		serialObjDict[port] = serial.Serial(port,460800,timeout=timeout_length)
 	
 	return serialObjDict[port]

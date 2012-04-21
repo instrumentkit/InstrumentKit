@@ -20,8 +20,7 @@ class Instrument:
 		self.port = port
 		self.address = address
 		self.timeout = timeout_length
-		#self.ser = serial.Serial(port,460800,timeout=self.timeout)
-		self.ser = serialManager.newSerialConnection(port) 
+		self.ser = serialManager.newSerialConnection(port,timeout_length) 
 		
 	def write(self, msg):
 		self.ser.write("+a:" + str(self.address) + "\r")
