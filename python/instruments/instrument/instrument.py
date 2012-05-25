@@ -30,7 +30,7 @@ class Instrument:
 	
 	def query(self, msg):
 		self.write(msg)
-		if msg[len(msg)-1] != '?': # If the last character is not a question mark in the query string
+		if '?' not in msg: # If a question mark is not in the query string
 			self.write('+read') # Force controller to read response from instrument
 		#result = self.ser.readline(self,size=None,eol='\r')
 		return self.readline()
