@@ -15,7 +15,7 @@ from numpy import *
 import struct
 import serialManager
 
-class Instrument:
+class Instrument(object):
 	def __init__(self, port, address,timeout_length):
 		self.port = port
 		self.address = address
