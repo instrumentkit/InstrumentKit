@@ -1,0 +1,49 @@
+## Temporary files ##
+*~
+*.tmp
+
+## OS generated files ##
+.DS_Store*
+desktop.ini
+Thumbs.db
+
+## Build directories ##
+doc/_build
+
+## setup.py generated files ##
+MANIFEST
+
+# The following ignores are drawn from github@github:gitignore/Python.gitignore.
+*.py[cod]
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+#Translations
+*.mo
+
+#Mr Developer
+.mr.developer.cfg
