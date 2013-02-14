@@ -13,17 +13,17 @@ from instrument.instrument import Instrument
 
 class Lakeshore370(Instrument):
     def __init__(self, port, address,timeout_length):
-        Instrument.__init__(self,port,address,timeout_length)
+        super(Lakeshore370, self).__init__(self,port,address,timeout_length)
         self.write('IEEE 3,0') # Disable termination characters and enable EOI
     
     def resistance(self,channel):
-    	if not isinstance(channel,int):
-    		raise Exception('Channel number must be specified as an integer.')
-    	
-    	if (channel < 1) or (channel > 16):
-    		raise Exception('Channel must be 1-16 (inclusive).')
-    	
-    	return float( self.query( 'RDGR? ' + str(channel) ) )
+        if not isinstance(channel,int):
+            raise Exception('Channel number must be specified as an integer.')
+        
+        if (channel < 1) or (channel > 16):
+            raise Exception('Channel must be 1-16 (inclusive).')
+        
+        return float( self.query( 'RDGR? ' + str(channel) ) )
             
             
             

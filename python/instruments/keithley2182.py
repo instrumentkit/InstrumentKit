@@ -13,7 +13,7 @@ from instrument.instrument import Instrument
 
 class Keithley2182(Instrument):
     def __init__(self, port, address,timeout_length):
-        Instrument.__init__(self,port,address,timeout_length)
+        super(Keithley2182, self).__init__(self,port,address,timeout_length)
         
     def configure(self,mode = None):
         '''

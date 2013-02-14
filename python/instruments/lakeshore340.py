@@ -13,7 +13,7 @@ from instrument.instrument import Instrument
 
 class Lakeshore340(Instrument):
     def __init__(self, port, address,timeout_length):
-        Instrument.__init__(self,port,address,timeout_length)
+        super(Lakeshore340, self).__init__(self,port,address,timeout_length)
         
     def temperature(self,sensor):
         '''

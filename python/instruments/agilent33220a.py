@@ -13,7 +13,7 @@ from instrument.instrument import Instrument
 
 class Agilent33220a(Instrument):
     def __init__(self, port, address,timeout_length):
-        Instrument.__init__(self,port,address,timeout_length)
+        super(Agilent33220a, self).__init__(self,port,address,timeout_length)
     
     # Output
     def setOutput(self,func,freq=None,amplitude=None,offset=None):

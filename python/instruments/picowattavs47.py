@@ -13,7 +13,7 @@ from instrument.instrument import Instrument
 
 class PicowattAVS47(Instrument):
     def __init__(self, port, address,timeout_length):
-        Instrument.__init__(self,port,address,timeout_length)
+        super(PicowattAVS47, self).__init__(self,port,address,timeout_length)
         
     def remote(self,state = None):
         '''

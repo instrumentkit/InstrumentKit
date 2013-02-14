@@ -13,7 +13,7 @@ from instrument.instrument import Instrument
 
 class SRS345(Instrument):
     def __init__(self, port, address,timeout_length):
-        Instrument.__init__(self,port,address,timeout_length)
+        super(SRS345, self).__init__(self,port,address,timeout_length)
         
     def amplitude(self,units=None,amplitude=None):
         '''

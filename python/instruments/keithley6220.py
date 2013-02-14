@@ -13,17 +13,17 @@ from instrument.instrument import Instrument
 
 class Keithley6220(Instrument):
     def __init__(self, port, address,timeout_length):
-        Instrument.__init__(self,port,address,timeout_length)
+        super(Keithley6220, self).__init__(self,port,address,timeout_length)
     
     def output(self,current):
-    	
-    	if not isinstance(current,float):
-    		raise Exception('Current must be specified as a float.')
-    		
-    	if (current < -105e-3) or (current > 105e3):
-    		raise Exception('Current must be betwen -105e-3 and 105e+3')
-    		
-    	self.write( 'SOUR:CURR ' + str(current) )
-    	
+        
+        if not isinstance(current,float):
+            raise Exception('Current must be specified as a float.')
+            
+        if (current < -105e-3) or (current > 105e3):
+            raise Exception('Current must be betwen -105e-3 and 105e+3')
+            
+        self.write( 'SOUR:CURR ' + str(current) )
+        
     def disable(self):
-    	self.write('SOUR:CLE:IMM') # Set output to zero and then turn the output off
+        self.write('SOUR:CLE:IMM') # Set output to zero and then turn the output off

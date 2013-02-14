@@ -27,7 +27,7 @@ class Keithley580(Instrument):
         '''
         Initialise the instrument and replace CRLF line termination with ':'CR
         '''
-        Instrument.__init__(self, port, address, timeout_length)
+        super(Keithley580, self).__init__(self, port, address, timeout_length)
         self.write('Y:X')
 
 
