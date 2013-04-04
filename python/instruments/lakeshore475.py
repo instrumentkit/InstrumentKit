@@ -193,7 +193,8 @@ class Lakeshore475(SCPIInstrument):
         # Parse the measurement mode
         valid = ['DC','RMS','PEAK']
         if mode not in valid:
-            raise Exception('Only "DC", "RMS", and "PEAK" are valid measurement modes.')
+            raise ValueError('Only "DC", "RMS", and "PEAK" are '
+                               'valid measurement modes.')
         else:
             mode = valid.index(mode) + 1
 
@@ -201,30 +202,35 @@ class Lakeshore475(SCPIInstrument):
         if resolution in [3,4,5]:
             resolution = resolution - 2
         else:
-            raise Exception('Only 3,4,5 are valid resolutions (must be type int).')
+            raise ValueError('Only 3,4,5 are valid resolutions '
+                               '(must be type int).')
         
         # Parse the filter type
         valid = ['WIDE','NARROW','LOW PASS']
         if filterType not in valid:
-            raise Exception('Only "WIDE", "NARROW", and "LOW PASS" are valid filter types.')
+            raise ValueError('Only "WIDE", "NARROW", and "LOW PASS" '
+                               'are valid filter types.')
         else:
             filterType = valid.index(filterType) + 1
         
         # Parse the peak measurement mode
         valid = ['PERIODIC','PULSE']
         if peakMode not in valid:
-            raise Exception('Only "PERIODIC" and "PULSE" peak measurement modes are supported.')
+            raise ValueError('Only "PERIODIC" and "PULSE" peak '
+                               'measurement modes are supported.')
         else:
             peakMode = valid.index(peakMode) + 1
             
         # Parse the peak display mode
         valid = ['POSITIVE','NEGATIVE','BOTH']
         if peakDisp not in valid:
-            raise Exception('Only "POSITIVE","NEGATIVE", and "BOTH" are supported for display of peak reading.')
+            raise ValueError('Only "POSITIVE","NEGATIVE", and "BOTH" '
+                               'are supported for display of peak reading.')
         else:
             peakDisp = valid.index(peakDisp) + 1
             
-        self.write( 'RDGMODE %s,%s,%s,%s,%s' % (mode,resolution,filterType,peakMode,peakDisp) )
+        self.write( 'RDGMODE %s,%s,%s,%s,%s' % (mode,resolution,filterType,
+                                                peakMode,peakDisp) )
     
 
     
