@@ -38,7 +38,7 @@ import serialManager
 class Instrument(object):
     def __init__(self, port, address, timeout_length=5):
         self._port = port
-        self._address = address
+        self.address = address
         self._timeout = timeout_length
         self._ser = serialManager.newSerialConnection(port,timeout_length) 
         
@@ -51,6 +51,21 @@ class Instrument(object):
     def timeout(self, newval):
         self._timeout = newval
         self._ser.timeout = newval
+    
+    @property
+    def address(self):
+        return self._address
+    @address.setter
+    def address(self, newval):
+        if not isinstance(newval, int):
+            raise TypeError("New GPIB address must be specified as an integer.")
+        if (newval < 1) or (newval > 30):
+            raise ValueError("GPIB address must be between 1 and 30."
+        self._address = newval
+    
+    @property
+    def port(self):
+        return self._port
         
     ## BASIC I/O METHODS ##
     
