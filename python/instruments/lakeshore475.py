@@ -152,7 +152,8 @@ class Lakeshore475(SCPIInstrument):
     
     ## METHODS ##
 
-    def changeMeasurementMode(self,mode,resolution,filterType,peakMode,peakDisp):
+    def change_measurement_mode(self,mode,resolution,
+                                filterType,peakMode,peakDisp):
         '''
         Change the measurement mode of the Gaussmeter.
         
@@ -162,7 +163,9 @@ class Lakeshore475(SCPIInstrument):
         resolution: Digit resolution of the measured field.
         resolution = {3|4|5},integer
         
-        filterType: Specify the signal filter used by the instrument. Available types include wide band, narrow band, and low pass.
+        filterType: Specify the signal filter used by the instrument. 
+                    Available types include wide band, narrow band,
+                    and low pass.
         filterType = {WIDE|NARROW|LOW PASS},string
         
         peakMode: Peak measurement mode to be used.
@@ -171,16 +174,16 @@ class Lakeshore475(SCPIInstrument):
         peakDisp: Peak display mode to be used.
         peakDisp = {POSITIVE|NEGATIVE|BOTH},string
         '''
-        if type(mode) != type(str()):
-            raise Exception('Parameter "mode" must be a string.')
-        if type(resolution) != type(int()):
-            raise Exception('Parameter "resolution" must be an integer.')
-        if type(filterType) != type(str()):
-            raise Exception('Parameter "filterType" must be a string.')
-        if type(peakMode) != type(str()):
-            raise Exception('Parameter "peakMode" must be a string.')
-        if type(peakDisp) != type(str()):
-            raise Exception('Parameter "peakDisp" must be a string.')
+        if not isinstance(mode, str):
+            raise ValueError('Parameter "mode" must be a string.')
+        if not isinstance(resolution, int):
+            raise ValueError('Parameter "resolution" must be an integer.')
+        if not isinstance(filterType, str):
+            raise ValueError('Parameter "filterType" must be a string.')
+        if not isinstance(peakMode, str):
+            raise ValueError('Parameter "peakMode" must be a string.')
+        if not isinstance(peakDisp, str):
+            raise ValueError('Parameter "peakDisp" must be a string.')
         
         mode = mode.upper()
         filterType = filterType.upper()
