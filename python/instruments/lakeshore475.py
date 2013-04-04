@@ -61,8 +61,6 @@ LAKESHORE_TEMP_UNITS_STR = dict((k.name,v) for k,v in
 ## CLASSES #####################################################################
 
 class Lakeshore475(SCPIInstrument):
-    def __init__(self, port, address,timeout_length):
-        super(Lakeshore475, self).__init__(self,port,address,timeout_length)
 
     ## PROPERTIES ##
 
