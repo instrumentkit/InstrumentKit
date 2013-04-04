@@ -35,8 +35,8 @@ import instrument.instrument as bc # 'base class'
 
 class SCPIInstrument(bc.Instrument):
     
-    def __init__(self, port, address, timeout_length=5):
-        super(SCPIInstrument, self).__init__(self, port, address, timeout_length)
+    def __init__(self, filelike):
+        super(SCPIInstrument, self).__init__(self, filelike)
     
     ## PROPERTIES ##
     
