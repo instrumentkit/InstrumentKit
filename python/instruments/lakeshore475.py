@@ -23,8 +23,6 @@
 ##
 ##
 
-# Attribution requirements can be found in license/ATTRIBUTION.TXT
-
 ## FEATURES ####################################################################
 
 from __future__ import division
