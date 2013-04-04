@@ -1,30 +1,159 @@
 #!/usr/bin/python
-# Filename: lakeshore475.py
-
-# Original author: Steven Casagrande (stevencasagrande@gmail.com)
-# 2012
-
-# This work is released under the Creative Commons Attribution-Sharealike 3.0 license.
-# See http://creativecommons.org/licenses/by-sa/3.0/ or the included license/LICENSE.TXT file for more information.
+# -*- coding: utf-8 -*-
+##
+# lakeshore475.py: Python class for the Lakeshore 475 Gaussmeter
+##
+# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+#
+# This file is a part of the GPIBUSB adapter project.
+# Licensed under the AGPL version 3.
+##
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
+##
 
 # Attribution requirements can be found in license/ATTRIBUTION.TXT
 
-from instrument.instrument import Instrument
+## FEATURES ####################################################################
 
-class Lakeshore475(Instrument):
+from __future__ import division
+
+## IMPORTS #####################################################################
+
+import quantities as pq
+
+from instrument.instrument import SCPIInstrument
+
+## CONSTANTS ###################################################################
+
+LAKESHORE_FIELD_UNITS = {
+    1: pq.gauss,
+    2: pq.tesla,
+    3: pq.oersted,
+    4: pq.CompoundUnit('A/m')
+}
+
+LAKESHORE_TEMP_UNITS = {
+    1: pq.celsius
+    2: pq.kelvin
+}
+
+LAKESHORE_FIELD_UNITS_INV = dict((v,k) for k,v in 
+                                       LAKESHORE_FIELD_UNITS.items())
+LAKESHORE_FIELD_UNITS_STR = dict((k.name,v) for k,v in 
+                                            LAKESHORE_FIELD_UNITS_INV.items())
+LAKESHORE_TEMP_UNITS_INV = dict((v,k) for k,v in 
+                                       LAKESHORE_TEMP_UNITS.items())
+LAKESHORE_TEMP_UNITS_STR = dict((k.name,v) for k,v in 
+                                            LAKESHORE_TEMP_UNITS_INV.items())
+
+## CLASSES #####################################################################
+
+class Lakeshore475(SCPIInstrument):
     def __init__(self, port, address,timeout_length):
         super(Lakeshore475, self).__init__(self,port,address,timeout_length)
 
-    # Read Field
-    def readField(self):
+    ## PROPERTIES ##
+
+    @property
+    def field(self):
         '''
         Read field from connected probe.
         
         Returns a float. Units are currently selected units on the device. 
         '''
-        return float( self.query( 'RDGFIELD?' ) )
+        return float(self.query('RDGFIELD?'))
+        
+    @property
+    def field_units(self):
+        '''
+        Property returns the units of the Gaussmeter.
+        
+        Returns the field units as a Python quantity object
+        '''
+        value = int(self.query('UNIT?'))
+        return LAKESHORE_FIELD_UNITS[value]
+    @field_units.setter
+    def field_units(self, newval):
+        '''
+        Set the field units of the Gaussmeter.
+        
+        unit: Desired field unit
+        unit = {Gauss|Tesla|Oersted|Amp/meter},string int or Python quantity
+        '''
+        if isinstance(newval, pq.unitquantity.UnitQuantity):
+            if newval in LAKESHORE_FIELD_UNITS_INV:
+                self.write('UNIT ' + LAKESHORE_FIELD_UNITS_INV[newval])
+            else:
+                raise ValueError('Not an acceptable Python quantities object')
+        elif isinstance(newval, str):
+            newval = newval.lower()
+            if newval in LAKESHORE_FIELD_UNITS_STR:
+                self.write('UNIT ' + LAKESHORE_FIELD_UNITS_STR[newval])
+            else:
+                raise ValueError('Field unit strings must be gauss, tesla, '
+                                    'oersted or A/m')
+        elif isinstance(newval, int):
+            if in LAKESHORE_FIELD_UNITS:
+                self.write('UNIT ' + newval)
+            else:
+                raise ValueError('Invalid field unit integer.')
+        else:
+            raise TypeError('Field units must be a string, integer, or '
+                              'Python quantity')
+        
+    @property
+    def temp_units(self):
+        '''
+        Property returns the temperature units of the Gaussmeter
+        
+        Returns the temperature units as a Python quantity object.
+        '''
+        value = int(self.query('TUNIT?')
+        return LAKESHORE_TEMP_UNITS[value]
+    @temp_units.setter
+    def temp_units(self, newval):
+        '''
+        Set the temperature units of the Gaussmeter.
+        
+        unit: Desired temperature units
+        unit = {Celsius,Kelvin},string int or Python quantity
+        '''
+        if isinstance(newval, pq.unitquantity.UnitQuantity):
+            if newval in LAKESHORE_TEMP_UNITS_INV:
+                self.write('TUNIT ' + LAKESHORE_TEMP_UNITS_INV[newval])
+            else:
+                raise ValueError('Not an acceptable Python quantities object')
+        elif isinstance(newval, str):
+            newval = newval.lower()
+            if newval in LAKESHORE_TEMP_UNITS_STR:
+                self.write('TUNIT ' + LAKESHORE_TEMP_UNITS_STR[newval])
+            else:
+                raise ValueError('Temperature unit strings must be celcius '
+                                    'or kelvin')
+        elif isinstance(newval, int):
+            if in LAKESHORE_TEMP_UNITS:
+                self.write('TUNIT ' + newval)
+            else:
+                raise ValueError('Invalid temperature unit integer.')
+        else:
+            raise TypeError('Temperature units must be a string, integer, '
+                              'or Python quantity')
 
-    # Chnage Measurement Mode
+    
+    ## METHODS ##
+
     def changeMeasurementMode(self,mode,resolution,filterType,peakMode,peakDisp):
         '''
         Change the measurement mode of the Gaussmeter.
@@ -96,72 +225,7 @@ class Lakeshore475(Instrument):
             
         self.write( 'RDGMODE %s,%s,%s,%s,%s' % (mode,resolution,filterType,peakMode,peakDisp) )
     
-    # Query Field Units    
-    def queryFieldUnits(self):
-        '''
-        Function returns the units (as a string) the Gaussmeter is currently set to.
-        '''
-        unit = int(self.query('UNIT?'))
-        return ['Gauss','Tesla','Oersted','Amp/meter'][unit-1]
-        
-    def setFieldUnits(self,unit):
-        '''
-        Set the field units of the Gaussmeter.
-        
-        unit: Desired field unit
-        unit = {Gauss|Tesla|Oersted|Amp/meter},string
-        '''
-        if type(unit) != type(str()):
-            raise Exception('Parameter "unit" must be a string.')
-        
-        unit = unit.lower()
-        valid1 = ['gauss','tesla','oersted','amp/meter']
-        valid2 = ['g','t','o','a']
-        if unit in valid1:
-            unit = str( valid1.index(unit) + 1 )
-        elif unit in valid2:
-            unit = str( valid2.index(unit) + 1 )
-        else:
-            raise Exception('Only "gauss", "tesla", "oersted", and "amp/meter" are supported units.')
-            
-        self.write( 'UNIT ' + unit )
-    
-    # Set Temperature Units        
-    def setTempUnits(self,unit):
-        '''
-        Set the temperature units of the Gaussmeter.
-        
-        unit: Desired temperature units
-        unit = {Celsius,Kelvin},string
-        '''
-        if type(unit) != type(str()):
-            raise Exception('Parameter "unit" must be a string.')
-        
-        unit = unit.lower()
-        valid = ['c','k','celsius','kelvin']
-        if unit not in valid:
-            raise Exception('Only "c" and "k" are valid temperature units.')
-        else:
-            unit = valid.index(unit) + 1
-            if unit >= 3:
-                unit = unit - 2
-            
-        self.write( 'TUNIT ' + str(unit) )
-    
-    # Query Temperature Units    
-    def queryTempUnits(self):
-        '''
-        Query the temperature units of the Gaussmeter
-        
-        Returns the temperature units as a string.
-        '''
-        unit = int( self.query('TUNIT?') )
-        valid = ['Celsius','Kelvin']
-        return valid[unit-1]
-    
-    
-    
-    
+
     
     
     
