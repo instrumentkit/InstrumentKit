@@ -28,19 +28,17 @@
 import serial
 import time
 import struct
+import socket
 
-from numpy import *
-
-import serialManager
+import serialManager as sm
+import socketwrapper as sw
+import gi_gpib
 
 ## CLASSES #####################################################################
 
 class Instrument(object):
-    def __init__(self, port, address, timeout_length=5):
-        self._port = port
-        self.address = address
-        self._timeout = timeout_length
-        self._ser = serialManager.newSerialConnection(port,timeout_length) 
+    def __init__(self, filelike):
+        self._file = filelike
         
     ## PROPERTIES ##
     
@@ -58,9 +56,10 @@ class Instrument(object):
     @address.setter
     def address(self, newval):
         if not isinstance(newval, int):
-            raise TypeError("New GPIB address must be specified as an integer.")
+            raise TypeError("New GPIB address must be specified as "
+                                "an integer.")
         if (newval < 1) or (newval > 30):
-            raise ValueError("GPIB address must be between 1 and 30."
+            raise ValueError("GPIB address must be between 1 and 30.")
         self._address = newval
     
     @property
@@ -70,45 +69,87 @@ class Instrument(object):
     ## BASIC I/O METHODS ##
     
     def write(self, msg):
-        self._ser.write("+a:" + str(self.address) + "\r")
-        time.sleep(0.02)
-        self._ser.write(msg + "\r")
-        time.sleep(0.02)
+        '''
+        Write data string to GPIB connected instrument.
+        This function sends all the necessary GI-GPIB adapter internal commands
+        that are required for the specified instrument.  
+        '''
+        self._file.write(msg)
     
-    def query(self, msg):
-        self.write(msg)
-        if '?' not in msg: # If a question mark is not in the query string
-            self.write('+read') # Force controller to read response from instrument
-        #result = self.ser.readline(self,size=None,eol='\r')
-        return self.readline()
+    def query(self, msg, size=0):
+        '''
+        Query instrument for data. Supplied msg is sent to the instrument
+        and the responce is read. If msg does not contain a ``?`` the internal
+        GPIBUSB adapter command ``+read`` is sent which forces the adapter
+        into talk mode.
         
-    def readline(self):
-        # Following routine is manually implemented because pyserial changed how Serial.readline
-        # worked in later versions. 
-        result = bytearray()
-        c = 0
-        while c != '\r':
-            c = self._ser.read(1)
-            result += c
-        return bytes(result)
+        Size defines the number of characters to read from 
+        '''
+        self._file.write(msg)
+        if '?' not in msg:
+            self._file.write('+read')
+        return self._file.read(size)
         
     def binblockread(self,dataWidth):
+        '''
+        Read a binary data block from attached instrument.
+        This requires that the instrument respond in a particular manner
+        as EOL terminators naturally can not be used in binary transfers.
+        
+        The format is as follows:
+        #{number of following digits:1-9}{num of bytes to be read}{data bytes}
+        
+        '''
         if( dataWidth not in [1,2]):
             print 'Error: Data width must be 1 or 2.'
             return 0
-        symbol = self.ser.read(1) # This needs to be a # symbol for valid binary block
+        # This needs to be a # symbol for valid binary block
+        symbol = self._file.read(1)
         if( symbol != '#' ): # Check to make sure block is valid
-            print 'Error: Not a valid binary block start. Binary blocks require the first character to be #.'
+            raise ValueError('Not a valid binary block start. Binary blocks '
+                                'require the first character to be #.')
             return 0
         else:
-            digits = int( self.ser.read(1) ) # Read in the num of digits for next part
-            num_of_bytes = int( self.ser.read(digits) ) # Read in the num of bytes to be read
-            temp = self.ser.read(num_of_bytes) # Read in the data bytes
-        
-            raw = zeros(num_of_bytes/dataWidth) # Create zero array
+            # Read in the num of digits for next part
+            digits = int( self.ser.read(1) )
+            # Read in the num of bytes to be read
+            num_of_bytes = int( self.ser.read(digits) )
+            # Read in the data bytes
+            temp = self.ser.read(num_of_bytes)
+            
+            # Create zero array
+            raw = zeros(num_of_bytes/dataWidth)
             for i in range(0,num_of_bytes/dataWidth):
                 # Parse binary string into ints
-                raw[i] = struct.unpack(">h", temp[i*dataWidth:i*dataWidth+dataWidth])[0]
+                raw[i] = struct.unpack(">h", temp[i*dataWidth:\
+                                                  i*dataWidth+dataWidth])[0]
             del temp
         
             return raw
+            
+    ## CLASS METHODS ##
+    
+    @classmethod
+    def open_tcpip(cls, host, port):
+        conn = socket.socket()
+        conn.connect((host, port))
+        return cls(sw.SocketWrapper(conn))
+        
+    @classmethod
+    def open_serial(cls, port, baud, timeout=3, writeTimeout=3):
+        ser = sm.newSerialConnection(port, 
+                                     baud,
+                                     timeout, 
+                                     writeTimeout)
+        return cls(ser)
+    
+    @classmethod
+    def open_gpibusb(cls, port, gpib_address, timeout=3, writeTimeout=3):
+        ser = sm.newSerialConnection(port, timeout, writeTimeout)
+        return cls(gi_gpib.GPIBWrapper(ser, gpib_address))
+        
+    @classmethod
+    def open_gpibethernet(cls, host, port, gpib_address):
+        conn = socket.socket()
+        conn.connect((host, port))
+        return cls(gi_gpib.GPIBWrapper(conn, gpib_address))
