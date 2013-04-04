@@ -118,7 +118,7 @@ class Lakeshore475(SCPIInstrument):
         
         Returns the temperature units as a Python quantity object.
         '''
-        value = int(self.query('TUNIT?')
+        value = int(self.query('TUNIT?'))
         return LAKESHORE_TEMP_UNITS[value]
     @temp_units.setter
     def temp_units(self, newval):
