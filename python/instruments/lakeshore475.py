@@ -88,7 +88,7 @@ class Lakeshore475(SCPIInstrument):
         Set the field units of the Gaussmeter.
         
         unit: Desired field unit
-        unit = {Gauss|Tesla|Oersted|Amp/meter},string int or Python quantity
+        unit = {Gauss|Tesla|Oersted|A/m},string int or Python quantity
         '''
         if isinstance(newval, pq.unitquantity.UnitQuantity):
             if newval in LAKESHORE_FIELD_UNITS_INV:
