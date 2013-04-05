@@ -10,4 +10,6 @@ Contents:
     :maxdepth: 2
 
     instrument
+    generic_scpi
+    agilent
     

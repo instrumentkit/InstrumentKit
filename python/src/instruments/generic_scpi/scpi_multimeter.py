@@ -115,10 +115,10 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         instrument value and appropriate units. If no appropriate units exist,
         (for example, continuity), then return type is float.
         
-        mode: Desired measurement mode
-        mode = {CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|
-                FREQuency|FRESistance|PERiod|RESistance|TEMPerature|
-                VOLTage:AC|VOLTage:DC},string
+        :param str mode: Desired measurement mode. Must be one of
+            ``{CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|
+            FREQuency|FRESistance|PERiod|RESistance|TEMPerature|
+            VOLTage:AC|VOLTage:DC}``.
         '''
         if isinstance(mode, str):
             mode = mode.lower()

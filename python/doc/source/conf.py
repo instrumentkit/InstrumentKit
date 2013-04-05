@@ -249,3 +249,5 @@ intersphinx_mapping = {
     'serial': ('http://pyserial.sourceforge.net/', None),
     'quantities':('http://pythonhosted.org/quantities/', None),
 }
+
+autodoc_member_order = 'groupwise'
