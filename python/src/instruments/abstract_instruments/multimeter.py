@@ -31,7 +31,7 @@ from __future__ import division
 
 import abc
 
-from instrument.instrument import Instrument
+from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 

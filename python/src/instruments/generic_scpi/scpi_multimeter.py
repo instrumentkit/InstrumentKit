@@ -32,8 +32,8 @@ from __future__ import division
 import quantities as pq
 import numpy as np
 
-from multimeter import Multimeter
-from instrument.scpiinstrument import SCPIInstrument
+from instruments.abstract_instruments import Multimeter
+from instruments.generic_scpi import SCPIInstrument
 
 ## CONSTANTS ###################################################################
 

@@ -29,11 +29,11 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
-import instruments.instrument as bc # 'base class'
+from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 
-class SCPIInstrument(bc.Instrument):
+class SCPIInstrument(Instrument):
     
     def __init__(self, filelike):
         super(SCPIInstrument, self).__init__(self, filelike)

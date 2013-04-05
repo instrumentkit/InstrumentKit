@@ -9,7 +9,7 @@
 # license.  See http://creativecommons.org/licenses/by-sa/3.0/ or the included
 # license/LICENSE.TXT file for more information.
 
-from instruments.instrument import Instrument
+from instruments.abstract_instruments import Instrument
 import time
 import struct
 

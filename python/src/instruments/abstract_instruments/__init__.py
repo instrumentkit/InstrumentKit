@@ -1,1 +1,3 @@
-from .instrument import Instrument
+from instruments.abstract_instruments.instrument import Instrument
+from instruments.abstract_instruments.multimeter import Multimeter
+
