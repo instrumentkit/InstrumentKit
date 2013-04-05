@@ -29,7 +29,7 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
-import instrument.instrument as bc # 'base class'
+import instruments.instrument as bc # 'base class'
 
 ## CLASSES #####################################################################
 

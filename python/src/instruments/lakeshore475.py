@@ -31,7 +31,7 @@ from __future__ import division
 
 import quantities as pq
 
-from instrument.instrument import SCPIInstrument
+from instruments.instrument.scpi_instrument import SCPIInstrument
 
 ## CONSTANTS ###################################################################
 
@@ -43,7 +43,7 @@ LAKESHORE_FIELD_UNITS = {
 }
 
 LAKESHORE_TEMP_UNITS = {
-    1: pq.celsius
+    1: pq.celsius,
     2: pq.kelvin
 }
 
@@ -101,7 +101,7 @@ class Lakeshore475(SCPIInstrument):
                 raise ValueError('Field unit strings must be gauss, tesla, '
                                     'oersted or A/m')
         elif isinstance(newval, int):
-            if in LAKESHORE_FIELD_UNITS:
+            if newval in LAKESHORE_FIELD_UNITS:
                 self.write('UNIT ' + newval)
             else:
                 raise ValueError('Invalid field unit integer.')
@@ -139,7 +139,7 @@ class Lakeshore475(SCPIInstrument):
                 raise ValueError('Temperature unit strings must be celcius '
                                     'or kelvin')
         elif isinstance(newval, int):
-            if in LAKESHORE_TEMP_UNITS:
+            if newval in LAKESHORE_TEMP_UNITS:
                 self.write('TUNIT ' + newval)
             else:
                 raise ValueError('Invalid temperature unit integer.')
