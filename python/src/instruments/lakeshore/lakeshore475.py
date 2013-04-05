@@ -31,7 +31,7 @@ from __future__ import division
 
 import quantities as pq
 
-from instruments.instrument.scpi_instrument import SCPIInstrument
+from instruments.generic_scpi import SCPIInstrument
 
 ## CONSTANTS ###################################################################
 
