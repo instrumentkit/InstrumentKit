@@ -9,7 +9,7 @@
 
 # Attribution requirements can be found in license/ATTRIBUTION.TXT
 
-from instrument.instrument import Instrument
+from instruments.abstract_instruments import Instrument
 from numpy import *
 import struct
 
