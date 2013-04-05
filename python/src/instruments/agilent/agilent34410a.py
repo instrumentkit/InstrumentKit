@@ -12,7 +12,7 @@
 from instruments.abstract_instruments import Instrument
 
 class Agilent34410a(Instrument):
-    def __init__(self, port, address,timeout_length):
+    def __init__(self, port, address, timeout_length):
         super(Agilent34410a, self).__init__(self,port,address,timeout_length)
     
     # Clear Memory    
@@ -31,8 +31,7 @@ class Agilent34410a(Instrument):
         
         Function returns a float.
         
-        mode: Desired measurement mode
-        mode = {CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|RESistance|TEMPerature|VOLTage:AC|VOLTage:DC},string
+        :param str mode: Desired measurement mode, one of ``{CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|RESistance|TEMPerature|VOLTage:AC|VOLTage:DC}``.
         '''
         if not isinstance(mode,str):
             raise Exception('Measurement mode must be a string.')
@@ -52,23 +51,17 @@ class Agilent34410a(Instrument):
         return float( self.query( 'MEAS:' + mode.upper() + '?' ) )
     
     # Configure measurement mode, using default parameters    
-    def configure(self,mode = None,deviceRange = None,resolution = None):
+    def configure(self, mode=None, deviceRange=None, resolution=None):
         '''
         Change the measurement mode of the multimeter.
         No actual measurement will take place, but the instrument is then able to do so using the INITiate or READ? command.
         
-        All arguments are optional. Passing no arguments will query the device for the current configuration settings. This returns a string such as:
+        All arguments are optional. Passing no arguments will query the device for the current configuration settings. This returns a string such as ``VOLT +1.000000E+01,+3.000000E-06``.
         
-            "VOLT +1.000000E+01,+3.000000E-06" without quotes.
-        
-        mode: Desired measurement mode
-        mode = {CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|RESistance|TEMPerature|VOLTage:AC|VOLTage:DC},string
-        
-        deviceRange: It is recommended this is user specified, but is optional. Sets the range of the instrument. No value checking when passed as a number.
-        deviceRange = {<range>|MINimum|MAXimum|DEFault|AUTOmatic},number/string
-        
-        resolution: Measurement that the instrument will use. This is ignored for most modes. It is assumed that the user has entered a valid number.
-        resolution = <resolution>
+        :param str mode: Desired measurement mode, one of ``{CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|RESistance|TEMPerature|VOLTage:AC|VOLTage:DC}``.
+        :param deviceRange: It is recommended this is user specified, but is optional. Sets the range of the instrument. No value checking when passed as a number.
+        :type mode: `str` (one of ``MINimum, MAXimum, DEFault, AUTOmatic``) or range
+        :param float resolution: Measurement that the instrument will use. This is ignored for most modes. It is assumed that the user has entered a valid number.
         '''
         if mode == None: # If no arguments were passed, perform query and return
             return self.query('CONF?')
@@ -117,7 +110,7 @@ class Agilent34410a(Instrument):
         Readings are NOT erased from memory when using fetch. Use the R? command to read and erase data.
         Note that the data is transfered as ASCII, and thus it is not recommended to transfer a large number of data points using GPIB.
         
-        Returns a list of floats.
+        :rtype: `list` of `float` elements
         '''
         return map(float, self.query( 'FETC?' ).split(',') )
     
@@ -126,7 +119,7 @@ class Agilent34410a(Instrument):
         '''
         Returns the total number of readings that are located in reading memory (RGD_STORE).
         
-        Returns an integer.
+        :rtype: `int`
         '''
         return int( self.query('DATA:POIN?') )
     
@@ -137,13 +130,12 @@ class Agilent34410a(Instrument):
         First data point sent to output buffer is the oldest.
         Data is erased after being sent to output buffer.
         
-        Returns a list of floats.
+        :param int sampleCount: Number of data points to be transfered to output buffer. If set to 0, all points in memory will be transfered.
         
-        sampleCount: Number of data points to be transfered to output buffer. If set to 0, all points in memory will be transfered.
-        sampleCount = <num_readings>
+        :rtype: `list` of `float` elementa
         '''
         if not isinstance(sampleCount,int):
-            raise Exception('Parameter "sampleCount" must be an integer.')
+            raise TypeError('Parameter "sampleCount" must be an integer.')
         
         if sampleCount == 0:
             sampleCount = self.dataPointCount()
@@ -156,7 +148,7 @@ class Agilent34410a(Instrument):
         '''
         Returns all readings in non-volatile memory (NVMEM).
         
-        Returns a list of floats. 
+        :rtype: `list` of `float` elementa
         '''
         return map( float, self.query('DATA:DATA? NVMEM').split(',') )
     
@@ -166,7 +158,7 @@ class Agilent34410a(Instrument):
         Retrieve the last measurement taken. This can be executed at any time, including when the instrument is currently taking measurements.
         If there are no data points available, the value 9.91000000E+37 is returned.
         
-        Returns a float, or an int if there is an error.
+        :rtype: `float` or `int` (if an error occurs)
         '''
         data = self.query('DATA:LAST?')
         
@@ -191,9 +183,9 @@ class Agilent34410a(Instrument):
         '''
         Switch device from "idle" state to "wait-for-trigger" state. Immediately after the trigger conditions are met, the data will be sent to the output buffer of the instrument.
         
-        This is similar to calling init() and then immediately falling fetch()
+        This is similar to calling :meth:`~Agilent34410a.init` and then immediately falling :math:`~Agilent34410a.fetch`.
         
-        Returns a float of the data read from the instrument.
+        :rtype: `float`
         '''
         return float( self.query('READ?') )
     
@@ -219,14 +211,14 @@ class Agilent34410a(Instrument):
         '''
         This function sets the trigger source for measurements.
         The 34410a accepts the following trigger sources:
-            1) "Immediate": This is a continuous trigger. This means the trigger signal is always present.
-            2) "External": External TTL pulse on the back of the instrument. It is active low. 
-            3) "Bus": Causes the instrument to trigger when a *TRG command is sent by software. This means calling the trigger() function.
+        
+        #. "Immediate": This is a continuous trigger. This means the trigger signal is always present.
+        #. "External": External TTL pulse on the back of the instrument. It is active low. 
+        #. "Bus": Causes the instrument to trigger when a ``*TRG`` command is sent by software. This means calling the trigger() function.
         
         If no source is specified, function queries the instrument for the current setting. This is returned as a string. An example value is "EXT", without quotes.
             
-        source: Desired trigger source
-        source = {IMMediate|EXTernal|BUS},string
+        :param str source: Desired trigger source, one of ``{IMMediate|EXTernal|BUS}``.
         '''
         if source == None: # If source was not specified, perform query.
             return self.query('TRIG:SOUR?')
@@ -252,10 +244,11 @@ class Agilent34410a(Instrument):
         
         Note that if the sample count parameter has been changed, the number of readings taken will be a multiplication of sample count and trigger count (see function sampleCount).
         If specified as a string, the following options apply:
-            1) "MINimum": 1 trigger
-            2) "MAXimum": 50 000 triggers
-            3) "DEF": Default
-            4) "INFinity": Continuous. When the buffer is filled, the oldest data points are overwritten.
+        
+        #. "MINimum": 1 trigger
+        #. "MAXimum": 50 000 triggers
+        #. "DEF": Default
+        #. "INFinity": Continuous. When the buffer is filled, the oldest data points are overwritten.
         
         If count is not specified, function queries the instrument for the current trigger count setting. This is returned as an integer.
             
@@ -315,16 +308,17 @@ class Agilent34410a(Instrument):
         self.write( 'TRIG:DEL ' + str(period) )
     
     # Sample Count
-    def sampleCount(self,count = None):
+    def sampleCount(self, count=None):
         '''
         This command sets the number of readings (samples) that the multimeter will take per trigger.
         The time between each measurement is defined with the sampleTimer function.
         
         Note that if the sample count parameter has been changed, the number of readings taken will be a multiplication of sample count and trigger count (see function sampleCount).
         If specified as a string, the following options apply:
-            1) "MINimum": 1 sample per trigger
-            2) "MAXimum": 50 000 samples per trigger
-            3) "DEF": Default, 1 sample
+        
+        #. "MINimum": 1 sample per trigger
+        #. "MAXimum": 50 000 samples per trigger
+        #. "DEF": Default, 1 sample
             
         If count is not specified, function queries the instrument for the current smaple count and returns an integer.
             
