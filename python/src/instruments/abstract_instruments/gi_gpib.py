@@ -44,7 +44,9 @@ class GPIBWrapper(io.IOBase):
     '''
     def __init__(self, filelike, gpib_address):
         self._file = filelike
-        self._address = gpib_address
+        self._gpib_address = gpib_address
+        self._terminator = 10
+        self._eoi = 1
     
     def __repr__(self):
         return "<GPIBWrapper object at 0x{:X} "\
@@ -54,11 +56,14 @@ class GPIBWrapper(io.IOBase):
     
     @property
     def address(self):
-        return self._address
+        # TODO: Also return self._file address and make return type a list
+        return self._gpib_address
     @address.setter
     def address(self, newval):
         # TODO: Should take a hardware connection address to pass on, as well
         # as the currently implemented GPIB address
+        if isinstance(newval, int):
+            
         if not isinstance(newval, int):
             raise TypeError("New GPIB address must be specified as "
                                 "an integer.")
@@ -71,6 +76,22 @@ class GPIBWrapper(io.IOBase):
     @timeout.setter
     def timeout(self, newval):
         raise NotImplementedError
+    
+    @property
+    def terminator(self):
+        return self._terminator
+    @terminator.setter
+    def terminator(self, newval):
+        # TODO: Bound checking on newval
+        if newval is 'eoi':
+            self._eoi = 1
+        elif not isinstance(newval, int):
+            raise ValueError('GPIB termination must be integer 0-255 '
+                                'represending decimal value of ASCII '
+                                'termination character.')
+        else:
+            self._eoi = 0
+            self._terminator = int(newval)
     
     ## FILE-LIKE METHODS ##
     
@@ -107,8 +128,13 @@ class GPIBWrapper(io.IOBase):
         that are required for the specified instrument.  
         '''
         # TODO: include other internal flags such as +eoi
-        self._file.write('+a:' + str(self._address) + '\r')
+        self._file.write('+a:' + str(self._gpib_address) + '\r')
         time.sleep(0.02)
+        self._file.write('+eoi:{}\r'.format(self._eoi))
+        time.sleep(0.02)
+        if self._eoi is 0:
+            self._file.write('+eos:{}\r'.format(self._terminator))
+            time.sleep(0.02)
         self._file.write(msg + '\r')
         time.sleep(0.02)
     

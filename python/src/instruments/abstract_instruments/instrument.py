@@ -91,8 +91,23 @@ class Instrument(object):
         if isinstance(self._file, gi_gpib.GPIBWrapper):
             self._file.address = newval
         else:
-            # TODO: raise some error
-            return None
+            raise NotImplementedError
+            
+    @property
+    def terminator(self):
+        return self._terminator
+    @terminator.setter
+    def terminator(self, newval):
+        if (newval is 'eoi') and not isinstance(self._file, 
+                                                 gi_gpib.GPIBWrapper):
+            raise ValueError('EOI termination only valid for GPIB connected '
+                               'instruments')
+        
+        if isinstance(self._file, gi_gpib.GPIBWrapper):
+            self._file.terminator = newval
+        else:
+            self._terminator = newval
+
         
     ## BASIC I/O METHODS ##
     
