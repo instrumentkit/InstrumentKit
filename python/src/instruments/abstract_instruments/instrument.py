@@ -37,8 +37,37 @@ import gi_gpib
 ## CLASSES #####################################################################
 
 class Instrument(object):
+
+    # Set a default terminator.
+    # This can and should be overriden in subclasses for instruments
+    # that use different terminators.
+    _terminator = "\n"
+    
     def __init__(self, filelike):
         self._file = filelike
+    
+    ## COMMAND-HANDLING METHODS ##
+    
+    def sendcmd(self, cmd):
+        """
+        Sends an SCPI command without waiting for a response. 
+        
+        :param str cmd: String containing the SCPI command to
+            be sent.
+        """
+        self.write(str(cmd) + self._terminator)
+        
+    def query(self, cmd):
+        """
+        Executes the given SCPI query.
+        
+        :param str cmd: String containing the SCPI query to 
+            execute.
+        :return: The result of the query as returned by the
+            connected instrument.
+        :rtype: `str`
+        """
+        return super(SCPIInstrument, self).query(cmd + self._terminator)
         
     ## PROPERTIES ##
     
@@ -52,18 +81,27 @@ class Instrument(object):
     
     @property
     def address(self):
-        return self._address
+        if isinstance(self._file, gi_gpib.GPIBWrapper):
+            return self._address
+        else:
+            # TODO: raise some error I suppose
+            return None
     @address.setter
     def address(self, newval):
-        if not isinstance(newval, int):
-            raise TypeError("New GPIB address must be specified as "
-                                "an integer.")
-        if (newval < 1) or (newval > 30):
-            raise ValueError("GPIB address must be between 1 and 30.")
-        self._address = newval
+        if isinstance(self._file, gi_gpib.GPIBWrapper):
+            if not isinstance(newval, int):
+                raise TypeError("New GPIB address must be specified as "
+                                    "an integer.")
+            if (newval < 1) or (newval > 30):
+                raise ValueError("GPIB address must be between 1 and 30.")
+            self._address = newval
+        else:
+            # TODO: raise some error I suppose
+            return None
     
     @property
     def port(self):
+        # TODO: Fix to point to 
         return self._port
         
     ## BASIC I/O METHODS ##
