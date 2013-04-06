@@ -49,6 +49,30 @@ class GPIBWrapper(io.IOBase):
     def __repr__(self):
         return "<GPIBWrapper object at 0x{:X} "\
                 "wrapping {}>".format(id(self), self._file)
+                
+    ## PROPERTIES ##
+    
+    @property
+    def address(self):
+        return self._address
+    @address.setter
+    def address(self, newval):
+        # TODO: Should take a hardware connection address to pass on, as well
+        # as the currently implemented GPIB address
+        if not isinstance(newval, int):
+            raise TypeError("New GPIB address must be specified as "
+                                "an integer.")
+        if (newval < 1) or (newval > 30):
+            raise ValueError("GPIB address must be between 1 and 30.")
+            
+    @property
+    def timeout(self):
+        raise NotImplementedError
+    @timeout.setter
+    def timeout(self, newval):
+        raise NotImplementedError
+    
+    ## FILE-LIKE METHODS ##
     
     def close(self):
         self._file.close()
