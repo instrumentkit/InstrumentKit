@@ -35,36 +35,8 @@ from instruments.abstract_instruments import Instrument
 
 class SCPIInstrument(Instrument):
     
-     # Set a default terminator.
-     # This can and should be overriden in subclasses for instruments
-     # that use different terminators.
-    _terminator = "\n"
-    
     def __init__(self, filelike):
         super(SCPIInstrument, self).__init__(self, filelike)
-    
-    ## SCPI COMMAND-HANDLING METHODS ##
-    
-    def sendcmd(self, cmd):
-        """
-        Sends an SCPI command without waiting for a response. 
-        
-        :param str cmd: String containing the SCPI command to
-            be sent.
-        """
-        self.write(str(cmd) + self._terminator)
-        
-    def query(self, cmd):
-        """
-        Executes the given SCPI query.
-        
-        :param str cmd: String containing the SCPI query to 
-            execute.
-        :return: The result of the query as returned by the
-            connected instrument.
-        :rtype: `str`
-        """
-        return super(SCPIInstrument, self).query(cmd + self._terminator)
     
     ## PROPERTIES ##
     
