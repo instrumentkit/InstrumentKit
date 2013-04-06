@@ -81,6 +81,8 @@ class Instrument(object):
     @property
     def address(self):
         # TODO: Incorporate other hardware connections
+        #        Perhaps all valid _file objects should have a .address property
+        #        See issues/3 on github
         if isinstance(self._file, gi_gpib.GPIBWrapper):
             return self._file.address
         else:
