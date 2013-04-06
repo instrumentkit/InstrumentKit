@@ -1,74 +1,102 @@
 #!/usr/bin/python
-# Filename: agilent34410a.py
+# -*- coding: utf-8 -*-
+##
+# agilent34410a.py: Implementation of Agilent 34410A-specific functionality.
+##
+# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+#
+# This file is a part of the GPIBUSB adapter project.
+# Licensed under the AGPL version 3.
+##
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
 
-# Original author: Steven Casagrande (stevencasagrande@gmail.com)
-# 2012
+## IMPORTS #####################################################################
 
-# This work is released under the Creative Commons Attribution-Sharealike 3.0 license.
-# See http://creativecommons.org/licenses/by-sa/3.0/ or the included license/LICENSE.TXT file for more information.
+from instruments.generic_scpi import SCPIMultimeter
 
-# Attribution requirements can be found in license/ATTRIBUTION.TXT
+## CLASSES #####################################################################
 
-from instruments.abstract_instruments import Instrument
+class Agilent34410a(SCPIMultimeter):
 
-class Agilent34410a(Instrument):
-    def __init__(self, port, address,timeout_length):
-        super(Agilent34410a, self).__init__(self,port,address,timeout_length)
+    # NOTE: No __init__ needed, as it can just inherit.
+
+    ## PROPERTIES ##
     
-    # Clear Memory    
-    def clearMemory(self):
+    @property
+    def data_point_count(self):
+        '''
+        Gets the total number of readings that are located in reading memory (RGD_STORE).
+        
+        :type: `int`
+        '''
+        return int( self.query('DATA:POIN?') )
+    
+    
+    ## STATE MANAGEMENT METHODS ##
+
+    def init(self):
+        '''
+        Switch device from "idle" state to "wait-for-trigger state".
+        Measurements will begin when specified triggering conditions are met, following the receipt of the INIT command.
+        
+        Note that this command will also clear the previous set of readings from memory.
+        '''
+        self.sendcmd('INIT')
+    
+    def abort(self):
+        '''
+        Abort all measurements currently in progress.
+        '''
+        self.sendcmd('ABOR')
+    
+    ## MEMORY MANAGEMENT METHODS ##
+
+    def clear_memory(self):
         '''
         Clears the non-volatile memory of the Agilent 34410a.
         '''
-        self.write('DATA:DEL NVMEM')
+        self.sendcmd('DATA:DEL NVMEM')
     
-    # Measurement
-    def measure(self,mode):
+    def r(self, count):
         '''
-        Instruct the multimeter to perform a one time measurement. 
-        The instrument will use default parameters for the requested measurement.
-        The measurement will immediately take place, and the results are directly sent to the instrument's output buffer.
-        
-        Function returns a float.
-        
-        mode: Desired measurement mode
-        mode = {CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|RESistance|TEMPerature|VOLTage:AC|VOLTage:DC},string
+        HERP DERP
         '''
-        if not isinstance(mode,str):
-            raise Exception('Measurement mode must be a string.')
-        mode = mode.lower()
+        if not isinstance(count,int):
+            raise Exception('Parameter "count" must be an integer')
+        if count == 0:
+            msg = 'R?'
+        else:
+            msg = 'R? ' + str(count)
         
-        valid = ['cap','cont','curr:ac','curr:dc','diod','freq','fres','per','res','temp','volt:ac','volt:dc']
-        valid2 = ['capacitance','continuity','current:ac','current:dc','diode','frequency','fresistance','period','resistance','temperature','voltage:ac','voltage:dc']
-        
-        if mode in ['4res','4 res','four res','f res']:
-            mode = 'fres'
-        
-        if mode in valid2:
-            mode = valid[valid2.index(mode)]
-        elif mode not in valid:
-            raise Exception('Valid measurement modes are: ' + str(valid2))
-        
-        return float( self.query( 'MEAS:' + mode.upper() + '?' ) )
+        self.sendcmd('FORM:DATA REAL,32')
+        self.sendcmd(msg)
+        return self.binblockread(4)
     
+        
     # Configure measurement mode, using default parameters    
-    def configure(self,mode = None,deviceRange = None,resolution = None):
+    def configure(self, mode=None, deviceRange=None, resolution=None):
         '''
         Change the measurement mode of the multimeter.
         No actual measurement will take place, but the instrument is then able to do so using the INITiate or READ? command.
         
-        All arguments are optional. Passing no arguments will query the device for the current configuration settings. This returns a string such as:
+        All arguments are optional. Passing no arguments will query the device for the current configuration settings. This returns a string such as ``VOLT +1.000000E+01,+3.000000E-06``.
         
-            "VOLT +1.000000E+01,+3.000000E-06" without quotes.
-        
-        mode: Desired measurement mode
-        mode = {CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|RESistance|TEMPerature|VOLTage:AC|VOLTage:DC},string
-        
-        deviceRange: It is recommended this is user specified, but is optional. Sets the range of the instrument. No value checking when passed as a number.
-        deviceRange = {<range>|MINimum|MAXimum|DEFault|AUTOmatic},number/string
-        
-        resolution: Measurement that the instrument will use. This is ignored for most modes. It is assumed that the user has entered a valid number.
-        resolution = <resolution>
+        :param str mode: Desired measurement mode, one of ``{CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|RESistance|TEMPerature|VOLTage:AC|VOLTage:DC}``.
+        :param deviceRange: It is recommended this is user specified, but is optional. Sets the range of the instrument. No value checking when passed as a number.
+        :type mode: `str` (one of ``MINimum, MAXimum, DEFault, AUTOmatic``) or range
+        :param float resolution: Measurement that the instrument will use. This is ignored for most modes. It is assumed that the user has entered a valid number.
         '''
         if mode == None: # If no arguments were passed, perform query and return
             return self.query('CONF?')
@@ -89,7 +117,7 @@ class Agilent34410a(Instrument):
             raise Exception('Valid measurement modes are: ' + str(valid2))
         
         if deviceRange == None: # If deviceRange default
-            self.write( 'CONF:' + mode )
+            self.sendcmd( 'CONF:' + mode )
         else: # User specified range
             if isinstance(deviceRange,int) or isinstance(deviceRange,float): # If is an integer for a float
                 pass # Assume the input is correct...
@@ -105,58 +133,49 @@ class Agilent34410a(Instrument):
                 raise Exception('Argument deviceRange must be a string or a number.')
             
             if resolution == None: # If resolution is default
-                self.write( 'CONF:' + mode + ' ' + str(deviceRange) )
+                self.sendcmd( 'CONF:' + mode + ' ' + str(deviceRange) )
             else: # User specified resolution
-                self.write( 'CONF:%s %s,%s' %(mode,deviceRange,resolution) )
+                self.sendcmd( 'CONF:%s %s,%s' %(mode,deviceRange,resolution) )
         
-    # Fetch
+    ## DATA READING METHODS ##
+    
     def fetch(self):
         '''
         Transfer readings from instrument memory to the output buffer, and thus to the computer.
         If currently taking a reading, the instrument will wait until it is complete before executing this command.
         Readings are NOT erased from memory when using fetch. Use the R? command to read and erase data.
-        Note that the data is transfered as ASCII, and thus it is not recommended to transfer a large number of data points using GPIB.
+        Note that the data is transfered as ASCII, and thus it is not recommended to transfer a large number of
+        data points using this method.
         
-        Returns a list of floats.
+        :rtype: `list` of `float` elements
         '''
         return map(float, self.query( 'FETC?' ).split(',') )
     
-    # Data Point Count
-    def dataPointCount(self):
-        '''
-        Returns the total number of readings that are located in reading memory (RGD_STORE).
-        
-        Returns an integer.
-        '''
-        return int( self.query('DATA:POIN?') )
-    
-    # Read Data in Reading Memory (RDG_STORE)    
-    def readData(self,sampleCount):
+    def read_data(self, sample_count):
         '''
         Transfer specified number of data points from reading memory (RGD_STORE) to output buffer.
         First data point sent to output buffer is the oldest.
         Data is erased after being sent to output buffer.
         
-        Returns a list of floats.
+        :param int sample_count: Number of data points to be transfered to output buffer.
+            If set to -1, all points in memory will be transfered.
         
-        sampleCount: Number of data points to be transfered to output buffer. If set to 0, all points in memory will be transfered.
-        sampleCount = <num_readings>
+        :rtype: `list` of `float` elements
         '''
         if not isinstance(sampleCount,int):
-            raise Exception('Parameter "sampleCount" must be an integer.')
+            raise TypeError('Parameter "sampleCount" must be an integer.')
         
-        if sampleCount == 0:
-            sampleCount = self.dataPointCount()
+        if sampleCount == -1:
+            sampleCount = self.data_point_count
         
-        self.write('FORM:DATA ASC')
+        self.sendcmd('FORM:DATA ASC')
         return map( float, self.query('DATA:REM? ' + str(sampleCount)).split(',') )
     
-    # Read Data in Non-Volatile Memory (NVMEM)
-    def readDataNVMEM(self):
+    def read_data_NVMEM(self):
         '''
         Returns all readings in non-volatile memory (NVMEM).
         
-        Returns a list of floats. 
+        :rtype: `list` of `float` elements
         '''
         return map( float, self.query('DATA:DATA? NVMEM').split(',') )
     
@@ -166,7 +185,7 @@ class Agilent34410a(Instrument):
         Retrieve the last measurement taken. This can be executed at any time, including when the instrument is currently taking measurements.
         If there are no data points available, the value 9.91000000E+37 is returned.
         
-        Returns a float, or an int if there is an error.
+        :rtype: `float` or `int` (if an error occurs)
         '''
         data = self.query('DATA:LAST?')
         
@@ -176,42 +195,17 @@ class Agilent34410a(Instrument):
             data = data[0:data.index(' ')] # Remove units
             return float(data)
     
-    # Init: Set to "Wait-for-trigger" state        
-    def init(self):
-        '''
-        Switch device from "idle" state to "wait-for-trigger state".
-        Measurements will begin when specified triggering conditions are met, following the receipt of the INIT command.
-        
-        Note that this command will also clear the previous set of readings from memory.
-        '''
-        self.write('INIT')
-    
     # Read: Set to "Wait-for-trigger" state, and immediately send result to output
     def read(self):
         '''
         Switch device from "idle" state to "wait-for-trigger" state. Immediately after the trigger conditions are met, the data will be sent to the output buffer of the instrument.
         
-        This is similar to calling init() and then immediately falling fetch()
+        This is similar to calling :meth:`~Agilent34410a.init` and then immediately falling :math:`~Agilent34410a.fetch`.
         
-        Returns a float of the data read from the instrument.
+        :rtype: `float`
         '''
         return float( self.query('READ?') )
     
-    # Read and Erase a set number of data points from memory
-    def r(self,count):
-        '''
-        HERP DERP
-        '''
-        if not isinstance(count,int):
-            raise Exception('Parameter "count" must be an integer')
-        if count == 0:
-            msg = 'R?'
-        else:
-            msg = 'R? ' + str(count)
-        
-        self.write('FORM:DATA REAL,32')
-        self.write(msg)
-        return self.binblockread(4)
         
     
     # Set Trigger Source
@@ -219,14 +213,14 @@ class Agilent34410a(Instrument):
         '''
         This function sets the trigger source for measurements.
         The 34410a accepts the following trigger sources:
-            1) "Immediate": This is a continuous trigger. This means the trigger signal is always present.
-            2) "External": External TTL pulse on the back of the instrument. It is active low. 
-            3) "Bus": Causes the instrument to trigger when a *TRG command is sent by software. This means calling the trigger() function.
+        
+        #. "Immediate": This is a continuous trigger. This means the trigger signal is always present.
+        #. "External": External TTL pulse on the back of the instrument. It is active low. 
+        #. "Bus": Causes the instrument to trigger when a ``*TRG`` command is sent by software. This means calling the trigger() function.
         
         If no source is specified, function queries the instrument for the current setting. This is returned as a string. An example value is "EXT", without quotes.
             
-        source: Desired trigger source
-        source = {IMMediate|EXTernal|BUS},string
+        :param str source: Desired trigger source, one of ``{IMMediate|EXTernal|BUS}``.
         '''
         if source == None: # If source was not specified, perform query.
             return self.query('TRIG:SOUR?')
@@ -243,7 +237,7 @@ class Agilent34410a(Instrument):
         elif source not in valid2:
             raise Exception('Trigger source must be "immediate", "external", or "bus".')
         
-        self.write('TRIG:SOUR ' + source)
+        self.sendcmd('TRIG:SOUR ' + source)
         
     # Trigger Count
     def triggerCount(self,count = None):
@@ -252,10 +246,11 @@ class Agilent34410a(Instrument):
         
         Note that if the sample count parameter has been changed, the number of readings taken will be a multiplication of sample count and trigger count (see function sampleCount).
         If specified as a string, the following options apply:
-            1) "MINimum": 1 trigger
-            2) "MAXimum": 50 000 triggers
-            3) "DEF": Default
-            4) "INFinity": Continuous. When the buffer is filled, the oldest data points are overwritten.
+        
+        #. "MINimum": 1 trigger
+        #. "MAXimum": 50 000 triggers
+        #. "DEF": Default
+        #. "INFinity": Continuous. When the buffer is filled, the oldest data points are overwritten.
         
         If count is not specified, function queries the instrument for the current trigger count setting. This is returned as an integer.
             
@@ -282,7 +277,7 @@ class Agilent34410a(Instrument):
         else:
             raise Exception('Trigger count must be a string or an integer.')
         
-        self.write( 'TRIG:COUN ' + str(count) )
+        self.sendcmd( 'TRIG:COUN ' + str(count) )
         
     # Trigger delay
     def triggerDelay(self,period=None):
@@ -312,19 +307,20 @@ class Agilent34410a(Instrument):
             if period < 0 or period > 3600:
                 raise Exception('The trigger delay needs to be between 0 and 3600 seconds.')
         
-        self.write( 'TRIG:DEL ' + str(period) )
+        self.sendcmd( 'TRIG:DEL ' + str(period) )
     
     # Sample Count
-    def sampleCount(self,count = None):
+    def sampleCount(self, count=None):
         '''
         This command sets the number of readings (samples) that the multimeter will take per trigger.
         The time between each measurement is defined with the sampleTimer function.
         
         Note that if the sample count parameter has been changed, the number of readings taken will be a multiplication of sample count and trigger count (see function sampleCount).
         If specified as a string, the following options apply:
-            1) "MINimum": 1 sample per trigger
-            2) "MAXimum": 50 000 samples per trigger
-            3) "DEF": Default, 1 sample
+        
+        #. "MINimum": 1 sample per trigger
+        #. "MAXimum": 50 000 samples per trigger
+        #. "DEF": Default, 1 sample
             
         If count is not specified, function queries the instrument for the current smaple count and returns an integer.
             
@@ -351,7 +347,7 @@ class Agilent34410a(Instrument):
         else:
             raise Exception('Trigger count must be a string or an integer.')
         
-        self.write( 'SAMP:COUN ' + str(count) )
+        self.sendcmd( 'SAMP:COUN ' + str(count) )
     
     # Sample Timer
     def sampleTimer(self,period = None):
@@ -383,7 +379,7 @@ class Agilent34410a(Instrument):
             if period < 0:
                 raise Exception('Trigger count must be a positive integer.')
         
-        self.write( 'SAMP:TIM ' + str(period) )
+        self.sendcmd( 'SAMP:TIM ' + str(period) )
         
     # Sample Source
     def sampleSource(self,source = None):
@@ -414,24 +410,6 @@ class Agilent34410a(Instrument):
         elif source not in valid2:
             raise Exception('Valid sample sources are "immediate" and "timer".')
         
-        self.write( 'SAMP:SOUR ' + str(source) )
+        self.sendcmd( 'SAMP:SOUR ' + str(source) )
     
-    # Abort Measurements
-    def abort(self):
-        '''
-        Abort a measurements currently in progress.
-        '''
-        self.write('ABOR')
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         

@@ -16,21 +16,20 @@ class Agilent33220a(Instrument):
         super(Agilent33220a, self).__init__(self,port,address,timeout_length)
     
     # Output
-    def setOutput(self,func,freq=None,amplitude=None,offset=None):
+    def setOutput(self, func, freq=None, amplitude=None, offset=None):
         '''
         Set the output of the function generator. Only argument "func" is required.
         
-        func: Output function type.
-        func = {SINusoid|SQUare|RAMP|PULSe|NOISe|DC|USER},string
+        :param str func: Output function type, one of ``{SINusoid|SQUare|RAMP|PULSe|NOISe|DC|USER}``.
         
-        freq: Output frequency. Ignored for noise and dc mode. Specified in Hz.
-        freq = <frequency>,float/integer
+        :param freq: Output frequency. Ignored for noise and dc mode.
+        :type freq: `int` or `float` [Hz]
         
-        amplitude: Peak to peak amplitude of the output. Ignored for dc mode.
-        amplitude = <voltage>
+        :param amplitude: Peak to peak amplitude of the output. Ignored for dc mode.
+        :type amplitude: `int` or `float` [V]
         
-        offset: DC offset in volts
-        offset = <voltage>
+        :param offset: DC offset.
+        :type offset: `int` or `float` [V]
         '''
         if not isinstance(func,str):
             raise Exception('Output function (func) must be a string.')
@@ -83,8 +82,7 @@ class Agilent33220a(Instrument):
         
         If argument "func" is omitted, the instrument is queried for its current output setting. Return type is a string.
         
-        func: Output function type.
-        func = {SINusoid|SQUare|RAMP|PULSe|NOISe|DC|USER},string
+        :param str func: Output function type, one of ``{SINusoid|SQUare|RAMP|PULSe|NOISe|DC|USER}``.
         '''
         if func == None: # If func not specified, perform query for current function
             return self.query('FUNC?')
@@ -132,7 +130,7 @@ class Agilent33220a(Instrument):
         
         self.write( 'FREQ ' + str(freq) )
     
-    def voltage(self,amplitude = None):
+    def voltage(self, amplitude=None):
         '''
         Set the output voltage amplitude of the function generator.
         Units are defined by the voltageUnits method.
@@ -299,9 +297,10 @@ class Agilent33220a(Instrument):
         '''
         Desired output termination load (ie, the impedance of the load attached to the front panel output connector).
         When specified as a string, they equate to:
-            1) MINimum: 1ohm
-            2) MAXimum: 10kohm
-            3) INFinity: High-impedance mode (>10kohm)
+        
+        #. MINimum: 1ohm
+        #. MAXimum: 10kohm
+        #. INFinity: High-impedance mode (>10kohm)
         
         The instrument has a fixed series output impedance of 50ohms. This function allows the instrument to compensate of the voltage divider and accurately report the voltage across the attached load.
         

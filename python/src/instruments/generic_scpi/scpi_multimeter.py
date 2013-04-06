@@ -21,13 +21,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
-##
 
 ## FEATURES ####################################################################
 
 from __future__ import division
 
 ## IMPORTS #####################################################################
+
+from flufl.enum import Enum
 
 import quantities as pq
 import numpy as np
@@ -36,36 +37,6 @@ from instruments.abstract_instruments import Multimeter
 from instruments.generic_scpi import SCPIInstrument
 
 ## CONSTANTS ###################################################################
-
-VALID_MODES = [
-    'capacitance', 
-    'continuity', 
-    'current:ac', 
-    'current:dc', 
-    'diode', 
-    'frequency', 
-    'fresistance', 
-    'period', 
-    'resistance', 
-    'temperature', 
-    'voltage:dc', 
-    'voltage:ac', 
-]
-
-VALID_MODES_SHORT = [
-    'cap',
-    'cont',
-    'curr:ac',
-    'curr:dc',
-    'diod',
-    'freq',
-    'fres',
-    'per',
-    'res',
-    'temp',
-    'volt:dc',
-    'volt:ac'
-]
 
 VALID_FRES_NAMES = ['4res','4 res','four res','f res']
 
@@ -77,6 +48,39 @@ UNITS_FREQUENCY = ['freq']
 UNITS_TIME = ['per']
 UNITS_TEMPERATURE = ['temp']
 
+## ENUMS #######################################################################
+
+class MultimeterMode(Enum):
+    capacitance = "CAP"
+    continuity = "CONT"
+    current_ac = "CURR:AC"
+    current_dc = "CURR:DC"
+    diode = "DIOD"
+    frequency = "FREQ"
+    fourpt_resistance = "FRES"
+    period = "PER"
+    resistance = "RES"
+    temperature = "TEMP"
+    voltage_ac = "VOLT:AC"
+    voltage_dc = "VOLT:DC"
+    
+## UNITS #######################################################################
+
+UNITS = {
+    MultimeterMode.capacitance: pq.farad,
+    MultimeterMode.voltage_dc:  pq.volt,
+    MultimeterMode.voltage_ac:  pq.volt,
+    MultimeterMode.diode:       pq.volt,
+    MultimeterMode.current_ac:  pq.amp,
+    MultimeterMode.current_dc:  pq.amp,
+    MultimeterMode.resistance:  pq.ohm,
+    MultimeterMode.fourpt_resistance: pq.ohm,
+    MultimeterMode.frequency:   pq.hertz,
+    MultimeterMode.period:      pq.second,
+    MultimeterMode.temperature: pq.kelvin,
+    MultimeterMode.continuity:  1,
+}
+    
 ## CLASSES #####################################################################
 
 class SCPIMultimeter(Multimeter, SCPIInstrument):
@@ -86,25 +90,20 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
     @property
     def mode(self):
         '''
-        Read measurement mode the multimeter is currently in.
+        Get or set the current measurement mode for the multimeter.
         '''
-        return self.query('CONF?')
+        return MultimeterMode[self.query('CONF?')]
     @mode.setter
     def mode(self, newval):
-        '''
-        Change the mode the multimeter is in.
-        '''
+        if not (isinstance(newval, MultimeterMode) or isinstance(newval, str)):
+            raise TypeError("Mode must be specified as either a str or a MultimeterMode.")
         if isinstance(newval, str):
-            newval = newval.lower()
-        if newval in VALID_FRES_NAMES:
-            newval = 'fres'
-        if newval not in VALID_MODES:
-            raise ValueError('Valid inputs for mode are: ' + VALID_MODES)
-        self.write('CONF:' + newval)
+            newval = MultimeterMode[newval]
+        self.sendcmd('CONF:' + newval._value)
     
     ## METHODS ##
     
-    def measure(self, mode):
+    def measure(self, mode=None):
         '''
         Instruct the multimeter to perform a one time measurement. The 
         instrument will use default parameters for the requested measurement.
@@ -113,35 +112,29 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         
         Method returns a Python quantity consisting of a numpy array with the
         instrument value and appropriate units. If no appropriate units exist,
-        (for example, continuity), then return type is float.
+        (for example, continuity), then return type is `float`.
         
-        :param str mode: Desired measurement mode. Must be one of
-            ``{CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|
-            FREQuency|FRESistance|PERiod|RESistance|TEMPerature|
-            VOLTage:AC|VOLTage:DC}``.
+        :param instruments.generic_scpi.MultimeterMode mode: Desired measurement mode.
+            If set to `None`, will default to the current mode.
         '''
-        if isinstance(mode, str):
-            mode = mode.lower()
-        if mode in VALID_MODES:
-            mode = VALID_MODES_SHORT[VALID_MODES.index(mode)]
+        
+        # Default to the current mode.
+        if mode is None:
+            mode = self.mode
+            
+        # Throw an error if the mode isn't an enum.
+        if not isinstance(mode, MultimeterMode):
+            raise TypeError("The mode must be specified as a `MultimeterMode`.")
+        
+        # Unpack the value from the enumeration.
+        mode = mode._value.lower()
+        # mode = VALID_MODES_SHORT[VALID_MODES.index(mode)]
+        
+        # Apply the mode and obtain the measurement.
         self.mode = mode
         value = float(self.query('MEAS:{}?'.format(mode)))
         
-        if mode in UNITS_CAPACITANCE:
-            return value * pq.farad
-        elif mode in UNITS_VOLTAGE:
-            return value * pq.volt
-        elif mode in UNITS_CURRENT:
-            return value * pq.amp
-        elif mode in UNITS_RESISTANCE:
-            return value * pq.ohm
-        elif mode in UNITS_FREQUENCY:
-            return value * pq.hertz
-        elif mode in UNITS_TIME:
-            return value * pq.second
-        elif mode in UNITS_TEMPERATURE:
-            return value * pq.celsius
-        else:
-            return value
+        # Put the measurement into the correct units.
+        return value * UNITS[mode]
             
         

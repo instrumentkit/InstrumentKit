@@ -35,19 +35,53 @@ from instruments.abstract_instruments import Instrument
 
 class SCPIInstrument(Instrument):
     
+     # Set a default terminator.
+     # This can and should be overriden in subclasses for instruments
+     # that use different terminators.
+    _terminator = "\n"
+    
     def __init__(self, filelike):
         super(SCPIInstrument, self).__init__(self, filelike)
+    
+    ## SCPI COMMAND-HANDLING METHODS ##
+    
+    def sendcmd(self, cmd):
+        """
+        Sends an SCPI command without waiting for a response. 
+        
+        :param str cmd: String containing the SCPI command to
+            be sent.
+        """
+        self.write(str(cmd) + self._terminator)
+        
+    def query(self, cmd):
+        """
+        Executes the given SCPI query.
+        
+        :param str cmd: String containing the SCPI query to 
+            execute.
+        :return: The result of the query as returned by the
+            connected instrument.
+        :rtype: `str`
+        """
+        return super(SCPIInstrument, self).query(cmd + self._terminator)
     
     ## PROPERTIES ##
     
     @property
     def name(self):
+        """
+        The name of the connected instrument, as reported by the
+        standard SCPI command ``*IDN?``.
+        
+        :type: `str`
+        """
         return self.query('*IDN?')
         
     @property
     def op_complete(self):
         result = self.query('OPC?')
-        return int(result)
+        return bool(int(result))
     
     @property
     def power_on_status(self):
@@ -59,9 +93,9 @@ class SCPIInstrument(Instrument):
         if isinstance(newval, str):
             newval = newval.lower()
         if newval in on:
-            self.write('*PSC 1')
+            self.sendcmd('*PSC 1')
         elif newval in off:
-            self.write('*PSC 0')
+            self.sendcmd('*PSC 0')
         else:
             raise ValueError
     
@@ -77,13 +111,14 @@ class SCPIInstrument(Instrument):
     ## BASIC SCPI COMMANDS ##
     
     def reset(self):
-        self.write('*RST')
+        self.sendcmd('*RST')
         
     def clear(self):
-        self.write('*CLS')
+        self.sendcmd('*CLS')
     
     def trigger(self):
-        self.write('*TRG')
+        self.sendcmd('*TRG')
     
     def wait_to_continue(self):
-        self.write('*WAI')
+        self.sendcmd('*WAI')
+    

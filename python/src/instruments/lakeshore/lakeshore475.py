@@ -67,42 +67,38 @@ class Lakeshore475(SCPIInstrument):
         '''
         Read field from connected probe.
         
-        Returns a float. Units are currently selected units on the device. 
+        :type: `~quantities.Quantity`
         '''
-        return float(self.query('RDGFIELD?'))
+        return float(self.query('RDGFIELD?')) * self.field_units
         
     @property
     def field_units(self):
         '''
-        Property returns the units of the Gaussmeter.
+        Gets or sets the units of the Gaussmeter.
+        If specified as a `str`, must be one of ``{Gauss|Tesla|Oersted|A/m}``.
+        If specified as an `int`, must be in ``xrange(1, 5)``.
         
-        Returns the field units as a Python quantity object
+        :type: `~quantities.UnitQuantity`, `str` or `int`
         '''
         value = int(self.query('UNIT?'))
         return LAKESHORE_FIELD_UNITS[value]
     @field_units.setter
     def field_units(self, newval):
-        '''
-        Set the field units of the Gaussmeter.
-        
-        unit: Desired field unit
-        unit = {Gauss|Tesla|Oersted|A/m},string int or Python quantity
-        '''
         if isinstance(newval, pq.unitquantity.UnitQuantity):
             if newval in LAKESHORE_FIELD_UNITS_INV:
-                self.write('UNIT ' + LAKESHORE_FIELD_UNITS_INV[newval])
+                self.sendcmd('UNIT ' + LAKESHORE_FIELD_UNITS_INV[newval])
             else:
                 raise ValueError('Not an acceptable Python quantities object')
         elif isinstance(newval, str):
             newval = newval.lower()
             if newval in LAKESHORE_FIELD_UNITS_STR:
-                self.write('UNIT ' + LAKESHORE_FIELD_UNITS_STR[newval])
+                self.sendcmd('UNIT ' + LAKESHORE_FIELD_UNITS_STR[newval])
             else:
                 raise ValueError('Field unit strings must be gauss, tesla, '
                                     'oersted or A/m')
         elif isinstance(newval, int):
             if newval in LAKESHORE_FIELD_UNITS:
-                self.write('UNIT ' + newval)
+                self.sendcmd('UNIT ' + newval)
             else:
                 raise ValueError('Invalid field unit integer.')
         else:
@@ -112,35 +108,32 @@ class Lakeshore475(SCPIInstrument):
     @property
     def temp_units(self):
         '''
-        Property returns the temperature units of the Gaussmeter
+        Gets or sets the temperature units of the Gaussmeter.
+        If specified as a `str`, must be one of ``"Celsius"``
+        or ``"Kelvin"``. If specified as an `int`, must be
+        in ``xrange(1,3)``.
         
-        Returns the temperature units as a Python quantity object.
+        :type: `~quantities.UnitQuantity`, `int` or `str`
         '''
         value = int(self.query('TUNIT?'))
         return LAKESHORE_TEMP_UNITS[value]
     @temp_units.setter
     def temp_units(self, newval):
-        '''
-        Set the temperature units of the Gaussmeter.
-        
-        unit: Desired temperature units
-        unit = {Celsius,Kelvin},string int or Python quantity
-        '''
         if isinstance(newval, pq.unitquantity.UnitQuantity):
             if newval in LAKESHORE_TEMP_UNITS_INV:
-                self.write('TUNIT ' + LAKESHORE_TEMP_UNITS_INV[newval])
+                self.sendcmd('TUNIT ' + LAKESHORE_TEMP_UNITS_INV[newval])
             else:
                 raise ValueError('Not an acceptable Python quantities object')
         elif isinstance(newval, str):
             newval = newval.lower()
             if newval in LAKESHORE_TEMP_UNITS_STR:
-                self.write('TUNIT ' + LAKESHORE_TEMP_UNITS_STR[newval])
+                self.sendcmd('TUNIT ' + LAKESHORE_TEMP_UNITS_STR[newval])
             else:
                 raise ValueError('Temperature unit strings must be celcius '
                                     'or kelvin')
         elif isinstance(newval, int):
             if newval in LAKESHORE_TEMP_UNITS:
-                self.write('TUNIT ' + newval)
+                self.sendcmd('TUNIT ' + newval)
             else:
                 raise ValueError('Invalid temperature unit integer.')
         else:
@@ -152,6 +145,8 @@ class Lakeshore475(SCPIInstrument):
 
     def change_measurement_mode(self,mode,resolution,
                                 filterType,peakMode,peakDisp):
+        # TODO: almost all of this method is checking types
+        #       and validity; absorb this into an enum, perhaps?
         '''
         Change the measurement mode of the Gaussmeter.
         
@@ -197,7 +192,7 @@ class Lakeshore475(SCPIInstrument):
             mode = valid.index(mode) + 1
 
         # Parse the resolution
-        if resolution in [3,4,5]:
+        if resolution in xrange(3, 6):
             resolution = resolution - 2
         else:
             raise ValueError('Only 3,4,5 are valid resolutions '
@@ -227,13 +222,7 @@ class Lakeshore475(SCPIInstrument):
         else:
             peakDisp = valid.index(peakDisp) + 1
             
-        self.write( 'RDGMODE %s,%s,%s,%s,%s' % (mode,resolution,filterType,
+        self.sendcmd( 'RDGMODE %s,%s,%s,%s,%s' % (mode,resolution,filterType,
                                                 peakMode,peakDisp) )
     
 
-    
-    
-    
-    
-    
-        
