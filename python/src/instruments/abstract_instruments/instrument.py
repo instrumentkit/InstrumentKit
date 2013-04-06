@@ -73,11 +73,10 @@ class Instrument(object):
     
     @property
     def timeout(self):
-        return self._timeout
+        return self._file.timeout
     @timeout.setter
     def timeout(self, newval):
-        self._timeout = newval
-        self._ser.timeout = newval
+        self._file.timeout = newval
     
     @property
     def address(self):
@@ -94,11 +93,6 @@ class Instrument(object):
         else:
             # TODO: raise some error
             return None
-    
-    @property
-    def port(self):
-        # TODO: Fix to point to 
-        return self._port
         
     ## BASIC I/O METHODS ##
     
