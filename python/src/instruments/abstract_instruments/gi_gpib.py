@@ -63,6 +63,8 @@ class GPIBWrapper(io.IOBase):
         if (newval < 1) or (newval > 30):
             raise ValueError("GPIB address must be between 1 and 30.")
     
+    ## FILE-LIKE METHODS ##
+    
     def close(self):
         self._file.close()
         
