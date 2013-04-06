@@ -82,21 +82,16 @@ class Instrument(object):
     @property
     def address(self):
         if isinstance(self._file, gi_gpib.GPIBWrapper):
-            return self._address
+            return self._file.address
         else:
-            # TODO: raise some error I suppose
+            # TODO: raise some error
             return None
     @address.setter
     def address(self, newval):
         if isinstance(self._file, gi_gpib.GPIBWrapper):
-            if not isinstance(newval, int):
-                raise TypeError("New GPIB address must be specified as "
-                                    "an integer.")
-            if (newval < 1) or (newval > 30):
-                raise ValueError("GPIB address must be between 1 and 30.")
-            self._address = newval
+            self._file.address = newval
         else:
-            # TODO: raise some error I suppose
+            # TODO: raise some error
             return None
     
     @property
