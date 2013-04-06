@@ -65,6 +65,23 @@ class MultimeterMode(Enum):
     voltage_ac = "VOLT:AC"
     voltage_dc = "VOLT:DC"
     
+## UNITS #######################################################################
+
+UNITS = {
+    MultimeterMode.capacitance: pq.farad,
+    MultimeterMode.voltage_dc:  pq.volt,
+    MultimeterMode.voltage_ac:  pq.volt,
+    MultimeterMode.diode:       pq.volt,
+    MultimeterMode.current_ac:  pq.amp,
+    MultimeterMode.current_dc:  pq.amp,
+    MultimeterMode.resistance:  pq.ohm,
+    MultimeterMode.fourpt_resistance: pq.ohm,
+    MultimeterMode.frequency:   pq.hertz,
+    MultimeterMode.period:      pq.second,
+    MultimeterMode.temperature: pq.kelvin,
+    MultimeterMode.continuity:  1,
+}
+    
 ## CLASSES #####################################################################
 
 class SCPIMultimeter(Multimeter, SCPIInstrument):
@@ -74,26 +91,20 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
     @property
     def mode(self):
         '''
-        Read measurement mode the multimeter is currently in.
+        Get or set the current measurement mode for the multimeter.
         '''
         return MultimeterMode[self.query('CONF?')]
     @mode.setter
     def mode(self, newval):
-        # FIXME: use the enum above.
-        '''
-        Change the mode the multimeter is in.
-        '''
+        if not (isinstance(newval, MultimeterMode) or isinstance(newval, str)):
+            raise TypeError("Mode must be specified as either a str or a MultimeterMode.")
         if isinstance(newval, str):
-            newval = newval.lower()
-        if newval in VALID_FRES_NAMES:
-            newval = 'fres'
-        if newval not in VALID_MODES:
-            raise ValueError('Valid inputs for mode are: ' + VALID_MODES)
-        self.write('CONF:' + newval)
+            newval = MultimeterMode[newval]
+        self.sendcmd('CONF:' + newval._value)
     
     ## METHODS ##
     
-    def measure(self, mode):
+    def measure(self, mode=None):
         '''
         Instruct the multimeter to perform a one time measurement. The 
         instrument will use default parameters for the requested measurement.
@@ -102,11 +113,16 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         
         Method returns a Python quantity consisting of a numpy array with the
         instrument value and appropriate units. If no appropriate units exist,
-        (for example, continuity), then return type is float.
+        (for example, continuity), then return type is `float`.
         
         :param instruments.generic_scpi.MultimeterMode mode: Desired measurement mode.
+            If set to `None`, will default to the current mode.
         '''
         
+        # Default to the current mode.
+        if mode is None:
+            mode = self.mode
+            
         # Throw an error if the mode isn't an enum.
         if not isinstance(mode, MultimeterMode):
             raise TypeError("The mode must be specified as a `MultimeterMode`.")
@@ -120,21 +136,6 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         value = float(self.query('MEAS:{}?'.format(mode)))
         
         # Put the measurement into the correct units.
-        if mode in UNITS_CAPACITANCE:
-            return value * pq.farad
-        elif mode in UNITS_VOLTAGE:
-            return value * pq.volt
-        elif mode in UNITS_CURRENT:
-            return value * pq.amp
-        elif mode in UNITS_RESISTANCE:
-            return value * pq.ohm
-        elif mode in UNITS_FREQUENCY:
-            return value * pq.hertz
-        elif mode in UNITS_TIME:
-            return value * pq.second
-        elif mode in UNITS_TEMPERATURE:
-            return value * pq.celsius
-        else:
-            return value
+        return value * UNITS[mode]
             
         
