@@ -56,6 +56,22 @@ class NewportError(IOError):
     def errcode(self):
         return self._errcode
 
+class _AxisList(object):
+    """
+    Used to make expressions like ``NewportESP301.axis[idx]``
+    work as expected.
+    """
+    def __init__(self, controller):
+        self._controller = controller
+    def __getitem__(self, idx):
+        # FIXME: need to check MAX AXES, but the docs are not clear
+        #        on how to do this. Once that's done, expose it as len.
+        if idx < 0:
+            raise IndexError("Negative axis indices are not allowed.")
+        # Change one-based indices to zero-based for easier
+        # Python programming.
+        return NewportESP301Axis(self._controller, idx + 1)
+
 class NewportESP301(Instrument):
     """
     Handles communication with the Newport ESP-301 multiple-axis motor
@@ -65,6 +81,25 @@ class NewportESP301(Instrument):
     """
                  
     # No __init__ needed.
+
+    ## PROPERTIES ##
+
+    @property
+    def axis(self):
+        """
+        Gets the axes of the motor controller as a sequence. For instance,
+        to move along a given axis::
+
+        >>> controller = NewportESP301.open_serial("COM3")
+        >>> controller.axis[0].move(-0.001, absolute=False)
+
+        Note that the axes are numbered starting from zero, so that
+        Python idioms can be used more easily. This is not the same convention
+        used in the Newport ESP-301 user's manual, and so care must
+        be taken when converting examples.
+        """
+        
+        return _AxisList(self)
 
     ## LOW-LEVEL COMMAND METHODS ##
 
@@ -110,6 +145,13 @@ class NewportESP301(Instrument):
 
         # This works because "return None" is equivalent to "return".
         return query_resp
+
+    ## SPECIFIC COMMANDS ##
+
+    def reset(self):
+        self._newport_cmd("RS")
+
+    
         
 class NewportESP301Axis(object):
     """
@@ -126,6 +168,37 @@ class NewportESP301Axis(object):
         self._controller = controller
         self._axis_id = axis_id
 
-    def move(self, pos):
+    ## PROPERTIES ##
+    # TODO: handle units, implement setters.
+    
+    @property
+    def acceleration(self):
+        return self._controller._newport_cmd("AC?", axis=self)
+
+    @property
+    def deacceleration(self):
+        return self._controller._newport_cmd("AG?", axis=self)
+
+    @property
+    def velocity(self):
+        return self._controller._newport_cmd("VA?", axis=self)
+
+    @property
+    def max_velocity(self):
+        return self._controller._newport_cmd("VU?", axis=self)
+    
+
+    ## MOVEMENT METHODS ##
+
+    def move(self, pos, absolute=True):
+        """
+        :param pos: Position to set move to along this axis.
+        :type pos: `float` or `~quantities.Quantity`
+        :param bool absolute: If `True`, the position ``pos`` is
+            interpreted as relative to the zero-point of the encoder.
+            If `False`, ``pos`` is interpreted
+            as relative to the current position of this axis.
+        """
+        
         # TODO: handle unit conversions here.
         self.controller._newport_cmd("PA", pos, axis=self)
