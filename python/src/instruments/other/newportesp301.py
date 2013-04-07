@@ -28,6 +28,8 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
+from contextlib import contextmanager
+
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument
@@ -35,6 +37,10 @@ from instruments.abstract_instruments import Instrument
 ## CLASSES #####################################################################
 
 class NewportError(IOError):
+    """
+    Raised in response to an error with a Newport-brand instrument.
+    """
+    
     def __init__(self, msg, timestamp=None, errcode=None):
         super(NewportError, self).__init__(msg)
         self._timestamp = timestamp
@@ -42,7 +48,7 @@ class NewportError(IOError):
             # Break the error code into an axis number
             # and the rest of the code.
             self._errcode = errcode % 100
-            self._axis = errcode // 100
+            self._axis = (errcode // 100) - 1
             if self._axis == 0: self._axis = None
         else:
             self._errcode = None
@@ -50,11 +56,31 @@ class NewportError(IOError):
 
     @property
     def timestamp(self):
+        """
+        Geturns the timestamp reported by the device as the time
+        at which this error occured.
+        """
         return self._timestamp
 
     @property
     def errcode(self):
+        """
+        Gets the error code reported by the device.
+        
+        :type: `int`
+        """
         return self._errcode
+
+    @property
+    def axis(self):
+        """
+        Gets the axis with which this error is concerned, or
+        `None` if the error was not associated with any particlar
+        axis.
+
+        :type: `int`
+        """
+        return self._axis
 
 class _AxisList(object):
     """
@@ -75,7 +101,7 @@ class _AxisList(object):
 class NewportESP301(Instrument):
     """
     Handles communication with the Newport ESP-301 multiple-axis motor
-    controller using the protocol documented in the `user's guide`_
+    controller using the protocol documented in the `user's guide`_.
 
     .. _user's guide: http://assets.newport.com/webDocuments-EN/images/14294.pdf
     """
@@ -103,7 +129,7 @@ class NewportESP301(Instrument):
 
     ## LOW-LEVEL COMMAND METHODS ##
 
-    def _newport_cmd(self, cmd, params, axis=None, errcheck=True):
+    def _newport_cmd(self, cmd, params, target=None, errcheck=True):
         """
         The Newport ESP-301 command set supports checking for errors,
         specifying different axes and allows for multiple parameters.
@@ -120,11 +146,11 @@ class NewportESP301(Instrument):
             during ``PGM`` mode.
         """
         query_resp = None
-        if isinstance(axis, NewportESP301Axis):
-            axis = axis._axis_id
+        if isinstance(target, NewportESP301Axis):
+            target = axis._axis_id
             
-        raw_cmd = "{axis}{cmd}{params}".format(
-            axis=axis if axis is not None else "",
+        raw_cmd = "{target}{cmd}{params}".format(
+            target=target if target is not None else "",
             cmd=cmd.upper(),
             params=",".join(map(str, params))
         )
@@ -149,14 +175,58 @@ class NewportESP301(Instrument):
     ## SPECIFIC COMMANDS ##
 
     def reset(self):
+        """
+        Causes the device to perform a hardware reset. Note that
+        this method is only effective if the watchdog timer is enabled
+        by the physical jumpers on the ESP-301. Please see the `user's guide`_
+        for more information.
+        """
         self._newport_cmd("RS")
 
+    ## USER PROGRAMS ##
+
+    @contextmanager
+    def define_program(self, program_id):
+        """
+        Erases any existing programs with a given program ID
+        and instructs the device to record the commands within this
+        ``with`` block to be saved as a program with that ID.
+
+        For instance::
+
+        >>> controller = NewportESP301.open_serial("COM3")
+        >>> with controller.define_program(15):
+        ...     controller.axis[0].move(0.001, absolute=False)
+        ...
+        >>> controller.run_program(15)
+
+        :param int program_id: An integer label for the new program.
+            Must be in ``xrange(1, 101)``.
+        """
+        if program_id not in xrange(1, 101):
+            raise ValueError("Invalid program ID. Must be an integer from 1 to 100 (inclusive).")
+        self._newport_cmd("XX", target=program_id)
+        try:
+            self._newport_cmd("EP", target=program_id)
+            yield
+        finally:
+            self._newport_cmd("QP")
+
+    def run_program(self, program_id):
+        """
+        Runs a previously defined user program with a given program ID.
+        """
+        if program_id not in xrange(1, 101):
+            raise ValueError("Invalid program ID. Must be an integer from 1 to 100 (inclusive).")
+        self._newport_cmd("EX", target=program_id)
     
         
 class NewportESP301Axis(object):
     """
     Encapsulates communication concerning a single axis
-    of an ESP-301 controller.
+    of an ESP-301 controller. This class should not be
+    instantiated by the user directly, but is
+    returned by `NewportESP301.axis`.
     """
 
     def __init__(self, controller, axis_id):
@@ -173,19 +243,19 @@ class NewportESP301Axis(object):
     
     @property
     def acceleration(self):
-        return self._controller._newport_cmd("AC?", axis=self)
+        return self._controller._newport_cmd("AC?", target=self)
 
     @property
     def deacceleration(self):
-        return self._controller._newport_cmd("AG?", axis=self)
+        return self._controller._newport_cmd("AG?", target=self)
 
     @property
     def velocity(self):
-        return self._controller._newport_cmd("VA?", axis=self)
+        return self._controller._newport_cmd("VA?", target=self)
 
     @property
     def max_velocity(self):
-        return self._controller._newport_cmd("VU?", axis=self)
+        return self._controller._newport_cmd("VU?", target=self)
     
 
     ## MOVEMENT METHODS ##
@@ -201,4 +271,4 @@ class NewportESP301Axis(object):
         """
         
         # TODO: handle unit conversions here.
-        self._controller._newport_cmd("PA", params=[pos], axis=self)
+        self._controller._newport_cmd("PA", params=[pos], target=self)

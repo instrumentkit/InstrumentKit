@@ -12,4 +12,4 @@ Contents:
     instrument
     generic_scpi
     agilent
-    
+    other    
