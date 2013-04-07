@@ -103,7 +103,7 @@ class NewportESP301(Instrument):
 
     ## LOW-LEVEL COMMAND METHODS ##
 
-    def _newport_cmd(self, cmd, *params, axis=None, errcheck=True):
+    def _newport_cmd(self, cmd, params, axis=None, errcheck=True):
         """
         The Newport ESP-301 command set supports checking for errors,
         specifying different axes and allows for multiple parameters.
@@ -201,4 +201,4 @@ class NewportESP301Axis(object):
         """
         
         # TODO: handle unit conversions here.
-        self.controller._newport_cmd("PA", pos, axis=self)
+        self._controller._newport_cmd("PA", params=[pos], axis=self)
