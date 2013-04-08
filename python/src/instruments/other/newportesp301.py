@@ -28,11 +28,33 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
+from time import time, sleep
+
+from flufl.enum import IntEnum
+
 from contextlib import contextmanager
 
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument
+
+## ENUMS #######################################################################
+
+class NewportESP301HomeSearchMode(IntEnum):
+    #: Search along specified axes for the +0 position.
+    zero_position_count = 0
+    #: Search for combined Home and Index signals.
+    home_index_signals = 1
+    #: Search only for the Home signal.
+    home_signal_only = 2
+    #: Search for the positive limit signal.
+    pos_limit_signal = 3
+    #: Search for the negative limit signal.
+    neg_limit_signal = 4
+    #: Search for the positive limit and Index signals.
+    pos_index_signals = 5
+    #: Search for the negative limit and Index signals.
+    neg_index_signals = 6
 
 ## CLASSES #####################################################################
 
@@ -174,6 +196,26 @@ class NewportESP301(Instrument):
 
     ## SPECIFIC COMMANDS ##
 
+    def _home(self, axis, search_mode):
+        """
+        Private method for searching for home "OR", so that
+        the methods in this class and the axis class can both
+        point to the same thing.
+        """
+        self._newport_cmd("OR", target=axis, params=[search_mode])
+
+    def search_for_home(self,
+            search_mode=NewportESP301HomeSearchMode.zero_position_count
+        ):
+        """
+        Searches each axis sequentially
+        for home using the method specified by ``search_mode``.
+
+        :param NewportESP301HomeSearchMode search_mode: Method to detect when
+            Home has been found.
+        """
+        self._home(axis=0, search_mode=search_mode)
+
     def reset(self):
         """
         Causes the device to perform a hardware reset. Note that
@@ -240,6 +282,16 @@ class NewportESP301Axis(object):
 
     ## PROPERTIES ##
     # TODO: handle units, implement setters.
+
+    @property
+    def is_motion_done(self):
+        """
+        `True` if and only if all motion commands have
+        completed. This method can be used to wait for
+        a motion command to complete before sending the next
+        command.
+        """
+        return bool(int(self._controller._newport_cmd("MD?", target=self)))
     
     @property
     def acceleration(self):
@@ -260,6 +312,18 @@ class NewportESP301Axis(object):
 
     ## MOVEMENT METHODS ##
 
+    def search_for_home(self,
+            search_mode=NewportESP301HomeSearchMode.zero_position_count
+        ):
+        """
+        Searches this axis only
+        for home using the method specified by ``search_mode``.
+
+        :param NewportESP301HomeSearchMode search_mode: Method to detect when
+            Home has been found.
+        """
+        self._home(axis=self._axis_id, search_mode=search_mode)
+
     def move(self, pos, absolute=True):
         """
         :param pos: Position to set move to along this axis.
@@ -272,3 +336,29 @@ class NewportESP301Axis(object):
         
         # TODO: handle unit conversions here.
         self._controller._newport_cmd("PA", params=[pos], target=self)
+
+    def wait_for_motion(self, poll_interval=0.01, max_wait=None):
+        """
+        Blocks until all movement along this axis is complete, as reported
+        by `~NewportESP301Axis.is_motion_done`.
+
+        :param float poll_interval: How long (in seconds) to sleep between
+            checking if the motion is complete.
+        :param float max_wait: Maximum amount of time to wait before
+            raising a `IOError`. If `None`, this method will wait
+            indefinitely.
+        """
+        # FIXME: make sure that the controller is not in
+        #        programming mode, or else this might not work.
+        #        In programming mode, the "WS" command should be
+        #        sent instead, and the two parameters to this method should
+        #        be ignored.
+        tic = time()
+        while True:
+            if self.is_motion_done:
+                return
+            else:
+                if max_wait is None or (time() - tic) < max_wait:
+                    sleep(poll_interval)
+                else:
+                    raise IOError("Timed out waiting for motion to finish.")
