@@ -31,10 +31,11 @@ import time
 import numpy as np
 
 import serialManager
+from instruments.abstract_instruments import WrapperABC
 
 ## CLASSES #####################################################################
 
-class GPIBWrapper(io.IOBase):
+class GPIBWrapper(io.IOBase, WrapperABC):
     '''
     Wraps a SocketWrapper or PySerial.Serial connection for use with
     Galvant Industries GPIBUSB or GPIBETHERNET adapters.
@@ -56,19 +57,32 @@ class GPIBWrapper(io.IOBase):
     
     @property
     def address(self):
-        # TODO: Also return self._file address and make return type a list
-        return self._gpib_address
+        return [self._gpib_address, self._file.address]
     @address.setter
     def address(self, newval):
-        # TODO: Should take a hardware connection address to pass on, as well
-        # as the currently implemented GPIB address
+        '''
+        Change GPIB address and downstream address associated with 
+        the instrument.
+        
+        If specified as an integer, only changes the GPIB address. If specified
+        as a list, the first element changes the GPIB address, while the second
+        is passed downstream.
+        
+        Example: [<int>gpib_address, downstream_address]
+        
+        Where downstream_address needs to be formatted as appropriate for the
+        connection (eg SerialWrapper, SocketWrapper, etc).
+        '''
         if isinstance(newval, int):
+            if (newval < 1) or (newval > 30):
+                raise ValueError("GPIB address must be between 1 and 30.")
             self._gpib_address = newval
-        if not isinstance(newval, int):
-            raise TypeError("New GPIB address must be specified as "
-                                "an integer.")
-        if (newval < 1) or (newval > 30):
-            raise ValueError("GPIB address must be between 1 and 30.")
+        elif isinstance(newval, list):
+            self.address = newval[0] # Set GPIB address
+            self._file.address = newval[1] # Send downstream address
+        else:
+            raise TypeError("Not a valid input type for Instrument address.")
+        
             
     @property
     def timeout(self):

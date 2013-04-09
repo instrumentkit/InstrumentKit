@@ -27,9 +27,11 @@
 
 import io
 
+from instruments.abstract_instruments import WrapperABC
+
 ## CLASSES #####################################################################
 
-class SocketWrapper(io.IOBase):
+class SocketWrapper(io.IOBase, WrapperABC):
     """
     Wraps a socket to make it look like a `file`. Note that this is used instead
     of `socket.makefile`, as that method does not support timeouts. We do not
@@ -44,6 +46,19 @@ class SocketWrapper(io.IOBase):
         return "<SocketWrapper object at 0x{:X} "\
                 "connected to {}>".format(id(self), self._conn.getpeername())
         
+    ## PROPERTIES ##
+    
+    @property
+    def address(self):
+        '''
+        Returns the socket peer address information as a tuple.
+        '''
+        return self._conn.getpeername()
+    @address.setter
+    def address(self, newval):
+        # Is this the correct error to be using?
+        raise ValueError('Unable to change address of sockets.')
+    
     def close(self):
         try:
             self._conn.shutdown()
