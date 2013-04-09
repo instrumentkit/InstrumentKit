@@ -25,6 +25,7 @@
 
 ## IMPORTS #####################################################################
 
+import io
 import serial
 
 import numpy as np
