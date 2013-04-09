@@ -27,6 +27,7 @@
 ## IMPORTS #####################################################################
 
 import io
+import socket
 
 import numpy as np
 
@@ -43,7 +44,11 @@ class SocketWrapper(io.IOBase, WrapperABC):
     """
     
     def __init__(self, conn):
-        self._conn = conn
+        if isinstance(conn, socket.socket):
+            self._conn = conn
+            self._terminator = '\n'
+        else:
+            raise TypeError('SocketWrapper must wrap a socket.socket object.')
         
     def __repr__(self):
         return "<SocketWrapper object at 0x{:X} "\
