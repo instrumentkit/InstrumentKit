@@ -86,20 +86,10 @@ class Instrument(object):
     
     @property
     def address(self):
-        # TODO: Incorporate other hardware connections
-        #        Perhaps all valid _file objects should have a .address property
-        #        See issues/3 on github
-        if isinstance(self._file, gi_gpib.GPIBWrapper):
-            return self._file.address
-        else:
-            # TODO: raise some error
-            return None
+        return self._file.address
     @address.setter
     def address(self, newval):
-        if isinstance(self._file, gi_gpib.GPIBWrapper):
-            self._file.address = newval
-        else:
-            raise NotImplementedError
+        self._file.address = newval
             
     @property
     def terminator(self):
