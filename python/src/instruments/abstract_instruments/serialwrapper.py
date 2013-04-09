@@ -58,7 +58,9 @@ class SerialWrapper(io.IOBase, WrapperABC):
     @address.setter
     def address(self, newval):
         # TODO: Input checking on Serial port newval
-        self._conn.port = newval
+        # TODO: Add port changing capability to serialmanager
+        # self._conn.port = newval
+        raise NotImplementedError
         
     @property
     def terminator(self):
