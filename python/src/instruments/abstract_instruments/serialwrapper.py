@@ -4,7 +4,6 @@
 # socketwrapper.py: Wraps sockets into a filelike object.
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
-#        Chris Granade (cgranade@cgranade.com).
 #
 # This file is a part of the GPIBUSB adapter project.
 # Licensed under the AGPL version 3.
@@ -26,7 +25,7 @@
 
 ## IMPORTS #####################################################################
 
-import io
+import serial
 
 import numpy as np
 
@@ -34,40 +33,45 @@ from instruments.abstract_instruments import WrapperABC
 
 ## CLASSES #####################################################################
 
-class SocketWrapper(io.IOBase, WrapperABC):
+class SerialWrapper(io.IOBase, WrapperABC):
     """
-    Wraps a socket to make it look like a `file`. Note that this is used instead
-    of `socket.makefile`, as that method does not support timeouts. We do not
-    support all features of `file`-like objects here, but enough to make
-    `~instrument.Instrument` happy.
+    Wraps a pyserial Serial object to add a few properties as well as
+    handling of termination characters.
     """
     
     def __init__(self, conn):
-        self._conn = conn
-        
+        if isinstance(conn, serial.Serial):
+            self._conn = conn
+            self._terminator = '\n'
+        else:
+            raise TypeError('SerialWrapper must wrap a serial.Serial object.')
+    
     def __repr__(self):
-        return "<SocketWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), self._conn.getpeername())
-        
+        return "<SerialWrapper object at 0x{:X} "\
+                "connected to {}>".format(id(self), self._conn.port)
+    
     ## PROPERTIES ##
     
     @property
     def address(self):
-        '''
-        Returns the socket peer address information as a tuple.
-        '''
-        return self._conn.getpeername()
+        return self._conn.port
     @address.setter
     def address(self, newval):
-        # Is this the correct error to be using?
-        raise ValueError('Unable to change address of sockets.')
+        # TODO: Input checking on Serial port newval
+        self._conn.port = newval
         
     @property
     def terminator(self):
-        raise NotImplementedError
+        return self._terminator
     @terminator.setter
     def terminator(self, newval):
-        raise NotImplementedError
+        if not isinstance(newval, str):
+            raise TypeError('Terminator for SerialWrapper must be specified '
+                              'as a single character string.')
+        if len(newval) > 1:
+            raise ValueError('Terminator for SerialWrapper must only be 1 '
+                                'character long.')
+        self._terminator = newval
         
     ## FILE-LIKE METHODS ##
     
