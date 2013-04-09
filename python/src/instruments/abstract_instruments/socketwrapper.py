@@ -90,7 +90,7 @@ class SocketWrapper(io.IOBase, WrapperABC):
             raise ValueError('Must read a positive value of characters.')
         
     def write(self, string):
-        self._conn.sendall(string)
+        self._conn.sendall(string + self._terminator)
         
     def seek(self, offset):
         return NotImplemented

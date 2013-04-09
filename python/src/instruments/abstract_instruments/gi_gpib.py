@@ -141,14 +141,14 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         This function sends all the necessary GI-GPIB adapter internal commands
         that are required for the specified instrument.  
         '''
-        self._file.write('+a:' + str(self._gpib_address) + '\r')
+        self._file.write('+a:' + str(self._gpib_address))
         time.sleep(0.02)
-        self._file.write('+eoi:{}\r'.format(self._eoi))
+        self._file.write('+eoi:{}'.format(self._eoi))
         time.sleep(0.02)
         if self._eoi is 0:
-            self._file.write('+eos:{}\r'.format(self._terminator))
+            self._file.write('+eos:{}'.format(self._terminator))
             time.sleep(0.02)
-        self._file.write(msg + '\r')
+        self._file.write(msg)
         time.sleep(0.02)
     
     
