@@ -33,6 +33,7 @@ import socket
 import serialManager as sm
 import socketwrapper as sw
 import gi_gpib
+from instruments.abstract_instruments import WrapperABC
 
 ## CLASSES #####################################################################
 
@@ -44,7 +45,12 @@ class Instrument(object):
     _terminator = "\n"
     
     def __init__(self, filelike):
-        self._file = filelike
+        # Check to make sure filelike is a subclass of WrapperABC
+        if isinstance(filelike, WrapperABC):
+            self._file = filelike
+        else:
+            raise TypeError('Instrument must be initialized with a filelike '
+                              'object that is a subclass of WrapperABC.')
     
     ## COMMAND-HANDLING METHODS ##
     
