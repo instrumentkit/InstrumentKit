@@ -58,6 +58,15 @@ class SocketWrapper(io.IOBase, WrapperABC):
     def address(self, newval):
         # Is this the correct error to be using?
         raise ValueError('Unable to change address of sockets.')
+        
+    @property
+    def terminator(self):
+        raise NotImplementedError
+    @terminator.setter
+    def terminator(self, newval):
+        raise NotImplementedError
+        
+    ## FILE-LIKE METHODS ##
     
     def close(self):
         try:

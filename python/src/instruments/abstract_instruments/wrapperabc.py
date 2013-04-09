@@ -47,4 +47,16 @@ class WrapperABC(object):
         '''
         raise NotImplementedError
     address = abc.abstractproperty(getaddress, setaddress)
+    
+    def getterminator(self):
+        '''
+        Read the EOS termination
+        '''
+        raise NotImplementedError
+    def setterminator(self, newval):
+        '''
+        Change the communication EOS terminator
+        '''
+        raise NotImplementedError
+    terminator = abc.abstractproperty(getterminator, setterminator)
 

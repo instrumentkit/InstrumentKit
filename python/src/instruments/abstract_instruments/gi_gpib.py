@@ -93,19 +93,28 @@ class GPIBWrapper(io.IOBase, WrapperABC):
     
     @property
     def terminator(self):
-        return self._terminator
+        if not self._eoi:
+            return self._terminator
+        else:
+            return 'eoi'
     @terminator.setter
     def terminator(self, newval):
-        # TODO: Bound checking on newval
+        if isinstance(newval, str):
+            newval = newval.lower()
         if newval is 'eoi':
             self._eoi = 1
         elif not isinstance(newval, int):
+            raise TypeError('GPIB termination must be integer 0-255 '
+                                'represending decimal value of ASCII '
+                                'termination character or a string containing' 
+                                ' "eoi".')
+        elif (newval < 0) or (newval > 255):
             raise ValueError('GPIB termination must be integer 0-255 '
                                 'represending decimal value of ASCII '
                                 'termination character.')
         else:
             self._eoi = 0
-            self._terminator = int(newval)
+            self._terminator = str(newval)
     
     ## FILE-LIKE METHODS ##
     
@@ -141,7 +150,6 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         This function sends all the necessary GI-GPIB adapter internal commands
         that are required for the specified instrument.  
         '''
-        # TODO: include other internal flags such as +eoi
         self._file.write('+a:' + str(self._gpib_address) + '\r')
         time.sleep(0.02)
         self._file.write('+eoi:{}\r'.format(self._eoi))
