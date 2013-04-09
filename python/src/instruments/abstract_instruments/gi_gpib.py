@@ -63,7 +63,7 @@ class GPIBWrapper(io.IOBase):
         # TODO: Should take a hardware connection address to pass on, as well
         # as the currently implemented GPIB address
         if isinstance(newval, int):
-            
+            self._gpib_address = newval
         if not isinstance(newval, int):
             raise TypeError("New GPIB address must be specified as "
                                 "an integer.")
