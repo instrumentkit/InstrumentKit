@@ -27,6 +27,8 @@
 
 import io
 
+import numpy as np
+
 from instruments.abstract_instruments import WrapperABC
 
 ## CLASSES #####################################################################
@@ -75,7 +77,17 @@ class SocketWrapper(io.IOBase, WrapperABC):
             self._conn.close()
         
     def read(self, size):
-        return self._conn.recv(size)
+        if (size >= 0):
+            return self._conn.recv(size)
+        elif (size == -1):
+            result = np.bytearray()
+            c = 0
+            while c != self._terminator:
+                c = self._file.read(1)
+                result += c
+            return bytes(result)
+        else:
+            raise ValueError('Must read a positive value of characters.')
         
     def write(self, string):
         self._conn.sendall(string)

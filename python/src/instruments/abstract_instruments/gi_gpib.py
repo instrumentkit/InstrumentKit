@@ -48,6 +48,7 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         self._gpib_address = gpib_address
         self._terminator = 10
         self._eoi = 1
+        self._file.terminator = '\r'
     
     def __repr__(self):
         return "<GPIBWrapper object at 0x{:X} "\
@@ -126,23 +127,13 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         Read characters from wrapped class (ie SocketWrapper or 
         PySerial.Serial).
         
-        If size = 0, characters will be read until termination character
+        If size = -1, characters will be read until termination character
         is found.
         
         GI GPIB adapters always terminate serial connections with a CR.
         Function will read until a CR is found.
         '''
-        if (size >= 0):
-            return self._file.read(size)
-        elif (size == -1):
-            result = np.bytearray()
-            c = 0
-            while c != '\r':
-                c = self._file.read(1)
-                result += c
-            return bytes(result)
-        else:
-            raise ValueError('Must read a positive value of characters.')
+        return self._file.read(size)
     
     def write(self, msg):
         '''
