@@ -65,7 +65,7 @@ class Instrument(object):
         
     def query(self, cmd):
         """
-        Executes the given SCPI query.
+        Executes the given query.
         
         :param str cmd: String containing the SCPI query to 
             execute.
@@ -127,7 +127,7 @@ class Instrument(object):
         '''
         self._file.write(msg)
     
-    def query(self, msg, size=0):
+    def query(self, msg, size=-1):
         '''
         Query instrument for data. Supplied msg is sent to the instrument
         and the responce is read. If msg does not contain a ``?`` the internal

@@ -123,9 +123,9 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         GI GPIB adapters always terminate serial connections with a CR.
         Function will read until a CR is found.
         '''
-        if (size > 0):
+        if (size >= 0):
             return self._file.read(size)
-        elif (size == 0):
+        elif (size == -1):
             result = np.bytearray()
             c = 0
             while c != '\r':
