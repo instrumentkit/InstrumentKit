@@ -69,10 +69,16 @@ class SocketWrapper(io.IOBase, WrapperABC):
         
     @property
     def terminator(self):
-        raise NotImplementedError
+        return self._terminator
     @terminator.setter
     def terminator(self, newval):
-        raise NotImplementedError
+        if not isinstance(newval, str):
+            raise TypeError('Terminator for SocketWrapper must be specified '
+                              'as a single character string.')
+        if len(newval) > 1:
+            raise ValueError('Terminator for SocketWrapper must only be 1 '
+                                'character long.')
+        self._terminator = newval
         
     ## FILE-LIKE METHODS ##
     
