@@ -24,3 +24,7 @@ Constants and Enumerations
 .. autoclass:: SRSDG645DisplayMode
     :members:
     :undoc-members:
+
+.. autoclass:: SRSDG645TriggerSource
+    :members:
+    :undoc-members:
