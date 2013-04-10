@@ -27,6 +27,7 @@
 ## IMPORTS #####################################################################
 
 import io
+import socket
 
 import numpy as np
 
@@ -43,7 +44,11 @@ class SocketWrapper(io.IOBase, WrapperABC):
     """
     
     def __init__(self, conn):
-        self._conn = conn
+        if isinstance(conn, socket.socket):
+            self._conn = conn
+            self._terminator = '\n'
+        else:
+            raise TypeError('SocketWrapper must wrap a socket.socket object.')
         
     def __repr__(self):
         return "<SocketWrapper object at 0x{:X} "\
@@ -64,10 +69,16 @@ class SocketWrapper(io.IOBase, WrapperABC):
         
     @property
     def terminator(self):
-        raise NotImplementedError
+        return self._terminator
     @terminator.setter
     def terminator(self, newval):
-        raise NotImplementedError
+        if not isinstance(newval, str):
+            raise TypeError('Terminator for SocketWrapper must be specified '
+                              'as a single character string.')
+        if len(newval) > 1:
+            raise ValueError('Terminator for SocketWrapper must only be 1 '
+                                'character long.')
+        self._terminator = newval
         
     ## FILE-LIKE METHODS ##
     
