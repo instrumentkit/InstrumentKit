@@ -186,3 +186,17 @@ class SRSDG645(SCPIInstrument):
     @trigger_source.setter
     def trigger_source(self, newval):
         self.sendcmd("TSRC {}".format(int(newval)))
+
+    @property
+    def holdoff(self):
+        """
+        Gets/sets the trigger holdoff time.
+
+        :type: `~quantities.Quantity` or `float`
+        :units: As passed, or s if not specified.
+        """
+        return pq.Quantity(float(self.query("HOLD?")), pq.s)
+    @holdoff.setter
+    def holdoff(self, newval):
+        self.sendcmd("HOLD {}".format(newval.rescale(pq.s).magnitude))
+        
