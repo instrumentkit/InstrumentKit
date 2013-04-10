@@ -37,6 +37,7 @@ from contextlib import contextmanager
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
+from instruments.abstract_instruments.gi_gpib import GPIBWrapper
 
 ## ENUMS #######################################################################
 
@@ -79,7 +80,12 @@ class SRSDG645(SCPIInstrument):
     .. _user's guide: http://www.thinksrs.com/downloads/PDFs/Manuals/DG645m.pdf
     """
                  
-    # No __init__ needed.
+    def __init__(self, filelike):
+        super(SRSDG645, self).__init__(filelike)
+
+        # This instrument requires stripping two characters.
+        if isinstance(filelike, GPIBWrapper):
+            filelike.strip = 2
 
 
     @property
@@ -90,8 +96,8 @@ class SRSDG645(SCPIInstrument):
         
         :type: `tuple` of an `SRSDG645DisplayMode` and an `SRSDG645Channels`
         """
-        disp_mode, chan = map(int(self.query("DISP?").split(",")))
-        return (SRSDG645DisplayMode(disp_mode), SRSDG645Channel(chan))
+        disp_mode, chan = map(int, self.query("DISP?").split(","))
+        return (SRSDG645DisplayMode(disp_mode), SRSDG645Channels(chan))
     @display.setter
     def display(self, newval):
         # TODO: check types here.

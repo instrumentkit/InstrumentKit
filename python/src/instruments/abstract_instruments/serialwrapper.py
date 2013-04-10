@@ -44,6 +44,7 @@ class SerialWrapper(io.IOBase, WrapperABC):
         if isinstance(conn, serial.Serial):
             self._conn = conn
             self._terminator = '\n'
+            self._debug = False
         else:
             raise TypeError('SerialWrapper must wrap a serial.Serial object.')
     
@@ -75,6 +76,19 @@ class SerialWrapper(io.IOBase, WrapperABC):
             raise ValueError('Terminator for SerialWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
+
+    @property
+    def debug(self):
+        """
+        Gets/sets whether debug mode is enabled for this connection.
+        If `True`, all output is echoed to stdout.
+
+        :type: `bool`
+        """
+        return self._debug
+    @debug.setter
+    def debug(self, newval):
+        self._debug = bool(newval)
         
     ## FILE-LIKE METHODS ##
     
@@ -98,7 +112,10 @@ class SerialWrapper(io.IOBase, WrapperABC):
             raise ValueError('Must read a positive value of characters.')
         
     def write(self, string):
-        self._conn.write(string + self._terminator)
+        msg = string + self._terminator
+        if self._debug:
+            print " <- {} ".format(repr(msg))
+        self._conn.write(msg)
         
     def seek(self, offset):
         return NotImplemented
