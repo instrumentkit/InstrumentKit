@@ -58,7 +58,7 @@ class GPIBWrapper(io.IOBase, WrapperABC):
     
     @property
     def address(self):
-        return [self._gpib_address, self._file.address]
+        return (self._gpib_address, self._file.address])
     @address.setter
     def address(self, newval):
         '''
