@@ -44,14 +44,14 @@ serialObjDict = {}
 
 ## METHODS #####################################################################
 
-def newSerialConnection(port, baud = 460800, timeout=3, writeTimeout=3):
+def newSerialConnection(port, baud=460800, timeout=3, writeTimeout=3):
     if not isinstance(port,str):
         raise TypeError('Serial port must be specified as a string.')
     
     if port not in serialObjDict:
         serialObjDict[port] = sw.SerialWrapper(
                                 serial.Serial(port,
-                                            baud,
+                                            baudrate=baud,
                                             timeout=timeout,
                                             writeTimeout=writeTimeout))
     

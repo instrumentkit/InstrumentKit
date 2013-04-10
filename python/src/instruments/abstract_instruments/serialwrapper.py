@@ -86,7 +86,7 @@ class SerialWrapper(io.IOBase, WrapperABC):
         
     def read(self, size):
         if (size >= 0):
-            return self._conn.recv(size)
+            return self._conn.read(size)
         elif (size == -1):
             result = bytearray()
             c = 0
