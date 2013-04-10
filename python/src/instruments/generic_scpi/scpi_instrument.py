@@ -36,7 +36,7 @@ from instruments.abstract_instruments import Instrument
 class SCPIInstrument(Instrument):
     
     def __init__(self, filelike):
-        super(SCPIInstrument, self).__init__(self, filelike)
+        super(SCPIInstrument, self).__init__(filelike)
     
     ## PROPERTIES ##
     

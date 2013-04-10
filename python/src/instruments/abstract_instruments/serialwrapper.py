@@ -88,17 +88,17 @@ class SerialWrapper(io.IOBase, WrapperABC):
         if (size >= 0):
             return self._conn.recv(size)
         elif (size == -1):
-            result = np.bytearray()
+            result = bytearray()
             c = 0
             while c != self._terminator:
-                c = self._file.read(1)
+                c = self._conn.read(1)
                 result += c
             return bytes(result)
         else:
             raise ValueError('Must read a positive value of characters.')
         
     def write(self, string):
-        self._conn.sendall(string + self._terminator)
+        self._conn.write(string + self._terminator)
         
     def seek(self, offset):
         return NotImplemented

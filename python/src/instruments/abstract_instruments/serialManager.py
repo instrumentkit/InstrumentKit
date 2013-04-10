@@ -49,7 +49,7 @@ def newSerialConnection(port, baud = 460800, timeout=3, writeTimeout=3):
         raise TypeError('Serial port must be specified as a string.')
     
     if port not in serialObjDict:
-        serialObjDict[port] = sw.SocketWrapper(
+        serialObjDict[port] = sw.SerialWrapper(
                                 serial.Serial(port,
                                             baud,
                                             timeout=timeout,
