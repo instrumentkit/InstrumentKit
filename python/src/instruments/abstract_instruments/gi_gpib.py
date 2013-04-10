@@ -49,6 +49,7 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         self._terminator = 10
         self._eoi = 1
         self._file.terminator = '\r'
+        self._strip = 0
     
     def __repr__(self):
         return "<GPIBWrapper object at 0x{:X} "\
@@ -102,7 +103,7 @@ class GPIBWrapper(io.IOBase, WrapperABC):
     def terminator(self, newval):
         if isinstance(newval, str):
             newval = newval.lower()
-        if newval is 'eoi':
+        if newval == 'eoi':
             self._eoi = 1
         elif not isinstance(newval, int):
             raise TypeError('GPIB termination must be integer 0-255 '
@@ -116,6 +117,24 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         else:
             self._eoi = 0
             self._terminator = str(newval)
+
+
+    @property
+    def strip(self):
+        """
+        Gets/sets the number of characters to strip from the end of
+        responses from the instrument.
+
+        :type: `int`
+        """
+        return self._strip
+    @strip.setter
+    def strip(self, newval):
+        newval = int(newval)
+        if newval < 0:
+            raise ValueError("Cannot strip negative numbers of characters.")
+        self._strip = newval
+        
     
     ## FILE-LIKE METHODS ##
     
@@ -133,7 +152,13 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         GI GPIB adapters always terminate serial connections with a CR.
         Function will read until a CR is found.
         '''
-        return self._file.read(size)
+        msg = self._file.read(size)
+
+        # Check for extra terminators added by the GI-GPIB adapter.
+        if msg[-1] == "\r":
+            msg = msg[:-1]
+
+        return msg
     
     def write(self, msg):
         '''
@@ -144,6 +169,8 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         self._file.write('+a:' + str(self._gpib_address))
         time.sleep(0.02)
         self._file.write('+eoi:{}'.format(self._eoi))
+        time.sleep(0.02)
+        self._file.write('+strip:{}'.format(self._strip))
         time.sleep(0.02)
         if self._eoi is 0:
             self._file.write('+eos:{}'.format(self._terminator))

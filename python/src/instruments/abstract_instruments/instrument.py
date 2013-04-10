@@ -75,7 +75,7 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        self.write(msg)
+        self.write(cmd)
         # TODO: Move the +read logic to GPIBWrapper
         #if '?' not in msg:
         #    self._file.write('+read')
@@ -169,7 +169,9 @@ class Instrument(object):
     
     @classmethod
     def open_gpibusb(cls, port, gpib_address, timeout=3, writeTimeout=3):
-        ser = sm.newSerialConnection(port, timeout, writeTimeout)
+        ser = sm.newSerialConnection(port,
+                timeout=timeout,
+                 writeTimeout=writeTimeout)
         return cls(gi_gpib.GPIBWrapper(ser, gpib_address))
         
     @classmethod
