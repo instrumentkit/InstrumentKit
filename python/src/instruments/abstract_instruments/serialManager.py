@@ -36,6 +36,8 @@ pyserial connections can be open at the same time to the same serial port.
 
 import serial
 
+import serialwrapper as sw
+
 ## GLOBALS #####################################################################
 
 serialObjDict = {}
@@ -47,9 +49,10 @@ def newSerialConnection(port, baud = 460800, timeout=3, writeTimeout=3):
         raise TypeError('Serial port must be specified as a string.')
     
     if port not in serialObjDict:
-        serialObjDict[port] = serial.Serial(port,
+        serialObjDict[port] = sw.SocketWrapper(
+                                serial.Serial(port,
                                             baud,
                                             timeout=timeout,
-                                            writeTimeout=writeTimeout)
+                                            writeTimeout=writeTimeout))
     
     return serialObjDict[port]

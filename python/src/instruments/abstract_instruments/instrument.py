@@ -33,6 +33,7 @@ import socket
 import serialManager as sm
 import socketwrapper as sw
 import gi_gpib
+from instruments.abstract_instruments import WrapperABC
 
 ## CLASSES #####################################################################
 
@@ -44,30 +45,41 @@ class Instrument(object):
     _terminator = "\n"
     
     def __init__(self, filelike):
-        self._file = filelike
+        # Check to make sure filelike is a subclass of WrapperABC
+        if isinstance(filelike, WrapperABC):
+            self._file = filelike
+        else:
+            raise TypeError('Instrument must be initialized with a filelike '
+                              'object that is a subclass of WrapperABC.')
     
     ## COMMAND-HANDLING METHODS ##
     
     def sendcmd(self, cmd):
         """
-        Sends an SCPI command without waiting for a response. 
+        Sends a command without waiting for a response. 
         
-        :param str cmd: String containing the SCPI command to
+        :param str cmd: String containing the command to
             be sent.
         """
-        self.write(str(cmd) + self._terminator)
+        self.write(str(cmd))
         
-    def query(self, cmd):
+    def query(self, cmd, size=-1):
         """
-        Executes the given SCPI query.
+        Executes the given query.
         
-        :param str cmd: String containing the SCPI query to 
+        :param str cmd: String containing the query to 
             execute.
+        :param int size: Number of bytes to be read. Default is read until
+            termination character is found.
         :return: The result of the query as returned by the
             connected instrument.
         :rtype: `str`
         """
-        return super(SCPIInstrument, self).query(cmd + self._terminator)
+        self.write(msg)
+        # TODO: Move the +read logic to GPIBWrapper
+        #if '?' not in msg:
+        #    self._file.write('+read')
+        return self._file.read(size)
         
     ## PROPERTIES ##
     
@@ -80,19 +92,17 @@ class Instrument(object):
     
     @property
     def address(self):
-        # TODO: Incorporate other hardware connections
-        if isinstance(self._file, gi_gpib.GPIBWrapper):
-            return self._file.address
-        else:
-            # TODO: raise some error
-            return None
+        return self._file.address
     @address.setter
     def address(self, newval):
-        if isinstance(self._file, gi_gpib.GPIBWrapper):
-            self._file.address = newval
-        else:
-            # TODO: raise some error
-            return None
+        self._file.address = newval
+            
+    @property
+    def terminator(self):
+        return self._file.terminator
+    @terminator.setter
+    def terminator(self, newval):
+        self._file.terminator = newval
         
     ## BASIC I/O METHODS ##
     
@@ -102,21 +112,7 @@ class Instrument(object):
         This function sends all the necessary GI-GPIB adapter internal commands
         that are required for the specified instrument.  
         '''
-        self._file.write(msg)
-    
-    def query(self, msg, size=0):
-        '''
-        Query instrument for data. Supplied msg is sent to the instrument
-        and the responce is read. If msg does not contain a ``?`` the internal
-        GPIBUSB adapter command ``+read`` is sent which forces the adapter
-        into talk mode.
-        
-        Size defines the number of characters to read from 
-        '''
-        self._file.write(msg)
-        if '?' not in msg:
-            self._file.write('+read')
-        return self._file.read(size)
+        self._file.write(msg)        
         
     def binblockread(self,dataWidth):
         '''
