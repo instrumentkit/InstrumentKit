@@ -38,6 +38,7 @@ import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.gi_gpib import GPIBWrapper
+from instruments.util_fns import assume_units
 
 ## ENUMS #######################################################################
 
@@ -70,7 +71,49 @@ class SRSDG645DisplayMode(IntEnum):
     channel_polarity      = 13
     burst_T0_config       = 14
 
+class SRSDG645TriggerSource(IntEnum):
+    internal            = 0
+    external_rising     = 1
+    external_falling    = 2
+    ss_external_rising  = 3
+    ss_external_falling = 4
+    single_shot         = 5
+    line                = 6
+
 ## CLASSES #####################################################################
+
+class Channel(object):
+    def __init__(self, ddg, chan):
+        if not isinstance(ddg, SRSDG645):
+            raise TypeError("Don't do that.")
+
+        self._ddg = ddg
+        self._chan = chan
+
+    @property
+    def delay(self):
+        """
+        Gets/sets the delay of this channel.
+        Formatted as a two-tuple of the reference and the delay time.
+        For example, ``(SRSDG645Channels.A, pq.Quantity(10, "ps"))``
+        indicates a delay of 10 picoseconds from delay channel A.
+        """
+        resp = self._ddg.query("DLAY?{}".format(int(self._chan))).split(",")
+        return (SRSDG645Channels(int(resp[0])), pq.Quantity(float(resp[1]), "s"))
+    @delay.setter
+    def delay(self, newval):
+        self._ddg.sendcmd("DLAY {},{},{}".format(
+            int(self._chan),
+            int(newval[0]),
+            newval[1].rescale("s").magnitude
+        ))
+
+class ChannelList(object):
+    def __init__(self, ddg):
+        self._ddg = ddg
+    def __getitem__(self, idx):
+        return Channel(self._ddg, idx)
+    
 
 class SRSDG645(SCPIInstrument):
     """
@@ -87,6 +130,9 @@ class SRSDG645(SCPIInstrument):
         if isinstance(filelike, GPIBWrapper):
             filelike.strip = 2
 
+    @property
+    def channel(self):
+        return ChannelList(self)
 
     @property
     def display(self):
@@ -101,7 +147,7 @@ class SRSDG645(SCPIInstrument):
     @display.setter
     def display(self, newval):
         # TODO: check types here.
-        self.sendcmd("DISP {0},{1}", *newval)
+        self.sendcmd("DISP {0},{1}".format(*map(int, newval)))
     
     @property
     def enable_adv_triggering(self):
@@ -114,4 +160,29 @@ class SRSDG645(SCPIInstrument):
     @enable_adv_triggering.setter
     def enable_adv_triggering(self, newval):
         self.sendcmd("ADVT {}".format(1 if newval else 0))
-    
+
+    @property
+    def trigger_rate(self):
+        """
+        Gets/sets the rate of the internal trigger.
+
+        :type: `~quantities.Quantity` or `float`
+        :units: As passed or Hz if not specified.
+        """
+        return pq.Quantity(float(self.query("TRAT?")), pq.Hz)
+    @trigger_rate.setter
+    def trigger_rate(self, newval):
+        newval = assume_units(newval, pq.Hz)
+        self.sendcmd("TRAT {}".format(newval.rescale(pq.Hz).magnitude))
+
+    @property
+    def trigger_source(self):
+        """
+        Gets/sets the source for the trigger.
+
+        :type: SRSDG645TriggerSource
+        """
+        return SRSDG645TriggerSource(int(self.query("TSRC?")))
+    @trigger_source.setter
+    def trigger_source(self, newval):
+        self.sendcmd("TSRC {}".format(int(newval)))
