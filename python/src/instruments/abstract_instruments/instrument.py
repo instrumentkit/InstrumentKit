@@ -29,6 +29,7 @@ import serial
 import time
 import struct
 import socket
+import urlparse
 
 import serialManager as sm
 import socketwrapper as sw
@@ -148,6 +149,40 @@ class Instrument(object):
             return raw
             
     ## CLASS METHODS ##
+    
+    @classmethod
+    def open_from_uri(cls, uri):
+        # Break apart the URI using urlparse. This returns a named tuple whose
+        # parts describe the incoming URI.
+        parsed_uri = urlparse.urlparse(uri)
+        
+        # We always want the query string to provide keyword args to the
+        # class method.
+        # FIXME: This currently won't work, as everything is strings,
+        #        but the other class methods expect ints or floats, depending. 
+        kwargs = urlparse.parse_qs(parsed_uri.query)
+        if parsed_uri.scheme == "serial":
+            # Ex: serial:///dev/ttyACM0
+            # We want to pass this verbatim to pyserial, save for that we
+            # need to first parse the kwargs part. As such, we drop the query
+            # string and fragment parts, then urlunparse the rest, substituting
+            # empty strings in their places.
+            return cls.open_serial(
+                urlparse.urlunparse(parsed_uri[0:-2] + ("",) * 2),
+                **kwargs)
+        elif parsed_uri.scheme == "tcpip":
+            # Ex: tcpip://192.168.0.10:4100
+            return cls.open_tcpip(*parsed_uri.netloc.split(":"), **kwargs)
+        elif parsed_uri.scheme == "gpib+usb" or scheme == "gpib+serial":
+            # Ex: gpib+usb://COM3/15
+            #     scheme="gpib+usb", netloc="COM3", path="/15"
+            return cls.open_serial(
+                parsed_uri.netloc,
+                # Drop the leading / from the address.
+                int(parsed_uri.path[1:]),
+                **kwargs)
+        else:
+            return NotImplementedError("Invalid scheme or not yet implemented.")
     
     @classmethod
     def open_tcpip(cls, host, port):
