@@ -19,4 +19,4 @@ Functions
 
 .. autofunction:: load_instruments
 
-.. _YAML:: http://yaml.org/
+.. _YAML: http://yaml.org/

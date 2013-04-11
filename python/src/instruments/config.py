@@ -89,6 +89,11 @@ def load_instruments(conf_file_name, conf_path="/"):
     this function to load the instruments named in that block, and ignore
     all other keys in the YAML file.
     
+    :param str conf_file_name: Name of the configuration file to load
+        instruments from.
+    :param str conf_path: ``"/"`` separated path to the section in the
+        configuration file to load.
+    
     :rtype: `dict`
     
     .. warning::
