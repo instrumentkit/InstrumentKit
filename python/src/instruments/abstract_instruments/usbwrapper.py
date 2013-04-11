@@ -62,7 +62,7 @@ class USBWrapper(io.IOBase, WrapperABC):
     
     @property
     def terminator(self):
-        reutrn self._terminator
+        return self._terminator
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):

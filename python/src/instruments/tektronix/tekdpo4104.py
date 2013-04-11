@@ -31,6 +31,7 @@ from __future__ import division
 from time import time, sleep
 
 from flufl.enum import Enum
+from flufl.enum._enum import EnumValue
 
 from contextlib import contextmanager
 
@@ -64,13 +65,13 @@ class TekDPO4104Channel(object):
 
         :type: `TekDPO4104Coupling`
         """
-        return TekDPO4104Coupling[self.query("CH{}:COUPL?".format(self._idx))]
+        return TekDPO4104Coupling[self._tek.query("CH{}:COUPL?".format(self._idx))]
     @coupling.setter
     def coupling(self, newval):
-        if not isinstance(newval, TekDPO4104Coupling):
-            raise TypeError("Coupling setting must be a TekDPO4104Coupling value.")
+        if not isinstance(newval, EnumValue) or newval.enum is not TekDPO4104Coupling:
+            raise TypeError("Coupling setting must be a TekDPO4104Coupling value, got {} instead.".format(type(newval)))
 
-        self.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
+        self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
 
     
     # Read Waveform        
@@ -93,20 +94,20 @@ class TekDPO4104Channel(object):
         ch_id = "CH{}".format(self._idx)
 
         # Set the acquisition channel
-        self.sendcmd('DAT:SOU {}'.format(ch_id))
+        self._tek.sendcmd('DAT:SOU {}'.format(ch_id))
         
         if not bin_format:
-            self.sendcmd( 'DAT:ENC ASCI' ) # Set the data encoding format to ASCII
-            raw = self.query( 'CURVE?' )
+            self._tek.sendcmd( 'DAT:ENC ASCI' ) # Set the data encoding format to ASCII
+            raw = self._tek.query( 'CURVE?' )
             raw = raw.split(",") # Break up comma delimited string
             raw = map(float, raw) # Convert each list element to int
             raw = np.array(raw) # Convert into numpy array
-        else
-            self.sendcmd( 'DAT:ENC RIB' ) # Set encoding to signed, big-endian
-            self.sendcmd( 'CURVE?' )
-            raw = self.binblockread(2) # Read in the binary block, data width of 2 bytes
+        else:
+            self._tek.sendcmd( 'DAT:ENC RIB' ) # Set encoding to signed, big-endian
+            self._tek.sendcmd( 'CURVE?' )
+            raw = self._tek.binblockread(2) # Read in the binary block, data width of 2 bytes
 
-            self._file.read(2) # Read in the two ending \n\r characters
+            self._tek._file.read(2) # Read in the two ending \n\r characters
 
         # FIXME: the following has not yet been converted.
         #        Needs to be fixed before it will even run.

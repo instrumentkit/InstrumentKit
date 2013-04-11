@@ -33,6 +33,7 @@ import urlparse
 
 import serialManager as sm
 import socketwrapper as sw
+import usbwrapper as uw
 import gi_gpib
 from instruments.abstract_instruments import WrapperABC
 
@@ -249,4 +250,4 @@ class Instrument(object):
         if ep is None:
             raise IOError("USB descriptor not found.")
 
-        return cls(ep)
+        return cls(uw.USBWrapper(ep))
