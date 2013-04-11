@@ -95,17 +95,33 @@ class SocketWrapper(io.IOBase, WrapperABC):
             result = np.bytearray()
             c = 0
             while c != self._terminator:
-                c = self._file.read(1)
+                c = self._conn.recv(1)
                 result += c
             return bytes(result)
         else:
             raise ValueError('Must read a positive value of characters.')
         
     def write(self, string):
-        self._conn.sendall(string + self._terminator)
+        self._conn.sendall(string)
         
     def seek(self, offset):
         return NotImplemented
         
     def tell(self):
         return NotImplemented
+        
+    ## METHODS ##
+    
+    def sendcmd(self, msg):
+        '''
+        '''
+        msg = msg + self._terminator
+        if self._debug:
+            print " <- {} ".format(repr(msg))
+        self._conn.sendall(msg)
+        
+    def query(self, msg, size=-1):
+        '''
+        '''
+        self.sendcmd(msg)
+        self.read(size)

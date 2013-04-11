@@ -134,7 +134,7 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         if newval < 0:
             raise ValueError("Cannot strip negative numbers of characters.")
         self._strip = newval
-        
+    
     
     ## FILE-LIKE METHODS ##
     
@@ -166,16 +166,32 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         This function sends all the necessary GI-GPIB adapter internal commands
         that are required for the specified instrument.  
         '''
-        self._file.write('+a:' + str(self._gpib_address))
+        self._file.write(msg)
+        
+    ## METHODS ##
+    
+    def sendcmd(self, msg):
+        '''
+        '''
+        self._file.sendcmd('+a:' + str(self._gpib_address))
         time.sleep(0.02)
-        self._file.write('+eoi:{}'.format(self._eoi))
+        self._file.sendcmd('+eoi:{}'.format(self._eoi))
         time.sleep(0.02)
-        self._file.write('+strip:{}'.format(self._strip))
+        self._file.sendcmd('+strip:{}'.format(self._strip))
         time.sleep(0.02)
         if self._eoi is 0:
-            self._file.write('+eos:{}'.format(self._terminator))
+            self._file.sendcmd('+eos:{}'.format(self._terminator))
             time.sleep(0.02)
-        self._file.write(msg)
+        self._file.sendcmd(msg)
         time.sleep(0.02)
+        
+    def query(self, msg, size=-1):
+        '''
+        '''
+        self.sendcmd(msg)
+        if '?' not in msg:
+            self._file.sendcmd('+read')
+        self._file.read(size)
+        
     
     
