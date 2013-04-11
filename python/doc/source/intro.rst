@@ -16,6 +16,12 @@ Dependencies
 - `quantities`_
 - `flufl.enum`_
 
+Optional Dependencies
+~~~~~~~~~~~~~~~~~~~~~
+
+- PyYAML
+- PyUSB
+
 .. _PySerial: http://pyserial.sourceforge.net/
 .. _quantities: http://pythonhosted.org/quantities/
 .. _flufl.enum: http://pythonhosted.org/flufl.enum/

@@ -36,6 +36,13 @@ import socketwrapper as sw
 import gi_gpib
 from instruments.abstract_instruments import WrapperABC
 
+try:
+    import usb
+    import usb.core
+    import usb.util
+except ImportError:
+    usb = None
+
 ## CLASSES #####################################################################
 
 class Instrument(object):
@@ -210,3 +217,36 @@ class Instrument(object):
         conn = socket.socket()
         conn.connect((host, port))
         return cls(gi_gpib.GPIBWrapper(conn, gpib_address))
+
+    @classmethod
+    def open_usb(cls, vid, pid):
+        if usb is None:
+            raise ImportError("USB support not imported. Do you have PyUSB?")
+
+        dev = usb.core.find(idVendor=vid, idProduct=pid)
+        if dev is None:
+            raise IOError("No such device found.")
+
+        # Use the default configuration offered by the device.
+        dev.set_configuration()
+
+        # Copied from the tutorial at:
+        #     http://pyusb.sourceforge.net/docs/1.0/tutorial.html
+        cfg = dev.get_active_configuration()
+        interface_number = cfg[(0,0)].bInterfaceNumber
+        alternate_setting = usb.control.get_interface(dev, interface_number)
+        intf = usb.util.find_descriptor(
+            cfg, bInterfaceNumber = interface_number,
+            bAlternateSetting = alternate_setting
+        )
+
+        ep = usb.util.find_descriptor(
+            intf,
+            custom_match = lambda e: \
+                usb.util.endpoint_direction(e.bEndpointAddress) == \
+                usb.util.ENDPOINT_OUT
+            )
+        if ep is None:
+            raise IOError("USB descriptor not found.")
+
+        return cls(ep)
