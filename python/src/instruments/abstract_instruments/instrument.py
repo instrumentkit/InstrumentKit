@@ -76,11 +76,7 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        self.write(cmd)
-        # TODO: Move the +read logic to GPIBWrapper
-        #if '?' not in msg:
-        #    self._file.write('+read')
-        return self._file.read(size)
+        return self._file.query(cmd, size)
         
     ## PROPERTIES ##
     

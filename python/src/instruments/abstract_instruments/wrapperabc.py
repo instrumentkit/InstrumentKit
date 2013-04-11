@@ -59,4 +59,31 @@ class WrapperABC(object):
         '''
         raise NotImplementedError
     terminator = abc.abstractproperty(getterminator, setterminator)
+    
+    ## METHODS ##
+    
+    @abc.abstractmethod
+    def sendcmd(self, msg):
+        '''
+        Sends the incoming msg down to the wrapped file-like object
+        but appends any other commands or termination characters required
+        by the communication.
+        
+        This differs from the wrapper .write method which directly exposes
+        the communication channel without appending other data.
+        '''
+        raise NotImplementedError
+        
+    def query(self, msg, size=-1):
+        '''
+        Send a string to the connected instrument using sendcmd and read the
+        response. This is an abstract method because there are situations where
+        information contained in the sent command is needed for reading logic.
+        
+        An example of this is the Galvant Industries GPIB adapter where if
+        you are connected to an older instrument and the query command does not
+        contain a `?`, then the command `+read` needs to be send to force the
+        instrument to send its response.
+        '''
+        raise NotImplementedError
 

@@ -112,7 +112,6 @@ class SerialWrapper(io.IOBase, WrapperABC):
             raise ValueError('Must read a positive value of characters.')
         
     def write(self, string):
-        msg = string + self._terminator
         if self._debug:
             print " <- {} ".format(repr(msg))
         self._conn.write(msg)
@@ -122,3 +121,19 @@ class SerialWrapper(io.IOBase, WrapperABC):
         
     def tell(self):
         return NotImplemented
+        
+    ## METHODS ##
+    
+    def sendcmd(self, msg):
+        '''
+        '''
+        msg = msg + self._terminator
+        if self._debug:
+            print " <- {} ".format(repr(msg))
+        self._conn.write(msg)
+        
+    def query(self, msg, size=-1):
+        '''
+        '''
+        self.sendcmd(msg)
+        self.read(size)
