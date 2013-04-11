@@ -165,7 +165,7 @@ class Instrument(object):
         # FIXME: This currently won't work, as everything is strings,
         #        but the other class methods expect ints or floats, depending. 
         kwargs = urlparse.parse_qs(parsed_uri.query)
-        if scheme == "serial":
+        if parsed_uri.scheme == "serial":
             # Ex: serial:///dev/ttyACM0
             # We want to pass this verbatim to pyserial, save for that we
             # need to first parse the kwargs part. As such, we drop the query
@@ -174,10 +174,10 @@ class Instrument(object):
             return cls.open_serial(
                 urlparse.urlunparse(parsed_uri[0:-2] + ("",) * 2),
                 **kwargs)
-        elif scheme == "tcpip":
+        elif parsed_uri.scheme == "tcpip":
             # Ex: tcpip://192.168.0.10:4100
             return cls.open_tcpip(*parsed_uri.netloc.split(":"), **kwargs)
-        elif scheme == "gpib+usb" or scheme == "gpib+serial":
+        elif parsed_uri.scheme == "gpib+usb" or scheme == "gpib+serial":
             # Ex: gpib+usb://COM3/15
             #     scheme="gpib+usb", netloc="COM3", path="/15"
             return cls.open_serial(
