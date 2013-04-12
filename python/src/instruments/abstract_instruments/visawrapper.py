@@ -52,6 +52,10 @@ class VisaWrapper(io.IOBase, WrapperABC):
             self._debug = False
         else:
             raise TypeError('VisaWrapper must wrap a VISA Instrument.')
+
+        # Make a bytearray for holding data read in from the device
+        # so that we can buffer for two-argument read.
+        self._buf = bytearray()
     
     def __repr__(self):
         return "<VisaWrapper object at 0x{:X} "\
@@ -106,19 +110,25 @@ class VisaWrapper(io.IOBase, WrapperABC):
         
     def read(self, size):
         if (size >= 0):
-            # FIXME: this branch of the if is broken for VISA.
-            msg = self._conn.read(size)
+            while len(self._buf) < size:
+                self._buf += self._conn.read()
+            msg = self._buf[:size]
+            # Remove the front of the buffer.
+            del self._buf[:size]
         elif (size == -1):
-            msg = self._conn.read()
+            # Read the whole contents, appending the buffer we've already read.
+            msg = self._buf + self._conn.read()
+            # Reset the contents of the buffer.
+            self._buf = bytearray()
         else:
             raise ValueError('Must read a positive value of characters, or -1 for all characters.')
-            
+
         if self._debug:
             print " -> {} ".format(repr(msg))
             
         return msg
         
-    def write(self, string):
+    def write(self, msg):
         if self._debug:
             print " <- {} ".format(repr(msg))
         self._conn.write(msg)
@@ -143,5 +153,5 @@ class VisaWrapper(io.IOBase, WrapperABC):
         msg += self._terminator
         if self._debug:
             print " <- {} ".format(repr(msg))
-        return self.ask(msg)
+        return self._conn.ask(msg)
         

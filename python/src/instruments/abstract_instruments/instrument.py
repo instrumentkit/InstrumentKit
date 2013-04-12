@@ -50,6 +50,8 @@ try:
 except ImportError:
     visa = None
 
+import numpy as np
+
 ## CLASSES #####################################################################
 
 class Instrument(object):
@@ -146,14 +148,14 @@ class Instrument(object):
             return 0
         else:
             # Read in the num of digits for next part
-            digits = int( self.ser.read(1) )
+            digits = int( self._file.read(1) )
             # Read in the num of bytes to be read
-            num_of_bytes = int( self.ser.read(digits) )
+            num_of_bytes = int( self._file.read(digits) )
             # Read in the data bytes
-            temp = self.ser.read(num_of_bytes)
+            temp = self._file.read(num_of_bytes)
             
             # Create zero array
-            raw = zeros(num_of_bytes/dataWidth)
+            raw = np.zeros(num_of_bytes/dataWidth)
             for i in range(0,num_of_bytes/dataWidth):
                 # Parse binary string into ints
                 raw[i] = struct.unpack(">h", temp[i*dataWidth:\

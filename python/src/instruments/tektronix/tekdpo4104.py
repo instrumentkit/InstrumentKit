@@ -111,15 +111,15 @@ class TekDPO4104Channel(object):
 
         # FIXME: the following has not yet been converted.
         #        Needs to be fixed before it will even run.
-        yoffs = self.query( 'WFMP:' + channel.upper() + ':YOF?' ) # Retrieve Y offset
-        ymult = self.query( 'WFMP:' + channel.upper() + ':YMU?' ) # Retrieve Y multiplier
-        yzero = self.query( 'WFMP:' + channel.upper() + ':YZE?' ) # Retrieve Y zero
+        yoffs = self.query( 'WFMP:{}:YOF?'.format(ch_id) ) # Retrieve Y offset
+        ymult = self.query( 'WFMP:{}:YMU?'.format(ch_id) ) # Retrieve Y multiplier
+        yzero = self.query( 'WFMP:{}:YZE?'.format(ch_id) ) # Retrieve Y zero
         
         y = ( (raw - float(yoffs) ) * float(ymult) ) + float(yzero)
         
         xzero = self.query( 'WFMP:XZE?' ) # Retrieve X zero
         xincr = self.query( 'WFMP:XIN?' ) # Retrieve X incr
-        ptcnt = self.query( 'WFMP:' + channel.upper() + ':NR_P?' ) # Retrieve number of data points
+        ptcnt = self.query( 'WFMP:{}:NR_P?'.format(ch_id) ) # Retrieve number of data points
         
         x = arange( float(ptcnt) ) * float(xincr) + float(xzero)
         
