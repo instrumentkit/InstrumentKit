@@ -11,16 +11,20 @@ Installing
 Dependencies
 ------------
 
+Required Dependencies
+~~~~~~~~~~~~~~~~~~~~~
+
 - NumPy
 - `PySerial`_
 - `quantities`_
-- `flufl.enum`_
+- `flufl.enum`_ version 4.0 or later
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
-- PyYAML
-- PyUSB (version 1.0a or higher)
+- PyYAML (required for configuration file support)
+- PyUSB (version 1.0a or higher, required for raw USB support)
+- PyVISA (required for accessing instruments via VISA library)
 
 .. _PySerial: http://pyserial.sourceforge.net/
 .. _quantities: http://pythonhosted.org/quantities/

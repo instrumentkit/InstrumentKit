@@ -34,6 +34,7 @@ import urlparse
 import serialManager as sm
 import socketwrapper as sw
 import usbwrapper as uw
+import visawrapper as vw
 import gi_gpib
 from instruments.abstract_instruments import WrapperABC
 
@@ -43,6 +44,11 @@ try:
     import usb.util
 except ImportError:
     usb = None
+
+try:
+    import visa
+except ImportError:
+    visa = None
 
 ## CLASSES #####################################################################
 
@@ -220,9 +226,16 @@ class Instrument(object):
         return cls(gi_gpib.GPIBWrapper(conn, gpib_address))
 
     @classmethod
+    def open_visa(cls, resource_name):
+        if visa is None:
+            raise ImportError("PyVISA is required for loading VISA instruments.")
+        ins = visa.instrument(resource_name)
+        return cls(vw.VisaWrapper(ins))
+
+    @classmethod
     def open_usb(cls, vid, pid):
         if usb is None:
-            raise ImportError("USB support not imported. Do you have PyUSB?")
+            raise ImportError("USB support not imported. Do you have PyUSB version 1.0 or later?")
 
         dev = usb.core.find(idVendor=vid, idProduct=pid)
         if dev is None:

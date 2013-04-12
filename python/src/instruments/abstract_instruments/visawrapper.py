@@ -26,7 +26,10 @@
 ## IMPORTS #####################################################################
 
 import io
-import serial
+try:
+    import visa
+except ImportError:
+    visa = None
 
 import numpy as np
 
@@ -34,35 +37,38 @@ from instruments.abstract_instruments import WrapperABC
 
 ## CLASSES #####################################################################
 
-class SerialWrapper(io.IOBase, WrapperABC):
+class VisaWrapper(io.IOBase, WrapperABC):
     """
-    Wraps a pyserial Serial object to add a few properties as well as
-    handling of termination characters.
+    Wraps a connection exposed by the VISA library.
     """
     
     def __init__(self, conn):
-        if isinstance(conn, serial.Serial):
+        if visa is None:
+            raise ImportError("PyVISA required for accessing VISA instruments.")
+            
+        if isinstance(conn, visa.Instrument):
             self._conn = conn
             self._terminator = '\n'
             self._debug = False
         else:
-            raise TypeError('SerialWrapper must wrap a serial.Serial object.')
+            raise TypeError('VisaWrapper must wrap a VISA Instrument.')
     
     def __repr__(self):
-        return "<SerialWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), self._conn.port)
+        return "<VisaWrapper object at 0x{:X} "\
+                "connected to {}>".format(id(self), repr(self._conn))
     
     ## PROPERTIES ##
     
     @property
     def address(self):
+        # FIXME: this currently doesn't work.
         return self._conn.port
     @address.setter
     def address(self, newval):
         # TODO: Input checking on Serial port newval
         # TODO: Add port changing capability to serialmanager
         # self._conn.port = newval
-        raise NotImplementedError
+        raise NotImplementedError("Changing addresses of a VISA Instrument is not supported.")
         
     @property
     def terminator(self):
@@ -70,10 +76,10 @@ class SerialWrapper(io.IOBase, WrapperABC):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for SerialWrapper must be specified '
+            raise TypeError('Terminator for VisaWrapper must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for SerialWrapper must only be 1 '
+            raise ValueError('Terminator for VisaWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
 
@@ -94,22 +100,23 @@ class SerialWrapper(io.IOBase, WrapperABC):
     
     def close(self):
         try:
-            self._conn.shutdown()
-        finally:
             self._conn.close()
+        except:
+            pass
         
     def read(self, size):
         if (size >= 0):
-            return self._conn.read(size)
+            # FIXME: this branch of the if is broken for VISA.
+            msg = self._conn.read(size)
         elif (size == -1):
-            result = bytearray()
-            c = 0
-            while c != self._terminator:
-                c = self._conn.read(1)
-                result += c
-            return bytes(result)
+            msg = self._conn.read()
         else:
-            raise ValueError('Must read a positive value of characters.')
+            raise ValueError('Must read a positive value of characters, or -1 for all characters.')
+            
+        if self._debug:
+            print " -> {} ".format(repr(msg))
+            
+        return msg
         
     def write(self, string):
         if self._debug:
@@ -128,12 +135,13 @@ class SerialWrapper(io.IOBase, WrapperABC):
         '''
         '''
         msg = msg + self._terminator
-        if self._debug:
-            print " <- {} ".format(repr(msg))
-        self._conn.write(msg)
+        self.write(msg)
         
     def query(self, msg, size=-1):
         '''
         '''
-        self.sendcmd(msg)
-        return self.read(size)
+        msg += self._terminator
+        if self._debug:
+            print " <- {} ".format(repr(msg))
+        return self.ask(msg)
+        
