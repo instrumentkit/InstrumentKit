@@ -126,18 +126,24 @@ class TekDPO4104Channel(object):
         
         return [x,y]
 
-class ChannelList(object):
-    def __init__(self, tek):
+class ProxyList(object):
+    def __init__(self, tek, proxy_cls, valid_set):
         self._tek = tek
+        self._proxy_cls = proxy_cls
+        self._valid_set = valid_set
+    def __iter__(self):
+        for idx in self._valid_set:
+            yield self._proxy_cls(self._tek, idx)
     def __getitem__(self, idx):
-        if idx < 0 or idx > 3:
-            raise IndexError("Channel index out of range. Must be in xrange(4).")
-        return TekDPO4104Channel(self._tek, idx)
+        if idx not in self._valid_set:
+            raise IndexError("Index out of range. Must be "
+                                "in {}.".format(self._valid_set))
+        return self._proxy_cls(self._tek, idx)
 
 class TekDPO4104(SCPIInstrument):
 
     @property
     def channel(self):
-        return ChannelList(self)
+        return ProxyList(self, TekDPO4104Channel, xrange(4))
 
         
