@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# usbwrapper.py: Wraps USB connections into a filelike object.
+# socketwrapper.py: Wraps sockets into a filelike object.
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
@@ -26,6 +26,10 @@
 ## IMPORTS #####################################################################
 
 import io
+try:
+    import visa
+except ImportError:
+    visa = None
 
 import numpy as np
 
@@ -33,46 +37,56 @@ from instruments.abstract_instruments import WrapperABC
 
 ## CLASSES #####################################################################
 
-class USBWrapper(io.IOBase, WrapperABC):
-    '''
+class VisaWrapper(io.IOBase, WrapperABC):
+    """
+    Wraps a connection exposed by the VISA library.
+    """
     
-    '''
     def __init__(self, conn):
-        # TODO: Check to make sure this is a USB connection
-        self._conn = conn
-        self._terminator = '\n'
-        self._debug = False
+        if visa is None:
+            raise ImportError("PyVISA required for accessing VISA instruments.")
+            
+        if isinstance(conn, visa.Instrument):
+            self._conn = conn
+            self._terminator = '\n'
+            self._debug = False
+        else:
+            raise TypeError('VisaWrapper must wrap a VISA Instrument.')
+
+        # Make a bytearray for holding data read in from the device
+        # so that we can buffer for two-argument read.
+        self._buf = bytearray()
     
     def __repr__(self):
-        # TODO: put in correct connection name
-        return "<USBWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), 'placeholder')
+        return "<VisaWrapper object at 0x{:X} "\
+                "connected to {}>".format(id(self), repr(self._conn))
     
     ## PROPERTIES ##
     
     @property
     def address(self):
-        '''
-        
-        '''
-        raise NotImplementedError
+        # FIXME: this currently doesn't work.
+        return self._conn.port
     @address.setter
     def address(self, newval):
-        raise ValueError('Unable to change USB target address.')
-    
+        # TODO: Input checking on Serial port newval
+        # TODO: Add port changing capability to serialmanager
+        # self._conn.port = newval
+        raise NotImplementedError("Changing addresses of a VISA Instrument is not supported.")
+        
     @property
     def terminator(self):
         return self._terminator
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for USBWrapper must be specified '
+            raise TypeError('Terminator for VisaWrapper must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for USBWrapper must only be 1 '
+            raise ValueError('Terminator for VisaWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
-    
+
     @property
     def debug(self):
         """
@@ -85,39 +99,59 @@ class USBWrapper(io.IOBase, WrapperABC):
     @debug.setter
     def debug(self, newval):
         self._debug = bool(newval)
-    
+        
     ## FILE-LIKE METHODS ##
     
     def close(self):
         try:
-            self._conn.shutdown()
-        finally:
             self._conn.close()
-            
+        except:
+            pass
+        
     def read(self, size):
-        raise NotImplementedError
-    
-    def write(self, string):
-        self._conn.write(string)
+        if (size >= 0):
+            while len(self._buf) < size:
+                self._buf += self._conn.read()
+            msg = self._buf[:size]
+            # Remove the front of the buffer.
+            del self._buf[:size]
+        elif (size == -1):
+            # Read the whole contents, appending the buffer we've already read.
+            msg = self._buf + self._conn.read()
+            # Reset the contents of the buffer.
+            self._buf = bytearray()
+        else:
+            raise ValueError('Must read a positive value of characters, or -1 for all characters.')
+
+        if self._debug:
+            print " -> {} ".format(repr(msg))
+            
+        return msg
+        
+    def write(self, msg):
+        if self._debug:
+            print " <- {} ".format(repr(msg))
+        self._conn.write(msg)
         
     def seek(self, offset):
         return NotImplemented
         
     def tell(self):
         return NotImplemented
-    
+        
     ## METHODS ##
     
     def sendcmd(self, msg):
         '''
         '''
         msg = msg + self._terminator
-        if self._debug:
-            print " <- {} ".format(repr(msg))
-        self._conn.sendall(msg)
+        self.write(msg)
         
     def query(self, msg, size=-1):
         '''
         '''
-        self.sendcmd(msg)
-        self.read(size)
+        msg += self._terminator
+        if self._debug:
+            print " <- {} ".format(repr(msg))
+        return self._conn.ask(msg)
+        

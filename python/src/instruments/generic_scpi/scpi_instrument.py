@@ -58,6 +58,7 @@ class SCPIInstrument(Instrument):
     @property
     def power_on_status(self):
         result = self.query('*PSC?')
+        return bool(int(result))
     @power_on_status.setter
     def power_on_status(self, newval):
         on = ['on', '1', 1]

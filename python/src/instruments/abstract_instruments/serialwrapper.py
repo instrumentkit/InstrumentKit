@@ -136,4 +136,4 @@ class SerialWrapper(io.IOBase, WrapperABC):
         '''
         '''
         self.sendcmd(msg)
-        self.read(size)
+        return self.read(size)

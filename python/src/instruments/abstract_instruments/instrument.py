@@ -33,8 +33,24 @@ import urlparse
 
 import serialManager as sm
 import socketwrapper as sw
+import usbwrapper as uw
+import visawrapper as vw
 import gi_gpib
 from instruments.abstract_instruments import WrapperABC
+
+try:
+    import usb
+    import usb.core
+    import usb.util
+except ImportError:
+    usb = None
+
+try:
+    import visa
+except ImportError:
+    visa = None
+
+import numpy as np
 
 ## CLASSES #####################################################################
 
@@ -132,14 +148,14 @@ class Instrument(object):
             return 0
         else:
             # Read in the num of digits for next part
-            digits = int( self.ser.read(1) )
+            digits = int( self._file.read(1) )
             # Read in the num of bytes to be read
-            num_of_bytes = int( self.ser.read(digits) )
+            num_of_bytes = int( self._file.read(digits) )
             # Read in the data bytes
-            temp = self.ser.read(num_of_bytes)
+            temp = self._file.read(num_of_bytes)
             
             # Create zero array
-            raw = zeros(num_of_bytes/dataWidth)
+            raw = np.zeros(num_of_bytes/dataWidth)
             for i in range(0,num_of_bytes/dataWidth):
                 # Parse binary string into ints
                 raw[i] = struct.unpack(">h", temp[i*dataWidth:\
@@ -210,3 +226,43 @@ class Instrument(object):
         conn = socket.socket()
         conn.connect((host, port))
         return cls(gi_gpib.GPIBWrapper(conn, gpib_address))
+
+    @classmethod
+    def open_visa(cls, resource_name):
+        if visa is None:
+            raise ImportError("PyVISA is required for loading VISA instruments.")
+        ins = visa.instrument(resource_name)
+        return cls(vw.VisaWrapper(ins))
+
+    @classmethod
+    def open_usb(cls, vid, pid):
+        if usb is None:
+            raise ImportError("USB support not imported. Do you have PyUSB version 1.0 or later?")
+
+        dev = usb.core.find(idVendor=vid, idProduct=pid)
+        if dev is None:
+            raise IOError("No such device found.")
+
+        # Use the default configuration offered by the device.
+        dev.set_configuration()
+
+        # Copied from the tutorial at:
+        #     http://pyusb.sourceforge.net/docs/1.0/tutorial.html
+        cfg = dev.get_active_configuration()
+        interface_number = cfg[(0,0)].bInterfaceNumber
+        alternate_setting = usb.control.get_interface(dev, interface_number)
+        intf = usb.util.find_descriptor(
+            cfg, bInterfaceNumber = interface_number,
+            bAlternateSetting = alternate_setting
+        )
+
+        ep = usb.util.find_descriptor(
+            intf,
+            custom_match = lambda e: \
+                usb.util.endpoint_direction(e.bEndpointAddress) == \
+                usb.util.ENDPOINT_OUT
+            )
+        if ep is None:
+            raise IOError("USB descriptor not found.")
+
+        return cls(uw.USBWrapper(ep))
