@@ -178,6 +178,16 @@ class TekDPO4104(SCPIInstrument):
     @property
     def channel(self):
         return ProxyList(self, TekDPO4104Channel, xrange(4))
+
+    @property
+    def ref(self):
+        return ProxyList(self,
+            lambda s, idx: TekDPO4104DataSource(s, "REF{}".format(idx)),
+            xrange(4))
+        
+    @property
+    def math(self):
+        return TekDPO4104DataSource(self, "MATH")
         
     @property
     def data_source(self):
