@@ -43,6 +43,20 @@ from instruments.util_fns import assume_units
 import struct
 import numpy as np
 
+## FUNCTIONS ###################################################################
+
+def _parent_property(prop_name, doc=""):
+    
+    def getter(self):
+        with self:
+            return getattr(self._tek, propname)
+    
+    def setter(self, newval):
+        with self:
+            setattr(self._tek, prop_name, doc)
+            
+    return property(getter, setter, doc=doc)
+
 ## ENUMS #######################################################################
 
 class TekDPO4104Coupling(Enum):
@@ -52,13 +66,98 @@ class TekDPO4104Coupling(Enum):
 
 ## CLASSES #####################################################################
 
-class TekDPO4104Channel(object):
-    def __init__(self, tek, idx):
+class TekDPO4104DataSource(object):
+    def __init__(self, tek, name):
         self._tek = tek
         # Zero-based for pythonic convienence, so we need to convert to
         # Tektronix's one-based notation here.
-        self._idx = idx + 1
+        self._name = name
+        
+        # Remember what the old data source was for use as a context manager.
+        self._old_dsrc = None
+        
+    @property
+    def name(self):
+        """
+        Gets the name of this data source, as identified over SCPI.
+        
+        :type: `str`
+        """
+        return self._name
 
+    def __enter__(self):
+        self._old_dsrc = self._tek.data_source
+        if self._old_dsrc != self:
+            # Set the new data source, and let __exit__ cleanup.
+            self._tek.data_source = self
+        else:
+            # There's nothing to do or undo in this case.
+            self._old_dsrc = None
+        
+    
+    def __exit__(self, type, value, traceback):
+        if self._old_dsrc is not None:
+            self._tek.data_source = self._old_dsrc
+        
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        else:
+            return other.name == self.name
+        
+    # Read Waveform        
+    def read_waveform(self, bin_format=False):
+        '''
+        Read waveform from the oscilloscope.
+        This function is all inclusive. After reading the data from the oscilloscope, it unpacks the data and scales it accordingly.
+        Supports both ASCII and binary waveform transfer. For 2500 data points, with a width of 2 bytes, transfer takes approx 2 seconds for binary, and 7 seconds for ASCII.
+        
+        Function returns a list [x,y], where both x and y are numpy arrays.
+
+        :param bool bin_format: If `True`, data is transfered
+            in a binary format. Otherwise, data is transferred in ASCII.
+        '''
+
+        # Set the acquisition channel
+        with self:
+            if not bin_format:
+                self._tek.sendcmd( 'DAT:ENC ASCI' ) # Set the data encoding format to ASCII
+                raw = self._tek.query( 'CURVE?' )
+                raw = raw.split(",") # Break up comma delimited string
+                raw = map(float, raw) # Convert each list element to int
+                raw = np.array(raw) # Convert into numpy array
+            else:
+                self._tek.sendcmd( 'DAT:ENC RIB' ) # Set encoding to signed, big-endian
+                self._tek.sendcmd( 'CURVE?' )
+                raw = self._tek.binblockread(2) # Read in the binary block, data width of 2 bytes
+
+                self._tek._file.read(2) # Read in the two ending \n\r characters
+
+            # FIXME: the following has not yet been converted.
+            #        Needs to be fixed before it will even run.
+            yoffs = self._tek.y_offset # Retrieve Y offset
+            ymult = self._tek.query( 'WFMP:YMU?' ) # Retrieve Y multiplier
+            yzero = self._tek.query( 'WFMP:YZE?' ) # Retrieve Y zero
+            
+            y = ( (raw - yoffs ) * float(ymult) ) + float(yzero)
+            
+            xzero = self._tek.query( 'WFMP:XZE?' ) # Retrieve X zero
+            xincr = self._tek.query( 'WFMP:XIN?' ) # Retrieve X incr
+            ptcnt = self._tek.query( 'WFMP:NR_P?') # Retrieve number of data points
+            
+            x = np.arange( float(ptcnt) ) * float(xincr) + float(xzero)
+            
+            return [x,y]
+            
+    y_offset = _parent_property('y_offset')
+    
+
+class TekDPO4104Channel(TekDPO4104DataSource):
+    
+    def __init__(self, parent, idx):
+        super(TekDPO4104Channel, self).__init__(self, parent, "CH{}".format(idx))
+        self._idx = idx + 1
+    
     @property
     def coupling(self):
         """
@@ -74,76 +173,38 @@ class TekDPO4104Channel(object):
 
         self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
 
-    
-    # Read Waveform        
-    def read_waveform(self, bin_format=False):
-        '''
-        Read waveform from the oscilloscope.
-        This function is all inclusive. After reading the data from the oscilloscope, it unpacks the data and scales it accordingly.
-        Supports both ASCII and binary waveform transfer. For 2500 data points, with a width of 2 bytes, transfer takes approx 2 seconds for binary, and 7 seconds for ASCII.
-        
-        Function returns a list [x,y], where both x and y are numpy arrays.
-
-        :param bool bin_format: If `True, data is transfered
-            in a binary format. Otherwise, data is transferred in ASCII.
-        '''
-
-        # FIXME: removed support for REFA, REFB, REFC, REFD and MATH.
-        #        this is a regression that must be fixed, probably
-        #        by identifying them as virtual channels.
-
-        ch_id = "CH{}".format(self._idx)
-
-        # Set the acquisition channel
-        self._tek.sendcmd('DAT:SOU {}'.format(ch_id))
-        
-        if not bin_format:
-            self._tek.sendcmd( 'DAT:ENC ASCI' ) # Set the data encoding format to ASCII
-            raw = self._tek.query( 'CURVE?' )
-            raw = raw.split(",") # Break up comma delimited string
-            raw = map(float, raw) # Convert each list element to int
-            raw = np.array(raw) # Convert into numpy array
-        else:
-            self._tek.sendcmd( 'DAT:ENC RIB' ) # Set encoding to signed, big-endian
-            self._tek.sendcmd( 'CURVE?' )
-            raw = self._tek.binblockread(2) # Read in the binary block, data width of 2 bytes
-
-            self._tek._file.read(2) # Read in the two ending \n\r characters
-
-        # FIXME: the following has not yet been converted.
-        #        Needs to be fixed before it will even run.
-        yoffs = self._tek.query( 'WFMP:YOF?' ) # Retrieve Y offset
-        ymult = self._tek.query( 'WFMP:YMU?' ) # Retrieve Y multiplier
-        yzero = self._tek.query( 'WFMP:YZE?' ) # Retrieve Y zero
-        
-        y = ( (raw - float(yoffs) ) * float(ymult) ) + float(yzero)
-        
-        xzero = self._tek.query( 'WFMP:XZE?' ) # Retrieve X zero
-        xincr = self._tek.query( 'WFMP:XIN?' ) # Retrieve X incr
-        ptcnt = self._tek.query( 'WFMP:NR_P?') # Retrieve number of data points
-        
-        x = np.arange( float(ptcnt) ) * float(xincr) + float(xzero)
-        
-        return [x,y]
-
-class ProxyList(object):
-    def __init__(self, tek, proxy_cls, valid_set):
-        self._tek = tek
-        self._proxy_cls = proxy_cls
-        self._valid_set = valid_set
-    def __iter__(self):
-        for idx in self._valid_set:
-            yield self._proxy_cls(self._tek, idx)
-    def __getitem__(self, idx):
-        if idx not in self._valid_set:
-            raise IndexError("Index out of range. Must be "
-                                "in {}.".format(self._valid_set))
-        return self._proxy_cls(self._tek, idx)
-
 class TekDPO4104(SCPIInstrument):
 
     @property
     def channel(self):
         return ProxyList(self, TekDPO4104Channel, xrange(4))
-
         
+    @property
+    def data_source(self):
+        name = self.query("DAT:SOU?")
+        if name.startswith("CH"):
+            return TekDPO4104Channel(int(name[2:] - 1))
+        else:
+            return TekDPO4104DataSource(name)
+            
+    @data_source.setter
+    def data_source(self, newval):
+        # TODO: clean up type-checking here.
+        if not isinstance(newval, str):
+            if hasattr(newval, "value"): # Is an enum with a value.
+                newval = newval.value
+            elif hasattr(newval, "name"): # Is a datasource with a name.
+                newval = newval.name
+        self.sendcmd("DAT:SOU {}".format(newval))
+    
+    # TODO: convert to read in unitful quantities.
+    @property
+    def y_offset(self):
+        """
+        Gets/sets the Y offset of the currently selected data source.
+        """
+        yoffs = float(self._tek.query( 'WFMP:YOF?' ))
+    @y_offset.setter
+    def y_offset(self, newval):
+        self._tek.sendcmd("WFMP:YOF {}".format(newval))
+    

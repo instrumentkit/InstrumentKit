@@ -38,7 +38,7 @@ import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.gi_gpib import GPIBWrapper
-from instruments.util_fns import assume_units
+from instruments.util_fns import assume_units, ProxyList
 
 ## ENUMS #######################################################################
 
@@ -108,13 +108,6 @@ class Channel(object):
             newval[1].rescale("s").magnitude
         ))
 
-class ChannelList(object):
-    def __init__(self, ddg):
-        self._ddg = ddg
-    def __getitem__(self, idx):
-        return Channel(self._ddg, idx)
-    
-
 class SRSDG645(SCPIInstrument):
     """
     Communicates with a Stanford Research Systems DG645 digital delay generator,
@@ -132,7 +125,7 @@ class SRSDG645(SCPIInstrument):
 
     @property
     def channel(self):
-        return ChannelList(self)
+        return ProxyList(self, Channel, SRSDG645Channels)
 
     @property
     def display(self):

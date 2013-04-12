@@ -36,3 +36,20 @@ def assume_units(value, units):
     if not isinstance(value, pq.Quantity):
         value = pq.Quantity(value, units)
     return value
+
+## CLASSES #####################################################################
+
+class ProxyList(object):
+    def __init__(self, parent, proxy_cls, valid_set):
+        self._parent = parent
+        self._proxy_cls = proxy_cls
+        self._valid_set = valid_set
+    def __iter__(self):
+        for idx in self._valid_set:
+            yield self._proxy_cls(self._parent, idx)
+    def __getitem__(self, idx):
+        if idx not in self._valid_set:
+            raise IndexError("Index out of range. Must be "
+                                "in {}.".format(self._valid_set))
+        return self._proxy_cls(self._parent, idx)
+
