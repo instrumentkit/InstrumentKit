@@ -38,7 +38,7 @@ from contextlib import contextmanager
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units
+from instruments.util_fns import assume_units, ProxyList
 
 import struct
 import numpy as np
@@ -155,7 +155,7 @@ class TekDPO4104DataSource(object):
 class TekDPO4104Channel(TekDPO4104DataSource):
     
     def __init__(self, parent, idx):
-        super(TekDPO4104Channel, self).__init__(self, parent, "CH{}".format(idx))
+        super(TekDPO4104Channel, self).__init__(parent, "CH{}".format(idx + 1))
         self._idx = idx + 1
     
     @property
@@ -182,7 +182,7 @@ class TekDPO4104(SCPIInstrument):
     @property
     def ref(self):
         return ProxyList(self,
-            lambda s, idx: TekDPO4104DataSource(s, "REF{}".format(idx)),
+            lambda s, idx: TekDPO4104DataSource(s, "REF{}".format(idx  + 1)),
             xrange(4))
         
     @property
@@ -193,9 +193,9 @@ class TekDPO4104(SCPIInstrument):
     def data_source(self):
         name = self.query("DAT:SOU?")
         if name.startswith("CH"):
-            return TekDPO4104Channel(int(name[2:] - 1))
+            return TekDPO4104Channel(self, int(name[2:]) - 1)
         else:
-            return TekDPO4104DataSource(name)
+            return TekDPO4104DataSource(self, name)
             
     @data_source.setter
     def data_source(self, newval):
@@ -213,8 +213,9 @@ class TekDPO4104(SCPIInstrument):
         """
         Gets/sets the Y offset of the currently selected data source.
         """
-        yoffs = float(self._tek.query( 'WFMP:YOF?' ))
+        yoffs = float(self.query( 'WFMP:YOF?' ))
+        return yoffs
     @y_offset.setter
     def y_offset(self, newval):
-        self._tek.sendcmd("WFMP:YOF {}".format(newval))
+        self.sendcmd("WFMP:YOF {}".format(newval))
     
