@@ -197,6 +197,12 @@ class Instrument(object):
                 # Drop the leading / from the address.
                 int(parsed_uri.path[1:]),
                 **kwargs)
+        elif parsed_uri.scheme == "visa":
+            # Ex: visa://USB::{VID}::{PID}::{SERIAL}::0::INSTR
+            #     where {VID}, {PID} and {SERIAL} are to be replaced with
+            #     the vendor ID, product ID and serial number of the USB-VISA
+            #     device.
+            return cls.open_visa(parsed_uri.netloc, **kwargs)
         else:
             return NotImplementedError("Invalid scheme or not yet implemented.")
     

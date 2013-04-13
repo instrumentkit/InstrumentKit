@@ -65,13 +65,9 @@ class VisaWrapper(io.IOBase, WrapperABC):
     
     @property
     def address(self):
-        # FIXME: this currently doesn't work.
-        return self._conn.port
+        return self._conn.resource_name
     @address.setter
     def address(self, newval):
-        # TODO: Input checking on Serial port newval
-        # TODO: Add port changing capability to serialmanager
-        # self._conn.port = newval
         raise NotImplementedError("Changing addresses of a VISA Instrument is not supported.")
         
     @property
