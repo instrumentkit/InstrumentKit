@@ -168,6 +168,28 @@ class Instrument(object):
     
     @classmethod
     def open_from_uri(cls, uri):
+        """
+        Given an instrument URI, opens the instrument named by that URI.
+        Instrument URIs are formatted with a scheme, such as ``serial://``,
+        followed by a location that is interpreted differently for each
+        scheme. The following examples URIs demonstrate the currently supported
+        schemes and location formats::
+        
+            serial://COM3
+            serial:///dev/ttyACM0
+            tcpip://192.168.0.10:4100
+            gpib+usb://COM3/15
+            gpib+serial://COM3/15
+            gpib+serial:///dev/ttyACM0/15 # Currently non-functional.
+            visa://USB::0x0699::0x0401::C0000001::0::INSTR
+            
+        :param str uri: URI for the instrument to be loaded.
+        :rtype: `Instrument`
+        
+        .. seealso::
+            `PySerial`_ documentation for serial port URI format
+            
+        """
         # Break apart the URI using urlparse. This returns a named tuple whose
         # parts describe the incoming URI.
         parsed_uri = urlparse.urlparse(uri)
@@ -188,10 +210,14 @@ class Instrument(object):
                 **kwargs)
         elif parsed_uri.scheme == "tcpip":
             # Ex: tcpip://192.168.0.10:4100
-            return cls.open_tcpip(*parsed_uri.netloc.split(":"), **kwargs)
+            host, port = parsed_uri.netloc.split(":")
+            port = int(port)
+            return cls.open_tcpip((host, port), **kwargs)
         elif parsed_uri.scheme == "gpib+usb" or scheme == "gpib+serial":
             # Ex: gpib+usb://COM3/15
             #     scheme="gpib+usb", netloc="COM3", path="/15"
+            # FIXME: does not work if the serial location contains a "/",
+            #        as is the case on Linux.
             return cls.open_serial(
                 parsed_uri.netloc,
                 # Drop the leading / from the address.
