@@ -37,6 +37,7 @@ import usbwrapper as uw
 import visawrapper as vw
 import gi_gpib
 from instruments.abstract_instruments import WrapperABC
+import os
 
 try:
     import usb
@@ -165,6 +166,8 @@ class Instrument(object):
             return raw
             
     ## CLASS METHODS ##
+
+    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa']
     
     @classmethod
     def open_from_uri(cls, uri):
@@ -182,6 +185,11 @@ class Instrument(object):
             gpib+serial://COM3/15
             gpib+serial:///dev/ttyACM0/15 # Currently non-functional.
             visa://USB::0x0699::0x0401::C0000001::0::INSTR
+
+        For the ``serial`` URI scheme, baud rates may be explicitly specified
+        using the query parameter ``baud=``, as in the example
+        ``serial://COM9?baud=115200``. If not specified, the baud rate
+        is assumed to be 115200.
             
         :param str uri: URI for the instrument to be loaded.
         :rtype: `Instrument`
@@ -190,6 +198,11 @@ class Instrument(object):
             `PySerial`_ documentation for serial port URI format
             
         """
+        # Make sure that urlparse knows that we want query strings.
+        for scheme in cls.URI_SCHEMES:
+            if scheme not in urlparse.uses_query:
+                urlparse.uses_query.append(scheme)
+        
         # Break apart the URI using urlparse. This returns a named tuple whose
         # parts describe the incoming URI.
         parsed_uri = urlparse.urlparse(uri)
@@ -201,12 +214,23 @@ class Instrument(object):
         kwargs = urlparse.parse_qs(parsed_uri.query)
         if parsed_uri.scheme == "serial":
             # Ex: serial:///dev/ttyACM0
-            # We want to pass this verbatim to pyserial, save for that we
-            # need to first parse the kwargs part. As such, we drop the query
-            # string and fragment parts, then urlunparse the rest, substituting
-            # empty strings in their places.
+            # We want to pass just the netloc and the path to PySerial,
+            # sending the query string as kwargs. Thus, we should make the
+            # device name here.
+            dev_name = parsed_uri.netloc
+            if parsed_uri.path:
+                dev_name = os.path.join(dev_name, parsed_uri.path)
+
+            # We should handle the baud rate separately, however, to ensure
+            # that the default is set correctly and that the type is `int`,
+            # as expected.
+            if "baud" in kwargs:
+                kwargs['baud'] = int(kwargs['baud'][0])
+            else:
+                kwargs['baud'] = 115200
+                    
             return cls.open_serial(
-                urlparse.urlunparse(parsed_uri[0:-2] + ("",) * 2),
+                dev_name,
                 **kwargs)
         elif parsed_uri.scheme == "tcpip":
             # Ex: tcpip://192.168.0.10:4100
