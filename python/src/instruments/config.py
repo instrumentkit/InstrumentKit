@@ -33,6 +33,8 @@ try:
 except ImportError:
     yaml = None
 
+import warnings
+
 ## FUNCTIONS ###################################################################
 
 def walk_dict(d, path):
@@ -115,10 +117,17 @@ def load_instruments(conf_file_name, conf_path="/"):
     conf_dict = walk_dict(conf_dict, conf_path)
     
     
-    inst_dict = {
-        name: value["class"].open_from_uri(value["uri"])
-        for name, value in conf_dict.iteritems()
-    }
+    inst_dict = {}
+    for name, value in conf_dict.iteritems():
+        try:
+            inst_dict[name] = value["class"].open_from_uri(value["uri"])
+        except Exception as ex:
+            # FIXME: need to subclass Warning so that repeated warnings
+            #        aren't ignored.
+            warnings.warn("Exception occured loading device URI {}:\n\t{}.".format(
+                value["uri"],
+                ex, RuntimeWarning))
+            inst_dict[name] = None
     
     return inst_dict
     

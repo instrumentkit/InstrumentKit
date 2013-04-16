@@ -111,7 +111,7 @@ class SerialWrapper(io.IOBase, WrapperABC):
         else:
             raise ValueError('Must read a positive value of characters.')
         
-    def write(self, string):
+    def write(self, msg):
         if self._debug:
             print " <- {} ".format(repr(msg))
         self._conn.write(msg)
