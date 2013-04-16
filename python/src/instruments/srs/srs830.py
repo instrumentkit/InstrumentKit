@@ -54,6 +54,10 @@ class SRS830Coupling(Enum):
     ac = 0
     dc = 1
 
+## CONSTANTS ###################################################################
+
+VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)] + 
+
 ## CLASSES #####################################################################
 
 class SRS830(SCPIInstrument):
@@ -163,9 +167,9 @@ class SRS830(SCPIInstrument):
                               "SRS830Coupling value, got {} "
                               "instead.".format(type(newval)))
         self.sendcmd('ICPL {}'.format(newval.value))
-    
-    # Set Data Sample Rate
-    def setSampleRate(self,sampleRate):
+        
+    @property
+    def sample_rate(self):
         '''
         Function sets the data sampling rate of the lock-in
         
@@ -174,16 +178,19 @@ class SRS830(SCPIInstrument):
         This means 2^n, n={-4...+9}
         sampleRate = {<freq>,TRIGGER}
         '''
-        if isinstance(sampleRate,str):
-            sampleRate = sampleRate.lower()
-            
-        valid = [0.0625,0.125,0.25,0.5,1,2,4,8,16,32,64,128,256,512,'trigger']    
-        if sampleRate in valid:
-            sampleRate = str( valid.index(sampleRate) )
-        else:
-            raise Exception('Data sample rate parameter can only  be 2^n, n={-4..+9} or "trigger".')
+        return pq.Quantity(float(self.query('SRAT?')), pq.Hz)
+    @sample_rate.setter
+    def sample_rate(self, newval):
+        if isinstance(newval, str):
+            newval = newval.lower()
+            if newval == 'trigger':
+                self.sendcmd('SRAT 14')
         
-        self.write( 'SRAT ' + sampleRate )
+        if newval in VALID_SAMPLE_RATES:
+            self.sendcmd('SRAT {}'.format(VALID_SAMPLE_RATES.index(newval)))
+        else:
+            raise ValueError('Valid samples rates given by {} and "trigger".'
+                                .format(VALID_SAMPLE_RATES))
     
     # Set End of Buffer Mode    
     def setEndOfBufferMode(self,mode):
