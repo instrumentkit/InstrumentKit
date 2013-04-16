@@ -37,6 +37,7 @@ import usbwrapper as uw
 import visawrapper as vw
 import gi_gpib
 from instruments.abstract_instruments import WrapperABC
+import os
 
 try:
     import usb
@@ -165,9 +166,43 @@ class Instrument(object):
             return raw
             
     ## CLASS METHODS ##
+
+    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa']
     
     @classmethod
     def open_from_uri(cls, uri):
+        """
+        Given an instrument URI, opens the instrument named by that URI.
+        Instrument URIs are formatted with a scheme, such as ``serial://``,
+        followed by a location that is interpreted differently for each
+        scheme. The following examples URIs demonstrate the currently supported
+        schemes and location formats::
+        
+            serial://COM3
+            serial:///dev/ttyACM0
+            tcpip://192.168.0.10:4100
+            gpib+usb://COM3/15
+            gpib+serial://COM3/15
+            gpib+serial:///dev/ttyACM0/15 # Currently non-functional.
+            visa://USB::0x0699::0x0401::C0000001::0::INSTR
+
+        For the ``serial`` URI scheme, baud rates may be explicitly specified
+        using the query parameter ``baud=``, as in the example
+        ``serial://COM9?baud=115200``. If not specified, the baud rate
+        is assumed to be 115200.
+            
+        :param str uri: URI for the instrument to be loaded.
+        :rtype: `Instrument`
+        
+        .. seealso::
+            `PySerial`_ documentation for serial port URI format
+            
+        """
+        # Make sure that urlparse knows that we want query strings.
+        for scheme in cls.URI_SCHEMES:
+            if scheme not in urlparse.uses_query:
+                urlparse.uses_query.append(scheme)
+        
         # Break apart the URI using urlparse. This returns a named tuple whose
         # parts describe the incoming URI.
         parsed_uri = urlparse.urlparse(uri)
@@ -179,24 +214,45 @@ class Instrument(object):
         kwargs = urlparse.parse_qs(parsed_uri.query)
         if parsed_uri.scheme == "serial":
             # Ex: serial:///dev/ttyACM0
-            # We want to pass this verbatim to pyserial, save for that we
-            # need to first parse the kwargs part. As such, we drop the query
-            # string and fragment parts, then urlunparse the rest, substituting
-            # empty strings in their places.
+            # We want to pass just the netloc and the path to PySerial,
+            # sending the query string as kwargs. Thus, we should make the
+            # device name here.
+            dev_name = parsed_uri.netloc
+            if parsed_uri.path:
+                dev_name = os.path.join(dev_name, parsed_uri.path)
+
+            # We should handle the baud rate separately, however, to ensure
+            # that the default is set correctly and that the type is `int`,
+            # as expected.
+            if "baud" in kwargs:
+                kwargs['baud'] = int(kwargs['baud'][0])
+            else:
+                kwargs['baud'] = 115200
+                    
             return cls.open_serial(
-                urlparse.urlunparse(parsed_uri[0:-2] + ("",) * 2),
+                dev_name,
                 **kwargs)
         elif parsed_uri.scheme == "tcpip":
             # Ex: tcpip://192.168.0.10:4100
-            return cls.open_tcpip(*parsed_uri.netloc.split(":"), **kwargs)
+            host, port = parsed_uri.netloc.split(":")
+            port = int(port)
+            return cls.open_tcpip((host, port), **kwargs)
         elif parsed_uri.scheme == "gpib+usb" or scheme == "gpib+serial":
             # Ex: gpib+usb://COM3/15
             #     scheme="gpib+usb", netloc="COM3", path="/15"
+            # FIXME: does not work if the serial location contains a "/",
+            #        as is the case on Linux.
             return cls.open_serial(
                 parsed_uri.netloc,
                 # Drop the leading / from the address.
                 int(parsed_uri.path[1:]),
                 **kwargs)
+        elif parsed_uri.scheme == "visa":
+            # Ex: visa://USB::{VID}::{PID}::{SERIAL}::0::INSTR
+            #     where {VID}, {PID} and {SERIAL} are to be replaced with
+            #     the vendor ID, product ID and serial number of the USB-VISA
+            #     device.
+            return cls.open_visa(parsed_uri.netloc, **kwargs)
         else:
             return NotImplementedError("Invalid scheme or not yet implemented.")
     
