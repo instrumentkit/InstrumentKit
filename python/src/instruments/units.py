@@ -29,6 +29,13 @@ from quantities.unitquantity import IrreducibleUnit
 
 ## UNITS #######################################################################
 
+## IRREDUCIBLE UNITS ##
+
+class UnitLogPower(IrreducibleUnit):
+    _primary_order = 80 # Something large smaller than 99.
+
+## SPECIFIC UNITS ##
+
 # Define basic unit of log-power, the dBm.
 
 #: Decibel-milliwatts, a basic unit of logarithmic power.
@@ -44,9 +51,6 @@ mHz = UnitQuantity('millihertz', milli * Hz, symbol='mHz', doc="""
 `~quantities.UnitQuantity` representing millihertz, the native unit of the
 Phase Matrix FSW-0020.
 """)
-
-class UnitLogPower(IrreducibleUnit):
-    _primary_order = 80 # Something large smaller than 99.
 
 #: Centibel-milliwatts, the native log-power unit supported by the
 #: Phase Matrix FSW-0020.

@@ -28,7 +28,7 @@
 import io
 try:
     import visa
-except ImportError:
+except (ImportError, OSError):
     visa = None
 
 import numpy as np
