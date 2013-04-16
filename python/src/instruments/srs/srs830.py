@@ -33,16 +33,18 @@ import time
 
 from flufl.enum import Enum
 from flufl.enum._enum import EnumValue
+import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
 import instruments.abstract_instruments.gi_gpib as gw
 import instruments.abstract_instruments.serialwrapper as sw
+from instruments.util_fns import assume_units
 
 ## ENUMS #######################################################################
 
 class SRS830FreqSource(Enum):
-    external = 'ext'
-    internal = 'int'
+    external = 'EXT'
+    internal = 'INT'
 
 ## CLASSES #####################################################################
 
@@ -75,80 +77,48 @@ class SRS830(SCPIInstrument):
                               "SRS830FreqSource value, got {} "
                               "instead.".format(type(newval)))
         self.sendcmd('FMOD {}'.format(newval.value))
-    
-    # Set Frequency Source
-    def setFreqSource(self,source):
-        ''' 
-        Function sets teh frequency source to either the internal
-        reference clock, or an external reference.
-    
-        source: {EXTernal|INTernal},string
-        '''
-        if not isinstance(source,str):
-            raise Exception('Parameter must be a string.')
-            
-        source = source.lower()
         
-        valid1 = ['ext','int']
-        valid2 = ['external','internal']
-        if source in valid1:
-            source = valid1.index(source)
-        elif source in valid2:
-            source = valid2.index(source)
-        else:
-            raise Exception('Only "external" and "internal" are valid freq sources.')
-            
-        self.write( 'FREQ ' + str(source) )
-    
-    # Set Frequency    
-    def setFreq(self,freq):
-        '''
-        Function sers the internal reference frequency. This command only
-        works if the lock-in is set to use the internal reference.
+    @property
+    def freq(self):
+        return pq.Quantity(float(self.query('FREQ?')),pq.hertz)
+    @freq.setter
+    def freq(self, newval):
+        newval = float(assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude)
         
-        freq: Desired frequency. Rounded to 5 digits or 0.0001Hz, whichever is larger.
-        freq: <frequency>,float
-        '''
-        if not isinstance(freq,int) and not isinstance(freq,float):
-            raise Exception('Freq parameter must be an integer or a float.')
-        
-        # Ensure that lock-in is not set to external freq ref
-        if( int(self.query('FMOD?')) == 0 ):
-            raise Exception('SRS830 set to external freq source, cannot change internal freq.')
-            
-        self.write( 'FREQ ' + str(freq) )
+        self.sendcmd('FREQ {}'.format(newval))
     
-    # Set Phase        
-    def setPhase(self,phase):
+    @property
+    def phase(self):
         '''
         Function sets the phase of the internal reference signal.
         
         phase: Desired phase
         phase = <-360...+729.99>,float
         '''
-        if not isinstance(phase,int) and not isinstance(phase,float):
-            raise Exception('Phase parameter must be an integer or a float.')
-        
-        if ( (phase >= 730) or (phase < -360) ):
-            raise Exception('Phase must be -360 <= phase < +730 .')
-
-        self.write( 'PHAS ' + str(phase) )    
+        return pq.Quantity(float(self.query('PHAS?')), pq.degrees)
+    phase.setter
+    def phase(self, newval):
+        newval = float(assume_units(newval, pq.degree)
+                        .rescale(pq.degree).magnitude)
+        if (newval >= 730) or (newval <- 360):
+            raise ValueError('Phase must be -360 <= phase < +730')
+        self.sendcmd('PHAS {}'.format(newval))
     
-    # Set Amplitude    
-    def setAmplitude(self,amplitude):
+    @property
+    def amplitude(self):
         '''
         Function sets the amplitude of the internal reference signal.
         
         amplitude: Desired peak-to-peak voltage
         amplitude = <0.004...5>,float
         '''
-        if not isinstance(amplitude,int) and not isinstance(amplitude,float):
-            raise Exception('Amplitude parameter must be an integer or a float.')
-            
-        if ( (amplitude > 5) or (amplitude < 0.004) ):
-            raise Exception('Amplitude must be +0.004 <= amplitude <= +5 .')
-
-        self.write( 'SLVL ' + str(amplitude) )
+        return pq.Quantity(float(self.query('SLVL?')), pq.volt)
+    @amplitude.setter
+    def amplitude(self, newval):
+        newval = float(assume_units(newval, pq.volt).rescale(pq.volt).magnitude)
+        if ((newval > 5) or (newval < 0.004)):
+            raise ValueError('Amplitude must be +0.004 <= amplitude <= +5 .')
+        self.sendcmd('SLVL {}'.format(newval))
     
     # Set Input Shield Grounding
     def setInputGround(self,grounding):
