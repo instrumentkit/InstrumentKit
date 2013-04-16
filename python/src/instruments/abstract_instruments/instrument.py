@@ -241,15 +241,16 @@ class Instrument(object):
             host, port = parsed_uri.netloc.split(":")
             port = int(port)
             return cls.open_tcpip((host, port), **kwargs)
-        elif parsed_uri.scheme == "gpib+usb" or scheme == "gpib+serial":
+        elif parsed_uri.scheme == "gpib+usb" or parsed_uri.scheme == "gpib+serial":
             # Ex: gpib+usb://COM3/15
             #     scheme="gpib+usb", netloc="COM3", path="/15"
-            # FIXME: does not work if the serial location contains a "/",
-            #        as is the case on Linux.
-            return cls.open_serial(
-                parsed_uri.netloc,
-                # Drop the leading / from the address.
-                int(parsed_uri.path[1:]),
+            # Make a new device path by joining the netloc (if any)
+            # with all but the last segment of the path.
+            uri_head, uri_tail = os.path.split(parsed_uri.path)
+            dev_path = os.path.join(parsed_uri.netloc, uri_head)
+            return cls.open_gpibusb(
+                dev_path,
+                int(uri_tail),
                 **kwargs)
         elif parsed_uri.scheme == "visa":
             # Ex: visa://USB::{VID}::{PID}::{SERIAL}::0::INSTR
@@ -258,7 +259,7 @@ class Instrument(object):
             #     device.
             return cls.open_visa(parsed_uri.netloc, **kwargs)
         else:
-            return NotImplementedError("Invalid scheme or not yet implemented.")
+            raise NotImplementedError("Invalid scheme or not yet implemented.")
     
     @classmethod
     def open_tcpip(cls, host, port):

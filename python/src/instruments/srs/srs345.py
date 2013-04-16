@@ -57,6 +57,8 @@ class SRS345Function(Enum):
 
 class SRS345(SCPIInstrument):
     # TODO: docstring
+    # FIXME: need to add OUTX 1 here, but doing so seems to cause a syntax
+    #        error on the instrument.
         
     @property
     def amplitude(self):
