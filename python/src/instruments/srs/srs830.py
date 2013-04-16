@@ -1,22 +1,80 @@
 #!/usr/bin/python
-# Filename: srs830.py
+# -*- coding: utf-8 -*-
+##
+# srs830.py: Driver for the SRS830 lock-in amplifier.
+##
+# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+#
+# This file is a part of the GPIBUSB adapter project.
+# Licensed under the AGPL version 3.
+##
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
 
-# Original author: Steven Casagrande (stevencasagrande@gmail.com)
-# 2012
+## FEATURES ####################################################################
 
-# This work is released under the Creative Commons Attribution-Sharealike 3.0 license.
-# See http://creativecommons.org/licenses/by-sa/3.0/ or the included license/LICENSE.TXT file for more information.
+from __future__ import division
 
-# Attribution requirements can be found in license/ATTRIBUTION.TXT
+## IMPORTS #####################################################################
 
-from instruments.abstract_instruments import Instrument
 import math
 import time
 
-class SRS830(Instrument):
-    def __init__(self, port, address,timeout_length):
+from flufl.enum import Enum
+from flufl.enum._enum import EnumValue
+
+from instruments.generic_scpi import SCPIInstrument
+import instruments.abstract_instruments.gi_gpib as gw
+import instruments.abstract_instruments.serialwrapper as sw
+
+## ENUMS #######################################################################
+
+class SRS830FreqSource(Enum):
+    external = 'ext'
+    internal = 'int'
+
+## CLASSES #####################################################################
+
+class SRS830(SCPIInstrument):
+    def __init__(self, port, address, timeout_length, outx_mode=None):
         super(SRS830, self).__init__(self,port,address,timeout_length)
-        self.write('OUTX 1') # Set the device responce port to GPIB
+        if outx_mode is 1:
+            self.sendcmd('OUTX 1')
+        elif outx_mode is 2:
+            self.sendcmd('OUTX 2')
+        else:
+            if isinstance(self._file, gw.GPIBWarapper):
+                self.sendcmd('OUTX 1')
+            elif isinstance(self._file, sw.SerialWrapper):
+                self.sendcmd('OUTX 2')
+            else:
+                print 'OUTX command has not been set. Instrument behavour is '\
+                        'unknown.'
+    
+    ## PROPERTIES ##
+    
+    @property
+    def freq_source(self):
+        return SRS830FreqSource[self.query('FMOD?')]
+    @freq_source.setter
+    def freq_source(self, newval):
+        if not isinstance(newval, EnumValue) or 
+                (newval.enum is not SRS830FreqSource):
+            raise TypeError("Frequency source setting must be a "
+                              "SRS830FreqSource value, got {} "
+                              "instead.".format(type(newval)))
+        self.sendcmd('FMOD {}'.format(newval.value))
     
     # Set Frequency Source
     def setFreqSource(self,source):
