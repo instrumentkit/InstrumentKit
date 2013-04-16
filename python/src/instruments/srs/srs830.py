@@ -58,10 +58,6 @@ class SRS830BufferMode(Enum):
     one_shot = 0
     loop = 1
 
-class SRS830TransferMode(Enum):
-    off = 0
-    on = 2
-
 ## CONSTANTS ###################################################################
 
 VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)] + 
@@ -234,17 +230,73 @@ class SRS830(SCPIInstrument):
         % mode: 
         % mode = {ON|OFF},string
         '''
-        return SRS830TransferMode[self.query('FAST?')]
+        return int(self.query('FAST?')) == 2
     @data_transfer.setter
     def data_transfer(self, newval):
-        if not isinstance(newval, EnumValue) or 
-                (newval.enum is not SRS830TransferMode):
-            raise TypeError("Input coupling setting must be a "
-                              "SRS830TransferMode value, got {} "
-                              "instead.".format(type(newval)))
-        self.sendcmd('FAST {}'.format(newval.value))
+        self.sendcmd('FAST {}'.format(2 if newval else 0))
     
-    ## METHODS ##
+    ## AUTO- METHODS ##
+    
+    def auto_offset(self,mode):
+        '''
+        % Function sets a specific channel mode to auto offset. This is the
+        % same as pressing the auto offset key on the display.
+        % It sets the offset of the mode specified to zero.
+        %
+        % mode: Mode who's offset will be set to zero.
+        % mode = {X|Y|R},string
+        '''
+        if not isinstance(mode,str):
+            raise Exception('Parameter "mode" must be a string.')
+            
+        mode = mode.lower()
+        
+        valid = ['x','y','r']
+        if mode in valid:
+            mode = str( valid.index(mode) + 1 )
+        else:
+            raise Exception('Only "x" , "y" and "r" are valid modes '
+                              'for setting the auto offset.')
+        
+        self.write( 'AOFF ' + mode )
+    
+    def auto_phase(self):
+        '''
+        % Function sets the lock-in to auto phase.
+        % This does the same thing as pushing the auto phase button.
+        % Do not send this message again without waiting the correct amount
+        % of time for the lock-in to finish.
+        '''
+        self.write('APHS')
+        
+    ## META-METHODS ##
+    
+    def init(self, sample_rate, buffer_mode):
+        '''
+        Wrapper function to prepare the srs830 for measurement.
+        Sets both the data sampling rate and the end of buffer mode
+        
+        sampleRate: The sampling rate in Hz, or the string "trigger".
+        When specifing the rate in Hz, acceptable values are integer
+        powers of 2. This means 2^n, n={-4...+9}.
+        sampleRate = {<freq>|TRIGGER}
+        
+        mode = {1SHOT|LOOP},string
+        '''
+        self.clear_data_buffer()
+        self.sample_rate = sample_rate
+        self.buffer_mode = buffer_mode
+    
+    def start_data_transfer(self):
+        '''
+        Wrapper function to start the actual data transfer.
+        Sets the transfer mode to FAST2, and triggers the data transfer
+        to start after a delay of 0.5 seconds.
+        '''
+        self.data_transfer('on') # FIXME
+        self.start_scan()
+    
+    ## OTHER METHODS ##
   
     def set_offset_expand(self,mode,offset,expand):
         '''
@@ -290,37 +342,7 @@ class SRS830(SCPIInstrument):
         
         self.write( 'OEXP %s,%s,%s' % (mode,offset,expand) )
     
-    def auto_offset(self,mode):
-        '''
-        % Function sets a specific channel mode to auto offset. This is the
-        % same as pressing the auto offset key on the display.
-        % It sets the offset of the mode specified to zero.
-        %
-        % mode: Mode who's offset will be set to zero.
-        % mode = {X|Y|R},string
-        '''
-        if not isinstance(mode,str):
-            raise Exception('Parameter "mode" must be a string.')
-            
-        mode = mode.lower()
-        
-        valid = ['x','y','r']
-        if mode in valid:
-            mode = str( valid.index(mode) + 1 )
-        else:
-            raise Exception('Only "x" , "y" and "r" are valid modes '
-                              'for setting the auto offset.')
-        
-        self.write( 'AOFF ' + mode )
     
-    def auto_phase(self):
-        '''
-        % Function sets the lock-in to auto phase.
-        % This does the same thing as pushing the auto phase button.
-        % Do not send this message again without waiting the correct amount
-        % of time for the lock-in to finish.
-        '''
-        self.write('APHS')
       
     def start_scan(self):
         '''
@@ -335,32 +357,7 @@ class SRS830(SCPIInstrument):
         Has the instrument pause data capture.
         '''
         self.write('PAUS')
-    
-    def init(self, sample_rate, buffer_mode):
-        '''
-        Wrapper function to prepare the srs830 for measurement.
-        Sets both the data sampling rate and the end of buffer mode
-        
-        sampleRate: The sampling rate in Hz, or the string "trigger".
-        When specifing the rate in Hz, acceptable values are integer
-        powers of 2. This means 2^n, n={-4...+9}.
-        sampleRate = {<freq>|TRIGGER}
-        
-        mode = {1SHOT|LOOP},string
-        '''
-        self.clear_data_buffer()
-        self.sample_rate = sample_rate
-        self.buffer_mode = buffer_mode
-    
-    def start_data_transfer(self):
-        '''
-        Wrapper function to start the actual data transfer.
-        Sets the transfer mode to FAST2, and triggers the data transfer
-        to start after a delay of 0.5 seconds.
-        '''
-        self.data_transfer('on')
-        self.start_scan()
-            
+      
     def data_snap(self,mode1,mode2):
         '''
         Function takes a snapshot of the current parameters are defined
@@ -436,26 +433,23 @@ class SRS830(SCPIInstrument):
         '''
         self.write('REST')
     
-    def take_measurement(self, sampleRate, numSamples):
-        numSamples = float( numSamples )
+    def take_measurement(self, sample_rate, num_samples):
+        numSamples = float(num_samples)
         if numSamples > 16383:
-            raise Exception('Number of samples cannot exceed 16383.')
+            raise ValueError('Number of samples cannot exceed 16383.')
         
-        sampleTime = math.ceil( numSamples/sampleRate )
+        sample_time = math.ceil( num_samples/sample_rate )
         
-        self.init(sampleRate,'1shot')
-        self.startDataTransfer()
+        self.init(sample_rate, SRS830BufferMode['one_shot'])
+        self.start_data_transfer()
         
-        print 'Sampling will take ' + sampleTime + ' seconds.'
-        time.sleep(sampleTime)
+        print 'Sampling will take ' + sample_time + ' seconds.'
+        time.sleep(sample_time)
         
         self.pause()
         
-        print 'Sampling complete, reading channel 1.'
-        ch1 = self.readDataBuffer('ch1')
-        
-        print 'Reading channel 2.'
-        ch2 = self.readDataBuffer('ch2')
+        ch1 = self.read_data_buffer('ch1')
+        ch2 = self.read_data_buffer('ch2')
         
         return [ch1,ch2]
                
