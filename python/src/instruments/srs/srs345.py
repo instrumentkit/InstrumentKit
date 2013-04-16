@@ -49,6 +49,15 @@ class SRS345VoltageMode(Enum):
     peak_to_peak = "VP"
     rms = "VR"
 
+class SRS345Function(Enum):
+    sinusoid = 0
+    square = 1
+    triangle = 2
+    ramp = 3
+    noise = 4
+    arbitrary = 5
+    
+
 ## FUNCTIONS ###################################################################
 
 class SRS345(SCPIInstrument):
@@ -115,74 +124,57 @@ class SRS345(SCPIInstrument):
         :type: `float` or `~quantities.Quantity`
         '''
         return pq.Quantity(float(self.query('FREQ?')), pq.Hz)
-    @frequency.setter(self, newval):
+    @frequency.setter
+    def frequency(self, newval):
         self.sendcmd("FREQ {}".format(
             assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude)
         )
         
-    def function(self,func = None):
+    @property
+    def function(self):
+        """
+        Gets/sets the output function of the function generator.
+        
+        :type: `SRS345Function`
+        """
+        return SRS345Function[self.query("FUNC?")]
+    @function.setter
+    def function(self, newval):
+        # TODO: add type checking here.
+        self.sendcmd("FUNC {}".format(newval.value))
+        
+    @property
+    def offset(self):
+        return pq.Quantity(float(self.query("OFFS?")), pq.V)
+    @offset.setter
+    def offset(self, newval):
         '''
-        Set the output function of the function generator.
+        Gets/sets the offset voltage for the output waveform.
         
-        If argument "func" is omitted, the instrument is queried for its current output setting.
-        
-        Return type is a string.
-        
-        func: Output function type.
-        func = {SINusoid|SQUare|TRIangle|RAMP|NOISe|ARBitrary},string
+        :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
+        :type: `float` or `~quantities.Quantity`
         '''
-        valid = ['sinusoid','square','triangle','ramp','noise','arbitrary']
-        valid2 = ['sin','squ','tri','ramp','nois','arb']
+        self.sendcmd("OFFS {}".format(
+            assume_units(newval, pq.V).rescale(pq.V).magnitude
+        ))
         
-        if func == None:
-            func = self.query('FUNC?')
-            return valid[int(func)]
-        
-        if not isinstance(func,str):
-            raise Exception('Function type must be specified as a string.')
-        
-        func = func.lower()
-        if func in valid:
-            func = valid.index(func)
-        elif func in valid2:
-            func = valid2.index(func)
-        elif func == 'sine':
-            func = 0
-        else:
-            raise Exception('Valid output function types are: ' + str(valid))
-        
-        self.write('FUNC ' + str(func))
-        
-    def offset(self,offset = None):
+    @property
+    def phase(self):
         '''
-        Set the offset voltage for the output waveform.
+        Gets/sets the phase for the output waveform.
         
-        If no offset is specified, function queries the instrument for the current offset voltage.
-        
-        Return type is a float.
-        
-        offset: Desired voltage offset in volts.
-        offset = <voltage>,integer/float
+        :units: As specified, or assumed to be degrees (:math:`{}^{\\circ}`)
+            otherwise.
+        :type: `float` or `~quantities.Quantity`
         '''
-        if offset == None:
-            return float( self.query('OFFS?') )
-        
-        if not isinstance(offset,int) and not isinstance(offset,float):
-            raise Exception('Offset must be an integer or a float.')
-        
-        self.write('OFFS ' + str(offset))
+        return pq.Quantity(float(self.query("PHSE?")), "degrees")
+    @phase.setter
+    def phase(self, newval):
+        self.sendcmd("PHSE {}".format(
+            assume_units(newval, "degrees").rescale("degrees").magnitude
+        ))
         
     def phase(self, phase = None):
-        '''
-        Set the phase for the output waveform.
-        
-        If no phase is specified, function queries the instrument for the current phase.
-        
-        Return type is a float.
-        
-        phase: Desired phase in degrees.
-        phase = <voltage>,integer/float
-        '''
         if phase == None:
             return float( self.query('PHSE?') )
         
@@ -193,19 +185,5 @@ class SRS345(SCPIInstrument):
             raise Exception('Phase must be between 0 and 7200 degrees.')
         
         self.write('PHSE ' + str(phase))
-            
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-            
         
