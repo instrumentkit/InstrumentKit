@@ -28,8 +28,6 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
-from time import time, sleep
-
 from flufl.enum import Enum
 from flufl.enum._enum import EnumValue
 
@@ -39,9 +37,6 @@ from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units
 
 from instruments.units import dBm
-
-import struct
-import numpy as np
 
 ## ENUMS #######################################################################
 
@@ -98,7 +93,7 @@ class SRS345(SCPIInstrument):
             newval_dBm = newval.rescale(dBm)
             mag = float(newval_dBm.magnitude)
             units = "DB"
-        except ValueError:
+        except (AttributeError, ValueError):
             # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
             if not isinstance(newval, tuple):
                 mag = newval
@@ -110,7 +105,7 @@ class SRS345(SCPIInstrument):
             units = units.value
                 
             # Finally, convert the magnitude out to a float.
-            mag = float(assume_units(newval, pq.V).rescale(pq.V).magnitude)
+            mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
         
         
         self.sendcmd("AMPL {mag}{units}".format(mag=mag, units=units))
@@ -137,7 +132,7 @@ class SRS345(SCPIInstrument):
         
         :type: `SRS345Function`
         """
-        return SRS345Function[self.query("FUNC?")]
+        return SRS345Function[int(self.query("FUNC?"))]
     @function.setter
     def function(self, newval):
         # TODO: add type checking here.
@@ -173,17 +168,5 @@ class SRS345(SCPIInstrument):
         self.sendcmd("PHSE {}".format(
             assume_units(newval, "degrees").rescale("degrees").magnitude
         ))
-        
-    def phase(self, phase = None):
-        if phase == None:
-            return float( self.query('PHSE?') )
-        
-        if not isinstance(phase,int) and not isinstance(phase,float):
-            raise Exception('Phase must be an integer or a float.')
-        
-        if phase < 0 or phase > 7200:
-            raise Exception('Phase must be between 0 and 7200 degrees.')
-        
-        self.write('PHSE ' + str(phase))
         
         

@@ -83,7 +83,7 @@ class Instrument(object):
         :param str cmd: String containing the command to
             be sent.
         """
-        self.write(str(cmd))
+        self._file.sendcmd(str(cmd))
         
     def query(self, cmd, size=-1):
         """
