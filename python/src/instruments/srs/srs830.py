@@ -43,12 +43,16 @@ from instruments.util_fns import assume_units
 ## ENUMS #######################################################################
 
 class SRS830FreqSource(Enum):
-    external = 'EXT'
-    internal = 'INT'
+    external = 0
+    internal = 1
     
 class SRS830InputShield(Enum):
     floating = 0
     grounded = 1
+    
+class SRS830Coupling(Enum):
+    ac = 0
+    dc = 1
 
 ## CLASSES #####################################################################
 
@@ -137,52 +141,28 @@ class SRS830(SCPIInstrument):
     def input_shield_grounding(self, newval):
         if not isinstance(newval, EnumValue) or 
                 (newval.enum is not SRS830InputShield):
-            raise TypeError("Frequency source setting must be a "
+            raise TypeError("Input shield grounding setting must be a "
                               "SRS830InputShield value, got {} "
                               "instead.".format(type(newval)))
         self.sendcmd('IGND {}'.format(newval.value))
     
-    # Set Input Shield Grounding
-    def setInputGround(self,grounding):
-        '''
-        Function sets the input shield grounding to either 'float' or 'ground'
-        
-        grounding: Desired input shield grounding
-        grounding = {float|ground},string
-        '''
-        if not isinstance(grounding,str):
-            raise Exception('Parameter "grounding" must be a string.')
-            
-        grounding = grounding.lower()
-        
-        valid = ['float','ground']
-        if grounding in valid:
-            grounding = str( valid.index(grounding) )
-        else:
-            raise Exception('Only "float" and "ground" are valid grounding input ground settings.')
-        
-        self.write( 'IGND ' + grounding )
-    
-    # Set Input Coupling
-    def setInputCoupling(self,coupling):
+    @property 
+    def coupling(self):
         '''
         Function sets the input coupling to either 'ac' or 'dc'
         
         coupling: Desired input coupling mode
         coupling = {ac|dc},string
         '''
-        if not isinstance(coupling,str):
-            raise Exception('Parameter "coupling" must be a string.')
-        
-        coupling = coupling.lower()
-        
-        valid = ['ac','dc']
-        if coupling in valid:
-            coupling = str( valid.index(coupling) )
-        else:
-            raise Exception('Only "ac" and "dc" are valid input coupling settings.')
-        
-        self.write( 'ICPL ' + coupling )
+        return SRS830Coupling[self.query('ICPL?')]
+    @coupling.setter
+    def coupling(self, newval):
+        if not isinstance(newval, EnumValue) or 
+                (newval.enum is not SRS830Coupling):
+            raise TypeError("Input coupling setting must be a "
+                              "SRS830Coupling value, got {} "
+                              "instead.".format(type(newval)))
+        self.sendcmd('ICPL {}'.format(newval.value))
     
     # Set Data Sample Rate
     def setSampleRate(self,sampleRate):
