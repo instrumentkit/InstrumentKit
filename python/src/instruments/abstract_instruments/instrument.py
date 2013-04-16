@@ -47,8 +47,12 @@ except ImportError:
     usb = None
 
 try:
+    WindowsError
+except NameError:
+    WindowsError = None
+try:
     import visa
-except (ImportError, OSError):
+except (ImportError, WindowsError, OSError):
     visa = None
 
 import numpy as np
