@@ -45,6 +45,10 @@ from instruments.util_fns import assume_units
 class SRS830FreqSource(Enum):
     external = 'EXT'
     internal = 'INT'
+    
+class SRS830InputShield(Enum):
+    floating = 0
+    grounded = 1
 
 ## CLASSES #####################################################################
 
@@ -119,6 +123,24 @@ class SRS830(SCPIInstrument):
         if ((newval > 5) or (newval < 0.004)):
             raise ValueError('Amplitude must be +0.004 <= amplitude <= +5 .')
         self.sendcmd('SLVL {}'.format(newval))
+        
+    @property
+    def input_shield_grounding(self):
+        '''
+        Function sets the input shield grounding to either 'float' or 'ground'
+        
+        grounding: Desired input shield grounding
+        grounding = {float|ground},string
+        '''
+        return SRS830InputShield[self.query('IGND?')]
+    @input_shield_grounding.setter
+    def input_shield_grounding(self, newval):
+        if not isinstance(newval, EnumValue) or 
+                (newval.enum is not SRS830InputShield):
+            raise TypeError("Frequency source setting must be a "
+                              "SRS830InputShield value, got {} "
+                              "instead.".format(type(newval)))
+        self.sendcmd('IGND {}'.format(newval.value))
     
     # Set Input Shield Grounding
     def setInputGround(self,grounding):
