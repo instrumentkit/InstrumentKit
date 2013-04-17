@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# srs345.py: Implements a driver for the SRS 345 function generator.
+# scpimultimeter.py: Python class for SCPI complient multimeters
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
@@ -29,40 +29,26 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 from flufl.enum import Enum
-from flufl.enum._enum import EnumValue
 
 import quantities as pq
+import numpy as np
 
-from instruments import FunctionGenerator
+from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units
 
 from instruments.units import dBm
 
-## ENUMS #######################################################################
+## CLASSES #####################################################################
 
-class SRS345Function(Enum):
-    sinusoid = 0
-    square = 1
-    triangle = 2
-    ramp = 3
-    noise = 4
-    arbitrary = 5
+class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     
-
-## FUNCTIONS ###################################################################
-
-class SRS345(SCPIInstrument, FunctionGenerator):
-    # TODO: docstring
-    # FIXME: need to add OUTX 1 here, but doing so seems to cause a syntax
-    #        error on the instrument.
-        
     ## CONSTANTS ##
     
     _UNIT_MNEMONICS = {
-        FunctionGenerator.VoltageMode.peak_to_peak: "VP",
-        FunctionGenerator.VoltageMode.rms:          "VR",
-        FunctionGenerator.VoltageMode.dBm:          "DB",
+        FunctionGenerator.VoltageMode.peak_to_peak: "VPP",
+        FunctionGenerator.VoltageMode.rms:          "VRMS",
+        FunctionGenerator.VoltageMode.dBm:          "DBM",
     }
     
     _MNEMONIC_UNITS = {mnem: unit for unit, mnem in _UNIT_MNEMONICS.iteritems()}
@@ -73,21 +59,22 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         """
         
         """
-        resp = self.query("AMPL?").strip()
+        units = self.query("VOLT:UNITS?").strip()
         
         return (
-            float(resp[:-2]),
-            self._MNEMONIC_UNITS[resp[-2:]]
+            float(self.query("VOLT?").strip()),
+            self._MNEMONIC_UNITS[units]
         )
         
     def _set_amplitude_(self, magnitude, units):
         """
         
         """
-        self.sendcmd("AMPL {}{}".format(magnitude, self._UNIT_MNEMONICS[units]))
-        
+        self.sendcmd("VOLT {}".format(magnitude))
+        self.sendcmd("VOLT:UNITS {}".format(self._UNIT_MNEMONICS[units]))
+    
     ## PROPERTIES ##
-        
+    
     @property
     def frequency(self):
         '''
@@ -102,48 +89,33 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         self.sendcmd("FREQ {}".format(
             assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude)
         )
-        
+    
     @property
     def function(self):
-        """
-        Gets/sets the output function of the function generator.
+        '''
+        Gets/sets the output function of the function generator
         
-        :type: `SRS345Function`
-        """
-        return SRS345Function[int(self.query("FUNC?"))]
+        :type: `SCPIFunctionGenerator.Function`
+        '''
+        return SCPIFunctionGenerator.Function[self.query('FUNC?').strip()]
     @function.setter
     def function(self, newval):
-        # TODO: add type checking here.
-        self.sendcmd("FUNC {}".format(newval.value))
-        
+        if not isinstance(newval, SCPIFunctionGenerator.Function):
+            raise TypeError('Value must be specified as a '
+                                '`SCPIFunctionGenerator.Function` type.')
+        self.sendcmd('FUNC:{}'.format(newval.value))
+    
     @property
     def offset(self):
-        return pq.Quantity(float(self.query("OFFS?")), pq.V)
+        pass
     @offset.setter
     def offset(self, newval):
-        '''
-        Gets/sets the offset voltage for the output waveform.
-        
-        :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
-        '''
-        self.sendcmd("OFFS {}".format(
-            assume_units(newval, pq.V).rescale(pq.V).magnitude
-        ))
-        
+        pass
+    
     @property
     def phase(self):
-        '''
-        Gets/sets the phase for the output waveform.
-        
-        :units: As specified, or assumed to be degrees (:math:`{}^{\\circ}`)
-            otherwise.
-        :type: `float` or `~quantities.Quantity`
-        '''
-        return pq.Quantity(float(self.query("PHSE?")), "degrees")
+        pass
     @phase.setter
     def phase(self, newval):
-        self.sendcmd("PHSE {}".format(
-            assume_units(newval, "degrees").rescale("degrees").magnitude
-        ))
-        
+        pass
+    
