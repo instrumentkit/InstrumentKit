@@ -52,7 +52,7 @@ class SCPIInstrument(Instrument):
         
     @property
     def op_complete(self):
-        result = self.query('OPC?')
+        result = self.query('*OPC?')
         return bool(int(result))
     
     @property
