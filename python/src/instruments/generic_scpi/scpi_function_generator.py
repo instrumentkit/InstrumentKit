@@ -59,7 +59,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
         """
         
         """
-        units = self.query("VOLT:UNITS?").strip()
+        units = self.query("VOLT:UNIT?").strip()
         
         return (
             float(self.query("VOLT?").strip()),
@@ -70,8 +70,8 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
         """
         
         """
+        self.sendcmd("VOLT:UNIT {}".format(self._UNIT_MNEMONICS[units]))
         self.sendcmd("VOLT {}".format(magnitude))
-        self.sendcmd("VOLT:UNITS {}".format(self._UNIT_MNEMONICS[units]))
     
     ## PROPERTIES ##
     

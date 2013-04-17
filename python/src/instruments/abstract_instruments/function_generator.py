@@ -33,6 +33,11 @@ import abc
 
 from instruments.abstract_instruments import Instrument
 import instruments.units as u
+from instruments.util_fns import assume_units
+
+import quantities as pq
+
+from flufl.enum import Enum
 
 ## CLASSES #####################################################################
 
@@ -49,10 +54,10 @@ class FunctionGenerator(Instrument):
     class Function(Enum):
         sinusoid = 'SIN'
         square = 'SQU'
-        triangle = ''
+        triangle = 'TRI'
         ramp = 'RAMP'
         noise = 'NOIS'
-        arbitrary = ''
+        arbitrary = 'ARB'
     
     ## ABSTRACT METHODS ##
     
@@ -142,5 +147,5 @@ class FunctionGenerator(Instrument):
             # Finally, convert the magnitude out to a float.
             mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
         
-        self._set_amplitude_(self, mag, units)
+        self._set_amplitude_(mag, units)
         

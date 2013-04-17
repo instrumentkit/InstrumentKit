@@ -30,6 +30,7 @@ import errno
 import io
 import time
 from instruments.abstract_instruments import WrapperABC
+import os
 
 ## CLASSES #####################################################################
 
@@ -115,11 +116,15 @@ class FileCommunicator(io.IOBase, WrapperABC):
     def tell(self):
         return self._filelike.tell()
         
+    def flush(self):
+        self._filelike.flush()
+        
     ## METHODS ##
     
     def sendcmd(self, msg):
         msg = msg + self._terminator
         self.write(msg)
+        self.flush()        
         
     def query(self, msg, size=-1):
         self.sendcmd(msg)
@@ -134,9 +139,9 @@ class FileCommunicator(io.IOBase, WrapperABC):
                 raise # Reraise the existing exception.
             else: # Give a more helpful and specific exception.
                 raise IOError(
-                    "Pipe broken when reading from {}; this probably
-                    "indicates that the driver"
-                    "providing the device file is unable to communicate with"
+                    "Pipe broken when reading from {}; this probably "
+                    "indicates that the driver "
+                    "providing the device file is unable to communicate with "
                     "the instrument. Consider restarting the instrument.".format(
                         self.address
                     ))
