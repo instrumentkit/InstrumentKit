@@ -46,10 +46,6 @@ class SRS830FreqSource(Enum):
     external = 0
     internal = 1
     
-class SRS830InputShield(Enum):
-    floating = 0
-    grounded = 1
-    
 class SRS830Coupling(Enum):
     ac = 0
     dc = 1
@@ -60,7 +56,7 @@ class SRS830BufferMode(Enum):
 
 ## CONSTANTS ###################################################################
 
-VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)] + 
+VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)]
 
 ## CLASSES #####################################################################
 
@@ -137,22 +133,17 @@ class SRS830(SCPIInstrument):
         self.sendcmd('SLVL {}'.format(newval))
         
     @property
-    def input_shield_grounding(self):
+    def input_shield_ground(self):
         '''
         Function sets the input shield grounding to either 'float' or 'ground'
         
         grounding: Desired input shield grounding
         grounding = {float|ground},string
         '''
-        return SRS830InputShield[self.query('IGND?')]
-    @input_shield_grounding.setter
-    def input_shield_grounding(self, newval):
-        if not isinstance(newval, EnumValue) or 
-                (newval.enum is not SRS830InputShield):
-            raise TypeError("Input shield grounding setting must be a "
-                              "SRS830InputShield value, got {} "
-                              "instead.".format(type(newval)))
-        self.sendcmd('IGND {}'.format(newval.value))
+        return int(self.query('IGND?')) == 1
+    @input_shield_ground.setter
+    def input_shield_ground(self, newval):
+        self.sendcmd('IGND {}'.format(1 if newval else 0))
     
     @property 
     def coupling(self):
