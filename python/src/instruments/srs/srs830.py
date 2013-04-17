@@ -100,7 +100,7 @@ class SRS830(SCPIInstrument):
         return SRS830FreqSource[self.query('FMOD?')]
     @freq_source.setter
     def freq_source(self, newval):
-        if not isinstance(newval, EnumValue) or 
+        if not isinstance(newval, EnumValue) or \
                 (newval.enum is not SRS830FreqSource):
             raise TypeError("Frequency source setting must be a "
                               "SRS830FreqSource value, got {} "
@@ -185,7 +185,7 @@ class SRS830(SCPIInstrument):
         return SRS830Coupling[self.query('ICPL?')]
     @coupling.setter
     def coupling(self, newval):
-        if not isinstance(newval, EnumValue) or 
+        if not isinstance(newval, EnumValue) or \
                 (newval.enum is not SRS830Coupling):
             raise TypeError("Input coupling setting must be a "
                               "SRS830Coupling value, got {} "
@@ -194,11 +194,11 @@ class SRS830(SCPIInstrument):
         
     @property
     def sample_rate(self):
-        '''
+        r'''
         Gets/sets the data sampling rate of the lock-in.
         
-        Acceptable set values are :math:`2^n` where :math:`n=\{-4...+9\}` or
-            the string `trigger`.
+        Acceptable set values are :math:`2^n` where :math:`n \in \{-4...+9\}` or
+        the string `trigger`.
         
         :type: `~quantities.Quantity` with units Hertz.
         '''
@@ -230,7 +230,7 @@ class SRS830(SCPIInstrument):
         return SRS830BufferMode[self.query('SEND?')]
     @buffer_mode.setter
     def buffer_mode(self, newval):
-        if not isinstance(newval, EnumValue) or 
+        if not isinstance(newval, EnumValue) or \
                 (newval.enum is not SRS830BufferMode):
             raise TypeError("Input coupling setting must be a "
                               "SRS830BufferMode value, got {} "
