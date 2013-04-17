@@ -26,9 +26,16 @@
 ## IMPORTS #####################################################################
 
 import io
+
+# Trick to conditionally ignore the NameError caused by catching WindowsError.
+# Needed as PyVISA causes a WindowsError on Windows when VISA is not installed.
+try:
+    WindowsError
+except NameError:
+    WindowsError = None
 try:
     import visa
-except ImportError:
+except (ImportError, WindowsError, OSError):
     visa = None
 
 import numpy as np

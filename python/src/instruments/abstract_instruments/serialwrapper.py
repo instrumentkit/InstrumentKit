@@ -128,12 +128,14 @@ class SerialWrapper(io.IOBase, WrapperABC):
         '''
         '''
         msg = msg + self._terminator
-        if self._debug:
-            print " <- {} ".format(repr(msg))
-        self._conn.write(msg)
+        self.write(msg)
         
     def query(self, msg, size=-1):
         '''
         '''
         self.sendcmd(msg)
-        return self.read(size)
+        resp = self.read(size)
+        # FIXME: move the following debug to read().
+        if self._debug:
+            print " -> {}".format(repr(resp))
+        return resp

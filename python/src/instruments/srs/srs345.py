@@ -1,173 +1,174 @@
 #!/usr/bin/python
-# Filename: srs345.py
+# -*- coding: utf-8 -*-
+##
+# srs345.py: Implements a driver for the SRS 345 function generator.
+##
+# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+#
+# This file is a part of the GPIBUSB adapter project.
+# Licensed under the AGPL version 3.
+##
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
 
-# Original author: Steven Casagrande (stevencasagrande@gmail.com)
-# 2012
+## FEATURES ####################################################################
 
-# This work is released under the Creative Commons Attribution-Sharealike 3.0 license.
-# See http://creativecommons.org/licenses/by-sa/3.0/ or the included license/LICENSE.TXT file for more information.
+from __future__ import division
 
-# Attribution requirements can be found in license/ATTRIBUTION.TXT
+## IMPORTS #####################################################################
 
-from instruments.abstract_instruments import Instrument
+from flufl.enum import Enum
+from flufl.enum._enum import EnumValue
 
-class SRS345(Instrument):
-    def __init__(self, port, address,timeout_length):
-        super(SRS345, self).__init__(self,port,address,timeout_length)
-        
-    def amplitude(self,units=None,amplitude=None):
-        '''
-        Set the output voltage amplitude of the function generator.
-        Units must be specified to change the amplitude.
-        
-        If neither units or amplitude is specified, function queries instrument for the currently set amplitude and units displayed.
-        If only units are specified, function returns the currently set amplitude with the units specified.
-        
-        Return type is a string. Last two characters are the units.
-        
-        units: Amplitude units
-        units = {VPP|VRMS|DBM}
-        
-        amplitude: Desired output amplitude
-        amplitude = <voltage>
-        '''
-        validUnits = ['vpp','vrms','dbm']
-        validUnits2 = ['vp','vr','db']
-        
-        if amplitude == None and units == None: # No arguments specified.
-            return self.query('AMPL?')
-        elif amplitude == None and units != None: # Only units specified
-            if isinstance(units,str):
-                units = units.lower()
-            else:
-                raise Exception('Units must be a string.')
-            
-            if units in validUnits:
-                units = validUnits2[validUnits.index(units)]
-            elif units not in validUnits2:
-                raise Exception('Valid units are "VPP", "VRMS" and "DBM".')
-            
-            return self.query('AMPL? ' + units)
-        
-        else: # Amplitude has been specified
-            if not isinstance(units,str):
-                raise Exception('Units must be a string.')
-            units = units.lower()
-            if units in validUnits:
-                units = validUnits2[validUnits.index(units)]
-            elif units not in validUnits2:
-                raise Exception('Valid units are "VPP", "VRMS" and "DBM".')
-            
-            if not isinstance(amplitude,int) and not isinstance(amplitude,float):
-                raise Exception('Amplitude must be specified as an integer or a float.')
-            
-            self.write('AMPL ' + str(amplitude) + units)
+import quantities as pq
+
+from instruments.generic_scpi import SCPIInstrument
+from instruments.util_fns import assume_units
+
+from instruments.units import dBm
+
+## ENUMS #######################################################################
+
+class SRS345VoltageMode(Enum):
+    peak_to_peak = "VP"
+    rms = "VR"
+
+class SRS345Function(Enum):
+    sinusoid = 0
+    square = 1
+    triangle = 2
+    ramp = 3
+    noise = 4
+    arbitrary = 5
     
-    def frequency(self,freq=None):
+
+## FUNCTIONS ###################################################################
+
+class SRS345(SCPIInstrument):
+    # TODO: docstring
+    # FIXME: need to add OUTX 1 here, but doing so seems to cause a syntax
+    #        error on the instrument.
+        
+    @property
+    def amplitude(self):
         '''
-        Set the output frequency.
+        Gets/sets the output amplitude of the function generator.
         
-        If no frequency is specified, function queries instrument for current frequency setting.
+        If set with units of :math:`\\text{dBm}`, then no voltage mode can
+        be passed.
         
-        Return type is a string, with units of Hertz.
+        If set with units of :math:`\\text{V}` as a `~quantities.Quantity` or a
+        `float` without a voltage mode, then the voltage mode is assumed to be
+        peak-to-peak.
         
-        freq: Desired output frequency, given in Hertz.
-        freq = <frequency>
+        :units: As specified, or assumed to be :math:`\\text{V}` if not
+            specified.        
+        :type: Either a `tuple` of a `~quantities.Quantity` and a
+            `SRS345VoltageMode`, or a `~quantities.Quantity` if no voltage mode
+            applies.
         '''
-        if freq == None:
-            return self.query('FREQ?')
-        
-        if not isinstance(freq,int) and not isinstance(freq,float):
-            raise Exception('Frequency must be specified as an integer or a float.')
-        
-        self.write('FREQ ' + str(freq))
-        
-    def function(self,func = None):
-        '''
-        Set the output function of the function generator.
-        
-        If argument "func" is omitted, the instrument is queried for its current output setting.
-        
-        Return type is a string.
-        
-        func: Output function type.
-        func = {SINusoid|SQUare|TRIangle|RAMP|NOISe|ARBitrary},string
-        '''
-        valid = ['sinusoid','square','triangle','ramp','noise','arbitrary']
-        valid2 = ['sin','squ','tri','ramp','nois','arb']
-        
-        if func == None:
-            func = self.query('FUNC?')
-            return valid[int(func)]
-        
-        if not isinstance(func,str):
-            raise Exception('Function type must be specified as a string.')
-        
-        func = func.lower()
-        if func in valid:
-            func = valid.index(func)
-        elif func in valid2:
-            func = valid2.index(func)
-        elif func == 'sine':
-            func = 0
+        resp = self.query("AMPL?").strip()
+        mag = float(resp[:-2]) # Strip off units and convert to float.
+        units = resp[-2:]
+        if units == "DB":
+            return pq.Quantity(mag, dBm)
         else:
-            raise Exception('Valid output function types are: ' + str(valid))
+            return pq.Quantity(mag, pq.V), SRS345VoltageMode[units]
+
+    @amplitude.setter
+    def amplitude(self, newval):
         
-        self.write('FUNC ' + str(func))
+        # Try and rescale to dBm... if it succeeds, set the magnitude
+        # and units accordingly, otherwise handle as a voltage.
+        try:
+            newval_dBm = newval.rescale(dBm)
+            mag = float(newval_dBm.magnitude)
+            units = "DB"
+        except (AttributeError, ValueError):
+            # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
+            if not isinstance(newval, tuple):
+                mag = newval
+                units = SRS345VoltageMode.peak_to_peak
+            else:
+                mag, units = newval
+                
+            # Get the mneonic for the units.
+            units = units.value
+                
+            # Finally, convert the magnitude out to a float.
+            mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
         
-    def offset(self,offset = None):
+        
+        self.sendcmd("AMPL {mag}{units}".format(mag=mag, units=units))
+                
+    @property
+    def frequency(self):
         '''
-        Set the offset voltage for the output waveform.
+        Gets/sets the output frequency.
         
-        If no offset is specified, function queries the instrument for the current offset voltage.
-        
-        Return type is a float.
-        
-        offset: Desired voltage offset in volts.
-        offset = <voltage>,integer/float
+        :units: As specified, or assumed to be :math:`\\text{Hz}` otherwise.
+        :type: `float` or `~quantities.Quantity`
         '''
-        if offset == None:
-            return float( self.query('OFFS?') )
+        return pq.Quantity(float(self.query('FREQ?')), pq.Hz)
+    @frequency.setter
+    def frequency(self, newval):
+        self.sendcmd("FREQ {}".format(
+            assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude)
+        )
         
-        if not isinstance(offset,int) and not isinstance(offset,float):
-            raise Exception('Offset must be an integer or a float.')
+    @property
+    def function(self):
+        """
+        Gets/sets the output function of the function generator.
         
-        self.write('OFFS ' + str(offset))
+        :type: `SRS345Function`
+        """
+        return SRS345Function[int(self.query("FUNC?"))]
+    @function.setter
+    def function(self, newval):
+        # TODO: add type checking here.
+        self.sendcmd("FUNC {}".format(newval.value))
         
-    def phase(self, phase = None):
+    @property
+    def offset(self):
+        return pq.Quantity(float(self.query("OFFS?")), pq.V)
+    @offset.setter
+    def offset(self, newval):
         '''
-        Set the phase for the output waveform.
+        Gets/sets the offset voltage for the output waveform.
         
-        If no phase is specified, function queries the instrument for the current phase.
-        
-        Return type is a float.
-        
-        phase: Desired phase in degrees.
-        phase = <voltage>,integer/float
+        :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
+        :type: `float` or `~quantities.Quantity`
         '''
-        if phase == None:
-            return float( self.query('PHSE?') )
+        self.sendcmd("OFFS {}".format(
+            assume_units(newval, pq.V).rescale(pq.V).magnitude
+        ))
         
-        if not isinstance(phase,int) and not isinstance(phase,float):
-            raise Exception('Phase must be an integer or a float.')
+    @property
+    def phase(self):
+        '''
+        Gets/sets the phase for the output waveform.
         
-        if phase < 0 or phase > 7200:
-            raise Exception('Phase must be between 0 and 7200 degrees.')
+        :units: As specified, or assumed to be degrees (:math:`{}^{\\circ}`)
+            otherwise.
+        :type: `float` or `~quantities.Quantity`
+        '''
+        return pq.Quantity(float(self.query("PHSE?")), "degrees")
+    @phase.setter
+    def phase(self, newval):
+        self.sendcmd("PHSE {}".format(
+            assume_units(newval, "degrees").rescale("degrees").magnitude
+        ))
         
-        self.write('PHSE ' + str(phase))
-            
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-            
         

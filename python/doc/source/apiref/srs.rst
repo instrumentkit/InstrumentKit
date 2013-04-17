@@ -7,6 +7,24 @@
 Stanford Research Systems Instruments
 =====================================
 
+:class:`SRS345`
+===============
+
+.. autoclass:: SRS345
+    :members:
+    :undoc-members:
+    
+Constants and Enumerations
+--------------------------
+
+.. autoclass:: SRS345VoltageMode
+    :members:
+    :undoc-members:
+    
+.. autoclass:: SRS345Function
+    :members:
+    :undoc-members:
+
 :class:`SRSDG645`
 =================
 
