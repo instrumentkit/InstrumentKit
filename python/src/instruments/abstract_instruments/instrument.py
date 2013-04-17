@@ -35,6 +35,7 @@ import serialManager as sm
 import socketwrapper as sw
 import usbwrapper as uw
 import visawrapper as vw
+import file_communicator as fc
 import gi_gpib
 from instruments.abstract_instruments import WrapperABC
 import os
@@ -171,7 +172,7 @@ class Instrument(object):
             
     ## CLASS METHODS ##
 
-    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa']
+    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa', 'file']
     
     @classmethod
     def open_from_uri(cls, uri):
@@ -258,6 +259,8 @@ class Instrument(object):
             #     the vendor ID, product ID and serial number of the USB-VISA
             #     device.
             return cls.open_visa(parsed_uri.netloc, **kwargs)
+        elif parsed_uri.scheme == 'file':
+            return cls.open_file(os.path.join(parsed_uri.netloc, parsed_uri.path), **kwargs)
         else:
             raise NotImplementedError("Invalid scheme or not yet implemented.")
     
@@ -327,3 +330,15 @@ class Instrument(object):
             raise IOError("USB descriptor not found.")
 
         return cls(uw.USBWrapper(ep))
+        
+    @classmethod
+    def open_file(cls, filename):
+        """
+        Given a file, treats that file as a character device file that can
+        be read from and written to in order to communicate with the
+        instrument. This may be the case, for instance, if the instrument
+        is connected by the Linux ``usbtmc`` kernel driver.
+        
+        :param str filename: Name of the character device to open.
+        """
+        return cls(fc.FileCommunicator(filename))
