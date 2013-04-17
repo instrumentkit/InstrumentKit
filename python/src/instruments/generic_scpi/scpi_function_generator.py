@@ -42,73 +42,38 @@ from instruments.units import dBm
 ## CLASSES #####################################################################
 
 class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
-
-    ## ENUMS ##
     
-    class VoltageMode(Enum):
-        peak_to_peak = 'VPP'
-        rms = 'VRMS'
+    ## CONSTANTS ##
     
-    class Function(Enum):
-        sinusoid = 'SIN'
-        square = 'SQU'
-        triangle = 
-        ramp = 'RAMP'
-        noise = 'NOIS'
-        arbitrary = '
+    _UNIT_MNEMONICS = {
+        FunctionGenerator.VoltageMode.peak_to_peak: "VPP",
+        FunctionGenerator.VoltageMode.rms:          "VRMS",
+        FunctionGenerator.VoltageMode.dBm:          "DBM",
+    }
+    
+    _MNEMONIC_UNITS = {mnem: unit for unit, mnem in _UNIT_MNEMONICS.iteritems()}
+    
+    ## FunctionGenerator CONTRACT ##
+    
+    def _get_amplitude_(self):
+        """
+        
+        """
+        units = self.query("VOLT:UNITS?").strip()
+        
+        return (
+            float(self.query("VOLT?").strip()),
+            self._MNEMONIC_UNITS[units]
+        )
+        
+    def _set_amplitude_(self, magnitude, units):
+        """
+        
+        """
+        self.sendcmd("VOLT {}".format(magnitude))
+        self.sendcmd("VOLT:UNITS {}".format(self._UNIT_MNEMONICS[units]))
     
     ## PROPERTIES ##
-    
-    @property
-    def amplitude(self):
-        '''
-        Gets/sets the output amplitude of the function generator.
-        
-        If set with units of :math:`\\text{dBm}`, then no voltage mode can
-        be passed.
-        
-        If set with units of :math:`\\text{V}` as a `~quantities.Quantity` or a
-        `float` without a voltage mode, then the voltage mode is assumed to be
-        peak-to-peak.
-        
-        :units: As specified, or assumed to be :math:`\\text{V}` if not
-            specified.        
-        :type: Either a `tuple` of a `~quantities.Quantity` and a
-            `SCPIFunctionGenerator.VoltageMode`, or a `~quantities.Quantity` 
-            if no voltage mode applies.
-        '''
-        mag = float(self.query('VOLT?'))
-        units = self.query('VOLT:UNITS?').upper()
-        
-        if units == 'DBM':
-            return pq.Quantity(mag, dBm)
-        else:
-            return pq.Quantity(mag, pq.V), VoltageMage[units]
-    @amplitude.setter
-    def amplitude(self, newval):
-        # Try and rescale to dBm... if it succeeds, set the magnitude
-        # and units accordingly, otherwise handle as a voltage.
-        try:
-            newval_dBm = newval.rescale(dBm)
-            mag = float(newval_dBm.magnitude)
-            units = "DB"
-        except (AttributeError, ValueError):
-            # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
-            if not isinstance(newval, tuple):
-                mag = newval
-                units = VoltageMode.peak_to_peak
-            else:
-                mag, units = newval
-                
-            # Get the mneonic for the units.
-            units = units.value
-                
-            # Finally, convert the magnitude out to a float.
-            mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
-        
-        
-        self.sendcmd("VOLT {}".format(mag))
-        self.sendcmd("VOLT:UNITS {}".format(units))
     
     @property
     def frequency(self):

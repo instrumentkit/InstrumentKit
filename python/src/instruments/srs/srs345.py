@@ -33,16 +33,13 @@ from flufl.enum._enum import EnumValue
 
 import quantities as pq
 
+from instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units
 
 from instruments.units import dBm
 
 ## ENUMS #######################################################################
-
-class SRS345VoltageMode(Enum):
-    peak_to_peak = "VP"
-    rms = "VR"
 
 class SRS345Function(Enum):
     sinusoid = 0
@@ -55,63 +52,42 @@ class SRS345Function(Enum):
 
 ## FUNCTIONS ###################################################################
 
-class SRS345(SCPIInstrument):
+class SRS345(SCPIInstrument, FunctionGenerator):
     # TODO: docstring
     # FIXME: need to add OUTX 1 here, but doing so seems to cause a syntax
     #        error on the instrument.
         
-    @property
-    def amplitude(self):
-        '''
-        Gets/sets the output amplitude of the function generator.
+    ## CONSTANTS ##
+    
+    _UNIT_MNEMONICS = {
+        FunctionGenerator.VoltageMode.peak_to_peak: "VP",
+        FunctionGenerator.VoltageMode.rms:          "VR",
+        FunctionGenerator.VoltageMode.dBm:          "DB",
+    }
+    
+    _MNEMONIC_UNITS = {mnem: unit for unit, mnem in _UNIT_MNEMONICS.iteritems()}
+    
+    ## FunctionGenerator CONTRACT ##
+    
+    def _get_amplitude_(self):
+        """
         
-        If set with units of :math:`\\text{dBm}`, then no voltage mode can
-        be passed.
-        
-        If set with units of :math:`\\text{V}` as a `~quantities.Quantity` or a
-        `float` without a voltage mode, then the voltage mode is assumed to be
-        peak-to-peak.
-        
-        :units: As specified, or assumed to be :math:`\\text{V}` if not
-            specified.        
-        :type: Either a `tuple` of a `~quantities.Quantity` and a
-            `SRS345VoltageMode`, or a `~quantities.Quantity` if no voltage mode
-            applies.
-        '''
+        """
         resp = self.query("AMPL?").strip()
-        mag = float(resp[:-2]) # Strip off units and convert to float.
-        units = resp[-2:]
-        if units == "DB":
-            return pq.Quantity(mag, dBm)
-        else:
-            return pq.Quantity(mag, pq.V), SRS345VoltageMode[units]
-
-    @amplitude.setter
-    def amplitude(self, newval):
         
-        # Try and rescale to dBm... if it succeeds, set the magnitude
-        # and units accordingly, otherwise handle as a voltage.
-        try:
-            newval_dBm = newval.rescale(dBm)
-            mag = float(newval_dBm.magnitude)
-            units = "DB"
-        except (AttributeError, ValueError):
-            # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
-            if not isinstance(newval, tuple):
-                mag = newval
-                units = SRS345VoltageMode.peak_to_peak
-            else:
-                mag, units = newval
-                
-            # Get the mneonic for the units.
-            units = units.value
-                
-            # Finally, convert the magnitude out to a float.
-            mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
+        return (
+            float(resp[:-2]),
+            self._MNEMONIC_UNITS[resp[-2:]]
+        )
         
+    def _set_amplitude_(self, magnitude, units):
+        """
         
-        self.sendcmd("AMPL {mag}{units}".format(mag=mag, units=units))
-                
+        """
+        self.sendcmd("AMPL {}{}".format(magnitude, self._UNIT_MNEMONICS[units]))
+        
+    ## PROPERTIES ##
+        
     @property
     def frequency(self):
         '''
@@ -170,5 +146,4 @@ class SRS345(SCPIInstrument):
         self.sendcmd("PHSE {}".format(
             assume_units(newval, "degrees").rescale("degrees").magnitude
         ))
-        
         
