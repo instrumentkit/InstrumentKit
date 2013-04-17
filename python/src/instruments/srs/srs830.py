@@ -46,10 +46,6 @@ class SRS830FreqSource(Enum):
     external = 0
     internal = 1
     
-class SRS830InputShield(Enum):
-    floating = 0
-    grounded = 1
-    
 class SRS830Coupling(Enum):
     ac = 0
     dc = 1
@@ -60,13 +56,24 @@ class SRS830BufferMode(Enum):
 
 ## CONSTANTS ###################################################################
 
-VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)] + 
+VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)]
 
 ## CLASSES #####################################################################
 
 class SRS830(SCPIInstrument):
-    def __init__(self, port, address, timeout_length, outx_mode=None):
-        super(SRS830, self).__init__(self,port,address,timeout_length)
+    '''
+    Communicates with a Stanford Research Systems 830 Lock-In Amplifier
+    '''
+    def __init__(self, filelike, outx_mode=None):
+        '''
+        Class initialization method. 
+        
+        :param int outx_mode: Manually over-ride which ``OUTX`` command to send
+            at startup. This is a command that needs to be sent as specified
+            by the SRS830 manual. If left default, the correct ``OUTX`` command
+            will be sent depending on what type of wrapper self._file is.
+        '''
+        super(SRS830, self).__init__(self,filelike)
         if outx_mode is 1:
             self.sendcmd('OUTX 1')
         elif outx_mode is 2:
@@ -84,10 +91,16 @@ class SRS830(SCPIInstrument):
     
     @property
     def freq_source(self):
+        '''
+        Gets/sets the frequency source used. This is either an external source,
+            or uses the internal reference.
+        
+        :type: `SRS830FreqSource`
+        '''
         return SRS830FreqSource[self.query('FMOD?')]
     @freq_source.setter
     def freq_source(self, newval):
-        if not isinstance(newval, EnumValue) or 
+        if not isinstance(newval, EnumValue) or \
                 (newval.enum is not SRS830FreqSource):
             raise TypeError("Frequency source setting must be a "
                               "SRS830FreqSource value, got {} "
@@ -96,6 +109,13 @@ class SRS830(SCPIInstrument):
         
     @property
     def freq(self):
+        '''
+        Gets/sets the lock-in amplifier reference frequency.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units Hertz.
+        :type: `~quantities.Quantity` with units Hertz.
+        '''
         return pq.Quantity(float(self.query('FREQ?')),pq.hertz)
     @freq.setter
     def freq(self, newval):
@@ -106,10 +126,13 @@ class SRS830(SCPIInstrument):
     @property
     def phase(self):
         '''
-        Function sets the phase of the internal reference signal.
+        Gets/set the phase of the internal reference signal.
         
-        phase: Desired phase
-        phase = <-360...+729.99>,float
+        Set value should be -360deg <= newval < +730deg.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units degrees.
+        :type: `~quantities.Quantity` with units degrees.
         '''
         return pq.Quantity(float(self.query('PHAS?')), pq.degrees)
     phase.setter
@@ -123,10 +146,13 @@ class SRS830(SCPIInstrument):
     @property
     def amplitude(self):
         '''
-        Function sets the amplitude of the internal reference signal.
+        Gets/set the amplitude of the internal reference signal.
         
-        amplitude: Desired peak-to-peak voltage
-        amplitude = <0.004...5>,float
+        Set value should be 0.004 <= newval <= 5.000
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units volts. Value should be specified as peak-to-peak.
+        :type: `~quantities.Quantity` with units volts peak-to-peak.
         '''
         return pq.Quantity(float(self.query('SLVL?')), pq.volt)
     @amplitude.setter
@@ -137,35 +163,29 @@ class SRS830(SCPIInstrument):
         self.sendcmd('SLVL {}'.format(newval))
         
     @property
-    def input_shield_grounding(self):
+    def input_shield_ground(self):
         '''
-        Function sets the input shield grounding to either 'float' or 'ground'
+        Function sets the input shield grounding to either 'float' or 'ground'.
         
         grounding: Desired input shield grounding
         grounding = {float|ground},string
         '''
-        return SRS830InputShield[self.query('IGND?')]
-    @input_shield_grounding.setter
-    def input_shield_grounding(self, newval):
-        if not isinstance(newval, EnumValue) or 
-                (newval.enum is not SRS830InputShield):
-            raise TypeError("Input shield grounding setting must be a "
-                              "SRS830InputShield value, got {} "
-                              "instead.".format(type(newval)))
-        self.sendcmd('IGND {}'.format(newval.value))
+        return int(self.query('IGND?')) == 1
+    @input_shield_ground.setter
+    def input_shield_ground(self, newval):
+        self.sendcmd('IGND {}'.format(1 if newval else 0))
     
     @property 
     def coupling(self):
         '''
-        Function sets the input coupling to either 'ac' or 'dc'
+        Gets/sets the input coupling to either 'ac' or 'dc'.
         
-        coupling: Desired input coupling mode
-        coupling = {ac|dc},string
+        :type: `SRS830Coupling`
         '''
         return SRS830Coupling[self.query('ICPL?')]
     @coupling.setter
     def coupling(self, newval):
-        if not isinstance(newval, EnumValue) or 
+        if not isinstance(newval, EnumValue) or \
                 (newval.enum is not SRS830Coupling):
             raise TypeError("Input coupling setting must be a "
                               "SRS830Coupling value, got {} "
@@ -174,13 +194,13 @@ class SRS830(SCPIInstrument):
         
     @property
     def sample_rate(self):
-        '''
-        Function sets the data sampling rate of the lock-in
+        r'''
+        Gets/sets the data sampling rate of the lock-in.
         
-        sampleRate: The sampling rate, in Hz as a float, or the string 'trigger'.
-        When specifying the rate in Hz, acceptable values are integer powers of 2.
-        This means 2^n, n={-4...+9}
-        sampleRate = {<freq>,TRIGGER}
+        Acceptable set values are :math:`2^n` where :math:`n \in \{-4...+9\}` or
+        the string `trigger`.
+        
+        :type: `~quantities.Quantity` with units Hertz.
         '''
         return pq.Quantity(float(self.query('SRAT?')), pq.Hz)
     @sample_rate.setter
@@ -199,15 +219,18 @@ class SRS830(SCPIInstrument):
     @property
     def buffer_mode(self):
         '''
-        Function sets the end of buffer mode
+        Gets/sets the end of buffer mode.
         
-        mode: Desired end of buffer mode
-        mode = {1SHOT,LOOP},string
+        This sets the behaviour of the instrument when the data storage buffer
+        is full. Setting to `one_shot` will stop acquisition, while `loop`
+        will repeat from the start.
+        
+        :type: `SRS830BufferMode`
         '''
         return SRS830BufferMode[self.query('SEND?')]
     @buffer_mode.setter
     def buffer_mode(self, newval):
-        if not isinstance(newval, EnumValue) or 
+        if not isinstance(newval, EnumValue) or \
                 (newval.enum is not SRS830BufferMode):
             raise TypeError("Input coupling setting must be a "
                               "SRS830BufferMode value, got {} "
@@ -217,18 +240,22 @@ class SRS830(SCPIInstrument):
     @property
     def num_data_points(self):
         '''
-        Function checks number of data sets in SRS830 buffer.
-        Returns an integer.
+        Gets the number of data sets in the SRS830 buffer.
+        
+        :type: `int`
         '''
         return int( self.query('SPTS?') )
     
     @property    
     def data_transfer(self):
         '''
-        % Function used to turn the data transfer from the lockin on or off
-        %
-        % mode: 
-        % mode = {ON|OFF},string
+        Gets/sets the data transfer status.
+        
+        Note that this function only makes use of 2 of the 3 data transfer modes
+        supported by the SRS830. The supported modes are FAST0 and FAST2. The
+        other, FAST1, is for legacy systems which this package does not support.
+        
+        :type: `bool`
         '''
         return int(self.query('FAST?')) == 2
     @data_transfer.setter

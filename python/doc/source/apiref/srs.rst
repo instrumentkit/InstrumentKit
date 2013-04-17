@@ -24,6 +24,13 @@ Constants and Enumerations
 .. autoclass:: SRS345Function
     :members:
     :undoc-members:
+    
+:class:`SRS830`
+===============
+
+.. autoclass:: SRS830
+    :members:
+    :undoc-members:
 
 :class:`SRSDG645`
 =================
