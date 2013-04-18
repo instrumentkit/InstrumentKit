@@ -274,7 +274,7 @@ class SRS830(SCPIInstrument):
         % mode = {X|Y|R},string
         '''
         if not isinstance(mode,str):
-            raise Exception('Parameter "mode" must be a string.')
+            raise TypeError('Parameter "mode" must be a string.')
             
         mode = mode.lower()
         
@@ -282,10 +282,10 @@ class SRS830(SCPIInstrument):
         if mode in valid:
             mode = str( valid.index(mode) + 1 )
         else:
-            raise Exception('Only "x" , "y" and "r" are valid modes '
+            raise ValueError('Only "x" , "y" and "r" are valid modes '
                               'for setting the auto offset.')
         
-        self.write( 'AOFF ' + mode )
+        self.sendcmd( 'AOFF ' + mode )
     
     def auto_phase(self):
         '''
@@ -294,7 +294,7 @@ class SRS830(SCPIInstrument):
         % Do not send this message again without waiting the correct amount
         % of time for the lock-in to finish.
         '''
-        self.write('APHS')
+        self.sendcmd('APHS')
         
     ## META-METHODS ##
     
@@ -320,12 +320,12 @@ class SRS830(SCPIInstrument):
         Sets the transfer mode to FAST2, and triggers the data transfer
         to start after a delay of 0.5 seconds.
         '''
-        self.data_transfer('on') # FIXME
+        self.data_transfer = True
         self.start_scan()
     
     ## OTHER METHODS ##
   
-    def set_offset_expand(self,mode,offset,expand):
+    def set_offset_expand(self, mode, offset, expand):
         '''
         % Function sets the channel offset and expand parameters.
         % Offset is a percentage, and expand is given as a multiplication
@@ -342,7 +342,7 @@ class SRS830(SCPIInstrument):
         % expand = {1|10|100},integer
         '''
         if not isinstance(mode,str):
-            raise Exception('Parameter "mode" must be a string.')
+            raise TypeError('Parameter "mode" must be a string.')
             
         mode = mode.lower()
         
@@ -350,24 +350,24 @@ class SRS830(SCPIInstrument):
         if mode in valid:
             mode = valid.index(mode) + 1
         else:
-            raise Exception('Only "x" , "y" and "r" are valid modes for '
+            raise ValueError('Only "x" , "y" and "r" are valid modes for '
                               'setting the offset & expand.')
         
         if type(offset) != type(int()) or type(offset) != type(float()):
-            raise Exception('Offset parameter must be an integer or a float.')
+            raise TypeError('Offset parameter must be an integer or a float.')
         if type(expand) != type(int()) or type(expand) != type(float()):
-            raise Exception('Expand parameter must be an integer or a float.')
+            raise TypeError('Expand parameter must be an integer or a float.')
         
         if offset > 105 or offset < -105:
-            raise Exception('Offset mustbe -105 <= offset <= +105 .')
+            raise ValueError('Offset mustbe -105 <= offset <= +105 .')
         
         valid = [1,10,100]
         if expand in valid:
             expand = valid.index(expand)
         else:
-            raise Exception('Expand must be 1, 10, 100.')
+            raise ValueError('Expand must be 1, 10, 100.')
         
-        self.write( 'OEXP %s,%s,%s' % (mode,offset,expand) )
+        self.sendcmd( 'OEXP %s,%s,%s' % (mode,offset,expand) )
     
     
       
@@ -377,13 +377,13 @@ class SRS830(SCPIInstrument):
         % this is used to start the scan. The scan starts after a delay of
         % 0.5 seconds.
         '''
-        self.write('STRD')
+        self.sendcmd('STRD')
        
     def pause(self):
         '''
         Has the instrument pause data capture.
         '''
-        self.write('PAUS')
+        self.sendcmd('PAUS')
       
     def data_snap(self,mode1,mode2):
         '''
@@ -399,26 +399,29 @@ class SRS830(SCPIInstrument):
         mode = {X|Y|R|THETA|AUX1|AUX2|AUX3|AUX4|REF|CH1|CH2},string
         '''
         if not isinstance(mode1,str):
-            raise Exception('Parameter "mode1" must be a string.')
+            raise TypeError('Parameter "mode1" must be a string.')
         if not isinstance(mode2,str):
-            raise Exception('Parameter "mode2" must be a string.')
+            raise TypeError('Parameter "mode2" must be a string.')
             
         mode1 = mode1.lower()
         mode2 = mode2.lower()
         
         if mode1 == mode2:
-            raise Exception('Both parameters for teh data snapshot are the same.')
+            raise ValueError('Both parameters for the data snapshot are the '
+                                'same.')
         
         valid = ['x','y','r','theta','aux1','aux2','aux3','aux4','ref','ch1','ch2']
         if mode1 in valid:
             mode1 = valid.index(mode1) + 1
         else:
-            raise Exception('Only "x" , "y" , "r" , "theta" , "aux1" , "aux2" , "aux3" , "aux4" , "ref" , "ch1" and "ch2" are valid snapshot parameters.')
+            raise ValueError('Only {} are valid snapshot '
+                                'parameters.'.format(valid))
         
         if mode2 in valid:
             mode2 = valid.index(mode1) + 1
         else:
-            raise Exception('Only "x" , "y" , "r" , "theta" , "aux1" , "aux2" , "aux3" , "aux4" , "ref" , "ch1" and "ch2" are valid snapshot parameters.')
+            raise ValueError('Only {} are valid snapshot '
+                                'parameters.'.format(valid))
         
         result = self.query( 'SNAP? %s,%s' % (mode1,mode2) )
         return map( float, result.split(',') )
@@ -435,7 +438,7 @@ class SRS830(SCPIInstrument):
         channel = {CH1|CH2|1|2},string/integer
         '''
         if not isinstance(channel,str) and not isinstance(channel,int):
-            raise Exception('Parameter "channel" must be a string or an integer.')
+            raise TypeError('Parameter "channel" must be a string or an integer.')
         
         if isinstance(channel,str):
             channel = channel.lower()
@@ -445,20 +448,20 @@ class SRS830(SCPIInstrument):
         elif channel == 'ch2' or channel == '2' or channel == 2:
             channel = 2
         else:
-            raise Exception('Only "ch1" and "ch2" are valid channels.')
+            raise ValueError('Only "ch1" and "ch2" are valid channels.')
     
         N = self.numDataPoints() - 1 # Retrieve number of data points stored
         
         # Query device for entire buffer, returning in ASCII, then
         # converting to an array of doubles before returning to the
         # calling method
-        return     map( float, self.query( 'TRCA?%s,0,%s' % (channel,N) ).split(',') )
+        return map( float, self.query( 'TRCA?%s,0,%s' % (channel,N) ).split(',') )
     
     def clear_data_buffer(self):
         '''
         Clears the data buffer of the SRS830.
         '''
-        self.write('REST')
+        self.sendcmd('REST')
     
     def take_measurement(self, sample_rate, num_samples):
         numSamples = float(num_samples)
@@ -494,11 +497,11 @@ class SRS830(SCPIInstrument):
         % ratio = {NONE|AUX1|AUX2|AUX3|AUX4},string
         '''
         if not isinstance(channel,str) and not isinstance(channel,int):
-            raise Exception('Parameter "channel" must be a string or integer.')
+            raise TypeError('Parameter "channel" must be a string or integer.')
         if not isinstance(display,str):
-            raise Exception('Parameter "display" must be a string.')
+            raise TypeError('Parameter "display" must be a string.')
         if not isinstance(ratio,str):
-            raise Exception('Parameter "ratio" must be a string.')
+            raise TypeError('Parameter "ratio" must be a string.')
         
         if type(channel) == type(str()):    
             channel = channel.lower()
@@ -511,13 +514,15 @@ class SRS830(SCPIInstrument):
             if display in valid:
                 display = str( valid.index(display) )
             else:
-                raise Exception('Only "x" , "r" , "xnoise" , "aux1" and "aux2" are valid displays for channel 1.')
+                raise Exception('Only {} are valid displays for '
+                                    'channel 1.'.format(valid))
             
             valid = ['none','aux1','aux2']
             if ratio in valid:
                 ratio = str( valid.index(ratio) )
             else:
-                raise Exception('Only "none" , "aux1" and "aux2" are valid ratios for channel 1.')
+                raise Exception('Only {} are valid ratios for '
+                                    'channel 1.'.format(valid))
         
         elif channel == 'ch2' or channel == '2' or channel == 2:
             channel = '2'
@@ -525,18 +530,20 @@ class SRS830(SCPIInstrument):
             if display in valid:
                 display = str( valid.index(display) )
             else:
-                raise Exception('Only "y" , "theta" , "ynoise" , "aux3" and "aux4" are valid displays for channel 2.')
+                raise Exception('Only {} are valid displays for '
+                                    'channel 2.'.format(valid))
                 
             valid = ['none','aux3','aux4']
             if ratio in valid:
                 ratio = str( valid.index(ratio) )
             else:
-                raise Exception('Only "none" , "aux3" and "aux4" are valid ratios for channel 2.')
+                raise Exception('Only {} are valid ratios for '
+                                    'channel 2.'.format(valid))
         
         else:
             raise Exception('Only "ch1" and "ch2" are valid channels.')
         
-        self.write( 'DDEF %s,%s,%s' % (channel,display,ratio) )        
+        self.sendcmd( 'DDEF %s,%s,%s' % (channel,display,ratio) )        
             
             
             
