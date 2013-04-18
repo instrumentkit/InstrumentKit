@@ -106,7 +106,7 @@ class TekDPO4104DataSource(object):
             return other.name == self.name
         
     # Read Waveform        
-    def read_waveform(self, bin_format=False):
+    def read_waveform(self, bin_format=True):
         '''
         Read waveform from the oscilloscope.
         This function is all inclusive. After reading the data from the oscilloscope, it unpacks the data and scales it accordingly.
@@ -122,16 +122,18 @@ class TekDPO4104DataSource(object):
         with self:
             if not bin_format:
                 self._tek.sendcmd( 'DAT:ENC ASCI' ) # Set the data encoding format to ASCII
+                sleep(0.02) # Work around issue with 2.48 firmware.
                 raw = self._tek.query( 'CURVE?' )
                 raw = raw.split(",") # Break up comma delimited string
                 raw = map(float, raw) # Convert each list element to int
                 raw = np.array(raw) # Convert into numpy array
             else:
                 self._tek.sendcmd( 'DAT:ENC RIB' ) # Set encoding to signed, big-endian
+                sleep(0.02) # Work around issue with 2.48 firmware.
+                data_width = self._tek.data_width
                 self._tek.sendcmd( 'CURVE?' )
-                raw = self._tek.binblockread(2) # Read in the binary block, data width of 2 bytes
-
-                self._tek._file.read(2) # Read in the two ending \n\r characters
+                # Read in the binary block, data width of 2 bytes.
+                raw = self._tek.binblockread(data_width)
 
             # FIXME: the following has not yet been converted.
             #        Needs to be fixed before it will even run.
@@ -147,7 +149,7 @@ class TekDPO4104DataSource(object):
             
             x = np.arange( float(ptcnt) ) * float(xincr) + float(xzero)
             
-            return [x,y]
+            return x, y
             
     y_offset = _parent_property('y_offset')
     
@@ -206,6 +208,17 @@ class TekDPO4104(SCPIInstrument):
             elif hasattr(newval, "name"): # Is a datasource with a name.
                 newval = newval.name
         self.sendcmd("DAT:SOU {}".format(newval))
+        sleep(0.01) # Let the instrument catch up.
+
+    @property
+    def data_width(self):
+        return int(self.query("WFMI:BYT_N?"))
+    @data_width.setter
+    def data_width(self, newval):
+        if int(newval) not in [1, 2]:
+            raise ValueError("Only one or two byte-width is supported.")
+        
+        self.sendcmd("WFMI:BYT_N {}".format(newval))
     
     # TODO: convert to read in unitful quantities.
     @property

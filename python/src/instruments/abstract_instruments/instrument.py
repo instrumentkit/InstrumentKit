@@ -58,6 +58,17 @@ except (ImportError, WindowsError, OSError):
 
 import numpy as np
 
+import collections
+
+## CONSTANTS ###################################################################
+
+_DEFAULT_FORMATS = collections.defaultdict(lambda: '>b')
+_DEFAULT_FORMATS.update({
+    1: '>b',
+    2: '>h',
+    4: '>i'
+})
+
 ## CLASSES #####################################################################
 
 class Instrument(object):
@@ -133,7 +144,7 @@ class Instrument(object):
         '''
         self._file.write(msg)        
         
-    def binblockread(self,dataWidth):
+    def binblockread(self, dataWidth, fmt=None):
         '''
         Read a binary data block from attached instrument.
         This requires that the instrument respond in a particular manner
@@ -141,7 +152,10 @@ class Instrument(object):
         
         The format is as follows:
         #{number of following digits:1-9}{num of bytes to be read}{data bytes}
-        
+
+        :param fmt: Format string as specified by the :mod:`struct` module,
+            or `None` to choose a format automatically based on the data
+            width.        
         '''
         if( dataWidth not in [1,2]):
             print 'Error: Data width must be 1 or 2.'
@@ -149,22 +163,28 @@ class Instrument(object):
         # This needs to be a # symbol for valid binary block
         symbol = self._file.read(1)
         if( symbol != '#' ): # Check to make sure block is valid
-            raise ValueError('Not a valid binary block start. Binary blocks '
+            raise IOError('Not a valid binary block start. Binary blocks '
                                 'require the first character to be #.')
-            return 0
         else:
             # Read in the num of digits for next part
             digits = int( self._file.read(1) )
             # Read in the num of bytes to be read
-            num_of_bytes = int( self._file.read(digits) )
-            # Read in the data bytes
-            temp = self._file.read(num_of_bytes)
+            num_of_bytes = int( self._file.read(digits) ) * dataWidth
+            print "[DEBUG] {}".format(num_of_bytes)
+            # Read in the data bytes, and make sure it's a string
+            # for passing to struct.
+            temp = str(self._file.read(-1))
+            assert len(temp) == num_of_bytes
+
+            # Make or use the required format string.
+            if fmt is None:
+                fmt = _DEFAULT_FORMATS[dataWidth]
             
             # Create zero array
             raw = np.zeros(num_of_bytes/dataWidth)
             for i in range(0,num_of_bytes/dataWidth):
                 # Parse binary string into ints
-                raw[i] = struct.unpack(">h", temp[i*dataWidth:\
+                raw[i] = struct.unpack(fmt, temp[i*dataWidth:\
                                                   i*dataWidth+dataWidth])[0]
             del temp
         
