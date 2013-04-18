@@ -44,6 +44,8 @@ from instruments.util_fns import assume_units
 
 VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)]
 
+_XYR_MODE_MAP = {Mode.x:1, Mode.y:2, Mode.r:3}
+
 ## CLASSES #####################################################################
 
 class SRS830(SCPIInstrument):
@@ -94,6 +96,25 @@ class SRS830(SCPIInstrument):
         '''
         one_shot = 0
         loop = 1
+        
+    class Modes(Enum):
+        '''
+        
+        '''
+        x = 'x'
+        y = 'y'
+        r = 'r'
+        theta = 'theta'
+        xnoise = 'xnoise'
+        ynoise = 'ynoise'
+        aux1 = 'aux1'
+        aux2 = 'aux2'
+        aux3 = 'aux3'
+        aux4 = 'aux4'
+        ref = 'ref'
+        ch1 = 'ch1'
+        ch2 = 'ch2'
+        none = 'none'        
     
     ## PROPERTIES ##
     
@@ -218,11 +239,13 @@ class SRS830(SCPIInstrument):
             if newval == 'trigger':
                 self.sendcmd('SRAT 14')
         
-        if newval in VALID_SAMPLE_RATES:
-            self.sendcmd('SRAT {}'.format(VALID_SAMPLE_RATES.index(newval)))
+        if newval in self.VALID_SAMPLE_RATES:
+            self.sendcmd('SRAT {}'.format(self.VALID_SAMPLE_RATES
+                                            .index(newval))
+                                            )
         else:
             raise ValueError('Valid samples rates given by {} and "trigger".'
-                                .format(VALID_SAMPLE_RATES))
+                                .format(self.VALID_SAMPLE_RATES))
     
     @property
     def buffer_mode(self):
@@ -279,22 +302,20 @@ class SRS830(SCPIInstrument):
         
         It sets the offset of the mode specified to zero.
         
-        :param str mode: Target mode of auto_offset function. Valid inputs are
+        :param mode: Target mode of auto_offset function. Valid inputs are
         {X|Y|R}.
+        :type mode: `~SRS830.Mode` or `str`
         '''
-        if not isinstance(mode,str):
-            raise TypeError('Parameter "mode" must be a string.')
-            
-        mode = mode.lower()
+        if isinstance(mode, str):
+            mode = mode.lower()
+            mode = SRS830.Mode[mode]
         
-        valid = ['x','y','r']
-        if mode in valid:
-            mode = str( valid.index(mode) + 1 )
-        else:
-            raise ValueError('Only "x" , "y" and "r" are valid modes '
-                              'for setting the auto offset.')
+        if mode not in self._XYR_MODE_MAP:
+            raise ValueError('Specified mode not valid for this function.')
         
-        self.sendcmd( 'AOFF ' + mode )
+        mode = self._XYR_MODE_MAP[mode]
+        
+        self.sendcmd( 'AOFF {}'.format(mode) )
     
     def auto_phase(self):
         '''
@@ -373,15 +394,16 @@ class SRS830(SCPIInstrument):
         return [ch1,ch2]
     
     ## OTHER METHODS ##
-  
+    
     def set_offset_expand(self, mode, offset, expand):
         '''
         Sets the channel offset and expand parameters.
         Offset is a percentage, and expand is given as a multiplication
         factor of 1, 10, or 100.
         
-        :param `str` mode: The channel mode that you wish to change the 
-        offset and/or the expand of. Valid settings are {X|Y|R}.
+        :param mode: The channel mode that you wish to change the 
+        offset and/or the expand of. Valid modes are X, Y, and R.
+        :type mode: `~SRS830.Mode` or `str`
         
         :param `float` offset: Offset of the mode, given as a percent.
         offset = <-105...+105>.
@@ -389,25 +411,22 @@ class SRS830(SCPIInstrument):
         :param `int` expand: Expansion factor for the measurement. Valid input
         is {1|10|100}.
         '''
-        if not isinstance(mode,str):
-            raise TypeError('Parameter "mode" must be a string.')
-            
-        mode = mode.lower()
+        if isinstance(mode, str):
+            mode = mode.lower()
+            mode = SRS830.Mode[mode]
         
-        valid = ['x','y','r']
-        if mode in valid:
-            mode = valid.index(mode) + 1
-        else:
-            raise ValueError('Only "x" , "y" and "r" are valid modes for '
-                              'setting the offset & expand.')
+        if mode not in self._XYR_MODE_MAP:
+            raise ValueError('Specified mode not valid for this function.')
         
-        if type(offset) != type(int()) or type(offset) != type(float()):
+        mode = self._XYR_MODE_MAP[mode]
+        
+        if not isinstance(offset, int) or not isinstance(offset, float):
             raise TypeError('Offset parameter must be an integer or a float.')
-        if type(expand) != type(int()) or type(expand) != type(float()):
+        if not isinstance(expand, int) or not isinstance(expand, float):
             raise TypeError('Expand parameter must be an integer or a float.')
         
-        if offset > 105 or offset < -105:
-            raise ValueError('Offset mustbe -105 <= offset <= +105 .')
+        if (offset > 105) or (offset < -105):
+            raise ValueError('Offset mustbe -105 <= offset <= +105.')
         
         valid = [1,10,100]
         if expand in valid:
@@ -430,7 +449,10 @@ class SRS830(SCPIInstrument):
         Has the instrument pause data capture.
         '''
         self.sendcmd('PAUS')
-      
+    
+    _data_snap_modes = {Mode.x:1, Mode.y:2, Mode.r:3, Mode.theta:4, Mode.aux1:5,
+                        Mode.aux2:6, Mode.aux3:7, Mode.aux4:8, Mode.ref:9,
+                        Mode.ch1:10, Mode.ch2:11}  
     def data_snap(self, mode1, mode2):
         '''
         Takes a snapshot of the current parameters are defined by variables 
@@ -443,40 +465,35 @@ class SRS830(SCPIInstrument):
         Returns a list of floats, arranged in the order that they are
         given in the function input parameters.
         
-        :param str modeX: Mode to take data snap. Valid inputs are given by:
+        :param modeX: Mode to take data snap. Valid inputs are given by:
         {X|Y|R|THETA|AUX1|AUX2|AUX3|AUX4|REF|CH1|CH2}
+        :type modeX: `~SRS830.Mode` or `str`
         
         :rtype: `list`
         '''
-        if not isinstance(mode1,str):
-            raise TypeError('Parameter "mode1" must be a string.')
-        if not isinstance(mode2,str):
-            raise TypeError('Parameter "mode2" must be a string.')
-            
-        mode1 = mode1.lower()
-        mode2 = mode2.lower()
+        if isinstance(mode1, str):
+            mode1 = mode1.lower()
+            mode1 = SRS830.Mode[mode1]
+        if isinstance(mode2, str):
+            mode2 = mode1.lower()
+            mode2 = SRS830.Mode[mode2]
+        
+        if ((mode1 not in self._data_snap_modes) or 
+                (mode2 not in self._data_snap_modes)):
+            raise ValueError('Specified mode not valid for this function.')
+        
+        mode1 = self._XYR_MODE_MAP[mode1]
+        mode2 = self._XYR_MODE_MAP[mode2]
         
         if mode1 == mode2:
             raise ValueError('Both parameters for the data snapshot are the '
                                 'same.')
         
-        valid = ['x','y','r','theta','aux1','aux2','aux3','aux4','ref','ch1','ch2']
-        if mode1 in valid:
-            mode1 = valid.index(mode1) + 1
-        else:
-            raise ValueError('Only {} are valid snapshot '
-                                'parameters.'.format(valid))
-        
-        if mode2 in valid:
-            mode2 = valid.index(mode1) + 1
-        else:
-            raise ValueError('Only {} are valid snapshot '
-                                'parameters.'.format(valid))
-        
-        result = self.query( 'SNAP? {},{}'.format(mode1,mode2) )
-        return map( float, result.split(',') )
+        result = self.query('SNAP? {},{}'.format(mode1, mode2))
+        return map(float, result.split(','))
     
-    def read_data_buffer(self,channel):
+    _valid_read_data_buffer = {Mode.ch1:1, Mode.ch2:2}
+    def read_data_buffer(self, channel):
         '''
         Reads the entire data buffer for a specific channel.
         Transfer is done in ASCII mode. Although binary would be faster,
@@ -485,29 +502,24 @@ class SRS830(SCPIInstrument):
         Returns a list of floats containing instrument's measurements.
         
         :param channel: Channel data buffer to read from. Valid channels are
-        given by {CH1|CH2|1|2}.
-        :type channel: `str` or `int`
+        given by {CH1|CH2}.
+        :type channel: `SRS830.Mode` or `str`
         
         :rtype: `list`
         '''
-        if not isinstance(channel,str) and not isinstance(channel,int):
-            raise TypeError('Parameter "channel" must be a string '
-                                'or an integer.')
-        
-        if isinstance(channel,str):
+        if isinstance(channel, str):
             channel = channel.lower()
+            channel = SRS830.Mode[channel]
         
-        if channel == 'ch1' or channel == '1' or channel == 1:
-            channel = 1
-        elif channel == 'ch2' or channel == '2' or channel == 2:
-            channel = 2
-        else:
-            raise ValueError('Only "ch1" and "ch2" are valid channels.')
+        if channel not in self._valid_read_data_buffer:
+            raise ValueError('Specified mode not valid for this function.')
+        
+        channel = self._valid_read_data_buffer[channel]
     
         N = self.numDataPoints() - 1 # Retrieve number of data points stored
         
         # Query device for entire buffer, returning in ASCII, then
-        # converting to an array of doubles before returning to the
+        # converting to a list of floats before returning to the
         # calling method
         return map(float, self.query('TRCA?{},0,{}'.format(channel,N))
                                         .split(',')
@@ -518,7 +530,16 @@ class SRS830(SCPIInstrument):
         Clears the data buffer of the SRS830.
         '''
         self.sendcmd('REST')
-               
+    
+    _valid_channel_display[{Mode.x:0, Mode.r:1, Mode.xnoise:2, Mode.aux1:3, 
+                                Mode.aux2:4}, #channel1
+                            {Mode.y:0, Mode.theta:1, Mode.ynoise:2, Mode.aux3:3,
+                                Mode.aux4:4} #channel2
+                            ]
+    _valid_channel_ratio[{Mode.none:0, Mode.aux1:1, Mode.aux2:2}, #channel1
+                        {Mode.none:0, Mode.aux3:1, Mode.aux4:2} #channel2
+                        ]  
+    _valid_channel = {Mode.ch1:1, Mode.ch2:2}         
     def set_channel_display(self, channel, display, ratio):
         '''
         Sets the display of the two channels.
@@ -529,62 +550,41 @@ class SRS830(SCPIInstrument):
         Channel 2 can have ratio of None, Aux In 3, Aux In 4
         
         :param channel: Channel you wish to set the display of. Valid input is
-        one of {CH1|CH2|1|2}.
-        :type channel: `str` or `int`
+        one of {CH1|CH2}.
+        :type channel: `~SRS830.Mode` or `str`
         
-        :param `str` display: Setting the channel will be changed to. Valid 
+        :param display: Setting the channel will be changed to. Valid 
         input is one of {X|Y|R|THETA|XNOISE|YNOISE|AUX1|AUX2|AUX3|AUX4}
+        :type display: `~SRS830.Mode` or `str`
         
         :param `str` ratio: Desired ratio setting for this channel. Valid input
         is one of {NONE|AUX1|AUX2|AUX3|AUX4}
+        :type ratio: `~SRS830.Mode` or `str`
         '''
-        if not isinstance(channel,str) and not isinstance(channel,int):
-            raise TypeError('Parameter "channel" must be a string or '
-                                'integer.')
-        if not isinstance(display,str):
-            raise TypeError('Parameter "display" must be a string.')
-        if not isinstance(ratio,str):
-            raise TypeError('Parameter "ratio" must be a string.')
-        
-        if type(channel) == type(str()):    
+        if isinstance(channel, str):
             channel = channel.lower()
-        display = display.lower()
-        ratio = ratio.lower()
+            channel = SRS830.Mode[channel]
+        if isinstance(display, str):
+            display = display.lower()
+            display = SRS830.Mode[display]
+        if isinstance(ratio, str):
+            ratio = ratio.lower()
+            ratio = SRS830.Mode[ratio]
         
-        if channel == 'ch1' or channel == '1' or channel == 1:
-            channel = '1'
-            valid = ['x','r','xnoise','aux1','aux2']
-            if display in valid:
-                display = str(valid.index(display))
-            else:
-                raise ValueError('Only {} are valid displays for '
-                                    'channel 1.'.format(valid))
-            
-            valid = ['none','aux1','aux2']
-            if ratio in valid:
-                ratio = str(valid.index(ratio))
-            else:
-                raise ValueError('Only {} are valid ratios for '
-                                    'channel 1.'.format(valid))
+        if channel not in self._valid_channel:
+            raise ValueError('Specified channel not valid for this function.')
         
-        elif channel == 'ch2' or channel == '2' or channel == 2:
-            channel = '2'
-            valid = ['y','theta','ynoise','aux3','aux4']
-            if display in valid:
-                display = str(valid.index(display))
-            else:
-                raise ValueError('Only {} are valid displays for '
-                                    'channel 2.'.format(valid))
-                
-            valid = ['none','aux3','aux4']
-            if ratio in valid:
-                ratio = str( valid.index(ratio) )
-            else:
-                raise ValueError('Only {} are valid ratios for '
-                                    'channel 2.'.format(valid))
+        channel = self._valid_channel[channel]
         
-        else:
-            raise Exception('Only "ch1" and "ch2" are valid channels.')
+        if display not in self._valid_channel_display[channel-1]:
+            raise ValueError('Specified display mode not valid for this '
+                                'function.')
+        if ratio not in self._valid_channel_ratio[channel-1]:
+            raise ValueError('Specified display ratio not valid for this '
+                                'function.')
+        
+        display = self._valid_channel_display[channel-1][display]
+        ratio = self._valid_channel_ratio[channel-1][display]
         
         self.sendcmd('DDEF {},{},{}'.format(channel,display,ratio))        
             
