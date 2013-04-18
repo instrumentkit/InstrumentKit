@@ -32,19 +32,51 @@ from __future__ import division
 import abc
 
 from instruments.abstract_instruments import Instrument
+import instruments.units as u
+from instruments.util_fns import assume_units
+
+import quantities as pq
+
+from flufl.enum import Enum
 
 ## CLASSES #####################################################################
 
 class FunctionGenerator(Instrument):
     __metaclass__ = abc.ABCMeta
+
+    ## ENUMS ##
     
-    ## PROPERTIES ##
+    class VoltageMode(Enum):
+        peak_to_peak = 'VPP'
+        rms = 'VRMS'
+        dBm = 'DBM'
     
+    class Function(Enum):
+        sinusoid = 'SIN'
+        square = 'SQU'
+        triangle = 'TRI'
+        ramp = 'RAMP'
+        noise = 'NOIS'
+        arbitrary = 'ARB'
+    
+    ## ABSTRACT METHODS ##
+    
+    @abc.abstractmethod
+    def _get_amplitude_(self):
+        pass
+    @abc.abstractmethod
+    def _set_amplitude_(self, magnitude, units):
+        pass
+    
+    ## ABSTRACT PROPERTIES ##
+ 
+    """   
     def getamplitude(self):
         raise NotImplementedError('')
     def setamplitude(self, newval):
         raise NotImplementedError('')
     amplitude = abc.abstractproperty(getamplitude, setamplitude)
+    """
     
     def getfrequency(self):
         raise NotImplementedError('')
@@ -69,3 +101,51 @@ class FunctionGenerator(Instrument):
     def setphase(self, newval):
         raise NotImplementedError('')
     phase = abc.abstractproperty(getphase, setphase)
+    
+    ## CONCRETE PROPERTIES ##
+    
+    @property
+    def amplitude(self):
+        '''
+        Gets/sets the output amplitude of the function generator.
+        
+        If set with units of :math:`\\text{dBm}`, then no voltage mode can
+        be passed.
+        
+        If set with units of :math:`\\text{V}` as a `~quantities.Quantity` or a
+        `float` without a voltage mode, then the voltage mode is assumed to be
+        peak-to-peak.
+        
+        :units: As specified, or assumed to be :math:`\\text{V}` if not
+            specified.        
+        :type: Either a `tuple` of a `~quantities.Quantity` and a
+            `FunctionGenerator.VoltageMode`, or a `~quantities.Quantity` 
+            if no voltage mode applies.
+        '''
+        mag, units = self._get_amplitude_()
+                
+        if units == self.VoltageMode.dBm:
+            return pq.Quantity(mag, u.dBm)
+        else:
+            return pq.Quantity(mag, pq.V), units
+    @amplitude.setter
+    def amplitude(self, newval):
+        # Try and rescale to dBm... if it succeeds, set the magnitude
+        # and units accordingly, otherwise handle as a voltage.
+        try:
+            newval_dBm = newval.rescale(u.dBm)
+            mag = float(newval_dBm.magnitude)
+            units = self.VoltageMode.dBm
+        except (AttributeError, ValueError):
+            # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
+            if not isinstance(newval, tuple):
+                mag = newval
+                units = self.VoltageMode.peak_to_peak
+            else:
+                mag, units = newval
+                
+            # Finally, convert the magnitude out to a float.
+            mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
+        
+        self._set_amplitude_(mag, units)
+        
