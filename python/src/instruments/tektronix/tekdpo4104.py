@@ -225,6 +225,33 @@ class TekDPO4104(SCPIInstrument):
         self.sendcmd("HOR:RECO {}".format(newval))
 
     @property
+    def aquisition_running(self):
+        """
+        Gets/sets the aquisition state of the attached instrument.
+        This property is `True` if the aquisition is running,
+        and is `False` otherwise.
+        
+        :type: `bool`
+        """
+        return bool(int(self.query('ACQ:STATE?').strip()))
+    @aquisition_running.setter
+    def aquisition_running(self, newval):
+        self.sendcmd('ACQ:STATE {}'.format(1 if newval else 0))
+        
+    @property
+    def aquisition_continuous(self):
+        """
+        Gets/sets whether the aquisition is continuous ("run/stop mode")
+        or whether aquisiton halts after the next sequence ("single mode").
+        
+        :type: `bool`
+        """
+        return self.query('ACQ:STOPA?').strip().startswith('RUNST')
+    @aquisition_continuous.setter
+    def aquisition_continuous(self, newval):
+        self.sendcmd('ACQ:STOPA {}'.format('RUNST' if newval else 'SEQ'))
+        
+    @property
     def data_width(self):
         return int(self.query("DATA:WIDTH?"))
     @data_width.setter
@@ -245,4 +272,14 @@ class TekDPO4104(SCPIInstrument):
     @y_offset.setter
     def y_offset(self, newval):
         self.sendcmd("WFMP:YOF {}".format(newval))
+    
+
+    ## METHODS ##
+    
+    def force_trigger(self):
+        """
+        Forces a trigger event to occur on the attached oscilloscope.
+        Note that this is distinct from the standard SCPI "*TRG" functionality.
+        """
+        self.sendcmd('TRIG FORCE')
     

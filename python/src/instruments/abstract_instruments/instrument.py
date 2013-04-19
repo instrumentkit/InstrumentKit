@@ -168,30 +168,17 @@ class Instrument(object):
         else:
             # Read in the num of digits for next part
             digits = int( self._file.read(1) )
+            
             # Read in the num of bytes to be read
             num_of_bytes = int( self._file.read(digits) )
+            
             # Make or use the required format string.
             if fmt is None:
                 fmt = _DEFAULT_FORMATS[dataWidth]
                 
-            # Read in the data bytes, and make sure it's a string
-            # for passing to struct.
-            raw = np.fromfile(self._file, dtype=fmt, count=num_of_bytes / dataWidth)
-            
-            """
-            temp = str(self._file.read(num_of_bytes))
-
-            
-            # Create zero array
-            raw = np.zeros(num_of_bytes/dataWidth)
-            for i in range(0,num_of_bytes/dataWidth):
-                # Parse binary string into ints
-                raw[i] = struct.unpack(fmt, temp[i*dataWidth:\
-                                                  i*dataWidth+dataWidth])[0]
-            del temp
-            """
-            
-            return raw
+            # Read in the data bytes, and pass them to numpy using the specified
+            # data type (format).
+            return np.frombuffer(self._file.read(num_of_bytes), dtype=fmt)
             
     ## CLASS METHODS ##
 
