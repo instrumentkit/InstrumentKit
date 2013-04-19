@@ -169,12 +169,10 @@ class Instrument(object):
             # Read in the num of digits for next part
             digits = int( self._file.read(1) )
             # Read in the num of bytes to be read
-            num_of_bytes = int( self._file.read(digits) ) * dataWidth
-            print "[DEBUG] {}".format(num_of_bytes)
+            num_of_bytes = int( self._file.read(digits) )
             # Read in the data bytes, and make sure it's a string
             # for passing to struct.
-            temp = str(self._file.read(-1))
-            assert len(temp) == num_of_bytes
+            temp = str(self._file.read(num_of_bytes))
 
             # Make or use the required format string.
             if fmt is None:

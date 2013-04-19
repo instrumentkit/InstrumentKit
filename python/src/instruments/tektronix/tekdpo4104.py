@@ -120,6 +120,11 @@ class TekDPO4104DataSource(object):
 
         # Set the acquisition channel
         with self:
+
+            # TODO: move this out somewhere more appropriate.
+            old_dat_stop = self._tek.query('DAT:STOP?')
+            self._tek.sendcmd('DAT:STOP {}'.format(10**7))
+            
             if not bin_format:
                 self._tek.sendcmd( 'DAT:ENC ASCI' ) # Set the data encoding format to ASCII
                 sleep(0.02) # Work around issue with 2.48 firmware.
@@ -148,6 +153,8 @@ class TekDPO4104DataSource(object):
             ptcnt = self._tek.query( 'WFMP:NR_P?') # Retrieve number of data points
             
             x = np.arange( float(ptcnt) ) * float(xincr) + float(xzero)
+
+            self._tek.sendcmd('DAT:STOP {}'.format(old_dat_stop))
             
             return x, y
             
@@ -211,14 +218,21 @@ class TekDPO4104(SCPIInstrument):
         sleep(0.01) # Let the instrument catch up.
 
     @property
+    def aquisition_length(self):
+        return int(self.query('HOR:RECO?'))
+    @aquisition_length.setter
+    def aquisition_length(self, newval):
+        self.sendcmd("HOR:RECO {}".format(newval))
+
+    @property
     def data_width(self):
-        return int(self.query("WFMI:BYT_N?"))
+        return int(self.query("DATA:WIDTH?"))
     @data_width.setter
     def data_width(self, newval):
         if int(newval) not in [1, 2]:
             raise ValueError("Only one or two byte-width is supported.")
         
-        self.sendcmd("WFMI:BYT_N {}".format(newval))
+        self.sendcmd("DATA:WIDTH {}".format(newval))
     
     # TODO: convert to read in unitful quantities.
     @property
