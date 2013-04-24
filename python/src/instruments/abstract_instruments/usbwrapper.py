@@ -72,6 +72,13 @@ class USBWrapper(io.IOBase, WrapperABC):
             raise ValueError('Terminator for USBWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
+        
+    @property
+    def timeout(self):
+        raise NotImplementedError
+    @timeout.setter
+    def timeout(self, newval):
+        raise NotImplementedError
     
     @property
     def debug(self):

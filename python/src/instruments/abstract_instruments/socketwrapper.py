@@ -64,8 +64,7 @@ class SocketWrapper(io.IOBase, WrapperABC):
         return self._conn.getpeername()
     @address.setter
     def address(self, newval):
-        # Is this the correct error to be using?
-        raise ValueError('Unable to change address of sockets.')
+        raise NotImplementedError('Unable to change address of sockets.')
         
     @property
     def terminator(self):
@@ -79,6 +78,13 @@ class SocketWrapper(io.IOBase, WrapperABC):
             raise ValueError('Terminator for SocketWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
+        
+    @property
+    def timeout(self):
+        return self._conn.gettimeout()
+    @timeout.setter
+    def timeout(self, newval):
+        self._conn.settimeout(newval)
         
     ## FILE-LIKE METHODS ##
     

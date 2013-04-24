@@ -60,6 +60,18 @@ class WrapperABC(object):
         raise NotImplementedError
     terminator = abc.abstractproperty(getterminator, setterminator)
     
+    def gettimeout(self):
+        '''
+        Get the connection interface timeout
+        '''
+        raise NotImplementedError
+    def settimeout(self, newval):
+        '''
+        Set the connection interface timeout
+        '''
+        raise NotImplementedError
+    timeout = abc.abstractproperty(gettimeout, settimeout)
+    
     ## METHODS ##
     
     @abc.abstractmethod

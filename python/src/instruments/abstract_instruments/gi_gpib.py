@@ -88,10 +88,12 @@ class GPIBWrapper(io.IOBase, WrapperABC):
             
     @property
     def timeout(self):
-        raise NotImplementedError
+        return self._file.timeout
     @timeout.setter
     def timeout(self, newval):
-        raise NotImplementedError
+        newval = int(newval)
+        self._file.sendcmd('+t:{}'.format(newval))
+        self._file.timeout = newval
     
     @property
     def terminator(self):

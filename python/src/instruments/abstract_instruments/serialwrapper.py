@@ -76,6 +76,14 @@ class SerialWrapper(io.IOBase, WrapperABC):
             raise ValueError('Terminator for SerialWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
+        
+    @property
+    def timeout(self):
+        return self._conn.timeout
+    @timeout.setter
+    def timeout(self, newval):
+        newval = int(newval)
+        self._conn.timeout = newval
 
     @property
     def debug(self):

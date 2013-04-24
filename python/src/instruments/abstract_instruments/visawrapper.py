@@ -75,7 +75,8 @@ class VisaWrapper(io.IOBase, WrapperABC):
         return self._conn.resource_name
     @address.setter
     def address(self, newval):
-        raise NotImplementedError("Changing addresses of a VISA Instrument is not supported.")
+        raise NotImplementedError("Changing addresses of a VISA Instrument "
+                                     "is not supported.")
         
     @property
     def terminator(self):
@@ -89,6 +90,13 @@ class VisaWrapper(io.IOBase, WrapperABC):
             raise ValueError('Terminator for VisaWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
+        
+    @property
+    def timeout(self):
+        return self._conn.timeout
+    @timeout.setter
+    def timeout(self, newval):
+        self._conn.timeout = newval
 
     @property
     def debug(self):

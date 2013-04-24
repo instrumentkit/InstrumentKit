@@ -69,7 +69,8 @@ class FileCommunicator(io.IOBase, WrapperABC):
             return None
     @address.setter
     def address(self, newval):
-        raise NotImplementedError("Changing addresses of a file communicator is not yet supported.")
+        raise NotImplementedError("Changing addresses of a file communicator"
+                                     " is not yet supported.")
         
     @property
     def terminator(self):
@@ -77,6 +78,13 @@ class FileCommunicator(io.IOBase, WrapperABC):
     @terminator.setter
     def terminator(self, newval):
         self._terminator = str(newval)
+        
+    @property
+    def timeout(self):
+        raise NotImplementedError
+    @timeout.setter
+    def timeout(self, newval):
+        raise NotImplementedError
 
     @property
     def debug(self):
