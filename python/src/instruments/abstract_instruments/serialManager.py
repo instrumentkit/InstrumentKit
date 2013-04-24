@@ -49,10 +49,16 @@ def newSerialConnection(port, baud=460800, timeout=3, writeTimeout=3):
         raise TypeError('Serial port must be specified as a string.')
     
     if port not in serialObjDict:
-        serialObjDict[port] = sw.SerialWrapper(
-                                serial.Serial(port,
-                                            baudrate=baud,
-                                            timeout=timeout,
-                                            writeTimeout=writeTimeout))
+        try:
+            conn = sw.SerialWrapper(serial.Serial(
+                                                port,
+                                                baudrate=baud,
+                                                timeout=timeout,
+                                                writeTimeout=writeTimeout
+                                                ))
+            serialObjDict[port] = conn
+            return serialObjDict[port]
+        except serial.SerialException as e:
+            print 'Serial connection error. Connection not added to serial \
+                manager. Error message:{}'.format(e.strerror)
     
-    return serialObjDict[port]
