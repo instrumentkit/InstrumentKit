@@ -31,6 +31,8 @@ from __future__ import division
 import math
 import time
 
+import numpy as np
+
 from flufl.enum import Enum
 from flufl.enum._enum import EnumValue
 import quantities as pq
@@ -43,8 +45,6 @@ from instruments.util_fns import assume_units
 ## CONSTANTS ###################################################################
 
 VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)]
-
-_XYR_MODE_MAP = {Mode.x:1, Mode.y:2, Mode.r:3}
 
 ## CLASSES #####################################################################
 
@@ -61,13 +61,13 @@ class SRS830(SCPIInstrument):
             by the SRS830 manual. If left default, the correct ``OUTX`` command
             will be sent depending on what type of wrapper self._file is.
         '''
-        super(SRS830, self).__init__(self,filelike)
+        super(SRS830, self).__init__(filelike)
         if outx_mode is 1:
             self.sendcmd('OUTX 1')
         elif outx_mode is 2:
             self.sendcmd('OUTX 2')
         else:
-            if isinstance(self._file, gw.GPIBWarapper):
+            if isinstance(self._file, gw.GPIBWrapper):
                 self.sendcmd('OUTX 1')
             elif isinstance(self._file, sw.SerialWrapper):
                 self.sendcmd('OUTX 2')
@@ -97,7 +97,7 @@ class SRS830(SCPIInstrument):
         one_shot = 0
         loop = 1
         
-    class Modes(Enum):
+    class Mode(Enum):
         '''
         
         '''
@@ -115,20 +115,24 @@ class SRS830(SCPIInstrument):
         ch1 = 'ch1'
         ch2 = 'ch2'
         none = 'none'        
+
+    ## CONSTANTS ##
+        
+    _XYR_MODE_MAP = {Mode.x: 1, Mode.y: 2, Mode.r: 3}
     
     ## PROPERTIES ##
     
     @property
-    def freq_source(self):
+    def frequency_source(self):
         '''
         Gets/sets the frequency source used. This is either an external source,
             or uses the internal reference.
         
         :type: `SRS830.FreqSource`
         '''
-        return self.FreqSource[self.query('FMOD?')]
-    @freq_source.setter
-    def freq_source(self, newval):
+        return self.FreqSource[int(self.query('FMOD?'))]
+    @frequency_source.setter
+    def frequency_source(self, newval):
         if not isinstance(newval, EnumValue) or \
                 (newval.enum is not SRS830.FreqSource):
             raise TypeError("Frequency source setting must be a "
@@ -137,7 +141,7 @@ class SRS830(SCPIInstrument):
         self.sendcmd('FMOD {}'.format(newval.value))
         
     @property
-    def freq(self):
+    def frequency(self):
         '''
         Gets/sets the lock-in amplifier reference frequency.
         
@@ -146,8 +150,8 @@ class SRS830(SCPIInstrument):
         :type: `~quantities.Quantity` with units Hertz.
         '''
         return pq.Quantity(float(self.query('FREQ?')),pq.hertz)
-    @freq.setter
-    def freq(self, newval):
+    @frequency.setter
+    def frequency(self, newval):
         newval = float(assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude)
         
         self.sendcmd('FREQ {}'.format(newval))
@@ -164,7 +168,7 @@ class SRS830(SCPIInstrument):
         :type: `~quantities.Quantity` with units degrees.
         '''
         return pq.Quantity(float(self.query('PHAS?')), pq.degrees)
-    phase.setter
+    @phase.setter
     def phase(self, newval):
         newval = float(assume_units(newval, pq.degree)
                         .rescale(pq.degree).magnitude)
@@ -196,8 +200,7 @@ class SRS830(SCPIInstrument):
         '''
         Function sets the input shield grounding to either 'float' or 'ground'.
         
-        grounding: Desired input shield grounding
-        grounding = =  {float|ground},string
+        :type: `bool`
         '''
         return int(self.query('IGND?')) == 1
     @input_shield_ground.setter
@@ -211,7 +214,7 @@ class SRS830(SCPIInstrument):
         
         :type: `SRS830.Coupling`
         '''
-        return SRS830.Coupling[self.query('ICPL?')]
+        return SRS830.Coupling[int(self.query('ICPL?'))]
     @coupling.setter
     def coupling(self, newval):
         if not isinstance(newval, EnumValue) or \
@@ -231,7 +234,7 @@ class SRS830(SCPIInstrument):
         
         :type: `~quantities.Quantity` with units Hertz.
         '''
-        return pq.Quantity(float(self.query('SRAT?')), pq.Hz)
+        return pq.Quantity(VALID_SAMPLE_RATES[int(self.query('SRAT?'))], pq.Hz)
     @sample_rate.setter
     def sample_rate(self, newval):
         if isinstance(newval, str):
@@ -239,13 +242,13 @@ class SRS830(SCPIInstrument):
             if newval == 'trigger':
                 self.sendcmd('SRAT 14')
         
-        if newval in self.VALID_SAMPLE_RATES:
-            self.sendcmd('SRAT {}'.format(self.VALID_SAMPLE_RATES
+        if newval in VALID_SAMPLE_RATES:
+            self.sendcmd('SRAT {}'.format(VALID_SAMPLE_RATES
                                             .index(newval))
                                             )
         else:
             raise ValueError('Valid samples rates given by {} and "trigger".'
-                                .format(self.VALID_SAMPLE_RATES))
+                                .format(VALID_SAMPLE_RATES))
     
     @property
     def buffer_mode(self):
@@ -256,9 +259,9 @@ class SRS830(SCPIInstrument):
         is full. Setting to `one_shot` will stop acquisition, while `loop`
         will repeat from the start.
         
-        :type: `SRS = 830BufferMode`
+        :type: `SRS830BufferMode`
         '''
-        return SRS830.BufferMode[self.query('SEND?')]
+        return SRS830.BufferMode[int(self.query('SEND?'))]
     @buffer_mode.setter
     def buffer_mode(self, newval):
         if not isinstance(newval, EnumValue) or \
@@ -275,8 +278,17 @@ class SRS830(SCPIInstrument):
         
         :type: `int`
         '''
-        return int( self.query('SPTS?') )
-    
+        resp = None
+        i = 0
+        while not resp and i < 10:
+            resp = self.query('SPTS?').strip()
+            i += 1
+        if not resp:
+            raise IOError(
+                "Expected integer response from instrument, got {}".format(repr(resp))
+            )
+        return int(resp)
+        
     @property    
     def data_transfer(self):
         '''
@@ -368,7 +380,7 @@ class SRS830(SCPIInstrument):
         the channel data. The order is [[Ch1 data], [Ch2 data]].
         
         :param `int` sample_rate: Set the desired sample rate of the 
-        measurement. See `~SRS830.sample_rate` for more information.
+            measurement. See `~SRS830.sample_rate` for more information.
         
         :param `int` num_samples: Number of samples to take.
         
@@ -383,15 +395,24 @@ class SRS830(SCPIInstrument):
         self.init(sample_rate, SRS830.BufferMode['one_shot'])
         self.start_data_transfer()
         
-        print 'Sampling will take ' + sample_time + ' seconds.'
-        time.sleep(sample_time)
+        print 'Sampling will take {} seconds.'.format(sample_time)
+        time.sleep(sample_time+0.1)  
         
         self.pause()
+
+        # The following should fail. We do this to force the instrument
+        # to flush its internal buffers.
+        # Note that this causes a redundant transmission, and should be fixed
+        # in future versions.
+        try:
+            self.num_data_points
+        except:
+            pass
         
         ch1 = self.read_data_buffer('ch1')
         ch2 = self.read_data_buffer('ch2')
         
-        return [ch1,ch2]
+        return np.array([ch1, ch2])
     
     ## OTHER METHODS ##
     
@@ -402,14 +423,14 @@ class SRS830(SCPIInstrument):
         factor of 1, 10, or 100.
         
         :param mode: The channel mode that you wish to change the 
-        offset and/or the expand of. Valid modes are X, Y, and R.
-        :type mode: `~SRS830.Mode` or `str`
+            offset and/or the expand of. Valid modes are X, Y, and R.
+        :type mode: `SRS830.Mode` or `str`
         
-        :param `float` offset: Offset of the mode, given as a percent.
-        offset = <-105...+105>.
+        :param float offset: Offset of the mode, given as a percent.
+            offset = <-105...+105>.
         
-        :param `int` expand: Expansion factor for the measurement. Valid input
-        is {1|10|100}.
+        :param int expand: Expansion factor for the measurement. Valid input
+            is {1|10|100}.
         '''
         if isinstance(mode, str):
             mode = mode.lower()
@@ -466,7 +487,7 @@ class SRS830(SCPIInstrument):
         given in the function input parameters.
         
         :param modeX: Mode to take data snap. Valid inputs are given by:
-        {X|Y|R|THETA|AUX1|AUX2|AUX3|AUX4|REF|CH1|CH2}
+            {X|Y|R|THETA|AUX1|AUX2|AUX3|AUX4|REF|CH1|CH2}
         :type modeX: `~SRS830.Mode` or `str`
         
         :rtype: `list`
@@ -502,7 +523,7 @@ class SRS830(SCPIInstrument):
         Returns a list of floats containing instrument's measurements.
         
         :param channel: Channel data buffer to read from. Valid channels are
-        given by {CH1|CH2}.
+            given by {CH1|CH2}.
         :type channel: `SRS830.Mode` or `str`
         
         :rtype: `list`
@@ -516,13 +537,13 @@ class SRS830(SCPIInstrument):
         
         channel = self._valid_read_data_buffer[channel]
     
-        N = self.numDataPoints() - 1 # Retrieve number of data points stored
+        N = self.num_data_points # Retrieve number of data points stored
         
         # Query device for entire buffer, returning in ASCII, then
         # converting to a list of floats before returning to the
         # calling method
-        return map(float, self.query('TRCA?{},0,{}'.format(channel,N))
-                                        .split(',')
+        return np.fromstring(self.query('TRCA?{},0,{}'.format(channel,N))
+                                        .strip(), sep=','
                                         )
     
     def clear_data_buffer(self):
@@ -531,15 +552,15 @@ class SRS830(SCPIInstrument):
         '''
         self.sendcmd('REST')
     
-    _valid_channel_display[{Mode.x:0, Mode.r:1, Mode.xnoise:2, Mode.aux1:3, 
-                                Mode.aux2:4}, #channel1
-                            {Mode.y:0, Mode.theta:1, Mode.ynoise:2, Mode.aux3:3,
-                                Mode.aux4:4} #channel2
-                            ]
-    _valid_channel_ratio[{Mode.none:0, Mode.aux1:1, Mode.aux2:2}, #channel1
-                        {Mode.none:0, Mode.aux3:1, Mode.aux4:2} #channel2
-                        ]  
-    _valid_channel = {Mode.ch1:1, Mode.ch2:2}         
+    _valid_channel_display = [
+        {Mode.x: 0, Mode.r: 1, Mode.xnoise: 2, Mode.aux1: 3, Mode.aux2: 4}, #channel1
+        {Mode.y: 0, Mode.theta: 1, Mode.ynoise: 2, Mode.aux3: 3, Mode.aux4: 4} #channel2
+    ]
+    _valid_channel_ratio = [
+        {Mode.none: 0, Mode.aux1: 1, Mode.aux2: 2}, #channel1
+        {Mode.none: 0, Mode.aux3: 1, Mode.aux4: 2} #channel2
+    ]  
+    _valid_channel = {Mode.ch1: 1, Mode.ch2: 2}         
     def set_channel_display(self, channel, display, ratio):
         '''
         Sets the display of the two channels.
@@ -550,15 +571,15 @@ class SRS830(SCPIInstrument):
         Channel 2 can have ratio of None, Aux In 3, Aux In 4
         
         :param channel: Channel you wish to set the display of. Valid input is
-        one of {CH1|CH2}.
+            one of {CH1|CH2}.
         :type channel: `~SRS830.Mode` or `str`
         
         :param display: Setting the channel will be changed to. Valid 
-        input is one of {X|Y|R|THETA|XNOISE|YNOISE|AUX1|AUX2|AUX3|AUX4}
+            input is one of {X|Y|R|THETA|XNOISE|YNOISE|AUX1|AUX2|AUX3|AUX4}
         :type display: `~SRS830.Mode` or `str`
         
         :param `str` ratio: Desired ratio setting for this channel. Valid input
-        is one of {NONE|AUX1|AUX2|AUX3|AUX4}
+            is one of {NONE|AUX1|AUX2|AUX3|AUX4}
         :type ratio: `~SRS830.Mode` or `str`
         '''
         if isinstance(channel, str):

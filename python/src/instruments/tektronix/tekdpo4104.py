@@ -106,7 +106,7 @@ class TekDPO4104DataSource(object):
             return other.name == self.name
         
     # Read Waveform        
-    def read_waveform(self, bin_format=False):
+    def read_waveform(self, bin_format=True):
         '''
         Read waveform from the oscilloscope.
         This function is all inclusive. After reading the data from the oscilloscope, it unpacks the data and scales it accordingly.
@@ -120,18 +120,25 @@ class TekDPO4104DataSource(object):
 
         # Set the acquisition channel
         with self:
+
+            # TODO: move this out somewhere more appropriate.
+            old_dat_stop = self._tek.query('DAT:STOP?')
+            self._tek.sendcmd('DAT:STOP {}'.format(10**7))
+            
             if not bin_format:
                 self._tek.sendcmd( 'DAT:ENC ASCI' ) # Set the data encoding format to ASCII
+                sleep(0.02) # Work around issue with 2.48 firmware.
                 raw = self._tek.query( 'CURVE?' )
                 raw = raw.split(",") # Break up comma delimited string
                 raw = map(float, raw) # Convert each list element to int
                 raw = np.array(raw) # Convert into numpy array
             else:
                 self._tek.sendcmd( 'DAT:ENC RIB' ) # Set encoding to signed, big-endian
+                sleep(0.02) # Work around issue with 2.48 firmware.
+                data_width = self._tek.data_width
                 self._tek.sendcmd( 'CURVE?' )
-                raw = self._tek.binblockread(2) # Read in the binary block, data width of 2 bytes
-
-                self._tek._file.read(2) # Read in the two ending \n\r characters
+                # Read in the binary block, data width of 2 bytes.
+                raw = self._tek.binblockread(data_width)
 
             # FIXME: the following has not yet been converted.
             #        Needs to be fixed before it will even run.
@@ -146,8 +153,10 @@ class TekDPO4104DataSource(object):
             ptcnt = self._tek.query( 'WFMP:NR_P?') # Retrieve number of data points
             
             x = np.arange( float(ptcnt) ) * float(xincr) + float(xzero)
+
+            self._tek.sendcmd('DAT:STOP {}'.format(old_dat_stop))
             
-            return [x,y]
+            return x, y
             
     y_offset = _parent_property('y_offset')
     
@@ -206,6 +215,51 @@ class TekDPO4104(SCPIInstrument):
             elif hasattr(newval, "name"): # Is a datasource with a name.
                 newval = newval.name
         self.sendcmd("DAT:SOU {}".format(newval))
+        sleep(0.01) # Let the instrument catch up.
+
+    @property
+    def aquisition_length(self):
+        return int(self.query('HOR:RECO?'))
+    @aquisition_length.setter
+    def aquisition_length(self, newval):
+        self.sendcmd("HOR:RECO {}".format(newval))
+
+    @property
+    def aquisition_running(self):
+        """
+        Gets/sets the aquisition state of the attached instrument.
+        This property is `True` if the aquisition is running,
+        and is `False` otherwise.
+        
+        :type: `bool`
+        """
+        return bool(int(self.query('ACQ:STATE?').strip()))
+    @aquisition_running.setter
+    def aquisition_running(self, newval):
+        self.sendcmd('ACQ:STATE {}'.format(1 if newval else 0))
+        
+    @property
+    def aquisition_continuous(self):
+        """
+        Gets/sets whether the aquisition is continuous ("run/stop mode")
+        or whether aquisiton halts after the next sequence ("single mode").
+        
+        :type: `bool`
+        """
+        return self.query('ACQ:STOPA?').strip().startswith('RUNST')
+    @aquisition_continuous.setter
+    def aquisition_continuous(self, newval):
+        self.sendcmd('ACQ:STOPA {}'.format('RUNST' if newval else 'SEQ'))
+        
+    @property
+    def data_width(self):
+        return int(self.query("DATA:WIDTH?"))
+    @data_width.setter
+    def data_width(self, newval):
+        if int(newval) not in [1, 2]:
+            raise ValueError("Only one or two byte-width is supported.")
+        
+        self.sendcmd("DATA:WIDTH {}".format(newval))
     
     # TODO: convert to read in unitful quantities.
     @property
@@ -218,4 +272,14 @@ class TekDPO4104(SCPIInstrument):
     @y_offset.setter
     def y_offset(self, newval):
         self.sendcmd("WFMP:YOF {}".format(newval))
+    
+
+    ## METHODS ##
+    
+    def force_trigger(self):
+        """
+        Forces a trigger event to occur on the attached oscilloscope.
+        Note that this is distinct from the standard SCPI "*TRG" functionality.
+        """
+        self.sendcmd('TRIG FORCE')
     
