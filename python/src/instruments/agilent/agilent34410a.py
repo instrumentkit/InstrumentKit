@@ -89,14 +89,24 @@ class Agilent34410a(SCPIMultimeter):
     def configure(self, mode=None, deviceRange=None, resolution=None):
         '''
         Change the measurement mode of the multimeter.
-        No actual measurement will take place, but the instrument is then able to do so using the INITiate or READ? command.
+        No actual measurement will take place, but the instrument is then able 
+        to do so using the INITiate or READ? command.
         
-        All arguments are optional. Passing no arguments will query the device for the current configuration settings. This returns a string such as ``VOLT +1.000000E+01,+3.000000E-06``.
+        All arguments are optional. Passing no arguments will query the device 
+        for the current configuration settings. This returns a string such as 
+        ``VOLT +1.000000E+01,+3.000000E-06``.
         
-        :param str mode: Desired measurement mode, one of ``{CAPacitance|CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|RESistance|TEMPerature|VOLTage:AC|VOLTage:DC}``.
-        :param deviceRange: It is recommended this is user specified, but is optional. Sets the range of the instrument. No value checking when passed as a number.
-        :type mode: `str` (one of ``MINimum, MAXimum, DEFault, AUTOmatic``) or range
-        :param float resolution: Measurement that the instrument will use. This is ignored for most modes. It is assumed that the user has entered a valid number.
+        :param str mode: Desired measurement mode, one of ``{CAPacitance|
+        CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|
+        RESistance|TEMPerature|VOLTage:AC|VOLTage:DC}``.
+        :param deviceRange: It is recommended this is user specified, but is 
+        optional. Sets the range of the instrument. No value checking when 
+        passed as a number.
+        :type mode: `str` (one of ``MINimum, MAXimum, DEFault, AUTOmatic``) or 
+        range
+        :param float resolution: Measurement that the instrument will use. 
+        This is ignored for most modes. It is assumed that the user has entered 
+        a valid number.
         '''
         if mode == None: # If no arguments were passed, perform query and return
             return self.query('CONF?')

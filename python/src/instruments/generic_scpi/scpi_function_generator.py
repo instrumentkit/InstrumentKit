@@ -107,15 +107,25 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     
     @property
     def offset(self):
-        pass
+        '''
+        Gets/sets the offset voltage of the function generator.
+        
+        Set value should be within correct bounds of instrument.
+        
+        :units: As specified  (if a `~quntities.Quantity`) or assumed to be
+            of units volts.
+        :type: `~quantities.Quantity` with units volts.
+        '''
+        return pq.Quantity(float(self.query('VOLT:OFFS?')), pq.volt)
     @offset.setter
     def offset(self, newval):
-        pass
+        newval = float(assume_units(newval, pq.volt).rescale(pq.volt).magnitude)
+        self.sendcmd('VOLT:OFFS {}'.format(newval))
     
     @property
     def phase(self):
-        pass
+        raise NotImplementedError
     @phase.setter
     def phase(self, newval):
-        pass
+        raise NotImplementedError
     
