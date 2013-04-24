@@ -34,6 +34,7 @@ import time
 import numpy as np
 
 from flufl.enum import Enum
+from flufl.enum import IntEnum
 from flufl.enum._enum import EnumValue
 import quantities as pq
 
@@ -76,26 +77,26 @@ class SRS830(SCPIInstrument):
                         'unknown.'
     ## ENUMS ##
     
-    class FreqSource(Enum):
+    class FreqSource(IntEnum):
         '''
         Enum for the SRS830 frequency source settings.
         '''
         external = 0
         internal = 1
     
-    class Coupling(Enum):
+    class Coupling(IntEnum):
         '''
         Enum for the SRS830 channel coupling settings.
         '''
         ac = 0
         dc = 1
     
-    class BufferMode(Enum):
+    class BufferMode(IntEnum):
         '''
         Enum for the SRS830 buffer modes.
         '''
         one_shot = 0
-        loop = 1
+        loop     = 1
         
     class Mode(Enum):
         '''

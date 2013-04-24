@@ -42,43 +42,7 @@ from instruments.util_fns import assume_units, ProxyList
 
 ## ENUMS #######################################################################
 
-class SRSDG645Channels(IntEnum):
-    T0 = 0
-    T1 = 1
-    A  = 2
-    B  = 3
-    C  = 4
-    D  = 5
-    E  = 6
-    F  = 7
-    G  = 8
-    H  = 9
 
-class SRSDG645DisplayMode(IntEnum):
-    trigger_rate          = 0
-    trigger_threshold     = 1
-    trigger_single_shot   = 2
-    trigger_line          = 3
-    adv_triggering_enable = 4
-    trigger_holdoff       = 5
-    prescale_config       = 6
-    burst_mode            = 7
-    burst_delay           = 8
-    burst_count           = 9
-    burst_period          = 10
-    channel_delay         = 11
-    channel_levels        = 12
-    channel_polarity      = 13
-    burst_T0_config       = 14
-
-class SRSDG645TriggerSource(IntEnum):
-    internal            = 0
-    external_rising     = 1
-    external_falling    = 2
-    ss_external_rising  = 3
-    ss_external_falling = 4
-    single_shot         = 5
-    line                = 6
 
 ## CLASSES #####################################################################
 
@@ -90,16 +54,18 @@ class Channel(object):
         self._ddg = ddg
         self._chan = chan
 
+    ## PROPERTIES ##
+
     @property
     def delay(self):
         """
         Gets/sets the delay of this channel.
         Formatted as a two-tuple of the reference and the delay time.
-        For example, ``(SRSDG645Channels.A, pq.Quantity(10, "ps"))``
+        For example, ``(SRSDG645.Channels.A, pq.Quantity(10, "ps"))``
         indicates a delay of 10 picoseconds from delay channel A.
         """
         resp = self._ddg.query("DLAY?{}".format(int(self._chan))).split(",")
-        return (SRSDG645Channels(int(resp[0])), pq.Quantity(float(resp[1]), "s"))
+        return (SRSDG645.Channels(int(resp[0])), pq.Quantity(float(resp[1]), "s"))
     @delay.setter
     def delay(self, newval):
         self._ddg.sendcmd("DLAY {},{},{}".format(
@@ -122,10 +88,52 @@ class SRSDG645(SCPIInstrument):
         # This instrument requires stripping two characters.
         if isinstance(filelike, GPIBWrapper):
             filelike.strip = 2
+    
+    ## ENUMS ##
+    
+    class Channels(IntEnum):
+        T0 = 0
+        T1 = 1
+        A  = 2
+        B  = 3
+        C  = 4
+        D  = 5
+        E  = 6
+        F  = 7
+        G  = 8
+        H  = 9
+
+    class DisplayMode(IntEnum):
+        trigger_rate          = 0
+        trigger_threshold     = 1
+        trigger_single_shot   = 2
+        trigger_line          = 3
+        adv_triggering_enable = 4
+        trigger_holdoff       = 5
+        prescale_config       = 6
+        burst_mode            = 7
+        burst_delay           = 8
+        burst_count           = 9
+        burst_period          = 10
+        channel_delay         = 11
+        channel_levels        = 12
+        channel_polarity      = 13
+        burst_T0_config       = 14
+
+    class TriggerSource(IntEnum):
+        internal            = 0
+        external_rising     = 1
+        external_falling    = 2
+        ss_external_rising  = 3
+        ss_external_falling = 4
+        single_shot         = 5
+        line                = 6
+        
+    ## PROPERTIES ##
 
     @property
     def channel(self):
-        return ProxyList(self, Channel, SRSDG645Channels)
+        return ProxyList(self, Channel, SRSDG645.Channels)
 
     @property
     def display(self):
@@ -133,10 +141,10 @@ class SRSDG645(SCPIInstrument):
         Gets/sets the front-panel display mode for the connected DDG.
         The mode is a tuple of the display mode and the channel.
         
-        :type: `tuple` of an `SRSDG645DisplayMode` and an `SRSDG645Channels`
+        :type: `tuple` of an `SRSDG645.DisplayMode` and an `SRSDG645.Channels`
         """
         disp_mode, chan = map(int, self.query("DISP?").split(","))
-        return (SRSDG645DisplayMode(disp_mode), SRSDG645Channels(chan))
+        return (SRSDG645.DisplayMode(disp_mode), SRSDG645.Channels(chan))
     @display.setter
     def display(self, newval):
         # TODO: check types here.
@@ -173,9 +181,9 @@ class SRSDG645(SCPIInstrument):
         """
         Gets/sets the source for the trigger.
 
-        :type: SRSDG645TriggerSource
+        :type: SRSDG645.TriggerSource
         """
-        return SRSDG645TriggerSource(int(self.query("TSRC?")))
+        return SRSDG645.TriggerSource(int(self.query("TSRC?")))
     @trigger_source.setter
     def trigger_source(self, newval):
         self.sendcmd("TSRC {}".format(int(newval)))
