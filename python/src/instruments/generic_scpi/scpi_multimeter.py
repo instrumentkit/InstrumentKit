@@ -96,7 +96,8 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
     @mode.setter
     def mode(self, newval):
         if not (isinstance(newval, MultimeterMode) or isinstance(newval, str)):
-            raise TypeError("Mode must be specified as either a str or a MultimeterMode.")
+            raise TypeError("Mode must be specified as either a str or a "
+                "MultimeterMode.")
         if isinstance(newval, str):
             newval = MultimeterMode[newval]
         self.sendcmd('CONF:' + newval._value)
@@ -114,8 +115,9 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         instrument value and appropriate units. If no appropriate units exist,
         (for example, continuity), then return type is `float`.
         
-        :param instruments.generic_scpi.MultimeterMode mode: Desired measurement mode.
-            If set to `None`, will default to the current mode.
+        :param instruments.generic_scpi.MultimeterMode mode: Desired 
+        measurement mode. If set to `None`, will default to the current 
+        mode.
         '''
         
         # Default to the current mode.
@@ -124,7 +126,8 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
             
         # Throw an error if the mode isn't an enum.
         if not isinstance(mode, MultimeterMode):
-            raise TypeError("The mode must be specified as a `MultimeterMode`.")
+            raise TypeError("The mode must be specified as a "
+                "`MultimeterMode`.")
         
         # Unpack the value from the enumeration.
         mode = mode._value.lower()
