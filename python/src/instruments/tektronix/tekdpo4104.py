@@ -57,13 +57,6 @@ def _parent_property(prop_name, doc=""):
             
     return property(getter, setter, doc=doc)
 
-## ENUMS #######################################################################
-
-class TekDPO4104Coupling(Enum):
-    ac = "AC"
-    dc = "DC"
-    ground = "GND"
-
 ## CLASSES #####################################################################
 
 class TekDPO4104DataSource(object):
@@ -175,21 +168,34 @@ class TekDPO4104Channel(TekDPO4104DataSource):
         """
         Gets/sets the coupling setting for this channel.
 
-        :type: `TekDPO4104Coupling`
+        :type: `TekDPO4104.Coupling`
         """
-        return TekDPO4104Coupling[self._tek.query("CH{}:COUPL?".format(
+        return TekDPO4104.Coupling[self._tek.query("CH{}:COUPL?".format(
                                                                 self._idx)
                                                                 )]
     @coupling.setter
     def coupling(self, newval):
         if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                            TekDPO4104Coupling):
-            raise TypeError("Coupling setting must be a TekDPO4104Coupling "
-                "value, got {} instead.".format(type(newval)))
+                                                           TekDPO4104.Coupling):
+            raise TypeError("Coupling setting must be a `TekDPO4104.Coupling`"
+                " value, got {} instead.".format(type(newval)))
 
         self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
 
 class TekDPO4104(SCPIInstrument):
+    '''
+    Communicates with a Tektronix DPO4104 oscilloscope using the SCPI commands
+    documented in the user's guide.
+    '''
+    
+    ## ENUMS ##
+    
+    class Coupling(Enum):
+        ac = "AC"
+        dc = "DC"
+        ground = "GND"
+        
+    ## PROPERTIES ##
 
     @property
     def channel(self):
