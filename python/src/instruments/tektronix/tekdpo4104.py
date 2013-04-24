@@ -109,10 +109,11 @@ class TekDPO4104DataSource(object):
     def read_waveform(self, bin_format=True):
         '''
         Read waveform from the oscilloscope.
-        This function is all inclusive. After reading the data from the oscilloscope, it unpacks the data and scales it accordingly.
-        Supports both ASCII and binary waveform transfer. For 2500 data points, with a width of 2 bytes, transfer takes approx 2 seconds for binary, and 7 seconds for ASCII.
+        This function is all inclusive. After reading the data from the 
+        oscilloscope, it unpacks the data and scales it accordingly.
+        Supports both ASCII and binary waveform transfer.
         
-        Function returns a list [x,y], where both x and y are numpy arrays.
+        Function returns a tuple (x,y), where both x and y are numpy arrays.
 
         :param bool bin_format: If `True`, data is transfered
             in a binary format. Otherwise, data is transferred in ASCII.
@@ -126,33 +127,35 @@ class TekDPO4104DataSource(object):
             self._tek.sendcmd('DAT:STOP {}'.format(10**7))
             
             if not bin_format:
-                self._tek.sendcmd( 'DAT:ENC ASCI' ) # Set the data encoding format to ASCII
+                self._tek.sendcmd('DAT:ENC ASCI') # Set data encoding format 
+                                                  # to ASCII
                 sleep(0.02) # Work around issue with 2.48 firmware.
-                raw = self._tek.query( 'CURVE?' )
+                raw = self._tek.query('CURVE?')
                 raw = raw.split(",") # Break up comma delimited string
                 raw = map(float, raw) # Convert each list element to int
                 raw = np.array(raw) # Convert into numpy array
             else:
-                self._tek.sendcmd( 'DAT:ENC RIB' ) # Set encoding to signed, big-endian
+                self._tek.sendcmd('DAT:ENC RIB') # Set encoding to signed, 
+                                                 # big-endian
                 sleep(0.02) # Work around issue with 2.48 firmware.
                 data_width = self._tek.data_width
-                self._tek.sendcmd( 'CURVE?' )
-                # Read in the binary block, data width of 2 bytes.
-                raw = self._tek.binblockread(data_width)
+                self._tek.sendcmd('CURVE?')
+                raw = self._tek.binblockread(data_width) # Read in the binary 
+                                                         # block, data width of
+                                                         # 2 bytes.
 
-            # FIXME: the following has not yet been converted.
-            #        Needs to be fixed before it will even run.
             yoffs = self._tek.y_offset # Retrieve Y offset
-            ymult = self._tek.query( 'WFMP:YMU?' ) # Retrieve Y multiplier
-            yzero = self._tek.query( 'WFMP:YZE?' ) # Retrieve Y zero
+            ymult = self._tek.query('WFMP:YMU?') # Retrieve Y multiplier
+            yzero = self._tek.query('WFMP:YZE?') # Retrieve Y zero
             
-            y = ( (raw - yoffs ) * float(ymult) ) + float(yzero)
+            y = ((raw - yoffs) * float(ymult)) + float(yzero)
             
-            xzero = self._tek.query( 'WFMP:XZE?' ) # Retrieve X zero
-            xincr = self._tek.query( 'WFMP:XIN?' ) # Retrieve X incr
-            ptcnt = self._tek.query( 'WFMP:NR_P?') # Retrieve number of data points
+            xzero = self._tek.query('WFMP:XZE?')  # Retrieve X zero
+            xincr = self._tek.query('WFMP:XIN?')  # Retrieve X incr
+            ptcnt = self._tek.query('WFMP:NR_P?') # Retrieve number of 
+                                                  # data points
             
-            x = np.arange( float(ptcnt) ) * float(xincr) + float(xzero)
+            x = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
 
             self._tek.sendcmd('DAT:STOP {}'.format(old_dat_stop))
             
@@ -174,11 +177,15 @@ class TekDPO4104Channel(TekDPO4104DataSource):
 
         :type: `TekDPO4104Coupling`
         """
-        return TekDPO4104Coupling[self._tek.query("CH{}:COUPL?".format(self._idx))]
+        return TekDPO4104Coupling[self._tek.query("CH{}:COUPL?".format(
+                                                                self._idx)
+                                                                )]
     @coupling.setter
     def coupling(self, newval):
-        if not isinstance(newval, EnumValue) or newval.enum is not TekDPO4104Coupling:
-            raise TypeError("Coupling setting must be a TekDPO4104Coupling value, got {} instead.".format(type(newval)))
+        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
+                                                            TekDPO4104Coupling):
+            raise TypeError("Coupling setting must be a TekDPO4104Coupling "
+                "value, got {} instead.".format(type(newval)))
 
         self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
 
