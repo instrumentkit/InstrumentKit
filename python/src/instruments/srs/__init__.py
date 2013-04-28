@@ -3,5 +3,5 @@ from instruments.srs.srs345 import (
 )
 from instruments.srs.srs830 import SRS830
 from instruments.srs.srsdg645 import (
-    SRSDG645, SRSDG645DisplayMode, SRSDG645Channels, SRSDG645TriggerSource
+    SRSDG645
 )
