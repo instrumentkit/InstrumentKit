@@ -35,14 +35,22 @@ from instruments.generic_scpi import SCPIInstrument
 class Keithley6220(SCPIInstrument):
     
     def output(self, current):
+        '''
+        Set the output current of the source.
         
+        :param float current: Desired output current setting. Must be between
+            -105mA and +105mA.
+        '''
         if not isinstance(current, float):
             raise TypeError('Current must be specified as a float.')
             
-        if (current < -105e-3) or (current > 105e3):
-            raise ValueError('Current must be betwen -105e-3 and 105e+3')
+        if (current < -105e-3) or (current > 105e-3):
+            raise ValueError('Current must be betwen -105e-3 and 105e-3')
             
         self.sendcmd('SOUR:CURR {}'.format(current))
         
     def disable(self):
-        self.sendcmd('SOUR:CLE:IMM') # Set output to zero and then turn the output off
+        '''
+        Set the output current to zero and disable the output.
+        '''
+        self.sendcmd('SOUR:CLE:IMM')
