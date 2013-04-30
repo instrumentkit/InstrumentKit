@@ -260,7 +260,7 @@ class SRS830(SCPIInstrument):
         is full. Setting to `one_shot` will stop acquisition, while `loop`
         will repeat from the start.
         
-        :type: `SRS830BufferMode`
+        :type: `SRS830.BufferMode`
         '''
         return SRS830.BufferMode[int(self.query('SEND?'))]
     @buffer_mode.setter
@@ -316,7 +316,7 @@ class SRS830(SCPIInstrument):
         It sets the offset of the mode specified to zero.
         
         :param mode: Target mode of auto_offset function. Valid inputs are
-        {X|Y|R}.
+            {X|Y|R}.
         :type mode: `~SRS830.Mode` or `str`
         '''
         if isinstance(mode, str):
@@ -348,13 +348,14 @@ class SRS830(SCPIInstrument):
         Sets both the data sampling rate and the end of buffer mode
         
         :param sample_rate: The desired sampling
-        rate. Acceptable set values are :math:`2^n` where 
-        :math:`n \in \{-4...+9\}` in units Hertz or the string `trigger`.
-        :type sample_rate `~quantities.Quantity` or `str`
+            rate. Acceptable set values are :math:`2^n` where 
+            :math:`n \in \{-4...+9\}` in units Hertz or the string `trigger`.
+        :type sample_rate: `~quantities.Quantity` or `str`
         
         :param `SRS830.BufferMode` buffer_mode: This sets the behaviour of the 
-        instrument when the data storage buffer is full. Setting to `one_shot` 
-        will stop acquisition, while `loop` will repeat from the start.
+            instrument when the data storage buffer is full. Setting to 
+            `one_shot` will stop acquisition, while `loop` will repeat from 
+            the start.
         '''
         self.clear_data_buffer()
         self.sample_rate = sample_rate
@@ -579,7 +580,7 @@ class SRS830(SCPIInstrument):
             input is one of {X|Y|R|THETA|XNOISE|YNOISE|AUX1|AUX2|AUX3|AUX4}
         :type display: `~SRS830.Mode` or `str`
         
-        :param `str` ratio: Desired ratio setting for this channel. Valid input
+        :param ratio: Desired ratio setting for this channel. Valid input
             is one of {NONE|AUX1|AUX2|AUX3|AUX4}
         :type ratio: `~SRS830.Mode` or `str`
         '''
