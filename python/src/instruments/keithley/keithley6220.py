@@ -1,29 +1,48 @@
 #!/usr/bin/python
-# Filename: keithley6220.py
+# -*- coding: utf-8 -*-
+##
+# keithley6220.py: Driver for the Keithley 6220 current source.
+##
+# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+#
+# This file is a part of the GPIBUSB adapter project.
+# Licensed under the AGPL version 3.
+##
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
 
-# Original author: Steven Casagrande (stevencasagrande@gmail.com)
-# 2012
+## FEATURES ####################################################################
 
-# This work is released under the Creative Commons Attribution-Sharealike 3.0 license.
-# See http://creativecommons.org/licenses/by-sa/3.0/ or the included license/LICENSE.TXT file for more information.
+from __future__ import division
 
-# Attribution requirements can be found in license/ATTRIBUTION.TXT
+## IMPORTS #####################################################################
 
-from instruments.abstract_instruments import Instrument
+from instruments.generic_scpi import SCPIInstrument
 
-class Keithley6220(Instrument):
-    def __init__(self, port, address,timeout_length):
-        super(Keithley6220, self).__init__(self,port,address,timeout_length)
+## CLASSES #####################################################################
+
+class Keithley6220(SCPIInstrument):
     
-    def output(self,current):
+    def output(self, current):
         
-        if not isinstance(current,float):
-            raise Exception('Current must be specified as a float.')
+        if not isinstance(current, float):
+            raise TypeError('Current must be specified as a float.')
             
         if (current < -105e-3) or (current > 105e3):
-            raise Exception('Current must be betwen -105e-3 and 105e+3')
+            raise ValueError('Current must be betwen -105e-3 and 105e+3')
             
-        self.write( 'SOUR:CURR ' + str(current) )
+        self.sendcmd('SOUR:CURR {}'.format(current))
         
     def disable(self):
-        self.write('SOUR:CLE:IMM') # Set output to zero and then turn the output off
+        self.sendcmd('SOUR:CLE:IMM') # Set output to zero and then turn the output off
