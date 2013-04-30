@@ -115,6 +115,13 @@ class Instrument(object):
     
     @property
     def timeout(self):
+        '''
+        Gets/sets the communication timeout for this instrument. Note that
+        setting this value after opening the connection is not supported for
+        all connection types.
+        
+        :type: `int`
+        '''
         return self._file.timeout
     @timeout.setter
     def timeout(self, newval):
@@ -122,6 +129,16 @@ class Instrument(object):
     
     @property
     def address(self):
+        '''
+        Gets/sets the target communication of the instrument.
+        
+        This is useful for situations when running straight from a Python shell
+        and your instrument has enumerated with a different address. An example
+        when this can happen is if you are using a USB to Serial adapter and
+        you disconnect/reconnect it.
+        
+        :type: `int` for GPIB address, `str` for other
+        '''
         return self._file.address
     @address.setter
     def address(self, newval):
@@ -129,6 +146,15 @@ class Instrument(object):
             
     @property
     def terminator(self):
+        '''
+        Gets/sets the terminator used for communication.
+        
+        For communication options where this is applicable, the value 
+        corresponds to the ASCII character used for termination in decimal 
+        format. Example: 10 sets the character to NEWLINE.
+        
+        :type: `int`, or `str` for GPIB adapters. 
+        '''
         return self._file.terminator
     @terminator.setter
     def terminator(self, newval):
@@ -144,7 +170,7 @@ class Instrument(object):
         '''
         self._file.write(msg)        
         
-    def binblockread(self, dataWidth, fmt=None):
+    def binblockread(self, data_width, fmt=None):
         '''
         Read a binary data block from attached instrument.
         This requires that the instrument respond in a particular manner
@@ -153,28 +179,31 @@ class Instrument(object):
         The format is as follows:
         #{number of following digits:1-9}{num of bytes to be read}{data bytes}
 
-        :param fmt: Format string as specified by the :mod:`struct` module,
+        :param int data_width: Specify the number of bytes wide each data
+            point is. One of [1,2].
+        
+        :param str fmt: Format string as specified by the :mod:`struct` module,
             or `None` to choose a format automatically based on the data
             width.        
         '''
-        if( dataWidth not in [1,2]):
+        if(data_width not in [1,2]):
             print 'Error: Data width must be 1 or 2.'
             return 0
         # This needs to be a # symbol for valid binary block
         symbol = self._file.read(1)
-        if( symbol != '#' ): # Check to make sure block is valid
+        if(symbol != '#'): # Check to make sure block is valid
             raise IOError('Not a valid binary block start. Binary blocks '
                                 'require the first character to be #.')
         else:
             # Read in the num of digits for next part
-            digits = int( self._file.read(1) )
+            digits = int(self._file.read(1))
             
             # Read in the num of bytes to be read
-            num_of_bytes = int( self._file.read(digits) )
+            num_of_bytes = int(self._file.read(digits))
             
             # Make or use the required format string.
             if fmt is None:
-                fmt = _DEFAULT_FORMATS[dataWidth]
+                fmt = _DEFAULT_FORMATS[data_width]
                 
             # Read in the data bytes, and pass them to numpy using the specified
             # data type (format).
@@ -270,9 +299,11 @@ class Instrument(object):
             #     device.
             return cls.open_visa(parsed_uri.netloc, **kwargs)
         elif parsed_uri.scheme == 'file':
-            return cls.open_file(os.path.join(parsed_uri.netloc, parsed_uri.path), **kwargs)
+            return cls.open_file(os.path.join(parsed_uri.netloc, 
+                                               parsed_uri.path), **kwargs)
         else:
-            raise NotImplementedError("Invalid scheme or not yet implemented.")
+            raise NotImplementedError("Invalid scheme or not yet "
+                                          "implemented.")
     
     @classmethod
     def open_tcpip(cls, host, port):
@@ -304,14 +335,16 @@ class Instrument(object):
     @classmethod
     def open_visa(cls, resource_name):
         if visa is None:
-            raise ImportError("PyVISA is required for loading VISA instruments.")
+            raise ImportError("PyVISA is required for loading VISA "
+                                "instruments.")
         ins = visa.instrument(resource_name)
         return cls(vw.VisaWrapper(ins))
 
     @classmethod
     def open_usb(cls, vid, pid):
         if usb is None:
-            raise ImportError("USB support not imported. Do you have PyUSB version 1.0 or later?")
+            raise ImportError("USB support not imported. Do you have PyUSB "
+                                "version 1.0 or later?")
 
         dev = usb.core.find(idVendor=vid, idProduct=pid)
         if dev is None:

@@ -34,7 +34,7 @@ from instruments.generic_scpi import SCPIInstrument
 
 class Agilent33220a(SCPIInstrument):
     
-    def setOutput(self, func, freq=None, amplitude=None, offset=None):
+    def set_output(self, func, freq=None, amplitude=None, offset=None):
         '''
         Set the output of the function generator.
         
@@ -133,7 +133,7 @@ class Agilent33220a(SCPIInstrument):
         current frequency setting, and returns it as a float. Units are Hertz.
         
         :param freq: Desired output frequency. One of 
-            {<frequency>|MINimum|MAXimum}
+            ``{<frequency>|MINimum|MAXimum}``
         :type: `int` or `str`
         '''
         if freq == None: # If no frequency is specified, query 
@@ -171,8 +171,8 @@ class Agilent33220a(SCPIInstrument):
         maximum allowed)
         
         :param amplitude: Desired output voltage amplitude. One of
-            {<amplitude>|MINimum|MAXimum}
-        :type: `int` or `str`
+            ``{<amplitude>|MINimum|MAXimum}``
+        :type amplitude: `int` or `str`
         '''
         if amplitude == None: # Voltage is not specified
             return (float(self.query('VOLT?')), 
@@ -198,7 +198,7 @@ class Agilent33220a(SCPIInstrument):
         
         self.sendcmd('VOLT {}'.format(str(amplitude)))
         
-    def voltageUnits(self,unit = None):
+    def voltage_units(self,unit = None):
         '''
         Set the voltage amplitude units of the function generator.
         
@@ -207,7 +207,7 @@ class Agilent33220a(SCPIInstrument):
         
         Return type is a string.
         
-        :param str unit: Desired voltage unit. One of {VPP|VRMS|DBM}.
+        :param str unit: Desired voltage unit. One of ``{VPP|VRMS|DBM}``.
         '''
         if unit == None: # No unit is defined
             return self.query('VOLT:UNIT?')
@@ -223,7 +223,7 @@ class Agilent33220a(SCPIInstrument):
         
         self.sendcmd('VOLT:UNIT ' + unit)
         
-    def voltageOffset(self,offset = None):
+    def voltage_offset(self,offset = None):
         '''
         Set the offset voltage for the output waveform.
         
@@ -235,8 +235,8 @@ class Agilent33220a(SCPIInstrument):
         maximum offset )
         
         :param offset: Desired voltage offset in volts. One of
-             {<voltage>|MINimum|MAXimum}
-        :type: `int` or `str`
+             ``{<voltage>|MINimum|MAXimum}``
+        :type offset: `int` or `str`
         '''
         if offset == None: # No offset is defined
             return (float(self.query('VOLT:OFFS?')), 
@@ -259,7 +259,7 @@ class Agilent33220a(SCPIInstrument):
         
         self.sendcmd('VOLT:OFFS ' + str(offset))
         
-    def dutyCycle(self,duty = None):
+    def duty_cycle(self,duty = None):
         '''
         Set the duty cycle of a square wave.
         Duty cycle represents the amount of time that the square wave is at a 
@@ -273,8 +273,8 @@ class Agilent33220a(SCPIInstrument):
         (current duty, minimum duty, maximum duty)
         
         :param duty: Desired duty cycle as a percent. One of
-            {<duty cycle>|MINimum|MAXimum}
-        :type: `int` or `str`
+            ``{<duty cycle>|MINimum|MAXimum}``
+        :type duty: `int` or `str`
         '''
         if duty == None:
             return (int(self.query('FUNC:SQU:DCYC?')),
@@ -296,7 +296,7 @@ class Agilent33220a(SCPIInstrument):
         
         self.sendcmd('FUNC:SQU:DCYC ' + str(duty))
         
-    def rampSymmetry(self,symmetry = None):
+    def ramp_symmetry(self,symmetry = None):
         '''
         Set the ramp symmetry for ramp waves.
         Symmetry represents the amount of time per cycle that the ramp wave is 
@@ -356,7 +356,7 @@ class Agilent33220a(SCPIInstrument):
         else:
             raise ValueError('Valid output states are "OFF", "ON", 0 and 1.')
         
-    def outputLoad(self,load=None):
+    def output_load(self,load=None):
         '''
         Desired output termination load (ie, the impedance of the load attached 
         to the front panel output connector).
@@ -376,8 +376,8 @@ class Agilent33220a(SCPIInstrument):
         Return type is a tuple of the form (current load, min load, max load)
         
         :param load: The impedance of the load attached to the front panel 
-            output connector. One of {<ohms>|MINimum|MAXimum|INFinity}
-        :type: `int` or `str`
+            output connector. One of ``{<ohms>|MINimum|MAXimum|INFinity}``
+        :type load: `int` or `str`
         '''
         if load == None:
             return (int(self.query('OUTP:LOAD?')),
@@ -403,7 +403,7 @@ class Agilent33220a(SCPIInstrument):
         
         self.sendcmd('OUTP:LOAD ' + str(load))
         
-    def outputPolarity(self,polarity = None):
+    def output_polarity(self, polarity=None):
         '''
         Inverts the waveform relative to the offset voltage.
         
@@ -412,7 +412,8 @@ class Agilent33220a(SCPIInstrument):
         
         Return type is a string. For example: "NORM" without quotes.
         
-        :param str polarity: Desired output polarity. One of {NORMal|INVerted}.
+        :param str polarity: Desired output polarity. One of 
+            ``{NORMal|INVerted}``.
         '''
         if polarity == None:
             return self.query('OUTP:POL?')
@@ -422,7 +423,7 @@ class Agilent33220a(SCPIInstrument):
         elif polarity in ('inverted','inv'):
             self.sendcmd('OUTP:POL INV')
     
-    def outputSync(self,state = None):
+    def output_sync(self,state = None):
         '''
         Enable or disable the front panel sync connector.
         
@@ -432,8 +433,8 @@ class Agilent33220a(SCPIInstrument):
         Return type is a string.
         
         :param state: Desired state of front panel sync connector. One of 
-            {OFF|ON|0|1}
-        :type: `int` or `str`
+            ``{OFF|ON|0|1}``
+        :type state: `int` or `str`
         '''
         if state == None:
             return self.query('OUTP:SYNC?')

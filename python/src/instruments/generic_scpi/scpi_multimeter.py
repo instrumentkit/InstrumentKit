@@ -90,7 +90,9 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
     @property
     def mode(self):
         '''
-        Get or set the current measurement mode for the multimeter.
+        Gets/sets the current measurement mode for the multimeter.
+        
+        :type: `instruments.generic_scpi.MultimeterMode`
         '''
         return MultimeterMode[self.query('CONF?')]
     @mode.setter
@@ -116,8 +118,8 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         (for example, continuity), then return type is `float`.
         
         :param instruments.generic_scpi.MultimeterMode mode: Desired 
-        measurement mode. If set to `None`, will default to the current 
-        mode.
+            measurement mode. If set to `None`, will default to the current 
+            mode.
         '''
         
         # Default to the current mode.

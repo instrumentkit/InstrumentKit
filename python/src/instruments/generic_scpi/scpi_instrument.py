@@ -52,17 +52,27 @@ class SCPIInstrument(Instrument):
         
     @property
     def op_complete(self):
+        '''
+        Check if all operations sent to the instrument have been completed.
+        
+        :rtype: `bool`
+        '''
         result = self.query('*OPC?')
         return bool(int(result))
     
     @property
     def power_on_status(self):
+        '''
+        Gets/sets the power on status for the instrument.
+        
+        :type: `bool`
+        '''
         result = self.query('*PSC?')
         return bool(int(result))
     @power_on_status.setter
     def power_on_status(self, newval):
-        on = ['on', '1', 1]
-        off = ['off', '0', 0]
+        on = ['on', '1', 1, True]
+        off = ['off', '0', 0, False]
         if isinstance(newval, str):
             newval = newval.lower()
         if newval in on:
@@ -74,6 +84,12 @@ class SCPIInstrument(Instrument):
     
     @property
     def self_test_ok(self):
+        '''
+        Gets the results of the instrument's self test. This lets you check 
+        if the self test was sucessful or not.
+        
+        :rtype: `bool`
+        '''
         result = self.query('*TST?')
         try:
             result = int(result)
@@ -84,14 +100,34 @@ class SCPIInstrument(Instrument):
     ## BASIC SCPI COMMANDS ##
     
     def reset(self):
+        '''
+        Reset instrument. On many instruments this is a factory reset and will 
+        revert all settings to default.
+        '''
         self.sendcmd('*RST')
         
     def clear(self):
+        '''
+        Clear instrument. Consult manual for specifics related to that 
+        instrument.
+        '''
         self.sendcmd('*CLS')
     
     def trigger(self):
+        '''
+        Send a software trigger event to the instrument. On most instruments 
+        this will cause some sort of hardware event to start. For example, a 
+        multimeter might take a measurement.
+        
+        This software trigger usually performs the same action as a hardware 
+        trigger to your instrument.
+        '''
         self.sendcmd('*TRG')
     
     def wait_to_continue(self):
+        '''
+        Instruct the instrument to wait until it has completed all received 
+        commands before continuing.
+        '''
         self.sendcmd('*WAI')
     
