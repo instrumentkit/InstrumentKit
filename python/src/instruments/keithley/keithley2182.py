@@ -28,11 +28,11 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
-from instruments.abstract_instruments import Instrument
+from instruments.generic_scpi import SCPIInstrument
 
 ## CLASSES #####################################################################
 
-class Keithley2182(Instrument):
+class Keithley2182(SCPIInstrument):
         
     def configure(self, mode=None):
         '''
