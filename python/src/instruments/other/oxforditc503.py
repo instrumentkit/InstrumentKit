@@ -34,7 +34,7 @@ from instruments.abstract_instruments import Instrument
 
 class OxfordITC503(Instrument):
     def __init__(self, filelike):
-        super(OxfordITC503, self).__init__(self, filelike)
+        super(OxfordITC503, self).__init__(filelike)
         self.sendcmd('C3') # Enable remote commands
         self.terminator = 13 # Set EOS char to CR
        

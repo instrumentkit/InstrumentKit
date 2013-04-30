@@ -35,7 +35,7 @@ from instruments.abstract_instruments import Instrument
 class Yokogawa7651(Instrument):
 
     def __init__(self, filelike):
-        super(Yokogawa7651, self).__init__(self, filelike)
+        super(Yokogawa7651, self).__init__(filelike)
         self._outputting = 0
         
     def trigger(self):
