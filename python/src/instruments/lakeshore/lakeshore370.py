@@ -1,29 +1,59 @@
 #!/usr/bin/python
-# Filename: lakeshore370.py
+# -*- coding: utf-8 -*-
+##
+# lakeshore370.py: Driver for the Lakeshore 370 AC resistance bridge.
+##
+# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+#
+# This file is a part of the GPIBUSB adapter project.
+# Licensed under the AGPL version 3.
+##
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
 
-# Original author: Steven Casagrande (stevencasagrande@gmail.com)
-# 2012
+## FEATURES ####################################################################
 
-# This work is released under the Creative Commons Attribution-Sharealike 3.0 license.
-# See http://creativecommons.org/licenses/by-sa/3.0/ or the included license/LICENSE.TXT file for more information.
+from __future__ import division
 
-# Attribution requirements can be found in license/ATTRIBUTION.TXT
+## IMPORTS #####################################################################
 
-from instruments.abstract_instruments import Instrument
+from instruments.generic_scpi import SCPIInstrument
 
-class Lakeshore370(Instrument):
-    def __init__(self, port, address,timeout_length):
-        super(Lakeshore370, self).__init__(self,port,address,timeout_length)
-        self.write('IEEE 3,0') # Disable termination characters and enable EOI
+## CLASSES #####################################################################
+
+class Lakeshore370(SCPIInstrument):
+
+    def __init__(self, filelike):
+        super(Lakeshore370, self).__init__(self, filelike)
+        self.sendcmd('IEEE 3,0') # Disable termination characters and enable EOI
     
-    def resistance(self,channel):
-        if not isinstance(channel,int):
+    def resistance(self, channel):
+        '''
+        Query resistance from a specific channel.
+        
+        :param int channel: Channel to measure resistance of. Valid channels are
+            the numbers 1-16.
+            
+        :rtype: `float`
+        '''
+        if not isinstance(channel, int):
             raise Exception('Channel number must be specified as an integer.')
         
         if (channel < 1) or (channel > 16):
             raise Exception('Channel must be 1-16 (inclusive).')
         
-        return float( self.query( 'RDGR? ' + str(channel) ) )
+        return float(self.query('RDGR? {}'.format(channel)))
             
             
             
