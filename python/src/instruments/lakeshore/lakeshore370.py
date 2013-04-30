@@ -35,7 +35,7 @@ from instruments.generic_scpi import SCPIInstrument
 class Lakeshore370(SCPIInstrument):
 
     def __init__(self, filelike):
-        super(Lakeshore370, self).__init__(self, filelike)
+        super(Lakeshore370, self).__init__(filelike)
         self.sendcmd('IEEE 3,0') # Disable termination characters and enable EOI
     
     def resistance(self, channel):

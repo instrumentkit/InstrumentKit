@@ -34,7 +34,7 @@ from instruments.abstract_instruments import Instrument
 
 class Keithley195(Instrument):
     def __init__(self, filelike):
-        super(Keithley195, self).__init__(self, filelike)
+        super(Keithley195, self).__init__(filelike)
         self.sendcmd('YX') # Removes the termination CRLF 
                          # characters from the instrument
         
