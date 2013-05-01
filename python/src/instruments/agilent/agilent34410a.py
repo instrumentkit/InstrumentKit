@@ -37,7 +37,8 @@ class Agilent34410a(SCPIMultimeter):
     @property
     def data_point_count(self):
         '''
-        Gets the total number of readings that are located in reading memory (RGD_STORE).
+        Gets the total number of readings that are located in reading memory 
+        (RGD_STORE).
         
         :type: `int`
         '''
@@ -91,10 +92,8 @@ class Agilent34410a(SCPIMultimeter):
         self.sendcmd('FORM:DATA REAL,32')
         self.sendcmd(msg)
         return self.binblockread(4)
-    
-        
-    # Configure measurement mode, using default parameters    
-    def configure(self, mode=None, deviceRange=None, resolution=None):
+     
+    def configure(self, mode=None, device_range=None, resolution=None):
         '''
         Change the measurement mode of the multimeter.
         No actual measurement will take place, but the instrument is then able 
@@ -107,10 +106,10 @@ class Agilent34410a(SCPIMultimeter):
         :param str mode: Desired measurement mode, one of ``{CAPacitance|
             CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|
             RESistance|TEMPerature|VOLTage:AC|VOLTage:DC}``.
-        :param deviceRange: It is recommended this is user specified, but is 
+        :param device_range: It is recommended this is user specified, but is 
             optional. Sets the range of the instrument. No value checking when 
             passed as a number.
-        :type deviceRange: `str` (one of ``MINimum, MAXimum, DEFault, 
+        :type device_range: `str` (one of ``MINimum, MAXimum, DEFault, 
             AUTOmatic``) or range
         :param float resolution: Measurement that the instrument will use. 
             This is ignored for most modes. It is assumed that the user has 
@@ -119,12 +118,15 @@ class Agilent34410a(SCPIMultimeter):
         if mode == None: # If no arguments were passed, perform query and return
             return self.query('CONF?')
         
-        if not isinstance(mode,str):
-            raise Exception('Measurement mode must be a string.')
+        if not isinstance(mode, str):
+            raise TypeError('Measurement mode must be a string.')
         mode = mode.lower()
         
-        valid = ['cap','cont','curr:ac','curr:dc','diod','freq','fres','per','res','temp','volt:ac','volt:dc']
-        valid2 = ['capacitance','continuity','current:ac','current:dc','diode','frequency','fresistance','period','resistance','temperature','voltage:ac','voltage:dc']
+        valid = ['cap','cont','curr:ac','curr:dc','diod','freq','fres',
+                'per','res','temp','volt:ac','volt:dc']
+        valid2 = ['capacitance','continuity','current:ac','current:dc',
+                'diode','frequency','fresistance','period','resistance',
+                'temperature','voltage:ac','voltage:dc']
         
         if mode in ['4res','4 res','four res','f res']:
             mode = 'fres'
@@ -132,28 +134,30 @@ class Agilent34410a(SCPIMultimeter):
         if mode in valid2:
             mode = valid[valid2.index(mode)]
         elif mode not in valid:
-            raise Exception('Valid measurement modes are: ' + str(valid2))
+            raise ValueError('Valid measurement modes are: ' + str(valid2))
         
-        if deviceRange == None: # If deviceRange default
-            self.sendcmd( 'CONF:' + mode )
+        if device_range == None: # If device_range default
+            self.sendcmd('CONF:{}'.format(mode))
         else: # User specified range
-            if isinstance(deviceRange,int) or isinstance(deviceRange,float): # If is an integer for a float
+            if isinstance(device_range, int) or isinstance(device_range, float):
                 pass # Assume the input is correct...
-            elif isinstance(deviceRange,str): # If it is a string
-                deviceRange = deviceRange.lower()
+            elif isinstance(device_range,str): # If it is a string
+                device_range = device_range.lower()
                 valid = ['minimum','maximum','default','automatic']
                 valid2 = ['min','max','def','auto']
-                if deviceRange in valid:
-                    deviceRange = valid2[valid.index(deviceRange)]
-                elif deviceRange not in valid2:
-                    raise Exception('When specified as a string, deviceRange must be "minimum", "maximum", "default", or "automatic".')
+                if device_range in valid:
+                    device_range = valid2[valid.index(device_range)]
+                elif device_range not in valid2:
+                    raise ValueError('When specified as a string, device_range '
+                                    'must be {}'.format(valid))
             else:
-                raise Exception('Argument deviceRange must be a string or a number.')
+                raise TypeError('Argument device_range must be a string '
+                                'or a number.')
             
             if resolution == None: # If resolution is default
-                self.sendcmd( 'CONF:' + mode + ' ' + str(deviceRange) )
+                self.sendcmd('CONF:{0} {1}'.format(mode, device_range))
             else: # User specified resolution
-                self.sendcmd( 'CONF:%s %s,%s' %(mode,deviceRange,resolution) )
+                self.sendcmd( 'CONF:%s %s,%s' %(mode,device_range,resolution) )
         
     ## DATA READING METHODS ##
     
