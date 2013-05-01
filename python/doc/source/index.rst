@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
     
-Welcome to GPIB USB Adapter Driver Library's documentation!
-===========================================================
+Welcome to InstrumentKit Library's documentation!
+=================================================
 
 Contents:
 

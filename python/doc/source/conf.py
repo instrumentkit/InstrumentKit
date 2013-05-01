@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# GPIB USB Adapter Driver Library documentation build configuration file, created by
+# InstrumentKit Library documentation build configuration file, created by
 # sphinx-quickstart on Fri Apr  5 10:37:03 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'GPIB USB Adapter Driver Library'
+project = u'InstrumentKit Library'
 copyright = u'2013, Steven Casagrande'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -183,7 +183,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'GPIBUSBAdapterDriverLibrary.tex', u'GPIB USB Adapter Driver Library Documentation',
+  ('index', 'InstrumentKitLibrary.tex', u'InstrumentKit Library Documentation',
    u'Steven Casagrande', 'manual'),
 ]
 
@@ -213,7 +213,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'gpibusbadapterdriverlibrary', u'GPIB USB Adapter Driver Library Documentation',
+    ('index', 'instrumentkitlibrary', u'InstrumentKit Library Documentation',
      [u'Steven Casagrande'], 1)
 ]
 
@@ -227,8 +227,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'GPIBUSBAdapterDriverLibrary', u'GPIB USB Adapter Driver Library Documentation',
-   u'Steven Casagrande', 'GPIBUSBAdapterDriverLibrary', 'One line description of project.',
+  ('index', 'InstrumentKitLibrary', u'InstrumentKit Library Documentation',
+   u'Steven Casagrande', 'InstrumentKitLibrary', 'One line description of project.',
    'Miscellaneous'),
 ]
 
