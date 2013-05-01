@@ -57,6 +57,16 @@ class ThorLabsPacket(object):
         self._dest = dest
         self._source = source
         
+    def pack(self):
+        if self._has_data:
+            return message_header_wpacket.pack(
+                (self._message_id, len(self._data), 0x80 | self._dest, self._source)
+            ) + self._data
+        else:
+            return message_header_nopacket.pack(
+                (self._message_id, self._param1, self._param2, self._dest, self._source)
+            )
+        
     @classmethod
     def unpack(cls, bytes):
         header = bytes[:6]
