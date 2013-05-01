@@ -36,8 +36,8 @@ class ThorLabsInstrument(Instrument):
         self.terminator = ''
     
     def sendpacket(self, packet):
-        self.sendcmd(self.packet.pack())
+        self.sendcmd(packet.pack())
         
     def querypacket(self, packet):
-        return _packets.ThorLabsPacket.unpack(self.query(packet))
+        return _packets.ThorLabsPacket.unpack(self.query(packet.pack()))
       
