@@ -7,6 +7,7 @@ import instruments.lakeshore
 import instruments.other
 import instruments.srs
 import instruments.tektronix
+import instruments.thorlabs
 
 import instruments.units
 
