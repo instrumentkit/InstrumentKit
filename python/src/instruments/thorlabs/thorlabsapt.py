@@ -30,25 +30,42 @@ from __future__ import division
 
 from instruments.thorlabs import _abstract
 from instruments.thorlabs import _packets
+from instruments.thorlabs._cmds import ThorLabsCommands
 
 ## CLASSES #####################################################################
 
 class ThorLabsAPT(_abstract.ThorLabsInstrument):
     
+    def __init__(self, filelike):
+        super(ThorLabsAPT, self).__init__(filelike)
+        self._dest = 0x50
+    
+    @property
+    def model_number(self):
+        packet = _packets.ThorLabsPacket(message_id=ThorlabsCommands.HW_REQ_INFO,
+            param1=0x00,
+            param2=0x00,
+            dest=self._dest,
+            source=0x01,
+            data=None)
+        return self.querypacket(packet) # FIXME! Extract the model number
+                                        #        from the packet.
+    
     def identify(self):
-        pkt = _packets.ThorLabsPacket(message_id=0x0223,
+        pkt = _packets.ThorLabsPacket(message_id=ThorLabsCommands.MOD_IDENTIFY,
                                       param1=0x00,
                                       param2=0x00,
-                                      dest=0x50,
+                                      dest=self._dest,
                                       source=0x01,
                                       data=None)
         self.sendpacket(pkt)
     
     def go_home(self):
-        ptk = _packets.ThorLabsPacket(message_id=0x0443,
+        pkt = _packets.ThorLabsPacket(message_id=ThorLabsCommands.MOT_MOVE_HOME,
                                       param1=0x01,
                                       param2=0x00,
-                                      dest=0x50,
+                                      dest=self._dest,
                                       source=0x01,
                                       data=None)
         self.sendpacket(pkt)
+    
