@@ -39,17 +39,30 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     def __init__(self, filelike):
         super(ThorLabsAPT, self).__init__(filelike)
         self._dest = 0x50
-    
-    @property
-    def model_number(self):
-        packet = _packets.ThorLabsPacket(message_id=ThorlabsCommands.HW_REQ_INFO,
+        
+        # Perform a HW_REQ_INFO to figure out the model number, serial number,
+        # etc.
+        req_packet = _packets.ThorLabsPacket(message_id=ThorlabsCommands.HW_REQ_INFO,
             param1=0x00,
             param2=0x00,
             dest=self._dest,
             source=0x01,
             data=None)
-        return self.querypacket(packet) # FIXME! Extract the model number
-                                        #        from the packet.
+        hw_info = self.querypacket(req_packet)
+        
+        self._serial_number = str(hw_info.data[0:4]).encode('hex')
+        self._model_number  = str(hw_info.data[4:12])
+        self._hw_type       = str(hw_info.data[12:14]).encode('hex') # TODO: decode this field
+        self._fw_version    = str(hw_info.data[14:18]).encode('hex')
+        self._notes         = str(hw_info.data[18:66])
+        # TODO: decode the following fields.
+        self._hw_version    = str(hw_info.data[78:80]).encode('hex')
+        self._mod_state     = str(hw_info.data[80:82]).encode('hex')
+        self._n_channels    = str(hw_info.data[82:84]).encode('hex')
+    
+    @property
+    def model_number(self):
+        return self._model_number
     
     def identify(self):
         pkt = _packets.ThorLabsPacket(message_id=ThorLabsCommands.MOD_IDENTIFY,
