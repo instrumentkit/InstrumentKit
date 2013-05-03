@@ -38,7 +38,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     
     def __init__(self, filelike):
         super(ThorLabsAPT, self).__init__(filelike)
-        self._dest = 0x50
+        self._dest = 0x11
         
         # Perform a HW_REQ_INFO to figure out the model number, serial number,
         # etc.
