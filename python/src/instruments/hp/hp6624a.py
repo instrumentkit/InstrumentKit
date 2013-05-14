@@ -148,7 +148,12 @@ class HP6624aChannel(object):
         self._hp.sendcmd('OCRST {}'.format(self._idx))
 
     
-class HP6624a(Instrument):    
+class HP6624a(Instrument):  
+    '''
+    Communicates with a HP6624a power supply. This class can also be used for 
+    HP662xa, where x=1,2,3,4,7. Note that some models have less channels then 
+    the HP6624 and it is up to the user to take this into account.
+    '''  
     
     ## PROPERTIES ##
     
