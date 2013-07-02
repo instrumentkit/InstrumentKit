@@ -32,7 +32,7 @@ from flufl.enum import IntEnum
 
 ## CLASSES #####################################################################
 
-class ThorlabsCommands(IntEnum):
+class ThorLabsCommands(IntEnum):
     # General System Commands
     MOD_IDENTIFY            = 0x0223
     MOD_SET_CHANENABLESTATE = 0x0210

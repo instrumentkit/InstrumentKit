@@ -30,7 +30,8 @@ from __future__ import division
 
 from instruments.thorlabs import _abstract
 from instruments.thorlabs import _packets
-from instruments.thorlabs._cmds import ThorLabsCommands
+#from instruments.thorlabs._cmds import ThorLabsCommands
+from instruments.thorlabs import _cmds
 
 ## CLASSES #####################################################################
 
@@ -38,12 +39,12 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     
     def __init__(self, filelike):
         super(ThorLabsAPT, self).__init__(filelike)
-        self._dest = 0x11
+        self._dest = 0x50
         
         # Perform a HW_REQ_INFO to figure out the model number, serial number,
         # etc.
         req_packet = _packets.ThorLabsPacket(
-            message_id=ThorlabsCommands.HW_REQ_INFO,
+            message_id=_cmds.ThorLabsCommands.HW_REQ_INFO,
             param1=0x00,
             param2=0x00,
             dest=self._dest,
@@ -52,19 +53,19 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             )
         hw_info = self.querypacket(req_packet)
         
-        self._serial_number = str(hw_info.data[0:4]).encode('hex')
-        self._model_number  = str(hw_info.data[4:12])
+        self._serial_number = str(hw_info._data[0:4]).encode('hex')
+        self._model_number  = str(hw_info._data[4:12])
         
         # TODO: decode this field
-        self._hw_type       = str(hw_info.data[12:14]).encode('hex') 
+        self._hw_type       = str(hw_info._data[12:14]).encode('hex') 
         
-        self._fw_version    = str(hw_info.data[14:18]).encode('hex')
-        self._notes         = str(hw_info.data[18:66])
+        self._fw_version    = str(hw_info._data[14:18]).encode('hex')
+        self._notes         = str(hw_info._data[18:66])
         
         # TODO: decode the following fields.
-        self._hw_version    = str(hw_info.data[78:80]).encode('hex')
-        self._mod_state     = str(hw_info.data[80:82]).encode('hex')
-        self._n_channels    = str(hw_info.data[82:84]).encode('hex')
+        self._hw_version    = str(hw_info._data[78:80]).encode('hex')
+        self._mod_state     = str(hw_info._data[80:82]).encode('hex')
+        self._n_channels    = str(hw_info._data[82:84]).encode('hex')
     
     @property
     def model_number(self):
@@ -76,7 +77,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                 self._fw_version, self._mode_state, self._n_channels)
     
     def identify(self):
-        pkt = _packets.ThorLabsPacket(message_id=ThorLabsCommands.MOD_IDENTIFY,
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOD_IDENTIFY,
                                       param1=0x00,
                                       param2=0x00,
                                       dest=self._dest,
@@ -85,7 +86,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
         self.sendpacket(pkt)
     
     def go_home(self):
-        pkt = _packets.ThorLabsPacket(message_id=ThorLabsCommands.MOT_MOVE_HOME,
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_HOME,
                                       param1=0x01,
                                       param2=0x00,
                                       dest=self._dest,
