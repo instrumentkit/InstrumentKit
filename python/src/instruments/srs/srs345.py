@@ -118,15 +118,15 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         
     @property
     def offset(self):
-        return pq.Quantity(float(self.query("OFFS?")), pq.V)
-    @offset.setter
-    def offset(self, newval):
         '''
         Gets/sets the offset voltage for the output waveform.
         
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
         '''
+        return pq.Quantity(float(self.query("OFFS?")), pq.V)
+    @offset.setter
+    def offset(self, newval):
         self.sendcmd("OFFS {}".format(
             assume_units(newval, pq.V).rescale(pq.V).magnitude
         ))
