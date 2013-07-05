@@ -16,6 +16,7 @@ setup(
         'instruments.lakeshore',
         'instruments.other',
         'instruments.srs',
-        'instruments.tektronix',   
+        'instruments.tektronix',  
+        'instruments.thorlabs',
     ]
 )
