@@ -177,5 +177,51 @@ class TekAWG2000(SCPIInstrument):
     ## Properties ##
     
     @property
+    def waveform_name(self):
+        '''
+        Gets/sets the destination waveform name for upload.
+        
+        This is the file name that will be used on the AWG for any following 
+        waveform data that is uploaded.
+        
+        :type: `str`
+        '''
+        return self.query('DATA:DEST?').strip()
+    @waveform_name.setter
+    def waveform_name(self, newval):
+        if not isinstance(newval, str):
+            raise TypeError('Waveform name must be specified as a string.')
+        self.sendcmd('DATA:DEST "{}"'.format(newval))
+    
+    @property
     def channel(self):
         return ProxyList(self, TekAWG2000Channel, xrange(2))
+        
+    ## METHODS ##
+    
+    def upload_waveform(self, yzero, ymult, xincr, waveform):
+        '''
+        Uploads a waveform from the PC to the instrument.
+        
+        :param yzero: Y-axis origin offset
+        :type yzero: `float` or `int`
+        
+        :param ymult: Y-axis data point multiplier
+        :type ymult: `float` or `int`
+        
+        :param xincr: X-axis data point increment
+        :type xincr: `float` or `int`
+        
+        :param `numpy.array` waveform: Numpy array of values representing the 
+            waveform to be uploaded
+        '''
+        if not isinstance(yzero, float) or not isinstance(yzero, int):
+            raise TypeError('yzero must be specified as a float or int')
+        
+        if not isinstance(ymult, float) or not isinstance(ymult, int):
+            raise TypeError('ymult must be specified as a float or int')
+            
+        if not isinstance(xincr, float) or not isinstance(xincr, int):
+            raise TypeError('xincr must be specified as a float or int')
+            
+        raise NotImplementedError
