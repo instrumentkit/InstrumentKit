@@ -117,4 +117,3 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
         '''
         '''
         return msg
-        
