@@ -30,6 +30,8 @@ from __future__ import division
 
 from time import time, sleep
 
+from datetime import datetime
+
 from flufl.enum import IntEnum
 
 from contextlib import contextmanager
@@ -78,25 +80,118 @@ class NewportError(IOError):
     """
     Raised in response to an error with a Newport-brand instrument.
     """
-    
-    def __init__(self, msg, timestamp=None, errcode=None):
-        super(NewportError, self).__init__(msg)
-        self._timestamp = timestamp
+    #Outside self definition so not rebuilt for everytime
+    messageDict={
+    '0' : "NO ERROR DETECTED" ,
+    '1' : "PCI COMMUNICATION TIME-OUT",
+    '2' : "Reserved for future use" ,
+    '3' : "Reserved for future use" ,
+    '4' : "EMERGENCY SOP ACTIVATED",
+    '5' : "Reserved for future use" ,
+    '6' : "COMMAND DOES NOT EXIST" ,
+    '7' : "PARAMETER OUT OF RANGE",
+    '8' : "CABLE INTERLOCK ERROR",
+    '9' : "AXIS NUMBER OUT OF RANGE",
+    '10' : "Reserved for future use" ,
+    '11' : "Reserved for future use" ,
+    '12' : "Reserved for future use" ,
+    '13' : "GROUP NUMBER MISSING" ,
+    '14' : "GROUP NUMBER OUT OF RANGE" ,
+    '15' : "GROUP NUMBER NOT ASSIGNED" ,
+    '16' : "GROUP NUMBER ALREADY ASSIGNED" ,
+    '17' : "GROUP AXIS OUT OF RANGE" ,
+    '18' : "GROUP AXIS ALREADY ASSIGNED" ,
+    '19' : "GROUP AXIS DUPLICATED",
+    '20' : "DATA ACQUISITION IS BUSY" ,
+    '21' : "DATA ACQUISITION SETUP ERROR",
+    '22' : "DATA ACQUISITION NOT ENABLED",
+    '23' : "SERVO CYCLE (400 µS) TICK FAILURE",
+    '24' : "Reserved for future use" ,
+    '25' : "DOWNLOAD IN PROGRESS",  
+    '26' : "STORED PROGRAM NOT STARTEDL",
+    '27' : "COMMAND NOT ALLOWEDL",
+    '28' : "STORED PROGRAM FLASH AREA FULL",
+    '29' : "GROUP PARAMETER MISSING" ,
+    '30' : "GROUP PARAMETER OUT OF RANGE",
+    '31' : "GROUP MAXIMUM VELOCITY EXCEEDED",
+    '32' : "GROUP MAXIMUM ACCELERATION EXCEEDED",
+    '33' : "GROUP MAXIMUM DECELERATION EXCEEDED",
+    '34' : " GROUP MOVE NOT ALLOWED DURING MOTION",
+    '35' : "PROGRAM NOT FOUND",
+    '36' : "Reserved for future use" ,
+    '37' : "AXIS NUMBER MISSING" , 
+    '38' : "COMMAND PARAMETER MISSING",
+    '39' : "PROGRAM LABEL NOT FOUND",
+    '40' : "LAST COMMAND CANNOT BE REPEATED",
+    '41' : "MAX NUMBER OF LABELS PER PROGRAM EXCEEDED",
+    'x00' : "MOTOR TYPE NOT DEFINED",
+    'x01' : "PARAMETER OUT OF RANGE",
+    'x02' : "AMPLIFIER FAULT DETECTED",
+    'x03' : "FOLLOWING ERROR THRESHOLD EXCEEDED",
+    'x04' : "POSITIVE HARDWARE LIMIT DETECTED",
+    'x05' : "NEGATIVE HARDWARE LIMIT DETECTED",
+    'x06' : "POSITIVE SOFTWARE LIMIT DETECTED",
+    'x07' : "NEGATIVE SOFTWARE LIMIT DETECTED",
+    'x08' : "MOTOR / STAGE NOT CONNECTED" ,
+    'x09' : "FEEDBACK SIGNAL FAULT DETECTED",
+    'x10' : "MAXIMUM VELOCITY EXCEEDED",
+    'x11' : "MAXIMUM ACCELERATION EXCEEDED" ,
+    'x12' : "Reserved for future use",
+    'x13' : "MOTOR NOT ENABLED",
+    'x14' : "Reserved for future use" ,
+    'x15' : "MAXIMUM JERK EXCEEDED",
+    'x16' : "MAXIMUM DAC OFFSET EXCEEDED",
+    'x17' : "ESP CRITICAL SETTINGS ARE PROTECTED" ,
+    'x18' : "ESP STAGE DEVICE ERROR",
+    'x19' : "ESP STAGE DATA INVALID",
+    'x20' : "HOMING ABORTED",
+    'x21' : "MOTOR CURRENT NOT DEFINED",
+    'x22' : "UNIDRIVE COMMUNICATIONS ERROR",
+    'x23' : "UNIDRIVE NOT DETECTED",
+    'x24' : "SPEED OUT OF RANGE",
+    'x25' : "INVALID TRAJECTORY MASTER AXIS",
+    'x26' : "PARAMETER CHARGE NOT ALLOWED",
+    'x27' : "INVALID TRAJECTORY MODE FOR HOMING",
+    'x28' : "INVALID ENCODER STEP RATIO",
+    'x29' : "DIGITAL I/O INTERLOCK DETECTED",
+    'x30' : "COMMAND NOT ALLOWED DURING HOMING",
+    'x31' : "COMMAND NOT ALLOWED DUE TO GROUP" ,
+    'x32' : "INVALID TRAJECTORY MODE FOR MOVING"
+    }
+    def __init__(self, errcode=None):
+
+        
+        self._timestamp = datetime.now()
         if errcode is not None:
             # Break the error code into an axis number
             # and the rest of the code.
             self._errcode = errcode % 100
-            self._axis = (errcode // 100) - 1
-            if self._axis == 0: self._axis = None
+            self._axis = errcode // 100 
+            if self._axis == 0: 
+                self._axis = None
+                error_message = self.getMessage(str(errcode))
+                error = "Newport Error: {0}. Error Message: {1}".format(str(errcode),error_message)
+                super(NewportError, self).__init__(error)
+            else:                
+                error_message = self.getMessage('x{0}'.format(self._errcode))
+                error = "Newport Error: {0}. Axis: {1}. Error Message: {2}".format(str(errorcode),self._axis,error_message)
+                super(NewportError, self).__init__(error)
+
         else:
             self._errcode = None
             self._axis = None
+            super(NewportError, self).__init__("")
+
 
     @property
     def timestamp(self):
         """
         Geturns the timestamp reported by the device as the time
         at which this error occured.
+
+        Returns
+        -----------
+        datetime
         """
         return self._timestamp
 
@@ -119,6 +214,10 @@ class NewportError(IOError):
         :type: `int`
         """
         return self._axis
+
+    def getMessage(code):
+        return NewportError.messageDict.get(code,"Error code not recognised")
+
 
 class _AxisList(object):
     """
@@ -205,7 +304,20 @@ class NewportESP301(Instrument):
         return query_resp
 
     def _execute_cmd(self,raw_cmd,errcheck=True):
-        
+        """
+        Takes a string command and executes it on Newport
+
+        Parameters 
+        ----------------
+        raw_cmd : str 
+        errcheck : bool , optional 
+
+        Returns 
+        --------------
+        str
+            Response of device
+
+        """
         query_resp = None
         if "?" in raw_cmd:
             query_resp = self.query(raw_cmd)
@@ -216,10 +328,7 @@ class NewportESP301(Instrument):
             err_resp = self.query('TB?')
             code, timestamp, msg = err_resp.split(",")
             if code != 0:
-                raise NewportError(
-                    "Newport controller reports error with message {}.".format(msg),
-                    timestamp, code
-                )
+                raise NewportError(code)
 
         return query_resp
 
@@ -283,6 +392,15 @@ class NewportESP301(Instrument):
 
     @contextmanager
     def execute_bulk_command(self,errcheck=True):
+        """
+        Context manager do execute multiple of commands in a single communication with device
+
+        Example 
+        --------
+        code-block:: python
+            with self.execute_bulk_command():
+                ... execute commands as normal
+        """
         self._execute_immediately = False
         yield
         command_string = reduce(lambda x ,y : x + ' ; '+ y +' ; ',self._command_list)        
@@ -320,6 +438,13 @@ class NewportESP301Axis(object):
     # TODO: handle units, implement setters.
     @property
     def axis_id(self):
+        """
+        Get axis number of Newport Controller
+
+        Returns
+        ----------
+        int
+        """
         return axis_id
     
     @property
@@ -334,23 +459,70 @@ class NewportESP301Axis(object):
         
     @property
     def acceleration(self):
-        return self._controller._newport_cmd("AC?", target=self.axis_id)    
+        """
+        Get acceleration
+
+        Returns 
+        --------
+        float
+            acceleration in units/s^2
+        """
+        return float(self._controller._newport_cmd("AC?", target=self.axis_id))    
     @acceleration.setter
     def acceleration(self,accel):
+        """
+        Sets acceleration in units/s^2
+
+        Parameters
+        ----------
+        accel : float
+            acceleration in units/s^2
+        """
         return self._controller._newport_cmd("AC",target=self.axis_id,params=[accel])
    
     @property
     def deceleration(self):
-        return self._controller._newport_cmd("AG?", target=self.axis_id)
+        """
+        Gets deceleration
+
+        Returns
+        --------
+        float
+            deceleration in units/s^2
+        """
+        return float(self._controller._newport_cmd("AG?", target=self.axis_id))
     @deceleration.setter
     def deceleration(self,deaccel):
+        """
+        Sets deceleration
+
+        Parameters
+        --------
+        deaccel : float
+            deceleration in units/s^2
+        """
         return self._controller._newport_cmd("AG",target=self.axis_id,params=[deaccel])
     
     @property
     def velocity(self):
-        return self._controller._newport_cmd("VA?", target=self.axis_id)
+        """
+        Gets velocity
+
+        Returns
+        ---------
+        float
+            velocity in units/s
+        """
+        return float(self._controller._newport_cmd("VA?", target=self.axis_id))
     @velocity.setter
     def velocity(self,velocity):
+        """
+        Sets velocity
+
+        Parameters
+        ---------
+        velocity : float
+        """
         return self._controller._newport_cmd("VA",target=self.axis_id,params=[velocity])
 
     @property
