@@ -236,8 +236,8 @@ class TekAWG2000(SCPIInstrument):
         if np.max(np.abs(waveform)) > 1:
             raise ValueError('The max value for an element in waveform is 1.')
         
-        waveform = waveform * (2**15-1)
-        waveform = waveform.astype('<i2').tostring()
+        waveform = waveform * (2**12-1)
+        waveform = waveform.astype('<u2').tostring()
         wfm_header_2 = str(len(waveform))
         wfm_header_1 = len(wfm_header_2)
         
