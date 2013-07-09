@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# tekdpo4104.py: Driver for the Tektronix DPO 4104 oscilloscope.
+# tektds224.py: Driver for the Tektronix TDS 224 oscilloscope.
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
