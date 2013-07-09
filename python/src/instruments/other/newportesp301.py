@@ -56,6 +56,22 @@ class NewportESP301HomeSearchMode(IntEnum):
     #: Search for the negative limit and Index signals.
     neg_index_signals = 6
 
+class NewportESP301Units(IntEnum):
+
+    encoder_step= 0
+    motor_step= 1
+    millimeter= 2
+    micrometer = 3
+    inches = 4
+    milli_inches = 5
+    micro_inches = 6
+    degree = 7
+    gradian = 8
+    radian = 9
+    milliradian = 10
+    microradian = 11
+
+
 ## CLASSES #####################################################################
 
 class NewportError(IOError):
@@ -128,7 +144,10 @@ class NewportESP301(Instrument):
     .. _user's guide: http://assets.newport.com/webDocuments-EN/images/14294.pdf
     """
                  
-    # No __init__ needed.
+    def __init__(self, filelike):
+        super(NewportESP301, self).__init__(filelike)
+        self._execute_immediately = True
+        self._command_list = []
 
     ## PROPERTIES ##
 
@@ -151,7 +170,7 @@ class NewportESP301(Instrument):
 
     ## LOW-LEVEL COMMAND METHODS ##
 
-    def _newport_cmd(self, cmd, params, target=None, errcheck=True):
+    def _newport_cmd(self, cmd, params=[], target=None, errcheck=True):
         """
         The Newport ESP-301 command set supports checking for errors,
         specifying different axes and allows for multiple parameters.
@@ -177,7 +196,18 @@ class NewportESP301(Instrument):
             params=",".join(map(str, params))
         )
         
-        if "?" in cmd:
+        if self._execute_immediately: 
+            query_resp = self._execute_cmd(raw_cmd,errcheck)
+        else:
+            self._command_list.append(raw_cmd)
+
+        # This works because "return None" is equivalent to "return".
+        return query_resp
+
+    def _execute_cmd(self,raw_cmd,errcheck=True):
+        
+        query_resp = None
+        if "?" in raw_cmd:
             query_resp = self.query(raw_cmd)
         else:
             self.sendcmd(raw_cmd)
@@ -191,22 +221,19 @@ class NewportESP301(Instrument):
                     timestamp, code
                 )
 
-        # This works because "return None" is equivalent to "return".
         return query_resp
 
     ## SPECIFIC COMMANDS ##
 
-    def _home(self, axis, search_mode):
+    def _home(self, axis, search_mode,errcheck=True):
         """
         Private method for searching for home "OR", so that
         the methods in this class and the axis class can both
         point to the same thing.
         """
-        self._newport_cmd("OR", target=axis, params=[search_mode])
+        self._newport_cmd("OR", target=axis, params=[search_mode],errcheck=errcheck)
 
-    def search_for_home(self,
-            search_mode=NewportESP301HomeSearchMode.zero_position_count
-        ):
+    def search_for_home(self,axis, search_mode=NewportESP301HomeSearchMode.zero_position_count.value ,errcheck=True ):
         """
         Searches each axis sequentially
         for home using the method specified by ``search_mode``.
@@ -214,16 +241,16 @@ class NewportESP301(Instrument):
         :param NewportESP301HomeSearchMode search_mode: Method to detect when
             Home has been found.
         """
-        self._home(axis=0, search_mode=search_mode)
+        self._home(axis=1, search_mode=search_mode,errcheck=errcheck)
 
-    def reset(self):
+    def reset(self,errcheck=True):
         """
         Causes the device to perform a hardware reset. Note that
         this method is only effective if the watchdog timer is enabled
         by the physical jumpers on the ESP-301. Please see the `user's guide`_
         for more information.
         """
-        self._newport_cmd("RS")
+        self._newport_cmd("RS",errcheck=errcheck)
 
     ## USER PROGRAMS ##
 
@@ -254,6 +281,15 @@ class NewportESP301(Instrument):
         finally:
             self._newport_cmd("QP")
 
+    @contextmanager
+    def execute_bulk_command(self,errcheck=True):
+        self._execute_immediately = False
+        yield
+        command_string = reduce(lambda x ,y : x + ' ; '+ y +' ; ',self._command_list)        
+        self._bulk_query_resp = self._execute_cmd(command_string,errcheck)
+        self._command_list = []
+        self._execute_immediately = True
+
     def run_program(self, program_id):
         """
         Runs a previously defined user program with a given program ID.
@@ -282,7 +318,10 @@ class NewportESP301Axis(object):
 
     ## PROPERTIES ##
     # TODO: handle units, implement setters.
-
+    @property
+    def axis_id(self):
+        return axis_id
+    
     @property
     def is_motion_done(self):
         """
@@ -291,29 +330,116 @@ class NewportESP301Axis(object):
         a motion command to complete before sending the next
         command.
         """
-        return bool(int(self._controller._newport_cmd("MD?", target=self)))
-    
+        return bool(int(self._controller._newport_cmd("MD?", target=self.axis_id)))
+        
     @property
     def acceleration(self):
-        return self._controller._newport_cmd("AC?", target=self)
-
+        return self._controller._newport_cmd("AC?", target=self.axis_id)    
+    @acceleration.setter
+    def acceleration(self,accel):
+        return self._controller._newport_cmd("AC",target=self.axis_id,params=[accel])
+   
     @property
-    def deacceleration(self):
-        return self._controller._newport_cmd("AG?", target=self)
-
+    def deceleration(self):
+        return self._controller._newport_cmd("AG?", target=self.axis_id)
+    @deceleration.setter
+    def deceleration(self,deaccel):
+        return self._controller._newport_cmd("AG",target=self.axis_id,params=[deaccel])
+    
     @property
     def velocity(self):
-        return self._controller._newport_cmd("VA?", target=self)
+        return self._controller._newport_cmd("VA?", target=self.axis_id)
+    @velocity.setter
+    def velocity(self,velocity):
+        return self._controller._newport_cmd("VA",target=self.axis_id,params=[velocity])
 
     @property
     def max_velocity(self):
-        return self._controller._newport_cmd("VU?", target=self)
+        return self._controller._newport_cmd("VU?", target=self.axis_id)
+    @max_velocity.setter
+    def max_velocity(self,velocity):
+        return self._controller._newport_cmd("VU", target=self.axis_id,params=[velocity])
     
+    @property
+    def max_acceleration(self):
+        return self._controller._newport_cmd("AU?", target=self.axis_id)
+    @max_acceleration.setter
+    def max_acceleration(self,accel):
+        return self._controller._newport_cmd("AU",target=self.axis_id,params=[accel])
+
+    # Max deacceleration is always the same as accelleration 
+    @property
+    def max_deceleration(self):
+        return self.max_acceleration
+    @max_deceleration.setter
+    def max_deacceleration(self,deaccel):
+        return self.max_acceleration(deaccel)
+    
+    @property
+    def position(self):
+        return self._controller._newport_cmd("TP?", target=self.axis_id) 
+    
+    @property
+    def home(self):
+        return self._controller._newport_cmd("DH?",target=self.axis_id)    
+    #default should be 0 as that sets current position as home
+    @home.setter
+    def home(self,value=0):
+        return self._controller._newport_cmd("DH",target=self.axis_id,params=[v])
+    
+    @property
+    def units(self):
+        return self._controller._newport_cmd("SN?",target=self.axis_id)
+    @units.setter
+    def units(self,value):
+        return self._controller._newport_cmd("SN",target=self.axis_id,params=[value])
+
+    @property
+    def encoder_resolution(self):
+        return self._controller._newport_cmd("SU?",target=self.axis_id)    
+    @encoder_resolution.setter
+    def encoder_resolution(self, value):
+        return self._controller._newport_cmd("SU",target=self.axis_id,params=[value])
+    
+    @property
+    def left_limit(self):
+        return self._controller._newport_cmd("SL?",target=self.axis_id)
+    @left_limit.setter
+    def left_limit(self, value):
+        return self._controller._newport_cmd("SL",target=self.axis_id,params=[value])
+
+    @property
+    def left_limit(self):
+        return self._controller._newport_cmd("SL?",target=self.axis_id)
+    @left_limit.setter
+    def left_limit(self, value):
+        return self._controller._newport_cmd("SL",target=self.axis_id,params=[value])
+
+    @property
+    def right_limit(self):
+        return self._controller._newport_cmd("SR?",target=self.axis_id)
+    @left_limit.setter
+    def right_limit(self, value):
+        return self._controller._newport_cmd("SR",target=self.axis_id,params=[value])
+    
+    @property
+    def gear_ratio(self):
+        return self._controller._newport_cmd("GR?",target=self.axis_id)
+    @gear_ratio.setter
+    def gear_ratio(self, value):
+        return self._controller._newport_cmd("GR",target=self.axis_id,params=[value])
+
+    @property
+    def gear_constant(self):
+        return self._controller._newport_cmd("QG?",target=self.axis_id)
+    @gear_constant.setter
+    def gear_constant(self, value):
+        return self._controller._newport_cmd("QG",target=self.axis_id,params=[value])
+
 
     ## MOVEMENT METHODS ##
-
     def search_for_home(self,
-            search_mode=NewportESP301HomeSearchMode.zero_position_count
+            search_mode=NewportESP301HomeSearchMode.zero_position_count.value
         ):
         """
         Searches this axis only
@@ -322,7 +448,7 @@ class NewportESP301Axis(object):
         :param NewportESP301HomeSearchMode search_mode: Method to detect when
             Home has been found.
         """
-        self._home(axis=self._axis_id, search_mode=search_mode)
+        self._home(axis=self.axis_id, search_mode=search_mode)
 
     def move(self, pos, absolute=True):
         """
@@ -335,8 +461,17 @@ class NewportESP301Axis(object):
         """
         
         # TODO: handle unit conversions here.
-        self._controller._newport_cmd("PA", params=[pos], target=self)
+        self._controller._newport_cmd("PA", params=[pos], target=self.axis_id)
 
+    def wait_for_stop(self):
+        self._controller._newport_cmd("WS",target=self.axis_id)
+
+    def stop_motion(self):
+        self._controller._newport_cmd("ST",target=self.axis_id)
+
+    def wait_for_position(self,position):
+        self._controller._newport_cmd("WP",target=self.axis_id,params=[position])
+    
     def wait_for_motion(self, poll_interval=0.01, max_wait=None):
         """
         Blocks until all movement along this axis is complete, as reported
@@ -362,3 +497,6 @@ class NewportESP301Axis(object):
                     sleep(poll_interval)
                 else:
                     raise IOError("Timed out waiting for motion to finish.")
+
+
+
