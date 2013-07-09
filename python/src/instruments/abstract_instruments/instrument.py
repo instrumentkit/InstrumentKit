@@ -36,6 +36,7 @@ import socketwrapper as sw
 import usbwrapper as uw
 import visawrapper as vw
 import file_communicator as fc
+import loopback_wrapper as lw
 import gi_gpib
 from instruments.abstract_instruments import WrapperABC
 import os
@@ -339,6 +340,10 @@ class Instrument(object):
                                 "instruments.")
         ins = visa.instrument(resource_name)
         return cls(vw.VisaWrapper(ins))
+
+    @classmethod
+    def open_test(cls):
+        return cls(lw.LoopbackWrapper())
 
     @classmethod
     def open_usb(cls, vid, pid):
