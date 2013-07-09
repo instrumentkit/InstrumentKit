@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# testwrappper.py: Loopback wrapper, just prints what it receives or queries return empty string
+# loopback_wrappper.py: Loopback wrapper, just prints what it receives or 
+#                       queries return empty string
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
-# This file is a part of the GPIBUSB adapter project.
+# This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
 ##
 # This program is free software: you can redistribute it and/or modify
@@ -38,7 +39,7 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
     def __init__(self):
         self._terminator = '\n'
     def __repr__(self):
-        return "<VisaWrapper object at 0x{:X} "\
+        return "<LoopbackWrapper object at 0x{:X} "\
                 .format(id(self))
     
     ## PROPERTIES ##
@@ -59,16 +60,16 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
             raise TypeError('Terminator must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for VisaWrapper must only be 1 '
+            raise ValueError('Terminator for LoopbackWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
         
     @property
     def timeout(self):
-        return 10
+        return 0
     @timeout.setter
     def timeout(self, newval):
-        self._conn.timeout = newval
+        pass
 
     @property
     def debug(self):
