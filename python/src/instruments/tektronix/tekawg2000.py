@@ -212,16 +212,35 @@ class TekAWG2000(SCPIInstrument):
         :param xincr: X-axis data point increment
         :type xincr: `float` or `int`
         
-        :param `numpy.array` waveform: Numpy array of values representing the 
-            waveform to be uploaded
+        :param `numpy.ndarray` waveform: Numpy array of values representing the 
+            waveform to be uploaded. This array should be normalized. This means
+            that all absolute values contained within the array should not 
+            exceed 1.
         '''
-        if not isinstance(yzero, float) or not isinstance(yzero, int):
+        if not isinstance(yzero, float) and not isinstance(yzero, int):
             raise TypeError('yzero must be specified as a float or int')
         
-        if not isinstance(ymult, float) or not isinstance(ymult, int):
+        if not isinstance(ymult, float) and not isinstance(ymult, int):
             raise TypeError('ymult must be specified as a float or int')
             
-        if not isinstance(xincr, float) or not isinstance(xincr, int):
+        if not isinstance(xincr, float) and not isinstance(xincr, int):
             raise TypeError('xincr must be specified as a float or int')
             
-        raise NotImplementedError
+        if not isinstance(waveform, np.ndarray):
+            raise TypeError('waveform must be specified as a numpy array')
+        
+        self.sendcmd('WFMP:YZERO {}'.format(yzero))
+        self.sendcmd('WFMP:YMULT {}'.format(ymult))
+        self.sendcmd('WFMP:XINCR {}'.format(xincr))
+        
+        if np.max(np.abs(waveform)) > 1:
+            raise ValueError('The max value for an element in waveform is 1.')
+        
+        waveform = waveform * (2**15-1)
+        waveform = waveform.astype('<i2').tostring()
+        wfm_header_2 = str(len(waveform))
+        wfm_header_1 = len(wfm_header_2)
+        
+        bin_str = '#{}{}{}'.format(wfm_header_1, wfm_header_2, waveform)
+        
+        self.sendcmd('CURVE {}'.format(bin_str))
