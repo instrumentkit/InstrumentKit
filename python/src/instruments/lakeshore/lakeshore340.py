@@ -28,13 +28,41 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
+import quantities as pq
+
 from instruments.generic_scpi import SCPIInstrument
+from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
 
-class Lakeshore340(SCPIInstrument):
+class Lakeshore340Sensor(object):
+    
+    def __init__(self, parent, idx):
+        self._parent = parent
+        self._idx = idx + 1
         
-    def temperature(self, sensor):
+    ## PROPERTIES ##
+    
+    @property
+    def temperature(self):
+        '''
+        Gets the temperature of the specified sensor.
+        
+        :units: K
+        :type: `~quantities.Quantity` with units Kelvin
+        '''
+        value = self._parent.query('KRDG?{}'.format(self._idx))
+        return pq.Quantity(float(value), pq.Kelvin)
+
+class Lakeshore340(SCPIInstrument):
+    '''
+    The Lakeshore340 is a multi-sensor cryogenic temperature controller.
+    '''    
+    
+    ## PROPERTIES ##
+    
+    @property
+    def sensor(self):
         '''
         Read temperature of specified sensor.
         
@@ -42,6 +70,4 @@ class Lakeshore340(SCPIInstrument):
         
         :rtype: `float`
         '''
-        if not isinstance(sensor, int):
-            raise TypeError('Sensor must be specified as an int.')
-        return float(self.query('KRDG?{}'.format(sensor)))
+        return ProxyList(self, Lakeshore340Sensor, xrange(2))
