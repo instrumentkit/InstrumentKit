@@ -39,8 +39,8 @@ from flufl.enum._enum import EnumValue
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
-import instruments.abstract_instruments.gi_gpib as gw
-import instruments.abstract_instruments.serialwrapper as sw
+from instruments.abstract_instruments import gi_gpib as gw
+from instruments.abstract_instruments import serialwrapper as sw
 from instruments.util_fns import assume_units
 
 ## CONSTANTS ###################################################################
