@@ -5,7 +5,7 @@
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
-# This file is a part of the InstrumentKit project.
+# This file is a part of the GPIBUSB adapter project.
 # Licensed under the AGPL version 3.
 ##
 # This program is free software: you can redistribute it and/or modify
