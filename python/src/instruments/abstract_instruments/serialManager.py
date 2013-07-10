@@ -5,7 +5,7 @@
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
-# This file is a part of the GPIBUSB adapter project.
+# This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
 ##
 # This program is free software: you can redistribute it and/or modify
@@ -58,6 +58,7 @@ def newSerialConnection(port, baud=460800, timeout=3, writeTimeout=3):
         serialObjDict[port] = conn
            # raise  'Serial connection error. Connection not added to serial \
            #     manager. Error message:{}'.format(e.strerror)
-    
+    if not serialObjDict[port]._conn.isOpen():
+        serialObjDict[port]._conn.open()
     return serialObjDict[port]
     

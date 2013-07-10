@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# usbwrapper.py: Wraps USB connections into a filelike object.
+# loopback_wrappper.py: Loopback wrapper, just prints what it receives or 
+#                       queries return empty string
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
@@ -26,60 +27,50 @@
 ## IMPORTS #####################################################################
 
 import io
-
-import numpy as np
-
 from instruments.abstract_instruments import WrapperABC
 
 ## CLASSES #####################################################################
 
-class USBWrapper(io.IOBase, WrapperABC):
-    '''
+class LoopbackWrapper(io.IOBase, WrapperABC):
+    """
+    Used for testing various controllers
+    """
     
-    '''
-    def __init__(self, conn):
-        # TODO: Check to make sure this is a USB connection
-        self._conn = conn
+    def __init__(self):
         self._terminator = '\n'
-        self._debug = False
-    
     def __repr__(self):
-        # TODO: put in correct connection name
-        return "<USBWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), 'placeholder')
+        return "<LoopbackWrapper object at 0x{:X} "\
+                .format(id(self))
     
     ## PROPERTIES ##
     
     @property
     def address(self):
-        '''
-        
-        '''
-        raise NotImplementedError
+        raise NotImplementedError()
     @address.setter
     def address(self, newval):
-        raise ValueError('Unable to change USB target address.')
-    
+        raise NotImplementedError()
+        
     @property
     def terminator(self):
         return self._terminator
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for USBWrapper must be specified '
+            raise TypeError('Terminator must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for USBWrapper must only be 1 '
+            raise ValueError('Terminator for LoopbackWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
         
     @property
     def timeout(self):
-        raise NotImplementedError
+        return 0
     @timeout.setter
     def timeout(self, newval):
-        raise NotImplementedError
-    
+        pass
+
     @property
     def debug(self):
         """
@@ -92,39 +83,38 @@ class USBWrapper(io.IOBase, WrapperABC):
     @debug.setter
     def debug(self, newval):
         self._debug = bool(newval)
-    
+        
     ## FILE-LIKE METHODS ##
     
     def close(self):
         try:
-            self._conn.shutdown()
-        finally:
             self._conn.close()
-            
+        except:
+            pass
+        
     def read(self, size):
-        raise NotImplementedError
-    
-    def write(self, string):
-        self._conn.write(string)
+        print "Reading side: {0}".format(size)
+        
+    def write(self, msg):
+        
+        print " <- {} ".format(repr(msg))
+        
         
     def seek(self, offset):
         return NotImplemented
         
     def tell(self):
         return NotImplemented
-    
+        
     ## METHODS ##
     
     def sendcmd(self, msg):
         '''
         '''
         msg = msg + self._terminator
-        if self._debug:
-            print " <- {} ".format(repr(msg))
-        self._conn.sendall(msg)
+        self.write(msg)
         
     def query(self, msg, size=-1):
         '''
         '''
-        self.sendcmd(msg)
-        self.read(size)
+        return msg

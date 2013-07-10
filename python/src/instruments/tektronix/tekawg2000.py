@@ -5,7 +5,7 @@
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
-# This file is a part of the GPIBUSB adapter project.
+# This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
 ##
 # This program is free software: you can redistribute it and/or modify
@@ -177,5 +177,70 @@ class TekAWG2000(SCPIInstrument):
     ## Properties ##
     
     @property
+    def waveform_name(self):
+        '''
+        Gets/sets the destination waveform name for upload.
+        
+        This is the file name that will be used on the AWG for any following 
+        waveform data that is uploaded.
+        
+        :type: `str`
+        '''
+        return self.query('DATA:DEST?').strip()
+    @waveform_name.setter
+    def waveform_name(self, newval):
+        if not isinstance(newval, str):
+            raise TypeError('Waveform name must be specified as a string.')
+        self.sendcmd('DATA:DEST "{}"'.format(newval))
+    
+    @property
     def channel(self):
         return ProxyList(self, TekAWG2000Channel, xrange(2))
+        
+    ## METHODS ##
+    
+    def upload_waveform(self, yzero, ymult, xincr, waveform):
+        '''
+        Uploads a waveform from the PC to the instrument.
+        
+        :param yzero: Y-axis origin offset
+        :type yzero: `float` or `int`
+        
+        :param ymult: Y-axis data point multiplier
+        :type ymult: `float` or `int`
+        
+        :param xincr: X-axis data point increment
+        :type xincr: `float` or `int`
+        
+        :param `numpy.ndarray` waveform: Numpy array of values representing the 
+            waveform to be uploaded. This array should be normalized. This means
+            that all absolute values contained within the array should not 
+            exceed 1.
+        '''
+        if not isinstance(yzero, float) and not isinstance(yzero, int):
+            raise TypeError('yzero must be specified as a float or int')
+        
+        if not isinstance(ymult, float) and not isinstance(ymult, int):
+            raise TypeError('ymult must be specified as a float or int')
+            
+        if not isinstance(xincr, float) and not isinstance(xincr, int):
+            raise TypeError('xincr must be specified as a float or int')
+            
+        if not isinstance(waveform, np.ndarray):
+            raise TypeError('waveform must be specified as a numpy array')
+        
+        self.sendcmd('WFMP:YZERO {}'.format(yzero))
+        self.sendcmd('WFMP:YMULT {}'.format(ymult))
+        self.sendcmd('WFMP:XINCR {}'.format(xincr))
+        
+        if np.max(np.abs(waveform)) > 1:
+            raise ValueError('The max value for an element in waveform is 1.')
+        
+        waveform = waveform * (2**12-1)
+        waveform = waveform.astype('<u2').tostring()
+        wfm_header_2 = str(len(waveform))
+        wfm_header_1 = len(wfm_header_2)
+        
+        bin_str = '#{}{}{}'.format(wfm_header_1, wfm_header_2, waveform)
+        
+        self.sendcmd('CURVE {}'.format(bin_str))
