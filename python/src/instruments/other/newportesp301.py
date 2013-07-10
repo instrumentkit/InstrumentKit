@@ -195,9 +195,7 @@ class NewportError(IOError):
         Geturns the timestamp reported by the device as the time
         at which this error occured.
 
-        Returns
-        -----------
-        datetime
+        :type: `datetime`
         """
         return self._timestamp
 
@@ -269,6 +267,8 @@ class NewportESP301(Instrument):
         Python idioms can be used more easily. This is not the same convention
         used in the Newport ESP-301 user's manual, and so care must
         be taken when converting examples.
+
+        :type: :class:`NewportESP301Axis`
         """
         
         return _AxisList(self)
@@ -313,21 +313,14 @@ class NewportESP301(Instrument):
         """
         Takes a string command and executes it on Newport
 
-        Parameters 
-        ----------------
-        raw_cmd : str 
-        errcheck : bool , optional 
+        
+        :param str raw_cmd: 
+        :param bool errcheck: 
 
-        Returns 
-        --------------
-        str
-            Response of device
-
-        Raises
-        ----------------
-        NewportError
-            Error depends on what Newport returns from "TB?" command
-
+        
+        :return: response of device
+        :rtype: `str`
+        
         """
         query_resp = None
         if "?" in raw_cmd:
@@ -408,8 +401,8 @@ class NewportESP301(Instrument):
 
         Example 
         --------
-        code-block:: python
-            with self.execute_bulk_command():
+        .. code-block:: python
+           with self.execute_bulk_command():
                 ... execute commands as normal
         """
         self._execute_immediately = False
@@ -452,9 +445,7 @@ class NewportESP301Axis(object):
         """
         Get axis number of Newport Controller
 
-        Returns
-        ----------
-        int
+        :type: `int`
         """
         return axis_id
     
@@ -465,6 +456,8 @@ class NewportESP301Axis(object):
         completed. This method can be used to wait for
         a motion command to complete before sending the next
         command.
+
+        :type: `bool`
         """
         return bool(int(self._controller._newport_cmd("MD?", target=self.axis_id)))
         
@@ -473,21 +466,18 @@ class NewportESP301Axis(object):
         """
         Get acceleration
 
-        Returns 
-        --------
-        float
-            acceleration in units/s^2
+        
+        :type:`float` 
+        :return: acceleration in units/s^2
         """
         return float(self._controller._newport_cmd("AC?", target=self.axis_id))    
     @acceleration.setter
     def acceleration(self,accel):
         """
         Sets acceleration in units/s^2
+        
+        :param float accel: acceleration in units/s^2
 
-        Parameters
-        ----------
-        accel : float
-            acceleration in units/s^2
         """
         return self._controller._newport_cmd("AC",target=self.axis_id,params=[accel])
    
@@ -496,21 +486,16 @@ class NewportESP301Axis(object):
         """
         Gets deceleration
 
-        Returns
-        --------
-        float
-            deceleration in units/s^2
+        :return: deceleration in units/s^2
+        :type: `float`
         """
         return float(self._controller._newport_cmd("AG?", target=self.axis_id))
     @deceleration.setter
-    def deceleration(self,deaccel):
+    def deceleration(self,decel):
         """
         Sets deceleration
 
-        Parameters
-        --------
-        deaccel : float
-            deceleration in units/s^2
+        :param float decel: deceleration in units/s^2
         """
         return self._controller._newport_cmd("AG",target=self.axis_id,params=[deaccel])
     
@@ -519,10 +504,8 @@ class NewportESP301Axis(object):
         """
         Gets velocity
 
-        Returns
-        ---------
-        float
-            velocity in units/s
+        :return: velocity in units/s
+        :type: `float`
         """
         return float(self._controller._newport_cmd("VA?", target=self.axis_id))
     @velocity.setter
@@ -530,9 +513,7 @@ class NewportESP301Axis(object):
         """
         Sets velocity
 
-        Parameters
-        ---------
-        velocity : float
+        :param float velocity: velocity in units/s
         """
         return self._controller._newport_cmd("VA",target=self.axis_id,params=[velocity])
 
@@ -541,21 +522,16 @@ class NewportESP301Axis(object):
         """
         Get the maximum velocity
 
-        Returns 
-        --------
-        float
-            velocity in units/s
+        :return: velocity in units/s
+        :type: `float`
         """
-        return self._controller._newport_cmd("VU?", target=self.axis_id)
+        return float(self._controller._newport_cmd("VU?", target=self.axis_id))
     @max_velocity.setter
     def max_velocity(self,velocity):
          """
         Sets max velocity
 
-        Parameters
-        ---------
-        velocity : float
-            velocity in units/s
+        :param float velocity: velocity in units/s
         """
         return self._controller._newport_cmd("VU", target=self.axis_id,params=[velocity])
     
@@ -564,21 +540,16 @@ class NewportESP301Axis(object):
         """
         Get max acceleration
 
-        Returns 
-        --------
-        float
-            acceleration in units/s^2
+        :type:`float` 
+        :return: acceleration in units/s^2
         """
-        return self._controller._newport_cmd("AU?", target=self.axis_id)
+        return float(self._controller._newport_cmd("AU?", target=self.axis_id))
     @max_acceleration.setter
     def max_acceleration(self,accel):
          """
         Sets max acceleration
 
-        Parameters
-        ---------
-        accel : float
-            acceleration in units/s^2
+        :param float accel: acceleration in units/s^2
         """
         return self._controller._newport_cmd("AU",target=self.axis_id,params=[accel])
 
@@ -588,21 +559,16 @@ class NewportESP301Axis(object):
         """
         Get max deceleration
 
-        Returns 
-        --------
-        float
-            deceleration in units/s^2
+        :return: deceleration in units/s^2
+        :type: `float`
         """
-        return self.max_acceleration
+        return float(self.max_acceleration)
     @max_deceleration.setter
-    def max_deacceleration(self,deaccel):
+    def max_deacceleration(self,decel):
          """
         Sets max deceleration
 
-        Parameters
-        ---------
-        deaccel : float
-            deceleration in units/s^2
+        :param float decel: deceleration in units/s^2
         """
         return self.max_acceleration(deaccel)
     
@@ -611,34 +577,27 @@ class NewportESP301Axis(object):
         """
         Gets real position on axis in units
 
-        Returns 
-        --------
-        float
-            position in units
+        :return: position in units
+        :type: `float`
         """
-        return self._controller._newport_cmd("TP?", target=self.axis_id) 
+        return float(self._controller._newport_cmd("TP?", target=self.axis_id))
     
     @property
     def home(self):
         """
         Get home position
 
-        Returns 
-        --------
-        float
-            position in units
+        :return: position in units
+        :type: `float`
         """
-        return self._controller._newport_cmd("DH?",target=self.axis_id)    
+        return float(self._controller._newport_cmd("DH?",target=self.axis_id))   
     #default should be 0 as that sets current position as home
     @home.setter
     def home(self,home=0):
          """
         Sets home position. Default position is current position which means 0
 
-        Parameters
-        ---------
-        home : float
-            in units
+        :param float home: position in units
         """
         return self._controller._newport_cmd("DH",target=self.axis_id,params=[v])
     
@@ -648,24 +607,22 @@ class NewportESP301Axis(object):
         Get the units that all commands are in reference to. 
 
 
-        Returns 
-        --------
-        int
-            =====  ===== 
-            Int      Unit      
-            =====  ===== 
-            1      encoder step  
-            2      motor step
-            3      millimeter
-            4      micrometer
-            5      inches
-            6      milli-inches
-            7      micro-inches
-            8      degree
-            9      radian
-            10     milliradian
-            11     microradian
-            =====  =====  
+        :type: `int` 
+        :return:=====  ============     
+                Int      Unit      
+                =====  ============ 
+                1      encoder step  
+                2      motor step
+                3      millimeter
+                4      micrometer
+                5      inches
+                6      milli-inches
+                7      micro-inches
+                8      degree
+                9      radian
+                10     milliradian
+                11     microradian
+                =====  ===========  
         """
         return int(self._controller._newport_cmd("SN?",target=self.axis_id))
     @units.setter
@@ -673,24 +630,21 @@ class NewportESP301Axis(object):
          """
         Set the units for all actions to be in reference to.            
 
-        Parameters
-        ---------
-        unit : int
-            =====  ===== 
-            Int      Unit      
-            =====  ===== 
-            1      encoder step  
-            2      motor step
-            3      millimeter
-            4      micrometer
-            5      inches
-            6      milli-inches
-            7      micro-inches
-            8      degree
-            9      radian
-            10     milliradian
-            11     microradian
-            =====  =====  
+        :param unit int:=====  ============     
+                        Int      Unit      
+                        =====  ============ 
+                        1      encoder step  
+                        2      motor step
+                        3      millimeter
+                        4      micrometer
+                        5      inches
+                        6      milli-inches
+                        7      micro-inches
+                        8      degree
+                        9      radian
+                        10     milliradian
+                        11     microradian
+                        =====  ===========  
         """
         return self._controller._newport_cmd("SN",target=self.axis_id,params=[int(value)])
 
@@ -700,21 +654,16 @@ class NewportESP301Axis(object):
         Get the resolution of the encode. Minimum units per step. 
         Encoder functionality must be enabled
 
-        Returns 
-        --------
-        float
-            units/step
+        :return: units/step
+        :type: `float`
         """
-        return self._controller._newport_cmd("SU?",target=self.axis_id)    
+        return float(self._controller._newport_cmd("SU?",target=self.axis_id)) 
     @encoder_resolution.setter
     def encoder_resolution(self, resolution):
          """
         Sets encoder resolution. Resolution must be enabled
 
-        Parameters
-        ---------
-        resolution : float
-            units/step
+        :param float resolution: Sets units/step
         """
         return self._controller._newport_cmd("SU",target=self.axis_id,params=[value])
     
@@ -723,21 +672,16 @@ class NewportESP301Axis(object):
         """
         Get the left travel limit
 
-        Returns 
-        --------
-        float
-            units
+        :return: units
+        :type: `float`
         """
-        return self._controller._newport_cmd("SL?",target=self.axis_id)
+        return float(self._controller._newport_cmd("SL?",target=self.axis_id))
     @left_limit.setter
     def left_limit(self, limit):
          """
         Sets left travel limit
 
-        Parameters
-        ---------
-        limit : float
-            units
+        :param float limit: Sets left limit in units
         """
         return self._controller._newport_cmd("SL",target=self.axis_id,params=[value])    
 
@@ -746,21 +690,16 @@ class NewportESP301Axis(object):
         """
         Get the right travel limit
 
-        Returns 
-        --------
-        float
-            units
+        :return: units
+        :type: `float`
         """
-        return self._controller._newport_cmd("SR?",target=self.axis_id)
+        return float(self._controller._newport_cmd("SR?",target=self.axis_id))
     @right_limit.setter
     def right_limit(self, value):
           """
         Sets right travel limit
 
-        Parameters
-        ---------
-        limit : float
-            units
+        :param float limit: Sets right limit in units
         """
         return self._controller._newport_cmd("SR",target=self.axis_id,params=[value])
     
@@ -771,10 +710,7 @@ class NewportESP301Axis(object):
         trajectory of the slave is the desired trajectory or actual position of the master 
         scaled by reduction ratio.
 
-        Returns 
-        --------
-        float
-            ratio
+        :type: `float`
         """
         return self._controller._newport_cmd("GR?",target=self.axis_id)
     @gear_ratio.setter
@@ -784,9 +720,7 @@ class NewportESP301Axis(object):
         trajectory of the slave is the desired trajectory or actual position of the master 
         scaled by reduction ratio.
 
-        Parameters
-        ---------
-        ratio : float
+        :param float ratio: Gearing ratio
         """
         return self._controller._newport_cmd("GR",target=self.axis_id,params=[value])
 
