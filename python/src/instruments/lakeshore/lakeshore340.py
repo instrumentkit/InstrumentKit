@@ -64,10 +64,15 @@ class Lakeshore340(SCPIInstrument):
     @property
     def sensor(self):
         '''
-        Read temperature of specified sensor.
+        Gets a specific sensor object. The desired sensor is specified like 
+        one would access a list. 
         
-        :param int sensor: Sensor number to query.
+        For instance, this would query the temperature of the first sensor::
         
-        :rtype: `float`
+        >>> bridge = Lakeshore340.open_serial("COM5")
+        >>> print bridge.sensor[0].temperature
+        
+        The Lakeshore 340 supports up to 2 sensors (index 0-1).
         '''
         return ProxyList(self, Lakeshore340Sensor, xrange(2))
+        
