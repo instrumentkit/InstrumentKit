@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
     
-GPIB USB Adapter API Reference
-==============================
+InstrumentKit Adapter API Reference
+===================================
 
 Contents:
 
