@@ -12,6 +12,10 @@ Contents:
     instrument
     generic_scpi
     agilent
+    hp
+    keithley
+    lakeshore
+    other
     srs
-    other    
+    tektronix    
     config

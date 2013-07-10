@@ -14,10 +14,17 @@ Generic SCPI Instruments
     :members:
     :undoc-members:
     
-:class:`SCPIMultimeter` - Generic multimeter using standard SCPI commands
-=========================================================================
+:class:`SCPIMultimeter` - Generic multimeter using SCPI commands
+================================================================
 
 .. autoclass:: SCPIMultimeter
+    :members:
+    :undoc-members:
+
+:class:`SCPIFunctionGenerator` - Generic multimeter using SCPI commands
+=======================================================================
+
+.. autoclass:: SCPIFunctionGenerator
     :members:
     :undoc-members:
 

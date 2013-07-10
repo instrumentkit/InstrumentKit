@@ -41,6 +41,8 @@ class HP6624aChannel(object):
         self._hp = hp
         self._idx = idx + 1
         
+    ## PROPERTIES ##
+        
     @property
     def voltage(self):
         '''
@@ -57,8 +59,8 @@ class HP6624aChannel(object):
     def voltage(self, newval):
         self._hp.sendcmd('VSET {},{}'.format(
             self._idx,
-            assume_units(newval, pq.volt).rescale(pq.volt).magnitude
-            )
+            assume_units(newval, pq.volt).rescale(pq.volt).magnitude,
+            ))
             
     @property
     def current(self):
@@ -77,7 +79,7 @@ class HP6624aChannel(object):
         self._hp.sendcmd('ISET {},{}'.format(
             self._idx,
             assume_units(newval, pq.amp).rescale(pq.amp).magnitude
-            )
+            ))
         
     @property
     def overvoltage(self):
@@ -96,7 +98,7 @@ class HP6624aChannel(object):
         self._hp.sendcmd('OVSET {},{}'.format(
             self._idx,
             assume_units(newval, pq.volt).rescale(pq.volt).magnitude
-            )
+            ))
         
     @property
     def overcurrent(self):
@@ -115,7 +117,7 @@ class HP6624aChannel(object):
             newval = 1
         else:
             newval = 0
-        self._hp.sendcmd('OVP {},{}'.format(self._idx, newval)
+        self._hp.sendcmd('OVP {},{}'.format(self._idx, newval))
     
     @property
     def output(self):
@@ -135,7 +137,7 @@ class HP6624aChannel(object):
             newval = 1
         else:
             newval = 0
-        self._hp.sendcmd('OUT {},{}'.format(self._idx, newval)
+        self._hp.sendcmd('OUT {},{}'.format(self._idx, newval))
     
     
     ## METHODS ##
