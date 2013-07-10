@@ -5,7 +5,7 @@
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
-# This file is a part of the GPIBUSB adapter project.
+# This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
 ##
 # This program is free software: you can redistribute it and/or modify
@@ -39,8 +39,8 @@ from flufl.enum._enum import EnumValue
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
-from instruments.abstract_instruments import gi_gpib as gw
-from instruments.abstract_instruments import serialwrapper as sw
+import instruments.abstract_instruments.gi_gpib as gw
+import instruments.abstract_instruments.serialwrapper as sw
 from instruments.util_fns import assume_units
 
 ## CONSTANTS ###################################################################
