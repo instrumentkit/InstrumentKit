@@ -43,6 +43,9 @@ from instruments.abstract_instruments import Instrument
 ## ENUMS #######################################################################
 
 class NewportESP301HomeSearchMode(IntEnum):
+    """
+    Enum containing different search modes code
+    """
     #: Search along specified axes for the +0 position.
     zero_position_count = 0
     #: Search for combined Home and Index signals.
@@ -59,7 +62,9 @@ class NewportESP301HomeSearchMode(IntEnum):
     neg_index_signals = 6
 
 class NewportESP301Units(IntEnum):
-
+    """
+    Enum containing what `units` return means. 
+    """
     encoder_step= 0
     motor_step= 1
     millimeter= 2
@@ -80,6 +85,7 @@ class NewportError(IOError):
     """
     Raised in response to an error with a Newport-brand instrument.
     """
+    #Dict Containing all possible errors.Uses strings for keys in order to handle axis
     #Outside self definition so not rebuilt for everytime
     messageDict={
     '0' : "NO ERROR DETECTED" ,
@@ -174,7 +180,7 @@ class NewportError(IOError):
                 super(NewportError, self).__init__(error)
             else:                
                 error_message = self.getMessage('x{0}'.format(self._errcode))
-                error = "Newport Error: {0}. Axis: {1}. Error Message: {2}".format(str(errorcode),self._axis,error_message)
+                error = "Newport Error: {0}. Axis: {1}. Error Message: {2}".format(str(self._errcode),self._axis,error_message)
                 super(NewportError, self).__init__(error)
 
         else:
@@ -215,7 +221,7 @@ class NewportError(IOError):
         """
         return self._axis
 
-    def getMessage(code):
+    def getMessage(self,code):
         return NewportError.messageDict.get(code,"Error code not recognised")
 
 
@@ -316,6 +322,11 @@ class NewportESP301(Instrument):
         --------------
         str
             Response of device
+
+        Raises
+        ----------------
+        NewportError
+            Error depends on what Newport returns from "TB?" command
 
         """
         query_resp = None
@@ -527,86 +538,258 @@ class NewportESP301Axis(object):
 
     @property
     def max_velocity(self):
+        """
+        Get the maximum velocity
+
+        Returns 
+        --------
+        float
+            velocity in units/s
+        """
         return self._controller._newport_cmd("VU?", target=self.axis_id)
     @max_velocity.setter
     def max_velocity(self,velocity):
+         """
+        Sets max velocity
+
+        Parameters
+        ---------
+        velocity : float
+            velocity in units/s
+        """
         return self._controller._newport_cmd("VU", target=self.axis_id,params=[velocity])
     
     @property
     def max_acceleration(self):
+        """
+        Get max acceleration
+
+        Returns 
+        --------
+        float
+            acceleration in units/s^2
+        """
         return self._controller._newport_cmd("AU?", target=self.axis_id)
     @max_acceleration.setter
     def max_acceleration(self,accel):
+         """
+        Sets max acceleration
+
+        Parameters
+        ---------
+        accel : float
+            acceleration in units/s^2
+        """
         return self._controller._newport_cmd("AU",target=self.axis_id,params=[accel])
 
     # Max deacceleration is always the same as accelleration 
     @property
     def max_deceleration(self):
+        """
+        Get max deceleration
+
+        Returns 
+        --------
+        float
+            deceleration in units/s^2
+        """
         return self.max_acceleration
     @max_deceleration.setter
     def max_deacceleration(self,deaccel):
+         """
+        Sets max deceleration
+
+        Parameters
+        ---------
+        deaccel : float
+            deceleration in units/s^2
+        """
         return self.max_acceleration(deaccel)
     
     @property
     def position(self):
+        """
+        Gets real position on axis in units
+
+        Returns 
+        --------
+        float
+            position in units
+        """
         return self._controller._newport_cmd("TP?", target=self.axis_id) 
     
     @property
     def home(self):
+        """
+        Get home position
+
+        Returns 
+        --------
+        float
+            position in units
+        """
         return self._controller._newport_cmd("DH?",target=self.axis_id)    
     #default should be 0 as that sets current position as home
     @home.setter
-    def home(self,value=0):
+    def home(self,home=0):
+         """
+        Sets home position. Default position is current position which means 0
+
+        Parameters
+        ---------
+        home : float
+            in units
+        """
         return self._controller._newport_cmd("DH",target=self.axis_id,params=[v])
     
     @property
     def units(self):
-        return self._controller._newport_cmd("SN?",target=self.axis_id)
+        """
+        Get the units that all commands are in reference to. 
+
+
+        Returns 
+        --------
+        int
+            =====  ===== 
+            Int      Unit      
+            =====  ===== 
+            1      encoder step  
+            2      motor step
+            3      millimeter
+            4      micrometer
+            5      inches
+            6      milli-inches
+            7      micro-inches
+            8      degree
+            9      radian
+            10     milliradian
+            11     microradian
+            =====  =====  
+        """
+        return int(self._controller._newport_cmd("SN?",target=self.axis_id))
     @units.setter
-    def units(self,value):
-        return self._controller._newport_cmd("SN",target=self.axis_id,params=[value])
+    def units(self,unit):
+         """
+        Set the units for all actions to be in reference to.            
+
+        Parameters
+        ---------
+        unit : int
+            =====  ===== 
+            Int      Unit      
+            =====  ===== 
+            1      encoder step  
+            2      motor step
+            3      millimeter
+            4      micrometer
+            5      inches
+            6      milli-inches
+            7      micro-inches
+            8      degree
+            9      radian
+            10     milliradian
+            11     microradian
+            =====  =====  
+        """
+        return self._controller._newport_cmd("SN",target=self.axis_id,params=[int(value)])
 
     @property
     def encoder_resolution(self):
+        """
+        Get the resolution of the encode. Minimum units per step. 
+        Encoder functionality must be enabled
+
+        Returns 
+        --------
+        float
+            units/step
+        """
         return self._controller._newport_cmd("SU?",target=self.axis_id)    
     @encoder_resolution.setter
-    def encoder_resolution(self, value):
+    def encoder_resolution(self, resolution):
+         """
+        Sets encoder resolution. Resolution must be enabled
+
+        Parameters
+        ---------
+        resolution : float
+            units/step
+        """
         return self._controller._newport_cmd("SU",target=self.axis_id,params=[value])
     
     @property
     def left_limit(self):
-        return self._controller._newport_cmd("SL?",target=self.axis_id)
-    @left_limit.setter
-    def left_limit(self, value):
-        return self._controller._newport_cmd("SL",target=self.axis_id,params=[value])
+        """
+        Get the left travel limit
 
-    @property
-    def left_limit(self):
+        Returns 
+        --------
+        float
+            units
+        """
         return self._controller._newport_cmd("SL?",target=self.axis_id)
     @left_limit.setter
-    def left_limit(self, value):
-        return self._controller._newport_cmd("SL",target=self.axis_id,params=[value])
+    def left_limit(self, limit):
+         """
+        Sets left travel limit
+
+        Parameters
+        ---------
+        limit : float
+            units
+        """
+        return self._controller._newport_cmd("SL",target=self.axis_id,params=[value])    
 
     @property
     def right_limit(self):
+        """
+        Get the right travel limit
+
+        Returns 
+        --------
+        float
+            units
+        """
         return self._controller._newport_cmd("SR?",target=self.axis_id)
-    @left_limit.setter
+    @right_limit.setter
     def right_limit(self, value):
+          """
+        Sets right travel limit
+
+        Parameters
+        ---------
+        limit : float
+            units
+        """
         return self._controller._newport_cmd("SR",target=self.axis_id,params=[value])
     
     @property
     def gear_ratio(self):
+        """
+        This command gets the master-slave reduction ratio for a slave axis. The 
+        trajectory of the slave is the desired trajectory or actual position of the master 
+        scaled by reduction ratio.
+
+        Returns 
+        --------
+        float
+            ratio
+        """
         return self._controller._newport_cmd("GR?",target=self.axis_id)
     @gear_ratio.setter
-    def gear_ratio(self, value):
+    def gear_ratio(self, ratio):
+         """
+        This command sets the master-slave reduction ratio for a slave axis. The 
+        trajectory of the slave is the desired trajectory or actual position of the master 
+        scaled by reduction ratio.
+
+        Parameters
+        ---------
+        ratio : float
+        """
         return self._controller._newport_cmd("GR",target=self.axis_id,params=[value])
 
-    @property
-    def gear_constant(self):
-        return self._controller._newport_cmd("QG?",target=self.axis_id)
-    @gear_constant.setter
-    def gear_constant(self, value):
-        return self._controller._newport_cmd("QG",target=self.axis_id,params=[value])
 
 
     ## MOVEMENT METHODS ##
@@ -636,12 +819,21 @@ class NewportESP301Axis(object):
         self._controller._newport_cmd("PA", params=[pos], target=self.axis_id)
 
     def wait_for_stop(self):
+        """ 
+        Waits for axis motion to stop before next command is executed
+        """
         self._controller._newport_cmd("WS",target=self.axis_id)
 
     def stop_motion(self):
+        """
+        Stop all motion on axis. With programmed deceleration rate
+        """
         self._controller._newport_cmd("ST",target=self.axis_id)
 
     def wait_for_position(self,position):
+        """
+        Wait for axis to reach position before executing next command
+        """
         self._controller._newport_cmd("WP",target=self.axis_id,params=[position])
     
     def wait_for_motion(self, poll_interval=0.01, max_wait=None):
