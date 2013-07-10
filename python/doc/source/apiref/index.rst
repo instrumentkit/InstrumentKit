@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
     
-InstrumentKit Adapter API Reference
-===================================
+InstrumentKit API Reference
+===========================
 
 Contents:
 
