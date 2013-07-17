@@ -242,6 +242,7 @@ class Instrument(object):
         .. seealso::
             `PySerial`_ documentation for serial port URI format
             
+        .. _PySerial: http://pyserial.sourceforge.net/
         """
         # Make sure that urlparse knows that we want query strings.
         for scheme in cls.URI_SCHEMES:
@@ -308,12 +309,46 @@ class Instrument(object):
     
     @classmethod
     def open_tcpip(cls, host, port):
+        """
+        Opens an instrument, connecting via TCP/IP to a given host and TCP port.
+        
+        :param str host: Name or IP address of the instrument.
+        :param int port: TCP port on which the insturment is listening.
+        
+        :rtype: `Instrument`
+        :return: Object representing the connected instrument.
+        
+        .. seealso::
+            `~socket.socket.connect` for description of `host` and `port`
+            parameters in the TCP/IP address family.
+        """
         conn = socket.socket()
         conn.connect((host, port))
         return cls(sw.SocketWrapper(conn))
         
     @classmethod
     def open_serial(cls, port, baud, timeout=3, writeTimeout=3):
+        """
+        Opens an instrument, connecting via a physical or emulated serial port.
+        Note that many instruments which connect via USB are exposed to the
+        operating system as serial ports, so this method will very commonly
+        be used for connecting instruments via USB.
+        
+        :param str port: Name of the the port or device file to open a
+            connection on. For example, ``"COM10"`` on Windows or
+            ``"/dev/ttyUSB0"`` on Linux.
+        :param int baud: The baud rate at which instrument communicates.
+        :param float timeout: Number of seconds to wait when reading from the
+            instrument before timing out.
+        :param float writeTimeout: Number of seconds to wait when writing to the
+            instrument before timing out.
+        
+        :rtype: `Instrument`
+        :return: Object representing the connected instrument.
+        
+        .. seealso::
+            `~serial.Serial` for description of `port`, baud rates and timeouts.
+        """
         ser = sm.newSerialConnection(port, 
                                      baud,
                                      timeout, 
@@ -322,6 +357,29 @@ class Instrument(object):
     
     @classmethod
     def open_gpibusb(cls, port, gpib_address, timeout=3, writeTimeout=3):
+        """
+        Opens an instrument, connecting via a
+        `Galvant Industries GPIB-USB adapter`_.
+        
+        :param str port: Name of the the port or device file to open a
+            connection on. Note that because the GI GPIB-USB
+            adapter identifies as a serial port to the operating system, this
+            should be the name of a serial port.
+        :param int gpib_address: Address on the connected GPIB bus assigned to
+            the instrument.
+        :param float timeout: Number of seconds to wait when reading from the
+            instrument before timing out.
+        :param float writeTimeout: Number of seconds to wait when writing to the
+            instrument before timing out.
+        
+        :rtype: `Instrument`
+        :return: Object representing the connected instrument.
+        
+        .. seealso::
+            `~serial.Serial` for description of `port` and timeouts.
+            
+        .. _Galvant Industries GPIB-USB adapter: http://galvant.ca/shop/gpibusb/
+        """
         ser = sm.newSerialConnection(port,
                 timeout=timeout,
                  writeTimeout=writeTimeout)
@@ -335,6 +393,23 @@ class Instrument(object):
 
     @classmethod
     def open_visa(cls, resource_name):
+        """
+        Opens an instrument, connecting using the VISA library. Note that
+        `PyVISA`_ and a VISA implementation must both be present and installed
+        for this method to function.
+        
+        :param str resource_name: Name of a VISA resource representing the
+            given instrument.
+        
+        :rtype: `Instrument`
+        :return: Object representing the connected instrument.
+        
+        .. seealso::
+            `National Instruments help page on VISA resource names
+            <http://zone.ni.com/reference/en-XX/help/371361J-01/lvinstio/visa_resource_name_generic/>`_.
+            
+        .. _PyVISA: http://pyvisa.sourceforge.net/
+        """
         if visa is None:
             raise ImportError("PyVISA is required for loading VISA "
                                 "instruments.")
@@ -347,6 +422,26 @@ class Instrument(object):
 
     @classmethod
     def open_usb(cls, vid, pid):
+        """
+        Opens an instrument, connecting via a raw USB stream.
+        
+        .. note::
+            Note that raw USB a very uncommon of connecting to instruments,
+            even for those that are connected by USB. Most will identify as
+            either serial ports (in which case,
+            `~instruments.Instrument.open_serial` should be used), or as
+            USB-TMC devices. On Linux, USB-TMC devices can be connected using
+            `~instruments.Instrument.open_file`, provided that the ``usbtmc``
+            kernel module is loaded. On Windows, some such devices can be opened
+            using the VISA library and the `~instruments.Instrument.open_visa`
+            method.
+        
+        :param str vid: Vendor ID of the USB device to open.
+        :param int pid: Product ID of the USB device to open.
+        
+        :rtype: `Instrument`
+        :return: Object representing the connected instrument.
+        """
         if usb is None:
             raise ImportError("USB support not imported. Do you have PyUSB "
                                 "version 1.0 or later?")
@@ -388,5 +483,8 @@ class Instrument(object):
         is connected by the Linux ``usbtmc`` kernel driver.
         
         :param str filename: Name of the character device to open.
+        
+        :rtype: `Instrument`
+        :return: Object representing the connected instrument.
         """
         return cls(fc.FileCommunicator(filename))
