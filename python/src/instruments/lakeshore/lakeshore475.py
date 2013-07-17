@@ -32,6 +32,7 @@ from __future__ import division
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
+from instruments.util_fns import assume_units
 
 ## CONSTANTS ###################################################################
 
@@ -138,18 +139,26 @@ class Lakeshore475(SCPIInstrument):
     @property
     def field_setpoint(self):
         '''
-        Gets the final setpoint of the field control ramp.
-        
-        :type: `~quantities.Quantity`
+        Gets/sets the final setpoint of the field control ramp.
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units Gauss.
+        :type: `~quantities.Quantity` with units Gauss
         '''
         value = self.query('CSETP?').strip()
         units = self.field_units
         return float(value) * units
+    @field_setpoint.setter
+    def field_setpoint(self, newval):
+        units = self.field_units
+        newval = float(assume_units(newval, pq.gauss).rescale(units).magnitude)
+
+        self.sendcmd('CSETP {}'.format(newval))
         
     @property
     def field_control_params(self):
         '''
-        Gets the parameters associated with the field control ramp.
+        Gets/sets the parameters associated with the field control ramp.
         These are the P, I, ramp rate, and control slope limit.
         
         :type: `tuple` of 2 `float` and 2 `~quantities.Quantity`
@@ -160,53 +169,110 @@ class Lakeshore475(SCPIInstrument):
         params[3] = params[3] * pq.volt / pq.minute
         
         return tuple(params)
+    @field_control_params.setter
+    def field_control_params(self, newval):
+        if not isinstance(newval, tuple):
+            raise TypeError('Field control parameters must be specified as '
+                            ' a tuple')
+        newval = list(newval)
+        newval[0] = float(newval[0])
+        newval[1] = float(newval[1])
+
+        unit = self.field_units / pq.minute
+        newval[2] = float(assume_units(newval[2], unit).rescale(unit).magnitude)
+        unit = pq.volt / pq.minute
+        newval[3] = float(assume_units(newval[3], unit).rescale(unit).magnitude)
+
+        self.sendcmd('CPARAM {},{},{},{}'.format(newval[0],
+                                                 newval[1],
+                                                 newval[2],
+                                                 newval[3],
+                                                 ))
     
     @property
     def p_value(self):
         '''
-        Gets the P value for the field control ramp.
+        Gets/sets the P value for the field control ramp.
         
         :type: `float`
         '''
         return self.field_control_params[0]
+    @p_value.setter
+    def p_value(self, newval):
+        newval = float(newval)
+        values = list(self.field_control_params)
+        values[0] = newval
+        self.field_control_params = tuple(values)
     
     @property
     def i_value(self):
         '''
-        Gets the I value for the field control ramp.
+        Gets/sets the I value for the field control ramp.
         
         :type: `float`
         '''
         return self.field_control_params[1]
+    @i_value.setter
+    def i_value(self, newval):
+        newval = float(newval)
+        values = list(self.field_control_params)
+        values[1] = newval
+        self.field_control_params = tuple(values)
     
     @property
     def ramp_rate(self):
         '''
-        Gets the ramp rate value for the field control ramp.
-        
+        Gets/sets the ramp rate value for the field control ramp.
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of current field units / minute.
         :type: `~quantities.Quantity`
         '''
         return self.field_control_params[2]
+    @ramp_rate.setter
+    def ramp_rate(self, newval):
+        unit = self.field_units / pq.minute
+        newval = float(assume_units(newval, unit).rescale(unit).magnitude)
+        values = list(self.field_control_params)
+        values[2] = newval
+        self.field_control_params = tuple(values)
         
     @property
     def control_slope_limit(self):
         '''
-        Gets the I value for the field control ramp.
-        
+        Gets/sets the I value for the field control ramp.
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units volt / minute.
         :type: `~quantities.Quantity`
         '''
         return self.field_control_params[3]
+    @control_slope_limit.setter
+    def control_slope_limit(self, newval):
+        unit = pq.volt / pq.minute
+        newval = float(assume_units(newval, unit).rescale(unit).magnitude)
+        values = list(self.field_control_params)
+        values[3] = newval
+        self.field_control_params = tuple(values)
         
     @property
     def control_mode(self):
         '''
-        Gets the control mode setting. False corresponds to the field control
-        ramp being disables, while True enables the closed loop PI field 
-        control.
+        Gets/sets the control mode setting. False corresponds to the field
+        control ramp being disables, while True enables the closed loop PI
+        field control.
         
         :type: `bool`
         '''
         return (self.query('CMODE?').strip() is '1')
+    @control_mode.setter
+    def control_mode(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError('Control mode property must be specified as a bool')
+        if (newval):
+            self.sendcmd('CMODE 1')
+        else:
+            self.sendcmd('CMODE 0')
         
     
     ## METHODS ##
