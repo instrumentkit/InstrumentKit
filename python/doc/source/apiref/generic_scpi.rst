@@ -1,6 +1,7 @@
 ..
     TODO: put documentation license header here.
     
+.. _apiref-generic_scpi:
 .. currentmodule:: instruments.generic_scpi
     
 ========================
