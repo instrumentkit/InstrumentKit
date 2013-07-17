@@ -434,6 +434,14 @@ class NewportESP301Axis(object):
     instantiated by the user directly, but is
     returned by `NewportESP301.axis`.
     """
+    # quantities micro inch
+    micro_inch = pq.UnitQuantity('micro-inch',pq.inch/1e6, symbol = 'uin')
+    
+    # Some more work might need to be done here to make
+    # the encoder_step and motor_step functional
+    # I really don't have a concrete idea how I'm 
+    # going to do this until I have a physical device
+
     _unit_dict = {
                 1    :  pq.count,
                 2    :  pq.count,
@@ -441,12 +449,13 @@ class NewportESP301Axis(object):
                 4    :  pq.um,
                 5    :  pq.inch,
                 6    :  pq.mil,
-                7    :  pq.mil/1000,
+                7    :  micro_inch, #compound unit for micro-inch
                 8    :  pq.deg,
                 9    :  pq.rad,
                 10   :  pq.mrad,
                 11   :  pq.urad,
                 } 
+
 
     def __init__(self, controller, axis_id):
         if not isinstance(controller, NewportESP301):
