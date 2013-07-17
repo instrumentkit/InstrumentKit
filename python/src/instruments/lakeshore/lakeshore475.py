@@ -78,7 +78,7 @@ class Lakeshore475(SCPIInstrument):
         If specified as a `str`, must be one of ``{Gauss|Tesla|Oersted|A/m}``.
         If specified as an `int`, must be in ``xrange(1, 5)``.
         
-        :type: `~quantities.UnitQuantity`, `str` or `int`
+        :type: `~quantities.UnitQuantity`, `str`
         '''
         value = int(self.query('UNIT?'))
         return LAKESHORE_FIELD_UNITS[value]
@@ -96,13 +96,8 @@ class Lakeshore475(SCPIInstrument):
             else:
                 raise ValueError('Field unit strings must be gauss, tesla, '
                                     'oersted or A/m')
-        elif isinstance(newval, int):
-            if newval in LAKESHORE_FIELD_UNITS:
-                self.sendcmd('UNIT ' + newval)
-            else:
-                raise ValueError('Invalid field unit integer.')
         else:
-            raise TypeError('Field units must be a string, integer, or '
+            raise TypeError('Field units must be a string, or '
                               'Python quantity')
         
     @property
@@ -123,7 +118,7 @@ class Lakeshore475(SCPIInstrument):
             if newval in LAKESHORE_TEMP_UNITS_INV:
                 self.sendcmd('TUNIT ' + LAKESHORE_TEMP_UNITS_INV[newval])
             else:
-                raise ValueError('Not an acceptable Python quantities object')
+                raise TypeError('Not an acceptable Python quantities object')
         elif isinstance(newval, str):
             newval = newval.lower()
             if newval in LAKESHORE_TEMP_UNITS_STR:
@@ -140,6 +135,79 @@ class Lakeshore475(SCPIInstrument):
             raise TypeError('Temperature units must be a string, integer, '
                               'or Python quantity')
 
+    @property
+    def field_setpoint(self):
+        '''
+        Gets the final setpoint of the field control ramp.
+        
+        :type: `~quantities.Quantity`
+        '''
+        value = self.query('CSETP?').strip()
+        units = self.field_units
+        return float(value) * units
+        
+    @property
+    def field_control_params(self):
+        '''
+        Gets the parameters associated with the field control ramp.
+        These are the P, I, ramp rate, and control slope limit.
+        
+        :type: `tuple` of 2 `float` and 2 `~quantities.Quantity`
+        '''
+        params = self.query('CPARAM?').strip().split()
+        params = [float(x) for x in params]
+        params[2] = params[2] * self.field_units / pq.minute
+        params[3] = params[3] * pq.volt / pq.minute
+        
+        return tuple(params)
+    
+    @property
+    def p_value(self):
+        '''
+        Gets the P value for the field control ramp.
+        
+        :type: `float`
+        '''
+        return self.field_control_params[0]
+    
+    @property
+    def i_value(self):
+        '''
+        Gets the I value for the field control ramp.
+        
+        :type: `float`
+        '''
+        return self.field_control_params[1]
+    
+    @property
+    def ramp_rate(self):
+        '''
+        Gets the ramp rate value for the field control ramp.
+        
+        :type: `~quantities.Quantity`
+        '''
+        return self.field_control_params[2]
+        
+    @property
+    def control_slope_limit(self):
+        '''
+        Gets the I value for the field control ramp.
+        
+        :type: `~quantities.Quantity`
+        '''
+        return self.field_control_params[3]
+        
+    @property
+    def control_mode(self):
+        '''
+        Gets the control mode setting. False corresponds to the field control
+        ramp being disables, while True enables the closed loop PI field 
+        control.
+        
+        :type: `bool`
+        '''
+        return (self.query('CMODE?').strip() is '1')
+        
     
     ## METHODS ##
 
