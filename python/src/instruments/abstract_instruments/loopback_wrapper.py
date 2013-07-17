@@ -93,7 +93,12 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
             pass
         
     def read(self, size):
-        print "Reading side: {0}".format(size)
+        """
+        Gets desired response command from user
+        :rtype: `str`
+        """
+        input_var = raw_input("Desired Response: ")
+        return input_var
         
     def write(self, msg):
         
@@ -110,11 +115,18 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
     
     def sendcmd(self, msg):
         '''
+        Receives a command and passes off to write function
+        :param str msg: The command to be received
         '''
         msg = msg + self._terminator
         self.write(msg)
         
     def query(self, msg, size=-1):
         '''
+        Receives a query and returns the generated Response
+        :param str msg: The message to received
+        :rtype: `str`
         '''
-        return msg
+        self.sendcmd(msg)
+        resp = self.read(size)
+        return resp
