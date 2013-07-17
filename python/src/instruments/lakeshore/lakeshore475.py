@@ -154,7 +154,7 @@ class Lakeshore475(SCPIInstrument):
         
         :type: `tuple` of 2 `float` and 2 `~quantities.Quantity`
         '''
-        params = self.query('CPARAM?').strip().split()
+        params = self.query('CPARAM?').strip().split(',')
         params = [float(x) for x in params]
         params[2] = params[2] * self.field_units / pq.minute
         params[3] = params[3] * pq.volt / pq.minute
