@@ -1,8 +1,10 @@
 ..
     TODO: put documentation license header here.
     
-GPIB USB Adapter API Reference
-==============================
+.. _apiref:
+    
+InstrumentKit API Reference
+===========================
 
 Contents:
 
@@ -12,6 +14,10 @@ Contents:
     instrument
     generic_scpi
     agilent
+    hp
+    keithley
+    lakeshore
+    other
     srs
-    other    
+    tektronix    
     config

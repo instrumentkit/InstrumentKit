@@ -34,7 +34,7 @@ from instruments.generic_scpi import SCPIInstrument
 
 ## CLASSES #####################################################################
 
-class Tektds224(SCPIInstrument):
+class TekTDS224(SCPIInstrument):
       
     def coupling(self, channel, setting):
         '''

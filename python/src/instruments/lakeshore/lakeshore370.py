@@ -28,43 +28,56 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
+import quantities as pq
+
 from instruments.generic_scpi import SCPIInstrument
+from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
 
+class Lakeshore370Channel(object):
+    
+    def __init__(self, parent, idx):
+        self._parent = parent
+        self._idx = idx + 1
+        
+    ## PROPERTIES ##
+    
+    @property
+    def resistance(self):
+        '''
+        Gets the resistance of the specified sensor.
+        
+        :units: Ohm
+        :type: `~quantities.Quantity` with units ohm
+        '''
+        value = self._parent.query('RDGR? {}'.format(self._idx))
+        return pq.Quantity(float(value), pq.ohm)
+
 class Lakeshore370(SCPIInstrument):
+    '''
+    The Lakeshore 370 is a multichannel AC resistance bridge for use in low 
+    temperature dilution refridgerator setups.
+    '''
 
     def __init__(self, filelike):
         super(Lakeshore370, self).__init__(filelike)
         self.sendcmd('IEEE 3,0') # Disable termination characters and enable EOI
     
-    def resistance(self, channel):
+    ## PROPERTIES ##
+    
+    @property
+    def channel(self):
         '''
-        Query resistance from a specific channel.
+        Gets a specific channel object. The desired channel is specified like 
+        one would access a list. 
         
-        :param int channel: Channel to measure resistance of. Valid channels are
-            the numbers 1-16.
-            
-        :rtype: `float`
+        For instance, this would query the resistance of the first channel::
+        
+        >>> bridge = Lakeshore370.open_serial("COM5")
+        >>> print bridge.channel[0].resistance
+        
+        The Lakeshore 370 supports up to 16 channels (index 0-15).
         '''
-        if not isinstance(channel, int):
-            raise Exception('Channel number must be specified as an integer.')
-        
-        if (channel < 1) or (channel > 16):
-            raise Exception('Channel must be 1-16 (inclusive).')
-        
-        return float(self.query('RDGR? {}'.format(channel)))
-            
-            
-            
-            
-            
-            
-            
-        
-        
-        
-        
-        
-        
+        return ProxyList(self, Lakeshore370Channel, xrange(16))
         

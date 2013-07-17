@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# lakeshore340.py: Driver for the Lakeshore 340 cryogenic temp controller.
+# oscilloscope.py: Python ABC for oscilloscopes
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
@@ -21,6 +21,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
+##
 
 ## FEATURES ####################################################################
 
@@ -28,51 +29,61 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
-import quantities as pq
+import abc
 
-from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import ProxyList
+from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 
-class Lakeshore340Sensor(object):
+class OscilloscopeChannel(object):
+    __metaclass__ = abc.ABCMeta
     
-    def __init__(self, parent, idx):
-        self._parent = parent
-        self._idx = idx + 1
-        
     ## PROPERTIES ##
     
-    @property
-    def temperature(self):
+    def getcoupling(self):
         '''
-        Gets the temperature of the specified sensor.
+        Gets the coupling settings for this channel
+        '''
+        raise NotImplementedError
+    def setcoupling(self, newval):
+        '''
+        Sets the coupling settings for this channel
+        '''
+        raise NotImplementedError
+    coupling = abc.abstractproperty(getcoupling, setcoupling)
+    
+    ## METHODS ##
+    
+    def read_waveform(self, bin_format=True):
+        '''
+        Read waveform from the specified oscilloscope channel
+        '''
+        raise NotImplementedError
         
-        :units: K
-        :type: `~quantities.Quantity` with units Kelvin
-        '''
-        value = self._parent.query('KRDG?{}'.format(self._idx))
-        return pq.Quantity(float(value), pq.Kelvin)
 
-class Lakeshore340(SCPIInstrument):
-    '''
-    The Lakeshore340 is a multi-sensor cryogenic temperature controller.
-    '''    
-    
+class Oscilloscope(Instrument):
+    __metaclass__ = abc.ABCMeta
+
     ## PROPERTIES ##
     
-    @property
-    def sensor(self):
+    @abc.abstractproperty
+    def channel(self):
+        raise NotImplementedError
+        
+    @abc.abstractproperty
+    def ref(self):
+        raise NotImplementedError
+    
+    @abc.abstractproperty
+    def math(self):
+        raise NotImplementedError
+    
+    ## METHODS ##
+    
+    @abc.abstractmethod
+    def force_trigger(self):
         '''
-        Gets a specific sensor object. The desired sensor is specified like 
-        one would access a list. 
-        
-        For instance, this would query the temperature of the first sensor::
-        
-        >>> bridge = Lakeshore340.open_serial("COM5")
-        >>> print bridge.sensor[0].temperature
-        
-        The Lakeshore 340 supports up to 2 sensors (index 0-1).
+        Forces a trigger event to occur on the attached oscilloscope.
         '''
-        return ProxyList(self, Lakeshore340Sensor, xrange(2))
+        raise NotImplementedError
         

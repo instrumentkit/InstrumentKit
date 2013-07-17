@@ -21,3 +21,10 @@ Instrument Base Classes
     :members:
     :undoc-members:
 
+:class:`FunctionGenerator` - Abstract class for function generator instruments
+==============================================================================
+
+.. autoclass:: FunctionGenerator
+    :members:
+    :undoc-members:
+

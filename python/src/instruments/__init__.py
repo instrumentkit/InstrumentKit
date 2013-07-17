@@ -8,6 +8,7 @@ import instruments.other
 import instruments.srs
 import instruments.tektronix
 import instruments.thorlabs
+import instruments.hp
 
 import instruments.units
 
