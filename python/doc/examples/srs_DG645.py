@@ -3,7 +3,7 @@
 
 # <headingcell level=1>
 
-# GPIB-USB Communication Library Examples
+# InstrumentKit Library Examples
 
 # <headingcell level=2>
 
