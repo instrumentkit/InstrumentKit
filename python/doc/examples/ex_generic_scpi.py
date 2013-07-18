@@ -45,3 +45,4 @@ inst = ik.generic_scpi.SCPIInstrument.open_gpibusb('/dev/ttyUSB0', 1)
 # <codecell>
 
 print inst.name
+

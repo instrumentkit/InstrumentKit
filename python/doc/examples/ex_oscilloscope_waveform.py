@@ -58,4 +58,3 @@ tek = ik.tektronix.TekTDS224.open_tcpip('192.168.0.2', 8080)
 
 print np.mean(y)
 
-
