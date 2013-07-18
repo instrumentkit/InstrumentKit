@@ -107,6 +107,8 @@ class Lakeshore475(SCPIInstrument):
         '''
         Gets/sets the units of the Gaussmeter.
         
+        Acceptable units are Gauss, Tesla, Oersted, and Amp/meter.
+        
         :type: `~quantities.UnitQuantity`
         '''
         value = int(self.query('UNIT?'))
@@ -125,6 +127,8 @@ class Lakeshore475(SCPIInstrument):
     def temp_units(self):
         '''
         Gets/sets the temperature units of the Gaussmeter.
+        
+        Acceptable units are celcius and kelvin.
         
         :type: `~quantities.UnitQuantity`
         '''
