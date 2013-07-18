@@ -40,7 +40,7 @@ class _Lakeshore340Sensor(object):
     Class representing a sensor attached to the Lakeshore 340.
     
     .. warning:: This class should NOT be manually created by the user. It is 
-        designed to be initialized by the Lakeshore340 class.
+        designed to be initialized by the `Lakeshore340` class.
     '''
     
     def __init__(self, parent, idx):
