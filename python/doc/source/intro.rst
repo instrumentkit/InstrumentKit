@@ -18,7 +18,7 @@ Dependencies
 ------------
 
 Most of the required and optional dependencies can be obtained using
-``easy_intstall`` or ``pip`` (preferred).
+``easy_install`` or ``pip`` (preferred).
 
 Required Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
