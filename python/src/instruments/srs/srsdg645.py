@@ -46,13 +46,23 @@ from instruments.util_fns import assume_units, ProxyList
 
 ## CLASSES #####################################################################
 
-class Channel(object):
+class _SRSDG645Channel(object):
+    '''
+    Class representing a sensor attached to the SRS DG645.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `SRSDG645` class.
+    '''
     def __init__(self, ddg, chan):
         if not isinstance(ddg, SRSDG645):
             raise TypeError("Don't do that.")
 
+        if isinstance(chan, EnumValue):
+            self._chan = chan.value
+        else:
+            self._chan = chan
+        
         self._ddg = ddg
-        self._chan = chan
 
     ## PROPERTIES ##
 
@@ -78,6 +88,13 @@ class SRSDG645(SCPIInstrument):
     """
     Communicates with a Stanford Research Systems DG645 digital delay generator,
     using the SCPI commands documented in the `user's guide`_.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> import quantities as pq
+    >>> srs = ik.srs.SRSDG645.open_gpibusb('/dev/ttyUSB0', 1)
+    >>> srs.channel[srs.Channels.B] = (srs.Channels.A, pq.Quantity(10, 'ps'))
 
     .. _user's guide: http://www.thinksrs.com/downloads/PDFs/Manuals/DG645m.pdf
     """
@@ -133,7 +150,19 @@ class SRSDG645(SCPIInstrument):
 
     @property
     def channel(self):
-        return ProxyList(self, Channel, SRSDG645.Channels)
+        '''
+        Gets a specific channel object. 
+        
+        The desired channel is accessed by passing an EnumValue from 
+        `~SRSDG645.Channels`. For example, to access channel A:
+        
+        >>> inst.channel[inst.Channels.A]
+        
+        See the example in `SRSDG645` for a more complete example.
+        
+        :rtype: `_SRSDG645Channel`
+        '''
+        return ProxyList(self, _SRSDG645Channel, SRSDG645.Channels)
 
     @property
     def display(self):
