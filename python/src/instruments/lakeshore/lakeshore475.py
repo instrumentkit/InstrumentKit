@@ -30,6 +30,7 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 import quantities as pq
+from flufl.enum import IntEnum
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units
@@ -60,6 +61,39 @@ LAKESHORE_TEMP_UNITS_STR = dict((k.name,v) for k,v in
 ## CLASSES #####################################################################
 
 class Lakeshore475(SCPIInstrument):
+    '''
+    The Lakeshore475 is a DSP Gaussmeter with field ranges from 35mG to 350kG.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> import quantities as pq
+    >>> gm = ik.lakeshore.Lakeshore475.open_gpibusb('/dev/ttyUSB0', 1)
+    >>> print gm.field
+    >>> gm.field_units = pq.tesla
+    >>> gm.field_setpoint = 0.05 * pq.tesla
+    '''
+
+    ## ENUMS ##
+    
+    class Mode(IntEnum):
+        dc   = 1
+        rms  = 2
+        peak = 3
+        
+    class Filter(IntEnum):
+        wide    = 1
+        narrow  = 2
+        lowpass = 3
+        
+    class PeakMode(IntEnum):
+        periodic = 1
+        pulse    = 2
+    
+    class PeakDisplay(IntEnum):
+        positive = 1
+        negative = 2
+        both     = 3
 
     ## PROPERTIES ##
 
@@ -75,11 +109,9 @@ class Lakeshore475(SCPIInstrument):
     @property
     def field_units(self):
         '''
-        Gets or sets the units of the Gaussmeter.
-        If specified as a `str`, must be one of ``{Gauss|Tesla|Oersted|A/m}``.
-        If specified as an `int`, must be in ``xrange(1, 5)``.
+        Gets/sets the units of the Gaussmeter.
         
-        :type: `~quantities.UnitQuantity`, `str`
+        :type: `~quantities.UnitQuantity`
         '''
         value = int(self.query('UNIT?'))
         return LAKESHORE_FIELD_UNITS[value]
@@ -90,26 +122,15 @@ class Lakeshore475(SCPIInstrument):
                 self.sendcmd('UNIT ' + LAKESHORE_FIELD_UNITS_INV[newval])
             else:
                 raise ValueError('Not an acceptable Python quantities object')
-        elif isinstance(newval, str):
-            newval = newval.lower()
-            if newval in LAKESHORE_FIELD_UNITS_STR:
-                self.sendcmd('UNIT ' + LAKESHORE_FIELD_UNITS_STR[newval])
-            else:
-                raise ValueError('Field unit strings must be gauss, tesla, '
-                                    'oersted or A/m')
         else:
-            raise TypeError('Field units must be a string, or '
-                              'Python quantity')
+            raise TypeError('Field units must be a Python quantity')
         
     @property
     def temp_units(self):
         '''
-        Gets or sets the temperature units of the Gaussmeter.
-        If specified as a `str`, must be one of ``"Celsius"``
-        or ``"Kelvin"``. If specified as an `int`, must be
-        in ``xrange(1,3)``.
+        Gets/sets the temperature units of the Gaussmeter.
         
-        :type: `~quantities.UnitQuantity`, `int` or `str`
+        :type: `~quantities.UnitQuantity`
         '''
         value = int(self.query('TUNIT?'))
         return LAKESHORE_TEMP_UNITS[value]
@@ -120,21 +141,8 @@ class Lakeshore475(SCPIInstrument):
                 self.sendcmd('TUNIT ' + LAKESHORE_TEMP_UNITS_INV[newval])
             else:
                 raise TypeError('Not an acceptable Python quantities object')
-        elif isinstance(newval, str):
-            newval = newval.lower()
-            if newval in LAKESHORE_TEMP_UNITS_STR:
-                self.sendcmd('TUNIT ' + LAKESHORE_TEMP_UNITS_STR[newval])
-            else:
-                raise ValueError('Temperature unit strings must be celcius '
-                                    'or kelvin')
-        elif isinstance(newval, int):
-            if newval in LAKESHORE_TEMP_UNITS:
-                self.sendcmd('TUNIT ' + newval)
-            else:
-                raise ValueError('Invalid temperature unit integer.')
         else:
-            raise TypeError('Temperature units must be a string, integer, '
-                              'or Python quantity')
+            raise TypeError('Temperature units must be a Python quantity')
 
     @property
     def field_setpoint(self):
@@ -274,89 +282,73 @@ class Lakeshore475(SCPIInstrument):
         else:
             self.sendcmd('CMODE 0')
         
-    
     ## METHODS ##
 
-    def change_measurement_mode(self,mode,resolution,
-                                filterType,peakMode,peakDisp):
+    def change_measurement_mode(self, mode, resolution,
+                                filter_type, peak_mode, peak_disp):
         # TODO: almost all of this method is checking types
         #       and validity; absorb this into an enum, perhaps?
         '''
         Change the measurement mode of the Gaussmeter.
         
-        mode: The desired measurement mode type
-        mode = {DC|RMS|PEAK},string
+        :param mode: The desired measurement mode.
+        :type mode: `Lakeshore475.Mode`
         
-        resolution: Digit resolution of the measured field.
-        resolution = {3|4|5},integer
+        :param `int` resolution: Digit resolution of the measured field. One of
+            `{3|4|5}`.
         
-        filterType: Specify the signal filter used by the instrument. 
-                    Available types include wide band, narrow band,
-                    and low pass.
-        filterType = {WIDE|NARROW|LOW PASS},string
+        :param filter_type: Specify the signal filter 
+            used by the instrument. Available types include wide band, narrow 
+            band, and low pass.
+        :type filter_type: `Lakeshore475.Filter`
         
-        peakMode: Peak measurement mode to be used.
-        peakMode = {PERIODIC|PULSE},string
+        :param peak_mode: Peak measurement mode to be 
+            used.
+        :type peak_mode: `Lakeshore475.PeakMode`
         
-        peakDisp: Peak display mode to be used.
-        peakDisp = {POSITIVE|NEGATIVE|BOTH},string
+        :param peak_disp: Peak display mode to be 
+            used.
+        :type peak_disp: `Lakeshore475.PeakDisplay`
         '''
-        if not isinstance(mode, str):
-            raise ValueError('Parameter "mode" must be a string.')
+        if not isinstance(mode, EnumValue) or \
+                (mode.enum is not Lakeshore475.Mode):
+            raise TypeError("Mode setting must be a "
+                              "`Lakeshore475.Mode` value, got {} "
+                              "instead.".format(type(mode)))
         if not isinstance(resolution, int):
-            raise ValueError('Parameter "resolution" must be an integer.')
-        if not isinstance(filterType, str):
-            raise ValueError('Parameter "filterType" must be a string.')
-        if not isinstance(peakMode, str):
-            raise ValueError('Parameter "peakMode" must be a string.')
-        if not isinstance(peakDisp, str):
-            raise ValueError('Parameter "peakDisp" must be a string.')
-        
-        mode = mode.upper()
-        filterType = filterType.upper()
-        peakMode = peakMode.upper()
-        peakDisp = peakDisp.upper()
+            raise TypeError('Parameter "resolution" must be an integer.')
+        if not isinstance(filter_type, EnumValue) or \
+                (filter_type.enum is not Lakeshore475.Filter):
+            raise TypeError("Filter type setting must be a "
+                              "`Lakeshore475.Filter` value, got {} "
+                              "instead.".format(type(filter_type)))
+        if not isinstance(peak_mode, EnumValue) or \
+                (peak_mode.enum is not Lakeshore475.PeakMode):
+            raise TypeError("Filter type setting must be a "
+                              "`Lakeshore475.PeakMode` value, got {} "
+                              "instead.".format(type(peak_mode)))
+        if not isinstance(peak_disp, EnumValue) or \
+                (peak_disp.enum is not Lakeshore475.PeakDisplay):
+            raise TypeError("Filter type setting must be a "
+                              "`Lakeshore475.PeakDisplay` value, got {} "
+                              "instead.".format(type(peak_disp)))      
 
-        # Parse the measurement mode
-        valid = ['DC','RMS','PEAK']
-        if mode not in valid:
-            raise ValueError('Only "DC", "RMS", and "PEAK" are '
-                               'valid measurement modes.')
-        else:
-            mode = valid.index(mode) + 1
+        mode = mode.value
+        filter_type = filter_type.value
+        peak_mode = peak_mode.value
+        peak_disp = peak_disp.value
 
         # Parse the resolution
         if resolution in xrange(3, 6):
             resolution = resolution - 2
         else:
-            raise ValueError('Only 3,4,5 are valid resolutions '
-                               '(must be type int).')
-        
-        # Parse the filter type
-        valid = ['WIDE','NARROW','LOW PASS']
-        if filterType not in valid:
-            raise ValueError('Only "WIDE", "NARROW", and "LOW PASS" '
-                               'are valid filter types.')
-        else:
-            filterType = valid.index(filterType) + 1
-        
-        # Parse the peak measurement mode
-        valid = ['PERIODIC','PULSE']
-        if peakMode not in valid:
-            raise ValueError('Only "PERIODIC" and "PULSE" peak '
-                               'measurement modes are supported.')
-        else:
-            peakMode = valid.index(peakMode) + 1
+            raise ValueError('Only 3,4,5 are valid resolutions.')
             
-        # Parse the peak display mode
-        valid = ['POSITIVE','NEGATIVE','BOTH']
-        if peakDisp not in valid:
-            raise ValueError('Only "POSITIVE","NEGATIVE", and "BOTH" '
-                               'are supported for display of peak reading.')
-        else:
-            peakDisp = valid.index(peakDisp) + 1
-            
-        self.sendcmd( 'RDGMODE %s,%s,%s,%s,%s' % (mode,resolution,filterType,
-                                                peakMode,peakDisp) )
+        self.sendcmd('RDGMODE {},{},{},{},{}'.format(mode,
+                                                     resolution,
+                                                     filter_type,
+                                                     peak_mode, 
+                                                     peak_disp,
+                                                     ))
     
 
