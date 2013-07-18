@@ -51,12 +51,8 @@ LAKESHORE_TEMP_UNITS = {
 
 LAKESHORE_FIELD_UNITS_INV = dict((v,k) for k,v in 
                                        LAKESHORE_FIELD_UNITS.items())
-LAKESHORE_FIELD_UNITS_STR = dict((k.name,v) for k,v in 
-                                            LAKESHORE_FIELD_UNITS_INV.items())
 LAKESHORE_TEMP_UNITS_INV = dict((v,k) for k,v in 
                                        LAKESHORE_TEMP_UNITS.items())
-LAKESHORE_TEMP_UNITS_STR = dict((k.name,v) for k,v in 
-                                            LAKESHORE_TEMP_UNITS_INV.items())
 
 ## CLASSES #####################################################################
 
