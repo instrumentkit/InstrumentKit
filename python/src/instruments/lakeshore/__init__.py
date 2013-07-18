@@ -1,4 +1,5 @@
 from instruments.lakeshore.lakeshore340 import Lakeshore340
 from instruments.lakeshore.lakeshore340 import _Lakeshore340Sensor
 from instruments.lakeshore.lakeshore370 import Lakeshore370
+from instruments.lakeshore.lakeshore370 import _Lakeshore370Channel
 from instruments.lakeshore.lakeshore475 import Lakeshore475

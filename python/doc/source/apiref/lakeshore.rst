@@ -24,6 +24,10 @@ Lakeshore-brand Instruments
 .. autoclass:: Lakeshore370
     :members:
     :undoc-members:
+    
+.. autoclass:: _Lakeshore370Channel
+    :members:
+    :undoc-members:
 
 :class:`Lakeshore475`
 =====================
