@@ -7,7 +7,7 @@
 
 # <headingcell level=2>
 
-# Tektronix TDS 224 Oscilloscope
+# Tektronix DPO 4104 Oscilloscope
 
 # <markdowncell>
 
