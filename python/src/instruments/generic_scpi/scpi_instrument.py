@@ -34,6 +34,14 @@ from instruments.abstract_instruments import Instrument
 ## CLASSES #####################################################################
 
 class SCPIInstrument(Instrument):
+    r'''
+    Base class for all SCPI-compliant instruments. Inherits from
+    from `~instruments.Instrument`.
+    
+    This class does not implement any instrument-specific communication 
+    commands. What it does add is several of the generic SCPI star commands.
+    This includes commands such as \*IDN?, \*OPC?, and \*RST.
+    '''
     
     def __init__(self, filelike):
         super(SCPIInstrument, self).__init__(filelike)
