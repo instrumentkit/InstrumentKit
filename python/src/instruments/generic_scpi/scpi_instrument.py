@@ -34,13 +34,19 @@ from instruments.abstract_instruments import Instrument
 ## CLASSES #####################################################################
 
 class SCPIInstrument(Instrument):
-    r'''
+    '''
     Base class for all SCPI-compliant instruments. Inherits from
     from `~instruments.Instrument`.
     
     This class does not implement any instrument-specific communication 
     commands. What it does add is several of the generic SCPI star commands.
     This includes commands such as \*IDN?, \*OPC?, and \*RST.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> inst = ik.generic_scpi.SCPIInstrument.open_tcpip('192.168.0.2', 8888)
+    >>> print inst.name
     '''
     
     def __init__(self, filelike):
@@ -54,7 +60,7 @@ class SCPIInstrument(Instrument):
         The name of the connected instrument, as reported by the
         standard SCPI command ``*IDN?``.
         
-        :type: `str`
+        :rtype: `str`
         """
         return self.query('*IDN?')
         
