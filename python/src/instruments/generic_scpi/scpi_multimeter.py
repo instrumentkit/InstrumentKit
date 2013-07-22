@@ -47,43 +47,43 @@ UNITS_RESISTANCE = ['res','fres'] + VALID_FRES_NAMES
 UNITS_FREQUENCY = ['freq']
 UNITS_TIME = ['per']
 UNITS_TEMPERATURE = ['temp']
-
-## ENUMS #######################################################################
-
-class MultimeterMode(Enum):
-    capacitance = "CAP"
-    continuity = "CONT"
-    current_ac = "CURR:AC"
-    current_dc = "CURR:DC"
-    diode = "DIOD"
-    frequency = "FREQ"
-    fourpt_resistance = "FRES"
-    period = "PER"
-    resistance = "RES"
-    temperature = "TEMP"
-    voltage_ac = "VOLT:AC"
-    voltage_dc = "VOLT:DC"
     
 ## UNITS #######################################################################
 
 UNITS = {
-    MultimeterMode.capacitance: pq.farad,
-    MultimeterMode.voltage_dc:  pq.volt,
-    MultimeterMode.voltage_ac:  pq.volt,
-    MultimeterMode.diode:       pq.volt,
-    MultimeterMode.current_ac:  pq.amp,
-    MultimeterMode.current_dc:  pq.amp,
-    MultimeterMode.resistance:  pq.ohm,
-    MultimeterMode.fourpt_resistance: pq.ohm,
-    MultimeterMode.frequency:   pq.hertz,
-    MultimeterMode.period:      pq.second,
-    MultimeterMode.temperature: pq.kelvin,
-    MultimeterMode.continuity:  1,
+    SCPIMultimeter.Mode.capacitance: pq.farad,
+    SCPIMultimeter.Mode.voltage_dc:  pq.volt,
+    SCPIMultimeter.Mode.voltage_ac:  pq.volt,
+    SCPIMultimeter.Mode.diode:       pq.volt,
+    SCPIMultimeter.Mode.current_ac:  pq.amp,
+    SCPIMultimeter.Mode.current_dc:  pq.amp,
+    SCPIMultimeter.Mode.resistance:  pq.ohm,
+    SCPIMultimeter.Mode.fourpt_resistance: pq.ohm,
+    SCPIMultimeter.Mode.frequency:   pq.hertz,
+    SCPIMultimeter.Mode.period:      pq.second,
+    SCPIMultimeter.Mode.temperature: pq.kelvin,
+    SCPIMultimeter.Mode.continuity:  1,
 }
     
 ## CLASSES #####################################################################
 
 class SCPIMultimeter(Multimeter, SCPIInstrument):
+
+    ## ENUMS ##
+    
+    class Mode(Enum):
+        capacitance = "CAP"
+        continuity = "CONT"
+        current_ac = "CURR:AC"
+        current_dc = "CURR:DC"
+        diode = "DIOD"
+        frequency = "FREQ"
+        fourpt_resistance = "FRES"
+        period = "PER"
+        resistance = "RES"
+        temperature = "TEMP"
+        voltage_ac = "VOLT:AC"
+        voltage_dc = "VOLT:DC"
     
     ## PROPERTIES ##
     
@@ -92,16 +92,16 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         '''
         Gets/sets the current measurement mode for the multimeter.
         
-        :type: `instruments.generic_scpi.MultimeterMode`
+        :type: `~SCPIMultimeter.Mode`
         '''
-        return MultimeterMode[self.query('CONF?')]
+        return self.Mode[self.query('CONF?')]
     @mode.setter
     def mode(self, newval):
-        if not (isinstance(newval, MultimeterMode) or isinstance(newval, str)):
-            raise TypeError("Mode must be specified as either a str or a "
-                "MultimeterMode.")
+        if newval.enum is not SCPIMultimeter.Mode:
+            raise TypeError("Mode must be specified as a SCPIMultimeter.Mode "
+                            "value, got {} instead.".format(type(newval)))
         if isinstance(newval, str):
-            newval = MultimeterMode[newval]
+            newval = self.Mode[newval]
         self.sendcmd('CONF:' + newval._value)
     
     ## METHODS ##
@@ -117,9 +117,9 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         instrument value and appropriate units. If no appropriate units exist,
         (for example, continuity), then return type is `float`.
         
-        :param instruments.generic_scpi.MultimeterMode mode: Desired 
-            measurement mode. If set to `None`, will default to the current 
-            mode.
+        :param mode: Desired measurement mode. If set to `None`, will default 
+            to the current mode.
+        :type mode: `~SCPIMultimeter.Mode`
         '''
         
         # Default to the current mode.
@@ -127,9 +127,9 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
             mode = self.mode
             
         # Throw an error if the mode isn't an enum.
-        if not isinstance(mode, MultimeterMode):
-            raise TypeError("The mode must be specified as a "
-                "`MultimeterMode`.")
+        if mode.enum is not SCPIMultimeter.Mode:
+            raise TypeError("Mode must be specified as a SCPIMultimeter.Mode "
+                            "value, got {} instead.".format(type(newval)))
         
         # Unpack the value from the enumeration.
         mode = mode._value.lower()
