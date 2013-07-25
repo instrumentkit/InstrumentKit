@@ -35,7 +35,13 @@ from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
 
-class Lakeshore340Sensor(object):
+class _Lakeshore340Sensor(object):
+    '''
+    Class representing a sensor attached to the Lakeshore 340.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `Lakeshore340` class.
+    '''
     
     def __init__(self, parent, idx):
         self._parent = parent
@@ -48,8 +54,8 @@ class Lakeshore340Sensor(object):
         '''
         Gets the temperature of the specified sensor.
         
-        :units: K
-        :type: `~quantities.Quantity` with units Kelvin
+        :units: Kelvin
+        :type: `~quantities.Quantity`
         '''
         value = self._parent.query('KRDG?{}'.format(self._idx))
         return pq.Quantity(float(value), pq.Kelvin)
@@ -57,6 +63,13 @@ class Lakeshore340Sensor(object):
 class Lakeshore340(SCPIInstrument):
     '''
     The Lakeshore340 is a multi-sensor cryogenic temperature controller.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> inst = ik.lakeshore.Lakeshore340.open_gpibusb('/dev/ttyUSB0', 1)
+    >>> print inst.sensor[0].temperature
+    >>> print inst.sensor[1].temperature
     '''    
     
     ## PROPERTIES ##
@@ -73,6 +86,8 @@ class Lakeshore340(SCPIInstrument):
         >>> print bridge.sensor[0].temperature
         
         The Lakeshore 340 supports up to 2 sensors (index 0-1).
+        
+        :rtype: `_Lakeshore340Sensor`
         '''
-        return ProxyList(self, Lakeshore340Sensor, xrange(2))
+        return ProxyList(self, _Lakeshore340Sensor, xrange(2))
         

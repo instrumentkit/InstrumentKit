@@ -20,6 +20,14 @@ Tektronix-brand Instruments
 .. autoclass:: TekDPO4104
     :members:
     :undoc-members:
+    
+.. autoclass:: _TekDPO4104DataSource
+    :members:
+    :undoc-members:
+    
+.. autoclass:: _TekDPO4104Channel
+    :members:
+    :undoc-members:
 
 :class:`TekTDS224`
 ==================

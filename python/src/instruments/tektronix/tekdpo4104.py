@@ -59,7 +59,15 @@ def _parent_property(prop_name, doc=""):
 
 ## CLASSES #####################################################################
 
-class TekDPO4104DataSource(object):
+class _TekDPO4104DataSource(object):
+    '''
+    Class representing a data source (channel, math, or ref) on the Tektronix 
+    DPO 4104.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `TekDPO4104` class.
+    '''
+    
     def __init__(self, tek, name):
         self._tek = tek
         # Zero-based for pythonic convienence, so we need to convert to
@@ -97,8 +105,7 @@ class TekDPO4104DataSource(object):
             return NotImplemented
         else:
             return other.name == self.name
-        
-    # Read Waveform        
+               
     def read_waveform(self, bin_format=True):
         '''
         Read waveform from the oscilloscope.
@@ -157,10 +164,18 @@ class TekDPO4104DataSource(object):
     y_offset = _parent_property('y_offset')
     
 
-class TekDPO4104Channel(TekDPO4104DataSource):
+class _TekDPO4104Channel(_TekDPO4104DataSource):
+    '''
+    Class representing a channel on the Tektronix DPO 4104.
+    
+    This class inherits from `_TekDPO4104DataSource`.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `TekDPO4104` class.
+    '''
     
     def __init__(self, parent, idx):
-        super(TekDPO4104Channel, self).__init__(parent, "CH{}".format(idx + 1))
+        super(_TekDPO4104Channel, self).__init__(parent, "CH{}".format(idx + 1))
         self._idx = idx + 1
     
     @property
@@ -184,8 +199,16 @@ class TekDPO4104Channel(TekDPO4104DataSource):
 
 class TekDPO4104(SCPIInstrument):
     '''
-    Communicates with a Tektronix DPO4104 oscilloscope using the SCPI commands
-    documented in the user's guide.
+    The Tektronix DPO4104 is a multi-channel oscilloscope with analog 
+    bandwidths ranging from 100MHz to 1GHz.
+    
+    This class inherits from `~instruments.generic_scpi.SCPIInstrument`.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> tek = ik.tektronix.TekDPO4104.open_tcpip('192.168.0.2', 8888)
+    >>> [x, y] = tek.channel[0].read_waveform()
     '''
     
     ## ENUMS ##
@@ -199,25 +222,55 @@ class TekDPO4104(SCPIInstrument):
 
     @property
     def channel(self):
-        return ProxyList(self, TekDPO4104Channel, xrange(4))
+        '''
+        Gets a specific oscilloscope channel object. The desired channel is 
+        specified like one would access a list.
+        
+        For instance, this would transfer the waveform from the first channel::
+        
+        >>> tek = ik.tektronix.TekDPO4104.open_tcpip('192.168.0.2', 8888)
+        >>> [x, y] = tek.channel[0].read_waveform()
+        
+        :rtype: `_TekDPO4104Channel`
+        '''
+        return ProxyList(self, _TekDPO4104Channel, xrange(4))
 
     @property
     def ref(self):
+        '''
+        Gets a specific oscilloscope reference channel object. The desired 
+        channel is specified like one would access a list.
+        
+        For instance, this would transfer the waveform from the first channel::
+        
+        >>> tek = ik.tektronix.TekDPO4104.open_tcpip('192.168.0.2', 8888)
+        >>> [x, y] = tek.ref[0].read_waveform()
+        
+        :rtype: `_TekDPO4104DataSource`
+        '''
         return ProxyList(self,
-            lambda s, idx: TekDPO4104DataSource(s, "REF{}".format(idx  + 1)),
+            lambda s, idx: _TekDPO4104DataSource(s, "REF{}".format(idx  + 1)),
             xrange(4))
         
     @property
     def math(self):
-        return TekDPO4104DataSource(self, "MATH")
+        '''
+        Gets a data source object corresponding to the MATH channel.
+        
+        :rtype: `_TekDPO4104DataSource`
+        '''
+        return _TekDPO4104DataSource(self, "MATH")
         
     @property
     def data_source(self):
+        '''
+        Gets/sets the the data source for waveform transfer.
+        '''
         name = self.query("DAT:SOU?")
         if name.startswith("CH"):
-            return TekDPO4104Channel(self, int(name[2:]) - 1)
+            return _TekDPO4104Channel(self, int(name[2:]) - 1)
         else:
-            return TekDPO4104DataSource(self, name)
+            return _TekDPO4104DataSource(self, name)
             
     @data_source.setter
     def data_source(self, newval):
@@ -292,7 +345,7 @@ class TekDPO4104(SCPIInstrument):
     def force_trigger(self):
         """
         Forces a trigger event to occur on the attached oscilloscope.
-        Note that this is distinct from the standard SCPI "*TRG" functionality.
+        Note that this is distinct from the standard SCPI "\*TRG" functionality.
         """
         self.sendcmd('TRIG FORCE')
     

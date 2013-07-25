@@ -3,5 +3,6 @@ from instruments.srs.srs345 import (
 )
 from instruments.srs.srs830 import SRS830
 from instruments.srs.srsdg645 import (
-    SRSDG645
+    SRSDG645,
+    _SRSDG645Channel,
 )

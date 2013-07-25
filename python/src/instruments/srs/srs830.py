@@ -51,7 +51,15 @@ VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)]
 
 class SRS830(SCPIInstrument):
     '''
-    Communicates with a Stanford Research Systems 830 Lock-In Amplifier
+    Communicates with a Stanford Research Systems 830 Lock-In Amplifier.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> import quantities as pq
+    >>> srs = ik.srs.SRS830.open_gpibusb('/dev/ttyUSB0', 1)
+    >>> srs.frequency = 1000 * pq.hertz # Lock-In frequency
+    >>> data = srs.take_measurement(1, 10) # 1Hz sample rate, 10 samples total
     '''
     def __init__(self, filelike, outx_mode=None):
         '''
@@ -99,9 +107,6 @@ class SRS830(SCPIInstrument):
         loop     = 1
         
     class Mode(Enum):
-        '''
-        
-        '''
         x = 'x'
         y = 'y'
         r = 'r'

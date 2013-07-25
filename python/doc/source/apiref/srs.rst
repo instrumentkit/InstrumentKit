@@ -34,3 +34,7 @@ Constants and Enumerations
 .. autoclass:: SRSDG645
     :members:
     :undoc-members:
+    
+.. autoclass:: _SRSDG645Channel
+    :members:
+    :undoc-members:

@@ -35,8 +35,14 @@ from instruments.util_fns import assume_units, ProxyList
 
 ## CLASSES #####################################################################
 
-class HP6624aChannel(object):
-
+class _HP6624aChannel(object):
+    '''
+    Class representing a power output channel on the HP6624a.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `HP6624a` class.
+    '''
+    
     def __init__(self, hp, idx):
         self._hp = hp
         self._idx = idx + 1
@@ -152,16 +158,33 @@ class HP6624aChannel(object):
     
 class HP6624a(Instrument):  
     '''
-    Communicates with a HP6624a power supply. This class can also be used for 
-    HP662xa, where x=1,2,3,4,7. Note that some models have less channels then 
-    the HP6624 and it is up to the user to take this into account.
+    The HP6624a is a multi-output power supply. 
+    
+    This class can also be used for HP662xa, where x=1,2,3,4,7. Note that some 
+    models have less channels then the HP6624 and it is up to the user to take 
+    this into account.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> psu = ik.hp.HP6624a.open_gpibusb('/dev/ttyUSB0', 1)
+    >>> psu.channel[0].voltage = 10 # Sets channel 1 voltage to 10V.
     '''  
     
     ## PROPERTIES ##
     
     @property
     def channel(self):
-        return ProxyList(self, HP6624aChannel, xrange(4))
+        '''
+        Gets a specific channel object. The desired channel is specified like 
+        one would access a list.
+        
+        :rtype: `_HP6624aChannel`
+        
+        .. seealso::
+            `HP6624a` for example using this property.
+        '''
+        return ProxyList(self, _HP6624aChannel, xrange(4))
     
     ## METHODS ##
         

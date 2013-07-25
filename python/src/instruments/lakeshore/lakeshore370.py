@@ -35,7 +35,13 @@ from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
 
-class Lakeshore370Channel(object):
+class _Lakeshore370Channel(object):
+    '''
+    Class representing a sensor attached to the Lakeshore 370.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `Lakeshore370` class.
+    '''
     
     def __init__(self, parent, idx):
         self._parent = parent
@@ -49,7 +55,7 @@ class Lakeshore370Channel(object):
         Gets the resistance of the specified sensor.
         
         :units: Ohm
-        :type: `~quantities.Quantity` with units ohm
+        :type: `~quantities.Quantity`
         '''
         value = self._parent.query('RDGR? {}'.format(self._idx))
         return pq.Quantity(float(value), pq.ohm)
@@ -58,6 +64,12 @@ class Lakeshore370(SCPIInstrument):
     '''
     The Lakeshore 370 is a multichannel AC resistance bridge for use in low 
     temperature dilution refridgerator setups.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> bridge = ik.lakeshore.Lakeshore370.open_gpibusb('/dev/ttyUSB0', 1)
+    >>> print inst.channel[0].resistance
     '''
 
     def __init__(self, filelike):
@@ -79,5 +91,5 @@ class Lakeshore370(SCPIInstrument):
         
         The Lakeshore 370 supports up to 16 channels (index 0-15).
         '''
-        return ProxyList(self, Lakeshore370Channel, xrange(16))
+        return ProxyList(self, _Lakeshore370Channel, xrange(16))
         
