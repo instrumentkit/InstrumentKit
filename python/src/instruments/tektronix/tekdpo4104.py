@@ -37,6 +37,11 @@ from contextlib import contextmanager
 
 import quantities as pq
 
+from instruments import (
+    OscilloscopeChannel,
+    OscilloscopeDataSource,
+    Oscilloscope,
+)
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units, ProxyList
 
@@ -59,7 +64,7 @@ def _parent_property(prop_name, doc=""):
 
 ## CLASSES #####################################################################
 
-class _TekDPO4104DataSource(object):
+class _TekDPO4104DataSource(OscilloscopeDataSource):
     '''
     Class representing a data source (channel, math, or ref) on the Tektronix 
     DPO 4104.
@@ -164,7 +169,7 @@ class _TekDPO4104DataSource(object):
     y_offset = _parent_property('y_offset')
     
 
-class _TekDPO4104Channel(_TekDPO4104DataSource):
+class _TekDPO4104Channel(_TekDPO4104DataSource, OscilloscopeChannel):
     '''
     Class representing a channel on the Tektronix DPO 4104.
     
@@ -197,7 +202,7 @@ class _TekDPO4104Channel(_TekDPO4104DataSource):
 
         self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
 
-class TekDPO4104(SCPIInstrument):
+class TekDPO4104(SCPIInstrument, Oscilloscope):
     '''
     The Tektronix DPO4104 is a multi-channel oscilloscope with analog 
     bandwidths ranging from 100MHz to 1GHz.
