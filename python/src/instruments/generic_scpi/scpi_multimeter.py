@@ -48,23 +48,6 @@ UNITS_FREQUENCY = ['freq']
 UNITS_TIME = ['per']
 UNITS_TEMPERATURE = ['temp']
     
-## UNITS #######################################################################
-
-UNITS = {
-    SCPIMultimeter.Mode.capacitance: pq.farad,
-    SCPIMultimeter.Mode.voltage_dc:  pq.volt,
-    SCPIMultimeter.Mode.voltage_ac:  pq.volt,
-    SCPIMultimeter.Mode.diode:       pq.volt,
-    SCPIMultimeter.Mode.current_ac:  pq.amp,
-    SCPIMultimeter.Mode.current_dc:  pq.amp,
-    SCPIMultimeter.Mode.resistance:  pq.ohm,
-    SCPIMultimeter.Mode.fourpt_resistance: pq.ohm,
-    SCPIMultimeter.Mode.frequency:   pq.hertz,
-    SCPIMultimeter.Mode.period:      pq.second,
-    SCPIMultimeter.Mode.temperature: pq.kelvin,
-    SCPIMultimeter.Mode.continuity:  1,
-}
-    
 ## CLASSES #####################################################################
 
 class SCPIMultimeter(Multimeter, SCPIInstrument):
@@ -141,5 +124,22 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         
         # Put the measurement into the correct units.
         return value * UNITS[mode]
+        
+## UNITS #######################################################################
+
+UNITS = {
+    SCPIMultimeter.Mode.capacitance: pq.farad,
+    SCPIMultimeter.Mode.voltage_dc:  pq.volt,
+    SCPIMultimeter.Mode.voltage_ac:  pq.volt,
+    SCPIMultimeter.Mode.diode:       pq.volt,
+    SCPIMultimeter.Mode.current_ac:  pq.amp,
+    SCPIMultimeter.Mode.current_dc:  pq.amp,
+    SCPIMultimeter.Mode.resistance:  pq.ohm,
+    SCPIMultimeter.Mode.fourpt_resistance: pq.ohm,
+    SCPIMultimeter.Mode.frequency:   pq.hertz,
+    SCPIMultimeter.Mode.period:      pq.second,
+    SCPIMultimeter.Mode.temperature: pq.kelvin,
+    SCPIMultimeter.Mode.continuity:  1,
+}
             
         
