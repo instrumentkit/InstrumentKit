@@ -35,6 +35,21 @@ from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 
+class OscilloscopeDataSource(object):
+    __metaclass__ = abc.ABCMeta
+    
+    ## PROPERTIES ##
+    
+    @abc.abstractproperty
+    def name(self):
+        raise NotImplementedError
+    
+    ## METHODS ##
+    
+    @abc.abstractmethod
+    def read_waveform(self, bin_format=True):
+        raise NotImplementedError
+
 class OscilloscopeChannel(object):
     __metaclass__ = abc.ABCMeta
     
@@ -51,14 +66,6 @@ class OscilloscopeChannel(object):
         '''
         raise NotImplementedError
     coupling = abc.abstractproperty(getcoupling, setcoupling)
-    
-    ## METHODS ##
-    
-    def read_waveform(self, bin_format=True):
-        '''
-        Read waveform from the specified oscilloscope channel
-        '''
-        raise NotImplementedError
         
 
 class Oscilloscope(Instrument):
