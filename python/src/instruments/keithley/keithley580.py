@@ -1,17 +1,39 @@
-#!/usr/bin/env python2
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
+##
+# keithley580.py: Driver for the Keithley 580 micro-ohmmeter.
+##
+# © 2013 Willem Dijkstra (wpd@xs4all.nl).
 #
-# Filename: keithley580.py
+# This file is a part of the InstrumentKit project.
+# Licensed under the AGPL version 3.
+##
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Copyright (c) 2012  Willem Dijkstra <wpd@xs4all.nl>
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
 #
-# This work is released under the Creative Commons Attribution-Sharealike 3.0
-# license.  See http://creativecommons.org/licenses/by-sa/3.0/ or the included
-# license/LICENSE.TXT file for more information.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
 
-from instruments.abstract_instruments import Instrument
+## FEATURES ####################################################################
+
+from __future__ import division
+
+## IMPORTS #####################################################################
+
 import time
 import struct
+
+from instruments.abstract_instruments import Instrument
+
+## CLASSES #####################################################################
 
 class Keithley580(Instrument):
     '''
@@ -23,21 +45,21 @@ class Keithley580(Instrument):
     command has been transmitted.
     '''
 
-    def __init__(self, port, address, timeout_length):
+    def __init__(self, filelike):
         '''
-        Initialise the instrument and replace CRLF line termination with ':'CR
+        Initialise the instrument and remove CRLF line termination
         '''
-        super(Keithley580, self).__init__(self, port, address, timeout_length)
-        self.write('Y:X')
+        super(Keithley580, self).__init__(self, filelike)
+        self.sendcmd('YX')
 
 
     def trigger(self):
-        self.write('X')
+        self.sendcmd('X')
 
 
     def setPolarity(self, func):
         if not isinstance(func, str):
-            raise Exception('Polarity mode must be a string.')
+            raise TypeError('Polarity mode must be a string.')
         func = func.lower()
 
         valid = {'positive': 0, '+': 0,
@@ -46,14 +68,15 @@ class Keithley580(Instrument):
         if valid.has_key(func):
             func = valid[func]
         else:
-            raise Exception('Valid drive modes are: ' + ', '.join(valid.keys()))
+            raise ValueError('Valid drive modes '
+                             'are: ' + ', '.join(valid.keys()))
 
-        self.write('P' + str(func) + 'X')
+        self.sendcmd('P{}X'.format(func))
 
 
     def setDrive(self, func):
         if not isinstance(func, str):
-            raise Exception('Drive mode must be a string.')
+            raise TypeError('Drive mode must be a string.')
         func = func.lower()
 
         valid = ['pulsed', 'dc']
@@ -61,16 +84,16 @@ class Keithley580(Instrument):
         if func in valid:
             func = valid.index(func)
         else:
-            raise Exception('Valid drive modes are: ' + str(valid))
+            raise ValueError('Valid drive modes are: ' + str(valid))
 
-        self.write('D' + str(func) + 'X')
+        self.sendcmd('D{}X'.format(func))
 
 
     def setDryCircuitTest(self, dc):
         if not isinstance(dc, bool):
-            raise Exception('DryCircuitTest mode must be a boolean.')
+            raise TypeError('DryCircuitTest mode must be a boolean.')
 
-        self.write('C' + int(dc) + 'X')
+        self.sendcmd('C{}X'.format(int(dc)))
 
 
     def setResistanceRange(self, res):
@@ -79,50 +102,53 @@ class Keithley580(Instrument):
             if res == 'auto':
                 res = 0
             else:
-                raise Exception('Only valid string for resistance range is "auto".')
+                raise ValueError('Only valid string for resistance '
+                                 'range is "auto".')
         elif isinstance(res, float) or isinstance(res, int):
             valid = [2e-1, 2e0, 2e1, 2e2, 2e3, 2e4, 2e5]
             if res in valid:
                 res = valid.index(res) + 1
             else:
-                raise Exception('Valid resistance ranges are: ' + str(valid))
+                raise ValueError('Valid resistance ranges are: '
+                                 '{}'.format(valid))
         else:
-            raise Exception('Instrument resistance range must be specified as a float, integer, or string.')
+            raise TypeError('Instrument resistance range must be specified '
+                            'as a float, integer, or string.')
 
-        self.write('R' + res + 'X')
+        self.sendcmd('R{}X'.format(res))
 
 
     def setAutoRange(self):
-        self.write('R0X')
+        self.sendcmd('R0X')
 
 
     def setOperate(self, dc):
         if not isinstance(dc, bool):
-            raise Exception('Operate mode must be a boolean.')
+            raise TypeError('Operate mode must be a boolean.')
 
-        self.write('O' + int(dc) + 'X')
+        self.sendcmd('O{}X'.format(int(dc)))
 
 
     def setRelative(self, dc):
         if not isinstance(dc, bool):
-            raise Exception('Operate mode must be a boolean.')
+            raise TypeError('Operate mode must be a boolean.')
 
-        self.write('Z' + str(int(dc)) + 'X')
+        self.sendcmd('Z{}X'.fomrat(int(dc)))
 
 
     def setCalibrationValue(self, value):
         # self.write('V+n.nnnnE+nn')
-        raise Exception('setCalibrationValue not implemented')
+        raise NotImplementedError('setCalibrationValue not implemented')
 
 
     def storeCalibrationConstants(self):
         # self.write('L0X')
-        raise Exception('setCalibrationConstants not implemented')
+        raise NotImplementedError('setCalibrationConstants not implemented')
 
 
     def setTrigger(self, trigger):
         if not isinstance(func, str):
-            raise Exception('Trigger mode must be a string.')
+            raise TypeError('Trigger mode must be a string.')
         func = func.lower()
 
         valid = {'talk:continuous': 0,
@@ -135,9 +161,10 @@ class Keithley580(Instrument):
         if valid.has_key(func):
             func = valid[func]
         else:
-            raise Exception('Valid trigger modes are: ' + ', '.join(valid.keys()))
+            raise ValueError('Valid trigger modes '
+                             'are: ' + ', '.join(valid.keys()))
 
-        self.write('T' + str(func) + 'X')
+        self.sendcmd('T{}X'.format(func))
 
 
     def getStatusWord(self):
@@ -150,20 +177,22 @@ class Keithley580(Instrument):
         statusword = ''
         while statusword[:3] != '580' and tries != 0:
             tries -= 1
-            self.write('U0X')
+            self.sendcmd('U0X')
             time.sleep(1)
-            self.write('+read')
-            statusword = self.readline()[:-1]
+            self.sendcmd('+read')
+            statusword = self._file.read(-1).strip() # Be sure to replace this
+                                                     # during refactoring
 
         if statusword == None:
-            raise Exception('could not retrieve status word')
+            raise IOError('could not retrieve status word')
 
         return statusword[:-1]
 
 
     def parseStatusWord(self, statusword):
         if statusword[:3] != '580':
-            raise Exception('status word starts with wrong prefix: %s' % statusword)
+            raise ValueError('Status word starts with wrong '
+                             'prefix: {}'.format(statusword))
 
         (drive, polarity, drycircuit, operate, rng, \
          relative, eoi, trigger, sqrondata, sqronerror, linefreq, \
@@ -190,7 +219,8 @@ class Keithley580(Instrument):
             rng = valid['range'][rng]
             linefreq = valid['linefreq'][linefreq]
         except:
-            raise Exception('cannot parse status word: %s' % statusword)
+            raise RuntimeError('Cannot parse status '
+                               'word: {}'.format(statusword))
 
         return { 'drive': drive,
                  'polarity': polarity,
@@ -208,8 +238,9 @@ class Keithley580(Instrument):
 
     def getMeasurement(self):
         self.trigger()
-        self.write('+read')
-        return self.readline()[:-1]
+        self.sendcmd('+read')
+        return self._file.read(-1).strip() # Be sure to replace this 
+                                           # during refactoring
 
 
     def parseMeasurement(self, measurement):
@@ -233,7 +264,7 @@ class Keithley580(Instrument):
             drive = valid['drive'][drive]
             resistance = float(resistance)
         except:
-            raise Exception('cannot parse measurement: %s' % measurement)
+            raise Exception('Cannot parse measurement: {}'.format(measurement))
 
         return { 'status': status,
                  'polarity': polarity,
