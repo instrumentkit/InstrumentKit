@@ -43,29 +43,32 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
         
         # Perform a HW_REQ_INFO to figure out the model number, serial number,
         # etc.
-        req_packet = _packets.ThorLabsPacket(
-            message_id=_cmds.ThorLabsCommands.HW_REQ_INFO,
-            param1=0x00,
-            param2=0x00,
-            dest=self._dest,
-            source=0x01,
-            data=None
-            )
-        hw_info = self.querypacket(req_packet)
-        
-        self._serial_number = str(hw_info._data[0:4]).encode('hex')
-        self._model_number  = str(hw_info._data[4:12])
-        
-        # TODO: decode this field
-        self._hw_type       = str(hw_info._data[12:14]).encode('hex') 
-        
-        self._fw_version    = str(hw_info._data[14:18]).encode('hex')
-        self._notes         = str(hw_info._data[18:66])
-        
-        # TODO: decode the following fields.
-        self._hw_version    = str(hw_info._data[78:80]).encode('hex')
-        self._mod_state     = str(hw_info._data[80:82]).encode('hex')
-        self._n_channels    = str(hw_info._data[82:84]).encode('hex')
+        try:
+            req_packet = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.HW_REQ_INFO,
+                param1=0x00,
+                param2=0x00,
+                dest=self._dest,
+                source=0x01,
+                data=None
+                )
+            hw_info = self.querypacket(req_packet)
+            
+            self._serial_number = str(hw_info._data[0:4]).encode('hex')
+            self._model_number  = str(hw_info._data[4:12])
+            
+            # TODO: decode this field
+            self._hw_type       = str(hw_info._data[12:14]).encode('hex') 
+            
+            self._fw_version    = str(hw_info._data[14:18]).encode('hex')
+            self._notes         = str(hw_info._data[18:66])
+            
+            # TODO: decode the following fields.
+            self._hw_version    = str(hw_info._data[78:80]).encode('hex')
+            self._mod_state     = str(hw_info._data[80:82]).encode('hex')
+            self._n_channels    = str(hw_info._data[82:84]).encode('hex')
+        except:
+            pass #FIXME
     
     @property
     def model_number(self):
