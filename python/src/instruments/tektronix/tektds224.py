@@ -29,46 +29,62 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 import numpy as np
+import quantities as pq
+from flufl.enum import Enum
 
+from instruments import (
+    OscilloscopeChannel,
+    OscilloscopeDataSource,
+    Oscilloscope,
+)
 from instruments.generic_scpi import SCPIInstrument
+from instruments.util_fns import assume_units, ProxyList
 
 ## CLASSES #####################################################################
 
-class TekTDS224(SCPIInstrument):
-      
-    def coupling(self, channel, setting):
-        '''
-        Set input coupling of specified channel.
+class _TekTDS224DataSource(OscilloscopeDataSource):
+    '''
+    Class representing a data source (channel, math, or ref) on the Tektronix 
+    TDS 224.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `TekTDS224` class.
+    '''
+    
+    def __init__(self, tek, name):
+        self._tek = tek
+        self._name = name
+        self._old_dsrc = None
         
-        :param channel: Input channel which will have the input coupling 
-            changed. One of  ``{1|2|3|4|CH1|CH2|CH3|CH4}``.
-            
-        :type channel: `int` or `str`
+    @property
+    def name(self):
         '''
-        if isinstance(channel, str):
-            channel = channel.lower()
-            if channel in ['1','2','3','4']:
-                channel = int(channel)
-            elif channel in ['ch1','ch2','ch3','ch4']:
-                channel = ['ch1','ch2','ch3','ch4'].index(channel) + 1
-            else:
-                raise ValueError('Only "CH1", "CH2", "CH3", and "CH4" are '
-                                 'valid channels to have the input coupling '
-                                 'changed.')
-        elif isinstance(channel, int) and channel not in [1,2,3,4]:
-            raise ValueError('Channel must be 1, 2, 3, or 4 when specified as '
-                             'an integer.')
-        else:
-            raise TypeError('Channel must be specified as an integer or '
-                            'string when changing the coupling.')
+        Gets the name of this data source, as identified over SCPI.
         
-        if setting.upper() in ['AC','DC','GND']:
-            self.sendcmd('CH{}:COUPL {}'.format(channel, setting.upper()))
+        :type: `str`
+        '''
+        return self._name
+    
+    def __enter__(self):
+        self._old_dsrc = self._tek.data_source
+        if self._old_dsrc != self:
+            # Set the new data source, and let __exit__ cleanup.
+            self._tek.data_source = self
         else:
-            raise ValueError('Only AC, DC, and GND are valid coupling '
-                             'settings.')
-          
-    def read_waveform(self, channel, fmt):
+            # There's nothing to do or undo in this case.
+            self._old_dsrc = None
+        
+    def __exit__(self, type, value, traceback):
+        if self._old_dsrc is not None:
+            self._tek.data_source = self._old_dsrc
+        
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        else:
+            return other.name == self.name
+    
+    def read_waveform(self, bin_format=True):
         '''
         Read waveform from the oscilloscope.
         This function is all inclusive. After reading the data from the 
@@ -79,66 +95,158 @@ class TekTDS224(SCPIInstrument):
         binary, and 7 seconds for ASCII over Galvant Industries' GPIBUSB 
         adapter.
         
-        Function returns a list [x,y], where both x and y are numpy arrays.
+        Function returns a tuple (x,y), where both x and y are numpy arrays.
         
-        :param str channel: Channel which will have its waveform transfered. 
-            One of ``{CH1|CH2|CH3|CH4|REFA|REFB|REFC|REFD|MATH}``
+        :param bool bin_format: If `True`, data is transfered
+            in a binary format. Otherwise, data is transferred in ASCII.
         
-        :param str fmt: Data transfer format. Either ASCII or binary. One of 
-            ``{ASCII,BINARY}``
-        
-        :rtype: `list` of `numpy.ndarray`
+        :rtype: two item `tuple` of `numpy.ndarray`
         '''
-        valid_channel = [
-                        'CH1',
-                        'CH2',
-                        'CH3',
-                        'CH4',
-                        'REFA',
-                        'REFB',
-                        'REFC',
-                        'REFD',
-                        'MATH',
-                        ]
-        if channel.upper() not in valid_channel:
-            raise ValueError('Only the following channels are '
-                             'supported: {}.'.format(valid_channel))
-        
-        valid_format = ['ASCII', 'BINARY']
-        if format.upper() not in valid_format:
-            raise ValueError('Only {} are valid data '
-                             'formats'.format(valid_format))
-        
-        self.sendcmd('DAT:SOU {}'.format(channel.upper())) # Set the acquisition
-                                                           # channel
-        
-        if format.upper() is 'ASCII':
-            self.sendcmd('DAT:ENC ASCI') # Set the data encoding format to ASCII
-            raw = self.query('CURVE?')
-            raw = raw.split(",") # Break up comma delimited string
-            raw = map(float, raw) # Convert each list element to int
-            raw = array(raw) # Convert into numpy array
-        elif format.upper() is 'BINARY':
-            self.write('DAT:ENC RIB') # Set encoding to signed, big-endian
-            self.write('CURVE?')
-            raw = self.binblockread(2) # Read in the binary block, data width 
-                                       # of 2 bytes
+        with self:
+            
+            if not bin_format:
+                self.sendcmd('DAT:ENC ASCI') # Set the data encoding format to ASCII
+                raw = self.query('CURVE?')
+                raw = raw.split(',') # Break up comma delimited string
+                raw = map(float, raw) # Convert each list element to int
+                raw = array(raw) # Convert into numpy array
+            else:
+                self.write('DAT:ENC RIB') # Set encoding to signed, big-endian
+                data_width = self._tek.data_width
+                self.write('CURVE?')
+                raw = self.binblockread(data_width) # Read in the binary block, 
+                                                    # data width of 2 bytes
 
-            #self.ser.read(2) # Read in the two ending \n\r characters
+                #self.ser.read(2) # Read in the two ending \n\r characters
+            
+            yoffs = self.query('WFMP:{}:YOF?'.format(self.name)) # Retrieve Y offset
+            ymult = self.query('WFMP:{}:YMU?'.format(self.name)) # Retrieve Y multiply
+            yzero = self.query('WFMP:{}:YZE?'.format(self.name)) # Retrieve Y zero
+            
+            y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
+            
+            xzero = self.query('WFMP:XZE?') # Retrieve X zero
+            xincr = self.query('WFMP:XIN?') # Retrieve X incr
+            ptcnt = self.query('WFMP:{}:NR_P?'.format(self.name)) # Retrieve number 
+                                                                  # of data points
+            
+            x = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
+            
+            return (x,y)
+            
+class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
+    '''
+    Class representing a channel on the Tektronix TDS 224.
+    
+    This class inherits from `_TekTDS224DataSource`.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `TekTDS224` class.
+    '''
+    
+    def __init(self, parent, idx):
+        super(_TekTDS224Channel, self).__init__(parent, "CH{}".format(idx + 1))
+        self._idx = idx + 1
+
+    @property
+    def coupling(self):
+        """
+        Gets/sets the coupling setting for this channel.
+
+        :type: `TekTDS224.Coupling`
+        """
+        return TekTDS224.Coupling[self._tek.query("CH{}:COUPL?".format(
+                                                                self._idx)
+                                                                )]
+    @coupling.setter
+    def coupling(self, newval):
+        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
+                                                           TekTDS224.Coupling):
+            raise TypeError("Coupling setting must be a `TekTDS224.Coupling`"
+                " value, got {} instead.".format(type(newval)))
+
+        self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
         
-        channel = channel.upper()
-        yoffs = self.query('WFMP:{}:YOF?'.format(channel)) # Retrieve Y offset
-        ymult = self.query('WFMP:{}:YMU?'.format(channel)) # Retrieve Y multiply
-        yzero = self.query('WFMP:{}:YZE?'.format(channel)) # Retrieve Y zero
+class TekTDS224(SCPIInstrument, Oscilloscope):
+
+    ## ENUMS ##
+    
+    class Coupling(Enum):
+        ac = "AC"
+        dc = "DC"
+        ground = "GND"
         
-        y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
+    ## PROPERTIES ##
+      
+    @property
+    def channel(self):
+        '''
+        Gets a specific oscilloscope channel object. The desired channel is 
+        specified like one would access a list.
         
-        xzero = self.query('WFMP:XZE?') # Retrieve X zero
-        xincr = self.query('WFMP:XIN?') # Retrieve X incr
-        ptcnt = self.query('WFMP:{}:NR_P?'.format(channel)) # Retrieve number 
-                                                            # of data points
+        For instance, this would transfer the waveform from the first channel::
         
-        x = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
+        >>> tek = ik.tektronix.TekTDS224.open_tcpip('192.168.0.2', 8888)
+        >>> [x, y] = tek.channel[0].read_waveform()
         
-        return [x,y]
+        :rtype: `_TekTDS224Channel`
+        '''
+        return ProxyList(self, _TekTDS224, xrange(4))
+        
+    @property
+    def ref(self):
+        '''
+        Gets a specific oscilloscope reference channel object. The desired 
+        channel is specified like one would access a list.
+        
+        For instance, this would transfer the waveform from the first channel::
+        
+        >>> tek = ik.tektronix.TekTDS224.open_tcpip('192.168.0.2', 8888)
+        >>> [x, y] = tek.ref[0].read_waveform()
+        
+        :rtype: `_TekTDS224DataSource`
+        '''
+        return ProxyList(self,
+            lambda s, idx: _TekTDS224DataSource(s, "REF{}".format(idx  + 1)),
+            xrange(4))
+        
+    @property
+    def math(self):
+        '''
+        Gets a data source object corresponding to the MATH channel.
+        
+        :rtype: `_TekTDS224DataSource`
+        '''
+        return _TekTDS224DataSource(self, "MATH")
+        
+    @property
+    def data_source(self):
+        '''
+        Gets/sets the the data source for waveform transfer.
+        '''
+        name = self.query("DAT:SOU?")
+        if name.startswith("CH"):
+            return _TekTDS224Channel(self, int(name[2:]) - 1)
+        else:
+            return _TekTDS224DataSource(self, name)
+    @data_source.setter
+    def data_source(self, newval):
+        # TODO: clean up type-checking here.
+        if not isinstance(newval, str):
+            if hasattr(newval, "value"): # Is an enum with a value.
+                newval = newval.value
+            elif hasattr(newval, "name"): # Is a datasource with a name.
+                newval = newval.name
+        self.sendcmd("DAT:SOU {}".format(newval))
+        sleep(0.01) # Let the instrument catch up.
+        
+    @property
+    def data_width(self):
+        return int(self.query("DATA:WIDTH?"))
+    @data_width.setter
+    def data_width(self, newval):
+        if int(newval) not in [1, 2]:
+            raise ValueError("Only one or two byte-width is supported.")
+        
+        self.sendcmd("DATA:WIDTH {}".format(newval))
         
