@@ -28,31 +28,71 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
+import time
+from flufl.enum import Enum
+
+import quantities as pq
+import numpy as np
+
+from instruments.abstract_instruments import Multimeter
 from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 
 class Keithley195(Instrument):
+
     def __init__(self, filelike):
         super(Keithley195, self).__init__(filelike)
         self.sendcmd('YX') # Removes the termination CRLF 
-                         # characters from the instrument
+                           # characters from the instrument
+
+    ## ENUMS ##
+    
+    class Mode(Enum):
+        voltage_dc = 0
+        voltage_ac = 1
+        resistance = 2
+        current_dc = 3
+        current_ac = 4
         
-    def read(self):
+    ## PROPERTIES ##    
+        
+    @property
+    def mode(self):
         '''
-        Force the Keithley 195 to perform a measurement.
+        Sets the current measurement mode for the Keithley 195.
         
-        On the 195, there is no command that is sent to instruct it to take
-        a measurement. Instead we just directly address the 195 to talk on the
-        GPIB bus. Since the only connectivity option for the 195 is GPIB, this
-        works just nicely.
-        
-        The instrument will return a measurement of the current mode it is in.
-        
-        :rtype: `str`
+        :type: `Keithley195.Mode`
         '''
-        self.sendcmd('+read')
-        return self.readline()
+        raise NotImplementedError
+    @mode.setter
+    def mode(self, newval):
+        if newval.enum is not Keithley195.Mode:
+            raise TypeError("Mode must be specified as a Keithley195.Mode "
+                            "value, got {} instead.".format(type(newval)))
+        if isinstance(newval, str):
+            newval = self.Mode[newval]
+        self.sendcmd('F{}X'.format(newval.value))
+        
+    ## METHODS ##
+    
+    def measure(self, mode):
+        '''
+        Instruct the Keithley 195 to perform a one time measurement. The 
+        instrument will use default parameters for the requested measurement.
+        The measurement will immediately take place, and the results are 
+        directly sent to the instrument's output buffer.
+        
+        Method returns a Python quantity consisting of a numpy array with the
+        instrument value and appropriate units.
+        
+        :param mode: Desired measurement mode.
+        :type mode: `Keithley195.Mode`
+        '''
+        self.mode = mode
+        time.sleep(0.1)
+        value = float(self.query(''))
+        return value * UNITS[mode]
     
     def trigger(self):
         '''
@@ -62,31 +102,6 @@ class Keithley195(Instrument):
         (which is not supported by the 195 anyways).
         '''
         self.sendcmd('X')
-    
-    def set_function(self, func):
-        '''
-        Set the measurement mode that the Keithley 195 is in.
-        
-        :param str func: Desired measurement mode. One of
-            {VOLTage:DC|VOLTage:AC|RESistance|CURRent:DC|CURRent:AC}
-        '''
-        if not isinstance(func, str):
-            raise TypeError('Meaurement mode must be a string.')
-        func = func.lower()
-        
-        valid = ['volt:dc','volt:ac','res','curr:dc','curr:ac']
-        valid2 = ['voltage:dc','voltage:ac','resistance',
-            'current:dc','current:ac']
-        
-        if func in valid2:
-            func = valid2.index(func)
-        elif func in valid:
-            func = valid.index(func)
-        else:
-            raise ValueError('Valid measurement modes are'
-                ': {}'.format(str(valid2)))
-        
-        self.sendcmd('F{}X'.format(func))
         
     def set_voltage_dc_range(self, voltage='AUTO'):
         '''
@@ -205,11 +220,13 @@ class Keithley195(Instrument):
         '''
         self.sendcmd('R0X')
             
-            
-            
-            
-            
-            
-            
-            
-            
+## UNITS #######################################################################
+
+UNITS = {
+    Keithley195.Mode.voltage_dc:  pq.volt,
+    Keithley195.Mode.voltage_ac:  pq.volt,
+    Keithley195.Mode.current_ac:  pq.amp,
+    Keithley195.Mode.current_dc:  pq.amp,
+    Keithley195.Mode.resistance:  pq.ohm,
+}            
+        
