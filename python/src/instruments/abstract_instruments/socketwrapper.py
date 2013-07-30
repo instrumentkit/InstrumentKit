@@ -47,6 +47,7 @@ class SocketWrapper(io.IOBase, WrapperABC):
         if isinstance(conn, socket.socket):
             self._conn = conn
             self._terminator = '\n'
+            self._debug = False
         else:
             raise TypeError('SocketWrapper must wrap a socket.socket object.')
         
@@ -98,7 +99,7 @@ class SocketWrapper(io.IOBase, WrapperABC):
         if (size >= 0):
             return self._conn.recv(size)
         elif (size == -1):
-            result = np.bytearray()
+            result = bytearray()
             c = 0
             while c != self._terminator:
                 c = self._conn.recv(1)
