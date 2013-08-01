@@ -131,4 +131,7 @@ class SocketWrapper(io.IOBase, WrapperABC):
         '''
         '''
         self.sendcmd(msg)
-        self.read(size)
+        resp = self.read(size)
+        if self._debug:
+            print " -> {}".format(repr(resp))
+        return resp
