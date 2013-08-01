@@ -40,6 +40,19 @@ from instruments.abstract_instruments import Instrument
 ## CLASSES #####################################################################
 
 class Keithley195(Instrument):
+    '''
+    The Keithley 195 is a 5 1/2 digit auto-ranging digital multimeter. You can 
+    find the full specifications list in the `user's guide`_.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> import quantities as pq
+    >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
+    >>> print dmm.measure(dmm.Mode.resistance)
+    
+    .. _user's guide: http://www.keithley.com/data?asset=803
+    '''
 
     def __init__(self, filelike):
         super(Keithley195, self).__init__(filelike)
@@ -61,6 +74,12 @@ class Keithley195(Instrument):
     def mode(self):
         '''
         Sets the current measurement mode for the Keithley 195.
+        
+        Example use:
+        
+        >>> import instruments as ik
+        >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
+        >>> dmm.mode = dmm.Mode.resistance
         
         :type: `Keithley195.Mode`
         '''
@@ -86,8 +105,16 @@ class Keithley195(Instrument):
         Method returns a Python quantity consisting of a numpy array with the
         instrument value and appropriate units.
         
+        Example usage:
+    
+        >>> import instruments as ik
+        >>> import quantities as pq
+        >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
+        >>> print dmm.measure(dmm.Mode.resistance)
+        
         :param mode: Desired measurement mode.
         :type mode: `Keithley195.Mode`
+        :rtype: `~quantities.quantity.Quantity`
         '''
         self.mode = mode
         time.sleep(0.1)
@@ -98,7 +125,7 @@ class Keithley195(Instrument):
         '''
         Tell the Keithley 195 to execute all commands that it has received.
         
-        Do note that this is different from the standard SCPI *TRG command
+        Do note that this is different from the standard SCPI \*TRG command
         (which is not supported by the 195 anyways).
         '''
         self.sendcmd('X')
@@ -108,7 +135,7 @@ class Keithley195(Instrument):
         Manually set the voltage DC range of the Keithley 195.
         
         :param voltage: Voltage DC range. One of 
-            {AUTO|20e-3|200e-3|2|20|200|1000}
+            ``{AUTO|20e-3|200e-3|2|20|200|1000}``
         :type: `str` or `int`
         '''
         if isinstance(voltage, str):
@@ -135,7 +162,7 @@ class Keithley195(Instrument):
         Manually set the voltage AC range of the Keithley 195.
         
         :param voltage: Voltage AC range. One of 
-            {AUTO|20e-3|200e-3|2|20|200|700}
+            ``{AUTO|20e-3|200e-3|2|20|200|700}``
         :type: `str` or `int`
         '''
         if isinstance(voltage,str):
@@ -162,7 +189,7 @@ class Keithley195(Instrument):
         Manually set the current range of the Keithley 195.
         
         :param current: Current range. One of 
-            {AUTO|20e-6|200e-6|2e-3|20e-3|200e-3|2}
+            ``{AUTO|20e-6|200e-6|2e-3|20e-3|200e-3|2}``
         :type: `str` or `int`
         '''
         if isinstance(current, str):
@@ -189,7 +216,7 @@ class Keithley195(Instrument):
         Manually set the resistance range of the Keithley 195.
         
         :param res: Resistance range. One of 
-            {AUTO|20|200|2000|20e3|200e3|2e6|20e6}
+            ``{AUTO|20|200|2000|20e3|200e3|2e6|20e6}``
         :type: `str` or `int`
         '''
         if isinstance(res,str):
