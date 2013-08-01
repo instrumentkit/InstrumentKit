@@ -182,7 +182,7 @@ class NewportError(IOError):
             if self._axis == 0: 
                 self._axis = None
                 error_message = self.getMessage(str(errcode))
-                error = "Newport Error: {0}. Error Message: {1}. At time : {3}".format(str(errcode),error_message,self._timestamp)
+                error = "Newport Error: {0}. Error Message: {1}. At time : {2}".format(str(errcode),error_message,self._timestamp)
                 super(NewportError, self).__init__(error)
             else:                
                 error_message = self.getMessage('x{0}'.format(self._errcode))
@@ -729,6 +729,28 @@ class NewportESP301Axis(object):
         """
         return assume_units(float(self._controller._newport_cmd("TP?", target=self.axis_id)),
                 self._units)
+    @property
+    def desired_position(self):
+        """
+        Gets desired position on axis in units
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of current newport unit
+        :type: `~quantities.Quantity` or `float`
+        """
+        return assume_units(float(self._controller._newport_cmd("DP?", target=self.axis_id)),
+                self._units)
+    @property
+    def desired_velocity(self):
+        """
+        Gets desired velocity on axis in unit/s
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of current newport unit/s
+        :type: `~quantities.Quantity` or `float`
+        """
+        return assume_units(float(self._controller._newport_cmd("DP?", target=self.axis_id)),
+                self._units/pq.s)
     
     @property
     def home(self):
@@ -1050,7 +1072,7 @@ class NewportESP301Axis(object):
         """
         self._controller._home(axis=self.axis_id, search_mode=search_mode)
 
-    def move(self, position, absolute=True):
+    def move(self, position, absolute=True,wait=False,block=False):
         """
         :param position: Position to set move to along this axis.
         :type position: `float` or :class:`~quantities.Quantity`
@@ -1058,6 +1080,9 @@ class NewportESP301Axis(object):
             interpreted as relative to the zero-point of the encoder.
             If `False`, ``pos`` is interpreted
             as relative to the current position of this axis.
+        :param bool wait: If True, will tell axis to not execute other
+            commands until movement is finished
+        :param bool block: If True, will block code until movement is finished
         """
         position = float(assume_units(position,self._units).rescale(
             self._units).magnitude)
@@ -1066,6 +1091,15 @@ class NewportESP301Axis(object):
             self._controller._newport_cmd("PA", params=[position], target=self.axis_id)
         else:
             self._controller._newport_cmd("PR", params=[position], target=self.axis_id)
+        
+        if wait:
+            self.wait_for_position(position)
+            if block:
+                sleep(0.003)
+                mot = self.is_motion_done
+                while not mot:                    
+                    mot = self.is_motion_done
+
 
     def move_to_hardware_limit(self):
         """
@@ -1308,7 +1342,7 @@ class NewportESP301Axis(object):
         config['jog_low_velocity'] = self.jog_low_velocity
         config['estop_deceleration'] = self.estop_deceleration
         config['jerk'] = self.jerk
-        config['error_threshold'] = self.error_threshold
+        #config['error_threshold'] = self.error_threshold
         config['proportional_gain'] = self.proportional_gain
         config['derivative_gain'] = self.derivative_gain
         config['integral_gain'] = self.integral_gain
@@ -1320,8 +1354,15 @@ class NewportESP301Axis(object):
         config['hardware_limit_configuration'] = self.hardware_limit_configuration
         return config
 
+    def get_status(self):
+        status = {}
+        status['units'] = self.units 
+        status['position'] = self.position 
+        status['desired_position'] = self.desired_position
+        status['desired_velocity'] = self.desired_velocity
+        status['is_motion_done'] = self.is_motion_done
 
-    
+        return status
     def get_pq_unit(self,num):
         """
         Gets the units for the specified axis 
