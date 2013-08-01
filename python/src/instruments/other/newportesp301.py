@@ -369,14 +369,14 @@ class NewportESP301(Instrument):
         """
         self._home(axis=1, search_mode=search_mode,errcheck=errcheck)
 
-    def reset(self,errcheck=True):
+    def reset(self):
         """
         Causes the device to perform a hardware reset. Note that
         this method is only effective if the watchdog timer is enabled
         by the physical jumpers on the ESP-301. Please see the `user's guide`_
         for more information.
         """
-        self._newport_cmd("RS",errcheck=errcheck)
+        self._newport_cmd("RS",errcheck=False)
 
     ## USER PROGRAMS ##
 
@@ -626,6 +626,60 @@ class NewportESP301Axis(object):
         velocity = float(assume_units(velocity,self._units/(pq.s)).rescale(
                 self._units/(pq.s)).magnitude)
         return self._controller._newport_cmd("VB", target=self.axis_id,params=[velocity])
+    
+    @property
+    def jog_high_velocity(self):
+        """
+        Gets and sets jog high velocity
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of current newport :math:`\\frac{unit}{s}`
+        :param jog_high_velocity: Sets velocity
+        :type jog_high_velocity: `~quantities.Quantity` or `float`
+        """
+        return assume_units(float(self._controller._newport_cmd("JH?", target=self.axis_id)),
+                self._units/(pq.s))
+    @jog_high_velocity.setter
+    def jog_high_velocity(self,jog_high_velocity):
+        jog_high_velocity = float(assume_units(jog_high_velocity,self._units/(pq.s)).rescale(
+                self._units/(pq.s)).magnitude)
+        return self._controller._newport_cmd("JH",target=self.axis_id,params=[jog_high_velocity])
+
+    @property
+    def jog_low_velocity(self):
+        """
+        Gets and sets jog low velocity
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of current newport :math:`\\frac{unit}{s}`
+        :param jog_low_velocity: Sets velocity
+        :type jog_low_velocity: `~quantities.Quantity` or `float`
+        """
+        return assume_units(float(self._controller._newport_cmd("JW?", target=self.axis_id)),
+                self._units/(pq.s))
+    @jog_low_velocity.setter
+    def jog_low_velocity(self,jog_low_velocity):
+        jog_low_velocity = float(assume_units(jog_low_velocity,self._units/(pq.s)).rescale(
+                self._units/(pq.s)).magnitude)
+        return self._controller._newport_cmd("JW",target=self.axis_id,params=[jog_low_velocity])
+
+    @property
+    def homing_velocity(self):
+        """
+        Gets and sets the homing velocity
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of current newport :math:`\\frac{unit}{s}`
+        :param homing_velocity: Sets velocity
+        :type homing_velocity: `~quantities.Quantity` or `float`
+        """
+        return assume_units(float(self._controller._newport_cmd("OH?", target=self.axis_id)),
+                self._units/(pq.s))
+    @homing_velocity.setter
+    def homing_velocity(self,homing_velocity):
+        homing_velocity = float(assume_units(homing_velocity,self._units/(pq.s)).rescale(
+                self._units/(pq.s)).magnitude)
+        return self._controller._newport_cmd("OH",target=self.axis_id,params=[homing_velocity])
 
     @property
     def max_acceleration(self):
@@ -734,6 +788,26 @@ class NewportESP301Axis(object):
         resolution = float(assume_units(resolution,self._units).rescale(
                 self._units).magnitude)
         return self._controller._newport_cmd("SU",target=self.axis_id,params=[resolution])
+
+    @property
+    def full_step_resolution(self):
+        """
+        Get the resolution of the encode. The minimum number of units per step. 
+        Encoder functionality must be enabled
+
+        :units: The number of units per encoder step
+        :param full_step_resolution: Sets the encoder resolution of axis
+        :type full_step_resolution: `~quantities.Quantity` or `float`
+        """
+
+        return assume_units(float(self._controller._newport_cmd("FR?",target=self.axis_id)),
+                self._units)
+    @full_step_resolution.setter
+    def full_step_resolution(self, full_step_resolution):
+        
+        full_step_resolution = float(assume_units(full_step_resolution,self._units).rescale(
+                self._units).magnitude)
+        return self._controller._newport_cmd("FR",target=self.axis_id,params=[full_step_resolution])
     
     @property
     def left_limit(self):
@@ -769,8 +843,198 @@ class NewportESP301Axis(object):
             self._units).magnitude)
         return self._controller._newport_cmd("SR",target=self.axis_id,params=[limit])
     
+    @property
+    def error_threshold(self):
+        """
+        Get and set the error threshold 
 
+        :units: units
+        :param error_threshold: Set the travel limit
+        :type: `~quantities.Quantity` or `float`
+        """
+        return assume_units(float(self._controller._newport_cmd("FE?",target=self.axis_id)),
+                self._units)
+    @error_threshold.setter
+    def error_threshold(self, error_threshold):
+        error_threshold = float(assume_units(error_threshold,self._units).rescale(
+            self._units).magnitude)
+        return self._controller._newport_cmd("FE",target=self.axis_id,params=[error_threshold])
 
+    @property
+    def current(self):
+        """
+        Get and set the current
+
+        :units: A
+        :param current: Set the current
+        :type: `~quantities.Quantity` or `float`
+        """
+        return assume_units(float(self._controller._newport_cmd("QI?",target=self.axis_id)),
+                pq.A)
+    @current.setter
+    def current(self, current):
+        current = float(assume_units(current,pq.A).rescale(
+            pq.A).magnitude)
+        return self._controller._newport_cmd("QI",target=self.axis_id,params=[current])
+
+    @property
+    def voltage(self):
+        """
+        Get and set the current
+
+        :units: A
+        :param voltage: Set the voltage
+        :type: `~quantities.Quantity` or `float`
+        """
+        return assume_units(float(self._controller._newport_cmd("QV?",target=self.axis_id)),
+                self.V)
+    @voltage.setter
+    def voltage(self, voltage):
+        voltage = float(assume_units(voltage,pq.V).rescale(
+            pq.V).magnitude)
+        return self._controller._newport_cmd("QV",target=self.axis_id,params=[voltage])
+   
+    @property    
+    def motor_type(self):
+        """
+        Get and set the motor type 
+        * 0 = undefined
+        * 1 = DC Servo 
+        * 2 = Stepper motor
+        * 3 = commutated stepper motor
+        * 4 = commutated brushless servo motor
+
+        :param int motor_type: Type of motor
+        """
+        return int(self._controller._newport_cmd("QM?",target=self._axis_id))
+    @motor_type.setter
+    def motor_type(self, motor_type):
+        self._controller._newport_cmd("QM",target=self._axis_id,params=[int(motor_type)])
+
+    @property    
+    def feedback_configuration(self):
+        """
+        Get and set Feedback configuration        
+
+        :param int feedback_configuration: 
+        """
+        return int(self._controller._newport_cmd("ZB?",target=self._axis_id)[:-2],16)
+    @feedback_configuration.setter
+    def feedback_configuration(self, feedback_configuration):
+        self._controller._newport_cmd("ZB",target=self._axis_id,params=[int(feedback_configuration)])
+
+    @property    
+    def position_display_resolution(self):
+        """
+        Get and set the position display resolution
+
+        :param int position_display_resolution: 
+        """
+        return int(self._controller._newport_cmd("FP?",target=self._axis_id))
+    @position_display_resolution.setter
+    def position_display_resolution(self, position_display_resolution):
+        self._controller._newport_cmd("FP",target=self._axis_id,params=[int(position_display_resolution)])    
+    
+    @property    
+    def trajectory(self):
+        """
+        Get and set the trajectory
+
+        :param int trajectory: 
+        """
+        return int(self._controller._newport_cmd("TJ?",target=self._axis_id))
+    @trajectory.setter
+    def trajectory(self, trajectory):
+        self._controller._newport_cmd("TJ",target=self._axis_id,params=[int(trajectory)])
+
+    @property    
+    def microstep_factor(self):
+        """
+        Get and set the microstep_factor
+
+        :param int microstep_factor: 
+        """
+        return int(self._controller._newport_cmd("QS?",target=self._axis_id))
+    @microstep_factor.setter
+    def microstep_factor(self, microstep_factor):
+
+        factor = int(microstep_factor)
+        if factor >= 1 and factor <= 250 :
+            self._controller._newport_cmd("QS",target=self._axis_id,params=[factor])
+        else:
+            raise ValueError("Microstep factor must be between 1 and 250")
+
+    @property    
+    def hardware_limit_configuration(self):
+        """
+        Get and set the hardware_limit_configuration
+
+        :param int hardware_limit_configuration: 
+        """
+        return int(self._controller._newport_cmd("ZH?",target=self._axis_id)[:-2])
+    @hardware_limit_configuration.setter
+    def hardware_limit_configuration(self, hardware_limit_configuration):
+        self._controller._newport_cmd("ZH",target=self._axis_id,params=[int(hardware_limit_configuration)])
+
+    @property    
+    def acceleration_feed_forward(self):
+        """
+        Get and set the acceleration_feed_forward
+
+        :param int acceleration_feed_forward: 
+        """
+        return float(self._controller._newport_cmd("AF?",target=self._axis_id))
+    @acceleration_feed_forward.setter
+    def acceleration_feed_forward(self, acceleration_feed_forward):
+        self._controller._newport_cmd("AF",target=self._axis_id,params=[float(acceleration_feed_forward)])
+
+    @property    
+    def proportional_gain(self):
+        """
+        Get and set the proportional_gain
+
+        :param float proportional_gain: 
+        """
+        return float(self._controller._newport_cmd("KP?",target=self._axis_id)[:-1])
+    @proportional_gain.setter
+    def proportional_gain(self, proportional_gain):
+        self._controller._newport_cmd("KP",target=self._axis_id,params=[float(proportional_gain)])
+
+    @property    
+    def derivative_gain(self):
+        """
+        Get and set the derivative_gain
+
+        :param float derivative_gain: 
+        """
+        return float(self._controller._newport_cmd("KD?",target=self._axis_id))
+    @derivative_gain.setter
+    def derivative_gain(self, derivative_gain):
+        self._controller._newport_cmd("KD",target=self._axis_id,params=[float(derivative_gain)])
+
+    @property    
+    def integral_gain(self):
+        """
+        Get and set the integral_gain
+
+        :param float integral_gain: 
+        """
+        return float(self._controller._newport_cmd("KI?",target=self._axis_id))
+    @integral_gain.setter
+    def integral_gain(self, integral_gain):
+        self._controller._newport_cmd("KI",target=self._axis_id,params=[float(integral_gain)])
+
+    @property    
+    def integral_saturation_gain(self):
+        """
+        Get and set the integral_saturation_gain
+
+        :param float integral_saturation_gain: 
+        """
+        return float(self._controller._newport_cmd("KS?",target=self._axis_id))
+    @integral_saturation_gain.setter
+    def integral_saturation_gain(self,integral_saturation_gain):
+        self._controller._newport_cmd("KS",target=self._axis_id,params=[float(integral_saturation_gain)])
 
 
     ## MOVEMENT METHODS ##
@@ -803,6 +1067,23 @@ class NewportESP301Axis(object):
         else:
             self._controller._newport_cmd("PR", params=[position], target=self.axis_id)
 
+    def move_to_hardware_limit(self):
+        """
+        move to hardware travel limit
+        """
+        self._controller._newport_cmd("MT", target=self.axis_id)
+
+    def move_indefinitely(self):
+        """
+        Move until told to stop
+        """
+        self._controller._newport_cmd("MV", target=self.axis_id)
+
+    def abort_motion(self):
+        """
+        Abort motion
+        """
+        self._controller._newport_cmd("AB", target=self.axis_id)
     def wait_for_stop(self):
         """ 
         Waits for axis motion to stop before next command is executed
@@ -813,7 +1094,10 @@ class NewportESP301Axis(object):
         """
         Stop all motion on axis. With programmed deceleration rate
         """
-        self._controller._newport_cmd("ST",target=self.axis_id)
+        try:
+            self._controller._newport_cmd("ST",target=self.axis_id)
+        except NewportError, e:
+            print e
 
     def wait_for_position(self,position):
         """
@@ -856,7 +1140,17 @@ class NewportESP301Axis(object):
                     sleep(poll_interval)
                 else:
                     raise IOError("Timed out waiting for motion to finish.")
+    def enable(self):
+        """
+        Turns motor axis on
+        """
+        self._controller._newport_cmd("MO",target=self._axis_id)
 
+    def disable(self):
+        """
+        Turns motor axis off
+        """
+        self._controller._newport_cmd("MF",target=self._axis_id)
     def setup_axis(self,**kwargs):
         """
         Setup a non-newport DC servo motor stage. Necessary parameters are. 
@@ -874,7 +1168,7 @@ class NewportESP301Axis(object):
         * 'max_acceleration' = maximum acceleration (U/s^2)
         * 'acceleration' = acceleration (U/s^2)
         * 'deceleration' = set deceleration (U/s^2)
-        * 'error_threshhold' = set error threshold (U)
+        * 'error_threshold' = set error threshold (U)
         * 'proportional_gain' = PID proportional gain (optional)
         * 'derivative_gain' = PID derivative gain (optional)
         * 'interal_gain' = PID internal gain (optional)
@@ -890,33 +1184,22 @@ class NewportESP301Axis(object):
         
             # set motor to DC servo
         if 'motor_type' in kwargs:
-            motor = int(kwargs['motor_type'])
-            if (motor>4 or motor<1):
-                raise ValueError("Motor Type must be between 0 and 1")
-            self._controller._newport_cmd("QM",target=self._axis_id,params=[motor])
+            self.motor_type = kwargs['motor_type']
         #set feedback configuration
         if 'feedback_configuration' in kwargs:
-            feed = int(kwargs['feedback_configuration'])
-            self._controller._newport_cmd("ZB",target=self._axis_id,params=[feed])
+            self.feedback_configuration = kwargs['feedback_configuration']
         #set full step resolution
         if 'full_step_resolution' in kwargs:
-            res = float(assume_units(kwargs["full_step_resolution"],self._units).rescale(
-            self._units).magnitude)
-            self._controller._newport_cmd("FR",target=self._axis_id,params=[res])  
+            self.full_step_resolution = kwargs['full_step_resolution']
         #set full step resolution
         if 'position_display_resolution' in kwargs:
-            res = int(kwargs['position_display_resolution'])
-            self._controller._newport_cmd("FP",target=self._axis_id,params=[res])
+            self.position_display_resolution = kwargs['position_display_resolution']
         #set current              
         if 'current' in kwargs:
-            current= float(assume_units(kwargs['current'],pq.A).rescale(
-            pq.A).magnitude)
-            self._controller._newport_cmd("QI",target=self._axis_id,params=[current])
+            self.current= kwargs['current']
         #set voltage
         if 'voltage' in kwargs:
-            voltage =  float(assume_units(kwargs["voltage"],pq.V).rescale(
-            pq.V).magnitude)
-            self._controller._newport_cmd("QV",target=self._axis_id,params=[voltage])
+            self.voltage =  kwargs['voltage']
         # set units 
         if 'units' in kwargs:
             units = int(kwargs['units'])
@@ -924,35 +1207,29 @@ class NewportESP301Axis(object):
         #set resolution 
         if 'encoder_resolution' in kwargs:
             self.encoder_resolution = kwargs['encoder_resolution'] 
-        # set maximum velocity 
-        if 'max_velocity' in kwargs:
-            self.max_velocity = kwargs['max_velocity']
-        #set maximum working velocity 
-        if 'max_working_velocity' in kwargs: 
-            work_veloc = float(assume_units(kwargs["max_working_velocity"],self._units/pq.s).rescale(
-            self._units/pq.s).magnitude)
-            self._controller._newport_cmd("VA",target=self._axis_id,params=[work_veloc])
-        #set homing speed 
-        if 'homing_velocity' in kwargs:
-            homing_velocity = float(assume_units(kwargs["homing_velocity"],self._units/pq.s).rescale(
-            self._units/pq.s).magnitude)
-            self._controller._newport_cmd("OH",target=self._axis_id,params=[homing_velocity])
-        #set jog high speed
-        if 'jog_high_velocity' in kwargs:
-            jog_high= float(assume_units(kwargs["jog_high_velocity"],self._units/pq.s).rescale(
-            self._units/pq.s).magnitude)
-            self._controller._newport_cmd("JH",target=self._axis_id,params=[jog_high])
-        #set jog low speed 
-        if 'jog_low_velocity' in kwargs:
-            jog_low= float(assume_units(kwargs["jog_low_velocity"],self._units/pq.s).rescale(
-            self._units/pq.s).magnitude)
-            self._controller._newport_cmd("JW",target=self._axis_id,params=[jog_low])
-        #max base velocity for stepper motors
-        if 'max_base_velocity' in kwargs: 
-            self.max_base_velocity = kwargs['max_base_velocity']
         #set max acceleration 
         if 'max_acceleration' in kwargs:
             self.max_acceleration= kwargs['max_acceleration']
+
+        # set maximum velocity 
+        if 'max_velocity' in kwargs:
+            self.max_velocity = kwargs['max_velocity']       
+
+        #max base velocity for stepper motors
+        if 'max_base_velocity' in kwargs: 
+            self.max_base_velocity = kwargs['max_base_velocity']     
+        
+        
+        #set homing speed 
+        if 'homing_velocity' in kwargs:
+            self.homing_velocity = kwargs['homing_velocity']
+        #set jog high speed
+        if 'jog_high_velocity' in kwargs:
+            self.jog_high_velocity = kwargs['jog_high_velocity']
+        #set jog low speed 
+        if 'jog_low_velocity' in kwargs:
+            self.jog_low_velocity = kwargs['jog_low_velocity']       
+        
         #set acceleration 
         if 'acceleration' in kwargs:
             self.acceleration = kwargs['acceleration']
@@ -968,39 +1245,25 @@ class NewportESP301Axis(object):
             self.jerk = kwargs['jerk']
         #set error threshold
         if 'error_threshold' in kwargs:
-            err = float(assume_units(kwargs["error_threshold"],self._units).rescale(
-            self._units).magnitude)
-            self._controller._newport_cmd("FE",target=self._axis_id,params=[err])
+            self.error_threshold = kwargs['error_threshold']
         if 'proportional_gain' in kwargs:
-            gain = int(kwargs['proportional_gain'])
-            self._controller._newport_cmd("KP",target=self._axis_id,params=[gain])
+            self.proportional_gain = kwargs['proportional_gain']
         if 'derivative_gain' in kwargs:
-            gain = int(kwargs['derivative_gain'])
-            self._controller._newport_cmd("KD",target=self._axis_id,params=[gain])
+            self.derivative_gain = kwargs['derivative_gain']
         if 'integral_gain' in kwargs:
-            gain = int(kwargs['integral_gain'])
-            self._controller._newport_cmd("KI",target=self._axis_id,params=[gain])
+            self.integral_gain = kwargs['integral_gain']
         if 'integral_saturation_gain' in kwargs:
-            gain = int(kwargs['integral_saturation_gain'])
-            self._controller._newport_cmd("KS",target=self._axis_id,params=[gain])
+            self.integral_saturation_gain = ['integral_saturation_gain']
         if 'home' in kwargs:
             self.home = kwargs['home']
         if 'microstep_factor' in kwargs:
-            factor = int(kwargs['microstep_factor'])
-            if factor >= 1 and factor <= 250 :
-                self._controller._newport_cmd("QS",target=self._axis_id,params=[factor])
-            else:
-                raise ValueError("Microstep factor must be between 1 and 250")
-
+            self.microstep_factor = kwargs['microstep_factor']
         if 'acceleration_feed_forward' in kwargs:
-            feed = abs(int(kwargs['acceleration_feed_forward']))
-            self._controller._newport_cmd("AF",target=self._axis_id,params=[feed])
+            self.acceleration_feed_forward = kwargs['acceleration_feed_forward']
         if 'trajectory' in kwargs:
-            trajectory = int(kwargs['trajectory'])
-            self._controller._newport_cmd("TJ",target=self._axis_id,params=[trajectory])
+            self.trajectory = kwargs['trajectory']
         if 'hardware_limit_configuration' in kwargs:
-            conf = int(kwargs['hardware_limit_configuration'])
-            self._controller._newport_cmd("ZH",target=self._axis_id,params=[conf])
+            self.hardware_limit_configuration = kwargs['hardware_limit_configuration']            
         if 'reduce_motor_torque_time' in kwargs and 'reduce_motor_torque_percentage' in kwargs:
             time = kwargs['reduce_motor_torque_time']
             time= int(assume_units(time,pq.ms).rescale(
@@ -1021,39 +1284,40 @@ class NewportESP301Axis(object):
         self._controller._newport_cmd("SM")
         return self.read_setup()
 
+    
+
     def read_setup(self):
         """
         """
         
         config = {}        
         config['units'] = self.units
-        config['motor_type'] = self._controller._newport_cmd('QM?', target=self._axis_id)
-        config['feedback_configuration'] = self._controller._newport_cmd('ZB?', target=self._axis_id)
-        config['full_step_resolution'] = self._controller._newport_cmd('FR?', target=self._axis_id)
-        config['position_display_resolution'] = self._controller._newport_cmd('FP?', target=self._axis_id)
-        config['current'] = self._controller._newport_cmd('QI?', target=self._axis_id)
+        config['motor_type'] = self.motor_type
+        config['feedback_configuration'] = self.feedback_configuration
+        config['full_step_resolution'] = self.full_step_resolution
+        config['position_display_resolution'] = self.position_display_resolution
+        config['current'] = self.current
         config['max_velocity'] = self.max_velocity
         config['encoder_resolution'] = self.encoder_resolution
         config['acceleration'] = self.acceleration
         config['deceleration'] = self.deceleration
         config['velocity'] = self.velocity
-        config['max_acceleration'] = self.max_acceleration        
-        config['max_working_velocity'] = self._controller._newport_cmd('VA?', target=self._axis_id)
-        config['homing_velocity'] = self._controller._newport_cmd('OH?', target=self._axis_id)
-        config['jog_high_velocity'] = self._controller._newport_cmd('JH?', target=self._axis_id)
-        config['jog_low_velocity'] = self._controller._newport_cmd('JW?', target=self._axis_id)
+        config['max_acceleration'] = self.max_acceleration            
+        config['homing_velocity'] = self.homing_velocity
+        config['jog_high_velocity'] = self.jog_high_velocity
+        config['jog_low_velocity'] = self.jog_low_velocity
         config['estop_deceleration'] = self.estop_deceleration
         config['jerk'] = self.jerk
-        config['error_threshold'] = self._controller._newport_cmd('FE?', target=self._axis_id)
-        config['proportional_gain'] = self._controller._newport_cmd('KP?', target=self._axis_id)
-        config['derivative_gain'] = self._controller._newport_cmd('KD?', target=self._axis_id)
-        config['integral_gain'] = self._controller._newport_cmd('KI?', target=self._axis_id)
-        config['integral_saturation_gain'] = self._controller._newport_cmd('KS?', target=self._axis_id)
+        config['error_threshold'] = self.error_threshold
+        config['proportional_gain'] = self.proportional_gain
+        config['derivative_gain'] = self.derivative_gain
+        config['integral_gain'] = self.integral_gain
+        config['integral_saturation_gain'] = self.integral_saturation_gain
         config['home'] = self.home
-        config['microstep_factor'] = self._controller._newport_cmd('QS?', target=self._axis_id)
-        config['acceleration_feed_forward'] = self._controller._newport_cmd('AF?', target=self._axis_id)
-        config['trajectory'] = self._controller._newport_cmd('TJ?', target=self._axis_id)
-        config['hardware_limit_configuration'] = self._controller._newport_cmd('ZH?', target=self._axis_id)
+        config['microstep_factor'] = self.microstep_factor
+        config['acceleration_feed_forward'] = self.acceleration_feed_forward
+        config['trajectory'] = self.trajectory
+        config['hardware_limit_configuration'] = self.hardware_limit_configuration
         return config
 
 
