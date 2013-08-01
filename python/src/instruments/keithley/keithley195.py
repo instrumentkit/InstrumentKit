@@ -35,11 +35,10 @@ import quantities as pq
 import numpy as np
 
 from instruments.abstract_instruments import Multimeter
-from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 
-class Keithley195(Instrument):
+class Keithley195(Multimeter):
     '''
     The Keithley 195 is a 5 1/2 digit auto-ranging digital multimeter. You can 
     find the full specifications list in the `user's guide`_.
