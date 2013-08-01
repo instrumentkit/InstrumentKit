@@ -49,6 +49,7 @@ class SRSCTC100(SCPIInstrument):
                  
     def __init__(self, filelike):
         super(SRSCTC100, self).__init__(filelike)
+        self._do_errcheck = True
     
     
     ## DICTIONARIES ##
@@ -129,6 +130,7 @@ class SRSCTC100(SCPIInstrument):
             
         @property
         def units(self):
+            # FIXME: does not respect "chan.d/dt" property.
             return self._ctc._channel_units()[self._chan_name]
             # FIXME: the following line doesn't do what I'd expect, and so it's
             #        commented out.
@@ -213,11 +215,34 @@ class SRSCTC100(SCPIInstrument):
             chan_name: self._UNIT_NAMES[unit_str]
             for chan_name, unit_str in zip(self._channel_names(), unit_strings)
         }
+        
+    def _errcheck(self):
+        errs = super(SRSCTC100, self).query('geterror?').strip()
+        err_code, err_descript = errs.split(',')
+        err_code = int(err_code)
+        if err_code == 0:
+            return
+        else:
+            raise IOError(err_descript.strip())
    
     ## PROPERTIES ##
     @property
     def channel(self):
         # Note that since the names can change, we need to query channel names
         # each time. This is inefficient, but alas.
-        return ProxyList(self, self.Channel, self._channel_names())  
+        return ProxyList(self, self.Channel, self._channel_names())
+        
+    ## OVERRIDEN METHODS ##
+    
+    # We override sendcmd() and query() to do error checking after each command.
+    def sendcmd(self, cmd):
+        super(SRSCTC100, self).sendcmd(cmd)
+        if self._do_errcheck:
+            self._errcheck()
+        
+    def query(self, cmd):
+        resp = super(SRSCTC100, self).query(cmd)
+        if self._do_errcheck:
+            self._errcheck()
+        return resp
     
