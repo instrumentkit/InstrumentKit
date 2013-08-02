@@ -338,10 +338,13 @@ class NewportESP301(Instrument):
         if "?" in raw_cmd:
             query_resp = self.query(raw_cmd)
         else:
+            print raw_cmd
             self.sendcmd(raw_cmd)
             
         if errcheck:
+            sleep(2)
             err_resp = self.query('TB?')
+            print err_resp
             code, timestamp, msg = err_resp.split(",")
             code = int(code)
             if code != 0:
@@ -779,7 +782,8 @@ class NewportESP301Axis(object):
         :param unit: Set the reference unit for axis
 
         :type unit: `~quantities.Quantity` with units corresponding to 
-            units of axis connected 
+            units of axis connected  or int which corresponds to Newport 
+            unit number 
         :rtype: `~quantities.Quantity`
 
         """
@@ -787,8 +791,12 @@ class NewportESP301Axis(object):
         return self._units
     @units.setter
     def units(self,unit):
-        
-        self._units = self.get_pq_unit(NewportESP301Units(int(unit)))
+        if isinstance(unit,int):
+            self._units = self.get_pq_unit(NewportESP301Units(int(unit)))
+        elif isinstance(unit,pq.Quantity):
+            self._units = unit
+            unit = self.get_unit_num(unit)
+
         return self._controller._newport_cmd("SN",target=self.axis_id,params=[int(unit)])
 
     @property
@@ -1058,6 +1066,15 @@ class NewportESP301Axis(object):
     def integral_saturation_gain(self,integral_saturation_gain):
         self._controller._newport_cmd("KS",target=self._axis_id,params=[float(integral_saturation_gain)])
 
+    @property
+    def encoder_position(self):
+        num = self.get_unit_num(self._units)
+        self.units = 0
+        pos = self.position
+        self.units = num
+        return pos
+    
+    
 
     ## MOVEMENT METHODS ##
     def search_for_home(self,
@@ -1368,9 +1385,21 @@ class NewportESP301Axis(object):
         Gets the units for the specified axis 
 
         :units: The units for the attached axis 
-        :type: :class:`quantities.Quantity`
+        :type num: int
         """
         return NewportESP301Axis._unit_dict[num]
 
+    def get_unit_num(self,quantity):
+        """
+        Gets the newport ESP 301 corresponding integer for 
+        a quantities.Quantity
 
-
+        :units: One of acceptable units 
+        :param quantity: Get integer for axis units
+        :type quantity: :class:`quantities.Quantity`
+        :return int:
+        """
+        for num,quant in self._unit_dict.iteritems():
+            if isinstance(quant,type(quantity)):
+                return num
+        raise KeyError("{0} is not a valid unit for Newport Axis".format(quantity))
