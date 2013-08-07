@@ -86,7 +86,8 @@ class Lakeshore370(SCPIInstrument):
         
         For instance, this would query the resistance of the first channel::
         
-        >>> bridge = Lakeshore370.open_serial("COM5")
+        >>> import instruments as ik
+        >>> bridge = ik.lakeshore.Lakeshore370.open_serial("COM5")
         >>> print bridge.channel[0].resistance
         
         The Lakeshore 370 supports up to 16 channels (index 0-15).

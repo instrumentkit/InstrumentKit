@@ -6,3 +6,6 @@ from instruments.srs.srsdg645 import (
     SRSDG645,
     _SRSDG645Channel,
 )
+from instruments.srs.srsctc100 import (
+    SRSCTC100
+)
