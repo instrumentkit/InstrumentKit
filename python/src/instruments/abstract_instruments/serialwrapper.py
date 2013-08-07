@@ -45,6 +45,7 @@ class SerialWrapper(io.IOBase, WrapperABC):
             self._conn = conn
             self._terminator = '\n'
             self._debug = False
+            self._capture = False
         else:
             raise TypeError('SerialWrapper must wrap a serial.Serial object.')
     
@@ -97,6 +98,16 @@ class SerialWrapper(io.IOBase, WrapperABC):
     @debug.setter
     def debug(self, newval):
         self._debug = bool(newval)
+
+    @property
+    def capture(self):
+        return self._capture
+    @capture.setter
+    def capture(self, value):
+        self._capture = value
+        if value:
+            self._capture_log = ""
+    
         
     ## FILE-LIKE METHODS ##
     
@@ -122,6 +133,8 @@ class SerialWrapper(io.IOBase, WrapperABC):
     def write(self, msg):
         if self._debug:
             print " <- {} ".format(repr(msg))
+        if self._capture:
+            self._capture_log += msg
         self._conn.write(msg)
         
     def seek(self, offset):
