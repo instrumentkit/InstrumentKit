@@ -282,7 +282,7 @@ class Instrument(object):
             # Ex: tcpip://192.168.0.10:4100
             host, port = parsed_uri.netloc.split(":")
             port = int(port)
-            return cls.open_tcpip((host, port), **kwargs)
+            return cls.open_tcpip(host, port, **kwargs)
         elif parsed_uri.scheme == "gpib+usb" or parsed_uri.scheme == "gpib+serial":
             # Ex: gpib+usb://COM3/15
             #     scheme="gpib+usb", netloc="COM3", path="/15"
