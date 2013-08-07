@@ -80,6 +80,15 @@ class NewportESP301Units(IntEnum):
     milliradian = 10
     microradian = 11
 
+class NewportESP301MotorType(IntEnum):
+    """
+    Enum for different motor types. 
+    """
+    undefined = 0
+    dc_servo = 1 
+    stepper_motor = 2 
+    commutated_stepper_motor = 3 
+    commutated_brushless_servo = 4 
 
 ## CLASSES #####################################################################
 
@@ -338,13 +347,13 @@ class NewportESP301(Instrument):
         if "?" in raw_cmd:
             query_resp = self.query(raw_cmd)
         else:
-            print raw_cmd
+            
             self.sendcmd(raw_cmd)
             
         if errcheck:
             sleep(2)
             err_resp = self.query('TB?')
-            print err_resp
+            
             code, timestamp, msg = err_resp.split(",")
             code = int(code)
             if code != 0:
@@ -570,11 +579,11 @@ class NewportESP301Axis(object):
         
         return assume_units(float(self._controller._newport_cmd("JK?", target=self.axis_id)),
                 self._units/(pq.s**3))    
-    @acceleration.setter
-    def jerk(self,accel):
-        accel = float(assume_units(accel,self._units/(pq.s**3)).rescale(
+    @jerk.setter
+    def jerk(self,jerk):
+        jerk = float(assume_units(jerk,self._units/(pq.s**3)).rescale(
                 self._units/(pq.s**3)).magnitude)
-        return self._controller._newport_cmd("JK",target=self.axis_id,params=[accel])
+        return self._controller._newport_cmd("JK",target=self.axis_id,params=[jerk])
 
     @property
     def velocity(self):
@@ -936,7 +945,7 @@ class NewportESP301Axis(object):
 
         :param int motor_type: Type of motor
         """
-        return int(self._controller._newport_cmd("QM?",target=self._axis_id))
+        return NewportESP301MotorType( int(self._controller._newport_cmd("QM?",target=self._axis_id)) )
     @motor_type.setter
     def motor_type(self, motor_type):
         self._controller._newport_cmd("QM",target=self._axis_id,params=[int(motor_type)])
@@ -1068,13 +1077,18 @@ class NewportESP301Axis(object):
 
     @property
     def encoder_position(self):
-        num = self.get_unit_num(self._units)
-        self.units = 0
-        pos = self.position
-        self.units = num
-        return pos
-    
-    
+        try: 
+            num = self.get_unit_num(self._units)
+            self.units = 0
+            pos = self.position
+            self.units = num
+            return pos
+        except NewportError:
+            "Error switching units"
+            raise
+        finally:
+            self.units = num
+        
 
     ## MOVEMENT METHODS ##
     def search_for_home(self,
@@ -1339,6 +1353,35 @@ class NewportESP301Axis(object):
 
     def read_setup(self):
         """
+        Returns dictionary containing: 
+            'units'
+            'motor_type'
+            'feedback_configuration'
+            'full_step_resolution'
+            'position_display_resolution'
+            'current'
+            'max_velocity'
+            'encoder_resolution'
+            'acceleration'
+            'deceleration'
+            'velocity'
+            'max_acceleration'
+            'homing_velocity'
+            'jog_high_velocity'
+            'jog_low_velocity'
+            'estop_deceleration'
+            'jerk'        
+            'proportional_gain'
+            'derivative_gain'
+            'integral_gain'
+            'integral_saturation_gain'
+            'home'
+            'microstep_factor'
+            'acceleration_feed_forward'
+            'trajectory'
+            'hardware_limit_configuration'
+
+        :rtype: dict of `quantities.Quantity`, float and int
         """
         
         config = {}        
@@ -1372,6 +1415,16 @@ class NewportESP301Axis(object):
         return config
 
     def get_status(self):
+        """
+        Returns Dictionary containing values:
+            'units'
+            'position'
+            'desired_position'
+            'desired_velocity'
+            'is_motion_done'
+
+        :rtype: dict
+        """
         status = {}
         status['units'] = self.units 
         status['position'] = self.position 
