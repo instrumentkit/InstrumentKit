@@ -72,7 +72,7 @@ class SRSCTC100(SCPIInstrument):
     
     class SensorType(Enum):
         rtd = 'RTD'
-        themistor = 'Thermistor'
+        thermistor = 'Thermistor'
         diode = 'Diode'
         rox = 'ROX'
     
