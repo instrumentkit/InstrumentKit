@@ -240,6 +240,7 @@ class NewportError(IOError):
 
 
 class _AxisList(object):
+    # TODO: make this a ProxyList.
     """
     Used to make expressions like ``NewportESP301.axis[idx]``
     work as expected.
