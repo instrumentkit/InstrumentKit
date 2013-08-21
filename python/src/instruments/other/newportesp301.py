@@ -67,7 +67,7 @@ class NewportESP301Units(IntEnum):
     """
     Enum containing what `units` return means. 
     """
-    encoder_step= 0
+    encoder_step = 0
     motor_step= 1
     millimeter= 2
     micrometer = 3
@@ -100,87 +100,87 @@ class NewportError(IOError):
     #Dict Containing all possible errors.Uses strings for keys in order to handle axis
     #Outside self definition so not rebuilt for everytime
     messageDict={
-    '0' : "NO ERROR DETECTED" ,
-    '1' : "PCI COMMUNICATION TIME-OUT",
-    '2' : "Reserved for future use" ,
-    '3' : "Reserved for future use" ,
-    '4' : "EMERGENCY SOP ACTIVATED",
-    '5' : "Reserved for future use" ,
-    '6' : "COMMAND DOES NOT EXIST" ,
-    '7' : "PARAMETER OUT OF RANGE",
-    '8' : "CABLE INTERLOCK ERROR",
-    '9' : "AXIS NUMBER OUT OF RANGE",
-    '10' : "Reserved for future use" ,
-    '11' : "Reserved for future use" ,
-    '12' : "Reserved for future use" ,
-    '13' : "GROUP NUMBER MISSING" ,
-    '14' : "GROUP NUMBER OUT OF RANGE" ,
-    '15' : "GROUP NUMBER NOT ASSIGNED" ,
-    '16' : "GROUP NUMBER ALREADY ASSIGNED" ,
-    '17' : "GROUP AXIS OUT OF RANGE" ,
-    '18' : "GROUP AXIS ALREADY ASSIGNED" ,
-    '19' : "GROUP AXIS DUPLICATED",
-    '20' : "DATA ACQUISITION IS BUSY" ,
-    '21' : "DATA ACQUISITION SETUP ERROR",
-    '22' : "DATA ACQUISITION NOT ENABLED",
-    '23' : "SERVO CYCLE (400 µS) TICK FAILURE",
-    '24' : "Reserved for future use" ,
-    '25' : "DOWNLOAD IN PROGRESS",  
-    '26' : "STORED PROGRAM NOT STARTEDL",
-    '27' : "COMMAND NOT ALLOWEDL",
-    '28' : "STORED PROGRAM FLASH AREA FULL",
-    '29' : "GROUP PARAMETER MISSING" ,
-    '30' : "GROUP PARAMETER OUT OF RANGE",
-    '31' : "GROUP MAXIMUM VELOCITY EXCEEDED",
-    '32' : "GROUP MAXIMUM ACCELERATION EXCEEDED",
-    '33' : "GROUP MAXIMUM DECELERATION EXCEEDED",
-    '34' : " GROUP MOVE NOT ALLOWED DURING MOTION",
-    '35' : "PROGRAM NOT FOUND",
-    '36' : "Reserved for future use" ,
-    '37' : "AXIS NUMBER MISSING" , 
-    '38' : "COMMAND PARAMETER MISSING",
-    '39' : "PROGRAM LABEL NOT FOUND",
-    '40' : "LAST COMMAND CANNOT BE REPEATED",
-    '41' : "MAX NUMBER OF LABELS PER PROGRAM EXCEEDED",
-    'x00' : "MOTOR TYPE NOT DEFINED",
-    'x01' : "PARAMETER OUT OF RANGE",
-    'x02' : "AMPLIFIER FAULT DETECTED",
-    'x03' : "FOLLOWING ERROR THRESHOLD EXCEEDED",
-    'x04' : "POSITIVE HARDWARE LIMIT DETECTED",
-    'x05' : "NEGATIVE HARDWARE LIMIT DETECTED",
-    'x06' : "POSITIVE SOFTWARE LIMIT DETECTED",
-    'x07' : "NEGATIVE SOFTWARE LIMIT DETECTED",
-    'x08' : "MOTOR / STAGE NOT CONNECTED" ,
-    'x09' : "FEEDBACK SIGNAL FAULT DETECTED",
-    'x10' : "MAXIMUM VELOCITY EXCEEDED",
-    'x11' : "MAXIMUM ACCELERATION EXCEEDED" ,
-    'x12' : "Reserved for future use",
-    'x13' : "MOTOR NOT ENABLED",
-    'x14' : "Reserved for future use" ,
-    'x15' : "MAXIMUM JERK EXCEEDED",
-    'x16' : "MAXIMUM DAC OFFSET EXCEEDED",
-    'x17' : "ESP CRITICAL SETTINGS ARE PROTECTED" ,
-    'x18' : "ESP STAGE DEVICE ERROR",
-    'x19' : "ESP STAGE DATA INVALID",
-    'x20' : "HOMING ABORTED",
-    'x21' : "MOTOR CURRENT NOT DEFINED",
-    'x22' : "UNIDRIVE COMMUNICATIONS ERROR",
-    'x23' : "UNIDRIVE NOT DETECTED",
-    'x24' : "SPEED OUT OF RANGE",
-    'x25' : "INVALID TRAJECTORY MASTER AXIS",
-    'x26' : "PARAMETER CHARGE NOT ALLOWED",
-    'x27' : "INVALID TRAJECTORY MODE FOR HOMING",
-    'x28' : "INVALID ENCODER STEP RATIO",
-    'x29' : "DIGITAL I/O INTERLOCK DETECTED",
-    'x30' : "COMMAND NOT ALLOWED DURING HOMING",
-    'x31' : "COMMAND NOT ALLOWED DUE TO GROUP" ,
-    'x32' : "INVALID TRAJECTORY MODE FOR MOVING"
+        '0' : "NO ERROR DETECTED" ,
+        '1' : "PCI COMMUNICATION TIME-OUT",
+        '2' : "Reserved for future use" ,
+        '3' : "Reserved for future use" ,
+        '4' : "EMERGENCY SOP ACTIVATED",
+        '5' : "Reserved for future use" ,
+        '6' : "COMMAND DOES NOT EXIST" ,
+        '7' : "PARAMETER OUT OF RANGE",
+        '8' : "CABLE INTERLOCK ERROR",
+        '9' : "AXIS NUMBER OUT OF RANGE",
+        '10' : "Reserved for future use" ,
+        '11' : "Reserved for future use" ,
+        '12' : "Reserved for future use" ,
+        '13' : "GROUP NUMBER MISSING" ,
+        '14' : "GROUP NUMBER OUT OF RANGE" ,
+        '15' : "GROUP NUMBER NOT ASSIGNED" ,
+        '16' : "GROUP NUMBER ALREADY ASSIGNED" ,
+        '17' : "GROUP AXIS OUT OF RANGE" ,
+        '18' : "GROUP AXIS ALREADY ASSIGNED" ,
+        '19' : "GROUP AXIS DUPLICATED",
+        '20' : "DATA ACQUISITION IS BUSY" ,
+        '21' : "DATA ACQUISITION SETUP ERROR",
+        '22' : "DATA ACQUISITION NOT ENABLED",
+        '23' : "SERVO CYCLE (400 µS) TICK FAILURE",
+        '24' : "Reserved for future use" ,
+        '25' : "DOWNLOAD IN PROGRESS",  
+        '26' : "STORED PROGRAM NOT STARTEDL",
+        '27' : "COMMAND NOT ALLOWEDL",
+        '28' : "STORED PROGRAM FLASH AREA FULL",
+        '29' : "GROUP PARAMETER MISSING" ,
+        '30' : "GROUP PARAMETER OUT OF RANGE",
+        '31' : "GROUP MAXIMUM VELOCITY EXCEEDED",
+        '32' : "GROUP MAXIMUM ACCELERATION EXCEEDED",
+        '33' : "GROUP MAXIMUM DECELERATION EXCEEDED",
+        '34' : " GROUP MOVE NOT ALLOWED DURING MOTION",
+        '35' : "PROGRAM NOT FOUND",
+        '36' : "Reserved for future use" ,
+        '37' : "AXIS NUMBER MISSING" , 
+        '38' : "COMMAND PARAMETER MISSING",
+        '39' : "PROGRAM LABEL NOT FOUND",
+        '40' : "LAST COMMAND CANNOT BE REPEATED",
+        '41' : "MAX NUMBER OF LABELS PER PROGRAM EXCEEDED",
+        'x00' : "MOTOR TYPE NOT DEFINED",
+        'x01' : "PARAMETER OUT OF RANGE",
+        'x02' : "AMPLIFIER FAULT DETECTED",
+        'x03' : "FOLLOWING ERROR THRESHOLD EXCEEDED",
+        'x04' : "POSITIVE HARDWARE LIMIT DETECTED",
+        'x05' : "NEGATIVE HARDWARE LIMIT DETECTED",
+        'x06' : "POSITIVE SOFTWARE LIMIT DETECTED",
+        'x07' : "NEGATIVE SOFTWARE LIMIT DETECTED",
+        'x08' : "MOTOR / STAGE NOT CONNECTED" ,
+        'x09' : "FEEDBACK SIGNAL FAULT DETECTED",
+        'x10' : "MAXIMUM VELOCITY EXCEEDED",
+        'x11' : "MAXIMUM ACCELERATION EXCEEDED" ,
+        'x12' : "Reserved for future use",
+        'x13' : "MOTOR NOT ENABLED",
+        'x14' : "Reserved for future use" ,
+        'x15' : "MAXIMUM JERK EXCEEDED",
+        'x16' : "MAXIMUM DAC OFFSET EXCEEDED",
+        'x17' : "ESP CRITICAL SETTINGS ARE PROTECTED" ,
+        'x18' : "ESP STAGE DEVICE ERROR",
+        'x19' : "ESP STAGE DATA INVALID",
+        'x20' : "HOMING ABORTED",
+        'x21' : "MOTOR CURRENT NOT DEFINED",
+        'x22' : "UNIDRIVE COMMUNICATIONS ERROR",
+        'x23' : "UNIDRIVE NOT DETECTED",
+        'x24' : "SPEED OUT OF RANGE",
+        'x25' : "INVALID TRAJECTORY MASTER AXIS",
+        'x26' : "PARAMETER CHARGE NOT ALLOWED",
+        'x27' : "INVALID TRAJECTORY MODE FOR HOMING",
+        'x28' : "INVALID ENCODER STEP RATIO",
+        'x29' : "DIGITAL I/O INTERLOCK DETECTED",
+        'x30' : "COMMAND NOT ALLOWED DURING HOMING",
+        'x31' : "COMMAND NOT ALLOWED DUE TO GROUP" ,
+        'x32' : "INVALID TRAJECTORY MODE FOR MOVING"
     }
     def __init__(self, errcode=None,timestamp=None):
 
         if timestamp is None:
-            self._timestamp = datetime.datetime.now()-NewportError.start_time
-        else : 
+            self._timestamp = datetime.datetime.now() - NewportError.start_time
+        else: 
             self._timestamp = datetime.timedelta(seconds=(timestamp * (400E-6)))
 
         if errcode is not None:
@@ -371,6 +371,7 @@ class NewportESP301(Instrument):
         """
         self._newport_cmd("OR", target=axis, params=[search_mode],errcheck=errcheck)
 
+
     def search_for_home(self,axis, search_mode=NewportESP301HomeSearchMode.zero_position_count.value ,errcheck=True ):
         """
         Searches each axis sequentially
@@ -486,8 +487,42 @@ class NewportESP301Axis(object):
         self._axis_id = axis_id
 
         self._units = self.units
+        
+    ## CONTEXT MANAGERS ##
+    
+    @contextmanager
+    def _units_of(self, units):
+        """
+        Sets the units for the corresponding axis to a those given by an integer
+        label (see `NewportESP301Units`), ensuring that the units are properly
+        reset at the completion of the context manager.
+        """
+        old_units = self._get_units()
+        self._set_units(units)
+        yield
+        self._set_units(old_units)
+        
+    ## PRIVATE METHODS ##
+    
+    def _get_units(self):
+        """
+        Returns the integer label for the current units set for this axis.
+        
+        .. seealso::
+            NewportESP301Units
+        """
+        return NewportESP301Units(
+            self._controller._newport_cmd("SN?", target=self.axis_id)
+        )
+        
+    def _set_units(self, new_units):
+        return self._controller._newport_cmd(
+            "SN", target=self.axis_id,
+            params=[int(new_units)]
+        )
+        
     ## PROPERTIES ##
-    # TODO: handle units, implement setters.
+    
     @property
     def axis_id(self):
         """
@@ -774,14 +809,14 @@ class NewportESP301Axis(object):
         :param home: Sets home position of axis
         :type home: `~quantities.Quantity` or `float`
         """
-        return assume_units(float(self._controller._newport_cmd("DH?",target=self.axis_id)),
-                self._units)  
+        return assume_units(float(self._controller._newport_cmd("DH?", target=self.axis_id)),
+                self._units)
     #default should be 0 as that sets current position as home
     @home.setter
-    def home(self,home=0):
+    def home(self, home=0):
         home = float(assume_units(home,self._units).rescale(
                 self._units).magnitude)
-        return self._controller._newport_cmd("DH",target=self.axis_id,params=[home])
+        return self._controller._newport_cmd("DH", target=self.axis_id, params=[home])
     
     @property
     def units(self):
@@ -796,17 +831,18 @@ class NewportESP301Axis(object):
         :rtype: `~quantities.Quantity`
 
         """
-        self._units = self.get_pq_unit(NewportESP301Units(int(self._controller._newport_cmd("SN?",target=self.axis_id))))
+        self._units = self.get_pq_unit(self._get_units())
         return self._units
+        
     @units.setter
     def units(self,unit):
-        if isinstance(unit,int):
+        if isinstance(unit, int):
             self._units = self.get_pq_unit(NewportESP301Units(int(unit)))
         elif isinstance(unit,pq.Quantity):
             self._units = unit
             unit = self.get_unit_num(unit)
 
-        return self._controller._newport_cmd("SN",target=self.axis_id,params=[int(unit)])
+        return self._set_units(unit)
 
     @property
     def encoder_resolution(self):
@@ -1077,17 +1113,8 @@ class NewportESP301Axis(object):
 
     @property
     def encoder_position(self):
-        try: 
-            num = self.get_unit_num(self._units)
-            self.units = 0
-            pos = self.position
-            self.units = num
-            return pos
-        except NewportError:
-            "Error switching units"
-            raise
-        finally:
-            self.units = num
+        with self._units_of(NewportESP301Units.encoder_step):
+            return self.position
         
 
     ## MOVEMENT METHODS ##
@@ -1149,6 +1176,7 @@ class NewportESP301Axis(object):
         Abort motion
         """
         self._controller._newport_cmd("AB", target=self.axis_id)
+        
     def wait_for_stop(self):
         """ 
         Waits for axis motion to stop before next command is executed
@@ -1205,17 +1233,19 @@ class NewportESP301Axis(object):
                     sleep(poll_interval)
                 else:
                     raise IOError("Timed out waiting for motion to finish.")
+                    
     def enable(self):
         """
-        Turns motor axis on
+        Turns motor axis on.
         """
         self._controller._newport_cmd("MO",target=self._axis_id)
 
     def disable(self):
         """
-        Turns motor axis off
+        Turns motor axis off.
         """
         self._controller._newport_cmd("MF",target=self._axis_id)
+        
     def setup_axis(self,**kwargs):
         """
         Setup a non-newport DC servo motor stage. Necessary parameters are. 
@@ -1433,26 +1463,30 @@ class NewportESP301Axis(object):
         status['is_motion_done'] = self.is_motion_done
 
         return status
-    def get_pq_unit(self,num):
+        
+    # FIXME: make these two methods private.
+        
+    def get_pq_unit(self, num):
         """
-        Gets the units for the specified axis 
+        Gets the units for the specified axis.
 
         :units: The units for the attached axis 
         :type num: int
         """
         return NewportESP301Axis._unit_dict[num]
 
-    def get_unit_num(self,quantity):
+    def get_unit_num(self, quantity):
         """
-        Gets the newport ESP 301 corresponding integer for 
-        a quantities.Quantity
+        Gets the integer label used by the Newport ESP 301 corresponding to a
+        given `~quantities.Quantity`.
 
-        :units: One of acceptable units 
-        :param quantity: Get integer for axis units
-        :type quantity: :class:`quantities.Quantity`
+        :param quantities.Quantity quantity: Units to return a label for.
+        
         :return int:
         """
-        for num,quant in self._unit_dict.iteritems():
-            if isinstance(quant,type(quantity)):
+        for num, quant in self._unit_dict.iteritems():
+            if quant == quantity:
                 return num
+                
         raise KeyError("{0} is not a valid unit for Newport Axis".format(quantity))
+
