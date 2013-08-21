@@ -34,7 +34,7 @@ import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units, ProxyList
-
+import sys
 ## ENUMS #######################################################################
 
 
