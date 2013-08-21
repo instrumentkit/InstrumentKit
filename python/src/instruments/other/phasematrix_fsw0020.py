@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# srs345.py: "Native SPI" driver for Phase Matrix signal
+# phasematrix_fsw0020.py: "Native SPI" driver for Phase Matrix signal
 #     generators.
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).

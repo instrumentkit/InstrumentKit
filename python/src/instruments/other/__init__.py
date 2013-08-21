@@ -5,3 +5,4 @@ from instruments.other.newportesp301 import (
     NewportESP301, NewportESP301Axis, NewportError, NewportESP301HomeSearchMode
 )
 from instruments.other.phasematrix_fsw0020 import PhaseMatrixFSW0020, dBm, cBm, mHz
+from instruments.other.holzworth_hs9000 import HolzworthHS9000
