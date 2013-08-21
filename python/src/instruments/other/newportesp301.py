@@ -351,7 +351,7 @@ class NewportESP301(Instrument):
             self.sendcmd(raw_cmd)
             
         if errcheck:
-            sleep(2)
+            
             err_resp = self.query('TB?')
             
             code, timestamp, msg = err_resp.split(",")
