@@ -32,6 +32,8 @@ from flufl.enum import Enum
 
 import quantities as pq
 
+from contextlib import contextmanager
+
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units, ProxyList
 
@@ -172,6 +174,46 @@ class SRSCTC100(SCPIInstrument):
                 float(self._get('SD')),
                 self.units
             )
+            
+        ## LOGGING ##
+    
+        def get_log_point(self, which='next', units=None):
+            if units is None:
+                units = self.units
+                
+            point = [
+                s.strip() for s in
+                self._ctc.query(
+                    'getLog.xy {}, {}'.format(self._chan_name, which)
+                ).split(',')
+            ]
+            return pq.Quantity(point[0], 'ms'), pq.Quantity(point[1], units)
+            
+        def get_log(self):
+            # Remember the current units.
+            units = self.units
+        
+            # Find out how many points there are.
+            n_points = int(self._ctc.query('getLog.xy? {}'.format(self._chan_name)))
+            
+            # Make an empty quantity that size for the times and for the channel
+            # values.
+            ts = pq.Quantity(np.empty((n_points,)), 'ms')
+            temps = pq.Quantity(np.empty((n_points,)), units)
+            
+            # Reset the position to the first point, then save it.
+            with self._ctc._error_checking_disabled():
+                ts[0], temps[0] = get_log_point('first', units)
+                for idx in xrange(1, n_points):
+                    ts[idx], temps[idx] = get_log_point('next', units)
+            
+            # Do an actual error check now.
+            if self._ctc._do_errcheck:
+                self._ctc._errcheck()
+                
+            return ts, temps
+                
+            
    
     ## PRIVATE METHODS ##
         
@@ -224,6 +266,13 @@ class SRSCTC100(SCPIInstrument):
             return
         else:
             raise IOError(err_descript.strip())
+            
+    @contextmanager
+    def _error_checking_disabled(self):
+        old = self._do_errcheck
+        self._do_errcheck = False
+        yield
+        self._do_errcheck = old
    
     ## PROPERTIES ##
     @property
@@ -231,6 +280,15 @@ class SRSCTC100(SCPIInstrument):
         # Note that since the names can change, we need to query channel names
         # each time. This is inefficient, but alas.
         return ProxyList(self, self.Channel, self._channel_names())
+        
+    @property
+    def display_figures(self):
+        return int(self.query('system.display.figures?'))
+    @display_figures.setter
+    def display_figures(self, newval):
+        if newval not in xrange(7):
+            raise ValueError("Number of display figures must be an integer from 0 to 6, inclusive.")
+        self.sendcmd('system.display.figures = {}'.format(newval))
         
     ## OVERRIDEN METHODS ##
     
@@ -245,4 +303,9 @@ class SRSCTC100(SCPIInstrument):
         if self._do_errcheck:
             self._errcheck()
         return resp
+    
+    ## LOGGING COMMANDS ##
+    
+    def clear_log(self):
+        self._ctc.sendcmd('System.Log.Clear yes')
     
