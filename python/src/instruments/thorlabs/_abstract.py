@@ -39,5 +39,8 @@ class ThorLabsInstrument(Instrument):
         self.sendcmd(packet.pack())
         
     def querypacket(self, packet):
-        return _packets.ThorLabsPacket.unpack(self.query(packet.pack()))
+        resp = self.query(packet.pack())
+        if not resp:
+            return None
+        return _packets.ThorLabsPacket.unpack(resp)
       

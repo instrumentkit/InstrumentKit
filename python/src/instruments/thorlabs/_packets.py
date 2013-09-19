@@ -43,6 +43,8 @@ class ThorLabsPacket(object):
 
         if param1 is not None or param2 is not None:
             has_data = False
+        else:
+            has_data = True
             
         if not has_data and (data is not None):
             raise ValueError("A ThorLabs packet can either have parameters or data, but not both.")
@@ -69,6 +71,11 @@ class ThorLabsPacket(object):
         
     @classmethod
     def unpack(cls, bytes):
+        if not bytes:
+            raise ValueError("Expected a packet, got an empty string instead.")
+        if len(bytes) < 6:
+            raise ValueError("Packet must be at least 6 bytes long.")
+            
         header = bytes[:6]
         
         # Check if 0x80 is set on header byte 4. If so, then this packet
