@@ -33,6 +33,18 @@ from instruments.thorlabs import _packets
 #from instruments.thorlabs._cmds import ThorLabsCommands
 from instruments.thorlabs import _cmds
 
+from flufl.enum import IntEnum
+
+import quantities as pq
+
+import struct
+
+## LOGGING #####################################################################
+
+import logging
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
+
 ## CLASSES #####################################################################
 
 class ThorLabsAPT(_abstract.ThorLabsInstrument):
@@ -55,20 +67,20 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             hw_info = self.querypacket(req_packet)
             
             self._serial_number = str(hw_info._data[0:4]).encode('hex')
-            self._model_number  = str(hw_info._data[4:12])
+            self._model_number  = str(hw_info._data[4:12]).replace('\x00', '').strip()
             
             # TODO: decode this field
             self._hw_type       = str(hw_info._data[12:14]).encode('hex') 
             
             self._fw_version    = str(hw_info._data[14:18]).encode('hex')
-            self._notes         = str(hw_info._data[18:66])
+            self._notes         = str(hw_info._data[18:66]).replace('\x00', '').strip()
             
             # TODO: decode the following fields.
             self._hw_version    = str(hw_info._data[78:80]).encode('hex')
             self._mod_state     = str(hw_info._data[80:82]).encode('hex')
             self._n_channels    = str(hw_info._data[82:84]).encode('hex')
-        except:
-            pass #FIXME
+        except Exception as e:
+            logger.error("Exception occured while fetching hardware info: {}".format(e))
     
     @property
     def model_number(self):
@@ -96,4 +108,99 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                                       source=0x01,
                                       data=None)
         self.sendpacket(pkt)
+        
+    def move(self, pos, absolute=True):
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE if absolute else _cmds.ThorLabsCommands.MOT_MOVE_RELATIVE,
+                                      param1=None,
+                                      param2=None,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=struct.pack('<Hl', 1, pos))
+                                      
+        response = self.querypacket(pkt)
+        if response._message_id != _cmds.ThorLabsCommands.MOT_MOVE_COMPLETED:
+            raise IOError("Move might not have completed, got {} instead.".format(_cmds.ThorLabsCommands(response._message_id)))
+            
+            
+    ## PIEZO COMMANDS ##
+    @property
+    def is_position_control_closed(self):
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_POSCONTROLMODE,
+                                      param1=0x01,
+                                      param2=0x00,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=None)
+        resp = self.querypacket(pkt)
+        return bool((resp._param2 - 1) & 1)
+        
+    def change_position_control_mode(self, closed, smooth=True):
+        mode = 1 + (int(closed) | int(smooth) << 1)
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_POSCONTROLMODE,
+                                      param1=0x01,
+                                      param2=mode,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=None)
+        self.sendpacket(pkt)
+    
+    @property
+    def output_position(self):
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_OUTPUTPOS,
+                                      param1=0x01,
+                                      param2=0x00,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=None)
+        resp = self.querypacket(pkt)
+        chan, pos = struct.unpack('<HH', resp._data)
+        return pos
+    
+    @output_position.setter
+    def output_position(self, pos):
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_OUTPUTPOS,
+                                      param1=None,
+                                      param2=None,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=struct.pack('<HH', 1, pos))
+        self.sendpacket(pkt)
+        
+    @property
+    def max_travel(self):
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_MAXTRAVEL,
+                                      param1=0x01,
+                                      param2=0x00,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=None)
+        resp = self.querypacket(pkt)
+        if resp is None:
+            return NotImplemented
+        chan, int_maxtrav = struct.unpack('<HH', resp._data)
+        return int_maxtrav * pq.Quantity(100, 'nm')
+    
+    
+    ## MOTOR COMMANDS ##
+    @property
+    def position(self):
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_POSCOUNTER,
+                                      param1=0x01,
+                                      param2=0x00,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=None)
+        response = self.querypacket(pkt)
+        return struct.unpack('<Hl', response._data)
+        
+    @property
+    def position_encoder(self):
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_ENCCOUNTER,
+                                      param1=0x01,
+                                      param2=0x00,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=None)
+        response = self.querypacket(pkt)
+        return struct.unpack('<Hl', response._data)
     

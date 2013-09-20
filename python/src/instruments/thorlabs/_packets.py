@@ -84,6 +84,11 @@ ThorLabs APT packet:
         
     @classmethod
     def unpack(cls, bytes):
+        if not bytes:
+            raise ValueError("Expected a packet, got an empty string instead.")
+        if len(bytes) < 6:
+            raise ValueError("Packet must be at least 6 bytes long.")
+            
         header = bytes[:6]
         
         # Check if 0x80 is set on header byte 4. If so, then this packet
