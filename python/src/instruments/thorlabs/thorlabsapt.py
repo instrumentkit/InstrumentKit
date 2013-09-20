@@ -30,8 +30,9 @@ from __future__ import division
 
 from instruments.thorlabs import _abstract
 from instruments.thorlabs import _packets
-#from instruments.thorlabs._cmds import ThorLabsCommands
 from instruments.thorlabs import _cmds
+
+from instruments.util_fns import ProxyList
 
 from flufl.enum import IntEnum
 
@@ -49,9 +50,48 @@ logger.addHandler(logging.NullHandler())
 
 class ThorLabsAPT(_abstract.ThorLabsInstrument):
     
+    class APTChannel(object):
+        def __init__(self, apt, idx_chan):
+            self._apt = apt
+            # APT is 1-based, but we want the Python representation to be
+            # 0-based.
+            self._idx_chan = idx_chan + 1
+            
+        @property
+        def enabled(self):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOD_REQ_CHANENABLESTATE,
+                                          param1=self._idx_chan,
+                                          param2=0x00,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            resp = self._apt.querypacket(pkt)
+            return not bool(resp._param2 - 1)
+        @enabled.setter(self)
+        def enabled(self, newval):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_POSCONTROLMODE,
+                                          param1=self._idx_chan,
+                                          param2=0x01 if newval else 0x02,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            self._apt.sendpacket(pkt)
+    
+    _channel_type = APTChannel
+    
     def __init__(self, filelike):
         super(ThorLabsAPT, self).__init__(filelike)
         self._dest = 0x50
+        
+        # Provide defaults in case an exception occurs below.
+        self._serial_number = None
+        self._model_number = None
+        self._hw_type = None
+        self._fw_version = None
+        self._notes = ""
+        self._hw_version = None
+        self._mod_state = None
+        self._n_channels = 0
         
         # Perform a HW_REQ_INFO to figure out the model number, serial number,
         # etc.
@@ -83,6 +123,10 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             logger.error("Exception occured while fetching hardware info: {}".format(e))
     
     @property
+    def serial_number(self):
+        return serial_number
+    
+    @property
     def model_number(self):
         return self._model_number
         
@@ -90,8 +134,16 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     def name(self):
         return (self._hw_type, self._hw_version, self._serial_number, 
                 self._fw_version, self._mode_state, self._n_channels)
+                
+    @property
+    def channel(self):
+        return ProxyList(self, self._channel_type, xrange(self._n_channels))
     
     def identify(self):
+        """
+        Causes a light on the APT instrument to blink, so that it can be
+        identified.
+        """
         pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOD_IDENTIFY,
                                       param1=0x00,
                                       param2=0x00,
@@ -100,107 +152,125 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                                       data=None)
         self.sendpacket(pkt)
     
-    def go_home(self):
-        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_HOME,
-                                      param1=0x01,
-                                      param2=0x00,
-                                      dest=self._dest,
-                                      source=0x01,
-                                      data=None)
-        self.sendpacket(pkt)
-        
-    def move(self, pos, absolute=True):
-        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE if absolute else _cmds.ThorLabsCommands.MOT_MOVE_RELATIVE,
-                                      param1=None,
-                                      param2=None,
-                                      dest=self._dest,
-                                      source=0x01,
-                                      data=struct.pack('<Hl', 1, pos))
-                                      
-        response = self.querypacket(pkt)
-        if response._message_id != _cmds.ThorLabsCommands.MOT_MOVE_COMPLETED:
-            raise IOError("Move might not have completed, got {} instead.".format(_cmds.ThorLabsCommands(response._message_id)))
+class APTPiezoStage(ThorLabsAPT):
+    
+    class PiezoChannel(ThorLabsAPT.Channel):
+        ## PIEZO COMMANDS ##
+    
+        @property
+        def is_position_control_closed(self):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_POSCONTROLMODE,
+                                          param1=self._idx_chan,
+                                          param2=0x00,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            resp = self._apt.querypacket(pkt)
+            return bool((resp._param2 - 1) & 1)
             
+        def change_position_control_mode(self, closed, smooth=True):
+            mode = 1 + (int(closed) | int(smooth) << 1)
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_POSCONTROLMODE,
+                                          param1=self._idx_chan,
+                                          param2=mode,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            self._apt.sendpacket(pkt)
+        
+        @property
+        def output_position(self):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_OUTPUTPOS,
+                                          param1=self._idx_chan,
+                                          param2=0x00,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            resp = self._apt.querypacket(pkt)
+            chan, pos = struct.unpack('<HH', resp._data)
+            return pos
+        
+        @output_position.setter
+        def output_position(self, pos):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_OUTPUTPOS,
+                                          param1=None,
+                                          param2=None,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=struct.pack('<HH', self._idx_chan, pos))
+            self._apt.sendpacket(pkt)
             
-    ## PIEZO COMMANDS ##
-    @property
-    def is_position_control_closed(self):
-        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_POSCONTROLMODE,
-                                      param1=0x01,
-                                      param2=0x00,
-                                      dest=self._dest,
-                                      source=0x01,
-                                      data=None)
-        resp = self.querypacket(pkt)
-        return bool((resp._param2 - 1) & 1)
+        @property
+        def max_travel(self):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_MAXTRAVEL,
+                                          param1=self._idx_chan,
+                                          param2=0x00,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            resp = self._apt.querypacket(pkt)
+            
+            # Not all APT piezo devices support querying the maximum travel
+            # distance. Those that do not simply ignore the PZ_REQ_MAXTRAVEL
+            # packet, so that the response is empty.
+            if resp is None:
+                return NotImplemented
+            
+            chan, int_maxtrav = struct.unpack('<HH', resp._data)
+            return int_maxtrav * pq.Quantity(100, 'nm')
+    
+    _channel_type = PiezoChannel
+    
+    
+class APTMotorController(ThorLabsAPT):
+    
+    class MotorChannel(ThorLabsAPT.Channel):
+        ## MOTOR COMMANDS ##
         
-    def change_position_control_mode(self, closed, smooth=True):
-        mode = 1 + (int(closed) | int(smooth) << 1)
-        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_POSCONTROLMODE,
-                                      param1=0x01,
-                                      param2=mode,
-                                      dest=self._dest,
-                                      source=0x01,
-                                      data=None)
-        self.sendpacket(pkt)
-    
-    @property
-    def output_position(self):
-        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_OUTPUTPOS,
-                                      param1=0x01,
-                                      param2=0x00,
-                                      dest=self._dest,
-                                      source=0x01,
-                                      data=None)
-        resp = self.querypacket(pkt)
-        chan, pos = struct.unpack('<HH', resp._data)
-        return pos
-    
-    @output_position.setter
-    def output_position(self, pos):
-        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_OUTPUTPOS,
-                                      param1=None,
-                                      param2=None,
-                                      dest=self._dest,
-                                      source=0x01,
-                                      data=struct.pack('<HH', 1, pos))
-        self.sendpacket(pkt)
+        @property
+        def position(self):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_POSCOUNTER,
+                                          param1=self._idx_chan,
+                                          param2=0x00,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            response = self._apt.querypacket(pkt)
+            chan, pos = struct.unpack('<Hl', response._data)
+            return pq.Quantity(pos, 'counts')
+            
+        @property
+        def position_encoder(self):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_ENCCOUNTER,
+                                          param1=self._idx_chan,
+                                          param2=0x00,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            response = self._apt.querypacket(pkt)
+            chan, pos = struct.unpack('<Hl', response._data)
+            return pq.Quantity(pos, 'counts')
         
-    @property
-    def max_travel(self):
-        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_MAXTRAVEL,
-                                      param1=0x01,
-                                      param2=0x00,
-                                      dest=self._dest,
-                                      source=0x01,
-                                      data=None)
-        resp = self.querypacket(pkt)
-        if resp is None:
-            return NotImplemented
-        chan, int_maxtrav = struct.unpack('<HH', resp._data)
-        return int_maxtrav * pq.Quantity(100, 'nm')
-    
-    
-    ## MOTOR COMMANDS ##
-    @property
-    def position(self):
-        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_POSCOUNTER,
-                                      param1=0x01,
-                                      param2=0x00,
-                                      dest=self._dest,
-                                      source=0x01,
-                                      data=None)
-        response = self.querypacket(pkt)
-        return struct.unpack('<Hl', response._data)
-        
-    @property
-    def position_encoder(self):
-        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_ENCCOUNTER,
-                                      param1=0x01,
-                                      param2=0x00,
-                                      dest=self._dest,
-                                      source=0x01,
-                                      data=None)
-        response = self.querypacket(pkt)
-        return struct.unpack('<Hl', response._data)
-    
+        def go_home(self):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_HOME,
+                                          param1=self._idx_chan,
+                                          param2=0x00,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            self._apt.sendpacket(pkt)
+            
+        def move(self, pos, absolute=True):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE if absolute else _cmds.ThorLabsCommands.MOT_MOVE_RELATIVE,
+                                          param1=None,
+                                          param2=None,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=struct.pack('<Hl', self._idx_chan, pos))
+                                          
+            response = self._apt.querypacket(pkt)
+            if response._message_id != _cmds.ThorLabsCommands.MOT_MOVE_COMPLETED:
+                raise IOError("Move might not have completed, got {} instead.".format(_cmds.ThorLabsCommands(response._message_id)))
+            
+    _channel_type = MotorChannel
+            

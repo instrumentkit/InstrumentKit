@@ -57,4 +57,5 @@ class ProxyList(object):
             raise IndexError("Index out of range. Must be "
                                 "in {}.".format(self._valid_set))
         return self._proxy_cls(self._parent, idx)
-
+    def __len__(self):
+        return len(self._valid_set)
