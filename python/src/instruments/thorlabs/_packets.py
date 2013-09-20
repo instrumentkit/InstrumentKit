@@ -43,6 +43,10 @@ class ThorLabsPacket(object):
 
         if param1 is not None or param2 is not None:
             has_data = False
+        elif data is not None:
+            has_data = True
+        else:
+            raise ValueError("Must specify either parameters or data.")
             
         if not has_data and (data is not None):
             raise ValueError("A ThorLabs packet can either have parameters or data, but not both.")
@@ -56,6 +60,17 @@ class ThorLabsPacket(object):
         self._has_data = has_data
         self._dest = dest
         self._source = source
+        
+    def __str__(self):
+        return """
+ThorLabs APT packet:
+    Message ID      0x{0._message_id:x}
+    Parameter 1     0x{0._param1:x}
+    Parameter 2     0x{0._param2:x}
+    Destination     0x{0._dest:x}
+    Source          0x{0._source:x}
+    Data            {1}
+""".format(self, "{:x}".format(self._data) if self._has_data else "None")
         
     def pack(self):
         if self._has_data:
