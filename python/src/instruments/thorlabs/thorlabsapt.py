@@ -67,7 +67,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                                           data=None)
             resp = self._apt.querypacket(pkt)
             return not bool(resp._param2 - 1)
-        @enabled.setter(self)
+        @enabled.setter
         def enabled(self, newval):
             pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_POSCONTROLMODE,
                                           param1=self._idx_chan,
@@ -154,7 +154,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     
 class APTPiezoStage(ThorLabsAPT):
     
-    class PiezoChannel(ThorLabsAPT.Channel):
+    class PiezoChannel(ThorLabsAPT.APTChannel):
         ## PIEZO COMMANDS ##
     
         @property
@@ -224,7 +224,7 @@ class APTPiezoStage(ThorLabsAPT):
     
 class APTMotorController(ThorLabsAPT):
     
-    class MotorChannel(ThorLabsAPT.Channel):
+    class MotorChannel(ThorLabsAPT.APTChannel):
         ## MOTOR COMMANDS ##
         
         @property
