@@ -49,8 +49,17 @@ logger.addHandler(logging.NullHandler())
 ## CLASSES #####################################################################
 
 class ThorLabsAPT(_abstract.ThorLabsInstrument):
+    '''
+    Generic ThorLabs APT hardware device controller. Communicates using the 
+    ThorLabs APT communications protocol, whose documentation is found in the
+    thorlabs source folder.
+    '''
     
     class APTChannel(object):
+        '''
+        Represents a channel within the hardware device. One device can have 
+        many channels, each labeled by an index.
+        '''
         def __init__(self, apt, idx_chan):
             self._apt = apt
             # APT is 1-based, but we want the Python representation to be
@@ -109,16 +118,20 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             self._serial_number = str(hw_info._data[0:4]).encode('hex')
             self._model_number  = str(hw_info._data[4:12]).replace('\x00', '').strip()
             
-            # TODO: decode this field
-            self._hw_type       = str(hw_info._data[12:14]).encode('hex') 
+            hw_type_int = struct.unpack('<H', str(hw_info._data[12:14]))[0]
+            if hw_type_int == 45:
+                self._hw_type = 'Multi-channel controller motherboard'
+            elif hw_type_int == 44:
+                self._hw_type = 'Brushless DC controller'
+            else:
+                self._hw_type = 'Unknown type'
             
             self._fw_version    = str(hw_info._data[14:18]).encode('hex')
             self._notes         = str(hw_info._data[18:66]).replace('\x00', '').strip()
             
-            # TODO: decode the following fields.
-            self._hw_version    = str(hw_info._data[78:80]).encode('hex')
-            self._mod_state     = str(hw_info._data[80:82]).encode('hex')
-            self._n_channels    = str(hw_info._data[82:84]).encode('hex')
+            self._hw_version    = struct.unpack('<H', str(hw_info._data[78:80]))[0]
+            self._mod_state     = struct.unpack('<H', str(hw_info._data[80:82]))[0]
+            self._n_channels    = struct.unpack('<H', str(hw_info._data[82:84]))[0]
         except Exception as e:
             logger.error("Exception occured while fetching hardware info: {}".format(e))
     
@@ -133,17 +146,17 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     @property
     def name(self):
         return (self._hw_type, self._hw_version, self._serial_number, 
-                self._fw_version, self._mode_state, self._n_channels)
+                self._fw_version, self._mod_state, self._n_channels)
                 
     @property
     def channel(self):
         return ProxyList(self, self._channel_type, xrange(self._n_channels))
     
     def identify(self):
-        """
+        '''
         Causes a light on the APT instrument to blink, so that it can be
         identified.
-        """
+        '''
         pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOD_IDENTIFY,
                                       param1=0x00,
                                       param2=0x00,
@@ -151,10 +164,70 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                                       source=0x01,
                                       data=None)
         self.sendpacket(pkt)
+
+class APTPiezoDevice(ThorLabsAPT):
+    '''
+    Generic ThorLabs APT piezo device, superclass of more specific piezo devices.
+    '''
     
-class APTPiezoStage(ThorLabsAPT):
+    class PiezoDeviceChannel(ThorLabsAPT.APTChannel):
+        ## PIEZO COMMANDS ##
     
-    class PiezoChannel(ThorLabsAPT.APTChannel):
+        @property
+        def max_travel(self):
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_MAXTRAVEL,
+                                          param1=self._idx_chan,
+                                          param2=0x00,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            resp = self._apt.querypacket(pkt)
+            
+            # Not all APT piezo devices support querying the maximum travel
+            # distance. Those that do not simply ignore the PZ_REQ_MAXTRAVEL
+            # packet, so that the response is empty.
+            if resp is None:
+                return NotImplemented
+            
+            chan, int_maxtrav = struct.unpack('<HH', resp._data)
+            return int_maxtrav * pq.Quantity(100, 'nm')
+            
+    @property
+    def led_intensity(self):
+        '''
+        The output intensity of the LED display.
+        
+        :type: `float` between 0 and 1.
+        '''
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_TPZ_DISPSETTINGS,
+                                      param1=0x01,
+                                      param2=0x00,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=None)
+        resp = self.querypacket(pkt)
+        return float(struct.unpack('<H', resp._data)[0])/255
+    
+    @led_intensity.setter
+    def led_intensity(self, intensity):
+        '''
+        The output intensity of the LED display.
+        
+        :param float intensity: Ranges from 0 to 1.
+        '''
+        pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_TPZ_DISPSETTINGS,
+                                      param1=None,
+                                      param2=None,
+                                      dest=self._dest,
+                                      source=0x01,
+                                      data=struct.pack('<H', int(round(255*intensity))))
+        self.sendpacket(pkt)
+    
+    _channel_type = PiezoDeviceChannel
+        
+class APTPiezoStage(APTPiezoDevice):
+    
+    class PiezoChannel(APTPiezoDevice.PiezoDeviceChannel):
         ## PIEZO COMMANDS ##
     
         @property
@@ -199,28 +272,18 @@ class APTPiezoStage(ThorLabsAPT):
                                           source=0x01,
                                           data=struct.pack('<HH', self._idx_chan, pos))
             self._apt.sendpacket(pkt)
-            
-        @property
-        def max_travel(self):
-            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_MAXTRAVEL,
-                                          param1=self._idx_chan,
-                                          param2=0x00,
-                                          dest=self._apt._dest,
-                                          source=0x01,
-                                          data=None)
-            resp = self._apt.querypacket(pkt)
-            
-            # Not all APT piezo devices support querying the maximum travel
-            # distance. Those that do not simply ignore the PZ_REQ_MAXTRAVEL
-            # packet, so that the response is empty.
-            if resp is None:
-                return NotImplemented
-            
-            chan, int_maxtrav = struct.unpack('<HH', resp._data)
-            return int_maxtrav * pq.Quantity(100, 'nm')
     
     _channel_type = PiezoChannel
+
+class APTStrainGaugeReader(APTPiezoDevice):
     
+    class StrainGaugeChannel(APTPiezoDevice.PiezoDeviceChannel):
+        ## STRAIN GAUGE COMMANDS ##
+    
+        pass
+        
+    
+    _channel_type = StrainGaugeChannel
     
 class APTMotorController(ThorLabsAPT):
     
