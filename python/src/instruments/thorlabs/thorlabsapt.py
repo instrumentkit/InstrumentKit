@@ -314,6 +314,7 @@ class APTStrainGaugeReader(APTPiezoDevice):
 class APTMotorController(ThorLabsAPT):
 
     class MotorChannel(ThorLabsAPT.APTChannel):
+    
         ## INSTANCE VARIABLES ##
         
         #: Sets the scale between the encoder counts and physical units
@@ -350,6 +351,21 @@ class APTMotorController(ThorLabsAPT):
             },
             # TODO: add other tables here.
         }
+        
+        __STATUS_BIT_MASK = {
+            'CW_HARD_LIM':          0x00000001,
+            'CCW_HARD_LIM':         0x00000002,
+            'CW_SOFT_LIM':          0x00000004,
+            'CCW_SOFT_LIM':         0x00000008,
+            'CW_MOVE_IN_MOTION':    0x00000010,
+            'CCW_MOVE_IN_MOTION':   0x00000020,
+            'CW_JOG_IN_MOTION':     0x00000040,
+            'CCW_JOG_IN_MOTION':    0x00000080,
+            'MOTOR_CONNECTED':      0x00000100,
+            'HOMING_IN_MOTION':     0x00000200,
+            'HOMING_COMPLETE':      0x00000400,
+            'INTERLOCK_STATE':      0x00001000
+        }
     
         ## UNIT CONVERSION METHODS ##
         
@@ -378,6 +394,27 @@ class APTMotorController(ThorLabsAPT):
             )
     
         ## MOTOR COMMANDS ##
+        
+        @property
+        def status_bits(self):
+            # NOTE: the difference between MOT_REQ_STATUSUPDATE and MOT_REQ_DCSTATUSUPDATE confuses me
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_REQ_STATUSUPDATE,
+                                          param1=self._idx_chan,
+                                          param2=0x00,
+                                          dest=self._apt._dest,
+                                          source=0x01,
+                                          data=None)
+            # The documentation claims there are 14 data bytes, but it seems there are sometimes
+            # some extra random ones...
+            resp_data = self._apt.querypacket(pkt)._data[:14]
+            ch_ident, position, enc_count, status_bits = struct.unpack('<HLLL', resp_data)
+            
+            status_dict = {
+                key: (status_bits & bit_mask > 0)
+                for key, bit_mask in self.__STATUS_BIT_MASK.iteritems()
+            }
+            
+            return status_dict
         
         @property
         def position(self):
@@ -442,4 +479,7 @@ class APTMotorController(ThorLabsAPT):
             response = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED)
             
     _channel_type = MotorChannel
+    
+    ## CONTROLLER PROPERTIES AND METHODS ##
+    
             
