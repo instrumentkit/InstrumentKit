@@ -38,6 +38,7 @@ from flufl.enum import IntEnum
 
 import quantities as pq
 
+import re
 import struct
 
 ## LOGGING #####################################################################
@@ -138,7 +139,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     def name(self):
         return "ThorLabs APT Instrument model {model}, serial {serial} (HW version {hw_ver}, FW version {fw_ver})".format(
             hw_ver=self._hw_version, serial=self.serial_number, 
-            fw_ver=self._fw_version, model=self.model_number, self._n_channels
+            fw_ver=self._fw_version, model=self.model_number
         )
                 
     @property
@@ -231,6 +232,70 @@ class APTPiezoStage(ThorLabsAPT):
 class APTMotorController(ThorLabsAPT):
     
     class MotorChannel(ThorLabsAPT.APTChannel):
+    
+        ## INSTANCE VARIABLES ##
+        
+        #: Sets the scale between the encoder counts and physical units
+        #: for the position, velocity and acceleration parameters of this
+        #: channel. By default, set to dimensionless, indicating that the proper
+        #: scale is not known.
+        #:
+        #: In keeping with the APT protocol documentation, the scale factor
+        #: is multiplied by the physical quantity to get the encoder count,
+        #: such that scale factors should have units similar to microsteps/mm,
+        #: in the example of a linear motor.
+        #:
+        #: Encoder counts are represented by the quantities package unit
+        #: "ct", which is considered dimensionally equivalent to dimensionless.
+        #: Finally, note that the "/s" and "/s**2" are not included in scale
+        #: factors, so as to produce quantities of dimension "ct/s" and "ct/s**2"
+        #: from dimensionful input.
+        #: 
+        #: For more details, see the APT protocol documentation.
+        scale_factors = (pq.Quantity(1, 'dimensionless'), ) * 3
+        
+        __SCALE_FACTORS_BY_MODEL = {
+            re.compile('TST001|BSC00.|BSC10.|MST601'): {
+                # Note that for these drivers, the scale factors are identical
+                # for position, velcoity and acceleration. This is not true for
+                # all drivers!
+                'DRV001': (pq.Quantity(51200, 'ct/mm'),) * 3,
+                'DRV013': (pq.Quantity(25600, 'ct/mm'),) * 3,
+                'DRV014': (pq.Quantity(25600, 'ct/mm'),) * 3,
+                'DRV113': (pq.Quantity(20480, 'ct/mm'),) * 3,
+                'DRV114': (pq.Quantity(20480, 'ct/mm'),) * 3,
+                'FW103':  (pq.Quantity(25600/360, 'ct/deg'),) * 3,
+                'NR360':  (pq.Quantity(25600/5.4546, 'ct/deg'),) * 3
+            },
+            # TODO: add other tables here.
+        }
+    
+        ## UNIT CONVERSION METHODS ##
+        
+        def set_scale(self, motor_model):
+            """
+            Sets the scale factors for this motor channel, based on the model
+            of the attached motor and the specifications of the driver of which
+            this is a channel.
+            
+            :param str motor_model: Name of the model of the attached motor,
+                as indicated in the APT protocol documentation (page 14, v9).
+            """
+            for driver_re, motor_dict in self.__SCALE_FACTORS_BY_MODEL.iteritems():
+                if driver_re.match(self._apt.model_number) is not None:
+                    if motor_model in motor_dict:
+                        self.scale_factors = motor_dict[motor_model]
+                        return
+                    else:
+                        break
+            # If we've made it down here, emit a warning that we didn't find the
+            # model.
+            logger.warning(
+                "Scale factors for controller {} and motor {} are unknown".format(
+                    self._apt.model_number, motor_model
+                )
+            )
+        
         ## MOTOR COMMANDS ##
         
         @property
@@ -243,7 +308,7 @@ class APTMotorController(ThorLabsAPT):
                                           data=None)
             response = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER)
             chan, pos = struct.unpack('<Hl', response._data)
-            return pq.Quantity(pos, 'counts')
+            return pq.Quantity(pos, 'counts') / self.scale_factors[0]
             
         @property
         def position_encoder(self):
@@ -267,6 +332,7 @@ class APTMotorController(ThorLabsAPT):
             self._apt.sendpacket(pkt)
             
         def move(self, pos, absolute=True):
+            # TODO: add unit support here, matching position property.
             pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE if absolute else _cmds.ThorLabsCommands.MOT_MOVE_RELATIVE,
                                           param1=None,
                                           param2=None,
