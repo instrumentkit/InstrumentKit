@@ -32,8 +32,6 @@ from instruments.thorlabs import _abstract
 from instruments.thorlabs import _packets
 from instruments.thorlabs import _cmds
 
-from instruments.util_fns import ProxyList
-
 from flufl.enum import IntEnum
 
 import quantities as pq
@@ -102,6 +100,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
         self._hw_version = None
         self._mod_state = None
         self._n_channels = 0
+        self._channel = ()
         
         # Perform a HW_REQ_INFO to figure out the model number, serial number,
         # etc.
@@ -125,7 +124,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             elif hw_type_int == 44:
                 self._hw_type = 'Brushless DC controller'
             else:
-                self._hw_type = 'Unknown type'
+                self._hw_type = 'Unknown type: {}'.format(hw_type_int)
             
             # Note that the fourth byte is padding, so we strip out the first
             # three bytes and format them.
@@ -139,6 +138,10 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             self._n_channels    = struct.unpack('<H', str(hw_info._data[82:84]))[0]
         except Exception as e:
             logger.error("Exception occured while fetching hardware info: {}".format(e))
+
+        # Create a tuple of channels of length _n_channel_type
+        if self._n_channels > 0:
+            self._channel = list(self._channel_type(self, chan_idx) for chan_idx in xrange(self._n_channels) )
     
     @property
     def serial_number(self):
@@ -157,7 +160,23 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                 
     @property
     def channel(self):
-        return ProxyList(self, self._channel_type, xrange(self._n_channels))
+        return self._channel
+        
+    @property
+    def n_channels(self):
+        return self._n_channels
+        
+    @n_channels.setter
+    def n_channels(self, nch):
+        # Change the number of channels so as not to modify those instances already existing:
+        # If we add more channels, append them to the list,
+        # If we remove channels, remove them from the end of the list.
+        if nch > self._n_channels:
+            self._channel = self._channel + \
+                list( self._channel_type(self, chan_idx) for chan_idx in xrange(self._n_channels, nch) )
+        elif nch < self._n_channels:
+            self._channel = self._channel[:nch]
+        self._n_channels = nch
     
     def identify(self):
         '''
@@ -280,25 +299,6 @@ class APTPiezoStage(APTPiezoDevice):
                                           data=struct.pack('<HH', self._idx_chan, pos))
             self._apt.sendpacket(pkt)
             
-        @property
-        def max_travel(self):
-            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_REQ_MAXTRAVEL,
-                                          param1=self._idx_chan,
-                                          param2=0x00,
-                                          dest=self._apt._dest,
-                                          source=0x01,
-                                          data=None)
-            resp = self._apt.querypacket(pkt)
-            
-            # Not all APT piezo devices support querying the maximum travel
-            # distance. Those that do not simply ignore the PZ_REQ_MAXTRAVEL
-            # packet, so that the response is empty.
-            if resp is None:
-                return NotImplemented
-            
-            chan, int_maxtrav = struct.unpack('<HH', resp._data)
-            return int_maxtrav * pq.Quantity(100, 'nm')
-    
     _channel_type = PiezoChannel
 
 class APTStrainGaugeReader(APTPiezoDevice):
