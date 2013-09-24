@@ -1,3 +1,3 @@
 from instruments.thorlabs.thorlabsapt import (
-    ThorLabsAPT, APTPiezoStage, APTMotorController
+    ThorLabsAPT, APTPiezoStage, APTStrainGaugeReader, APTMotorController
 )
