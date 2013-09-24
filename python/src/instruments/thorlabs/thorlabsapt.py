@@ -413,13 +413,31 @@ class APTMotorController(ThorLabsAPT):
             self._apt.sendpacket(pkt)
             
         def move(self, pos, absolute=True):
-            # TODO: add unit support here, matching position property.
+            # Handle units as follows:
+            # 1. Treat raw numbers as encoder counts.
+            # 2. If units are provided (as a Quantity), check if they're encoder
+            #    counts. If they aren't, apply scale factor.
+            if not isinstance(pos, pq.Quantity):
+                pos_ec = int(pos)
+            else:
+                if pos.units == pq.counts:
+                    pos_ec = int(pos.magnitude)
+                else:
+                    scaled_pos = (pos * self.scale_factors[0])
+                    # Force a unit error.
+                    try:
+                        pos_ec = int(scaled_pos.rescale(pq.counts).magnitude)
+                    except:
+                        raise ValueError("Provided units are not compatible with current motor scale factor.")
+            
+            # Now that we have our position as an integer number of encoder
+            # counts, we're good to move.
             pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE if absolute else _cmds.ThorLabsCommands.MOT_MOVE_RELATIVE,
                                           param1=None,
                                           param2=None,
                                           dest=self._apt._dest,
                                           source=0x01,
-                                          data=struct.pack('<Hl', self._idx_chan, pos))
+                                          data=struct.pack('<Hl', self._idx_chan, pos_ec))
                                           
             response = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED)
             

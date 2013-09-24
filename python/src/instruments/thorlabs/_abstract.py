@@ -46,7 +46,12 @@ class ThorLabsInstrument(Instrument):
         """
         resp = self.query(packet.pack())
         if not resp:
-            return None
+            if expect is None:
+                return None
+            else:
+                raise IOError("Expected packet {}, got nothing instead.".format(
+                    expect
+                ))
         pkt = _packets.ThorLabsPacket.unpack(resp)
         if expect is not None and pkt._message_id != expect:
             # TODO: make specialized subclass that can record the offending
