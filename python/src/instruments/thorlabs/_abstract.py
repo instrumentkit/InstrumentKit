@@ -38,9 +38,21 @@ class ThorLabsInstrument(Instrument):
     def sendpacket(self, packet):
         self.sendcmd(packet.pack())
         
-    def querypacket(self, packet):
+    def querypacket(self, packet, expect=None):
+        """
+        Sends a packet to the connected APT instrument, and waits for a packet
+        in response. Optionally, checks whether the received packet type is
+        matches that the caller expects.
+        """
         resp = self.query(packet.pack())
         if not resp:
             return None
-        return _packets.ThorLabsPacket.unpack(resp)
+        pkt = _packets.ThorLabsPacket.unpack(resp)
+        if expect is not None and pkt._message_id != expect:
+            # TODO: make specialized subclass that can record the offending
+            #       packet.
+            raise IOError("APT returned message ID {}, expected {}".format(
+                pkt._message_id, expect
+            ))
+        return pkt
       

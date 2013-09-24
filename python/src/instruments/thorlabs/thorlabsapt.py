@@ -65,11 +65,11 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                                           dest=self._apt._dest,
                                           source=0x01,
                                           data=None)
-            resp = self._apt.querypacket(pkt)
+            resp = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOD_GET_CHANENABLESTATE)
             return not bool(resp._param2 - 1)
         @enabled.setter
         def enabled(self, newval):
-            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.PZ_SET_POSCONTROLMODE,
+            pkt = _packets.ThorLabsPacket(message_id=_cmds.ThorLabsCommands.MOD_SET_CHANENABLESTATE,
                                           param1=self._idx_chan,
                                           param2=0x01 if newval else 0x02,
                                           dest=self._apt._dest,
@@ -81,7 +81,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     
     def __init__(self, filelike):
         super(ThorLabsAPT, self).__init__(filelike)
-        self._dest = 0x50
+        self._dest = 0x50 # Generic USB device; make this configurable later.
         
         # Provide defaults in case an exception occurs below.
         self._serial_number = None
@@ -104,7 +104,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                 source=0x01,
                 data=None
                 )
-            hw_info = self.querypacket(req_packet)
+            hw_info = self.querypacket(req_packet, expect=_cmds.ThorLabsCommands.HW_GET_INFO)
             
             self._serial_number = str(hw_info._data[0:4]).encode('hex')
             self._model_number  = str(hw_info._data[4:12]).replace('\x00', '').strip()
@@ -112,7 +112,11 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             # TODO: decode this field
             self._hw_type       = str(hw_info._data[12:14]).encode('hex') 
             
-            self._fw_version    = str(hw_info._data[14:18]).encode('hex')
+            # Note that the fourth byte is padding, so we strip out the first
+            # three bytes and format them.
+            self._fw_version    = "{0[0]}.{0[1]}.{0[2]}".format(
+                str(hw_info._data[14:18]).encode('hex')
+            )
             self._notes         = str(hw_info._data[18:66]).replace('\x00', '').strip()
             
             # TODO: decode the following fields.
@@ -124,7 +128,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     
     @property
     def serial_number(self):
-        return serial_number
+        return self._serial_number
     
     @property
     def model_number(self):
@@ -132,8 +136,10 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
         
     @property
     def name(self):
-        return (self._hw_type, self._hw_version, self._serial_number, 
-                self._fw_version, self._mode_state, self._n_channels)
+        return "ThorLabs APT Instrument model {model}, serial {serial} (HW version {hw_ver}, FW version {fw_ver})".format(
+            hw_ver=self._hw_version, serial=self.serial_number, 
+            fw_ver=self._fw_version, model=self.model_number, self._n_channels
+        )
                 
     @property
     def channel(self):
@@ -165,7 +171,7 @@ class APTPiezoStage(ThorLabsAPT):
                                           dest=self._apt._dest,
                                           source=0x01,
                                           data=None)
-            resp = self._apt.querypacket(pkt)
+            resp = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.PZ_GET_POSCONTROLMODE)
             return bool((resp._param2 - 1) & 1)
             
         def change_position_control_mode(self, closed, smooth=True):
@@ -186,7 +192,7 @@ class APTPiezoStage(ThorLabsAPT):
                                           dest=self._apt._dest,
                                           source=0x01,
                                           data=None)
-            resp = self._apt.querypacket(pkt)
+            resp = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.PZ_GET_OUTPUTPOS)
             chan, pos = struct.unpack('<HH', resp._data)
             return pos
         
@@ -208,7 +214,7 @@ class APTPiezoStage(ThorLabsAPT):
                                           dest=self._apt._dest,
                                           source=0x01,
                                           data=None)
-            resp = self._apt.querypacket(pkt)
+            resp = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.PZ_GET_MAXTRAVEL)
             
             # Not all APT piezo devices support querying the maximum travel
             # distance. Those that do not simply ignore the PZ_REQ_MAXTRAVEL
@@ -235,7 +241,7 @@ class APTMotorController(ThorLabsAPT):
                                           dest=self._apt._dest,
                                           source=0x01,
                                           data=None)
-            response = self._apt.querypacket(pkt)
+            response = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER)
             chan, pos = struct.unpack('<Hl', response._data)
             return pq.Quantity(pos, 'counts')
             
@@ -247,7 +253,7 @@ class APTMotorController(ThorLabsAPT):
                                           dest=self._apt._dest,
                                           source=0x01,
                                           data=None)
-            response = self._apt.querypacket(pkt)
+            response = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOT_GET_ENCCOUNTER)
             chan, pos = struct.unpack('<Hl', response._data)
             return pq.Quantity(pos, 'counts')
         
@@ -268,9 +274,7 @@ class APTMotorController(ThorLabsAPT):
                                           source=0x01,
                                           data=struct.pack('<Hl', self._idx_chan, pos))
                                           
-            response = self._apt.querypacket(pkt)
-            if response._message_id != _cmds.ThorLabsCommands.MOT_MOVE_COMPLETED:
-                raise IOError("Move might not have completed, got {} instead.".format(_cmds.ThorLabsCommands(response._message_id)))
+            response = self._apt.querypacket(pkt, expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED)
             
     _channel_type = MotorChannel
             
