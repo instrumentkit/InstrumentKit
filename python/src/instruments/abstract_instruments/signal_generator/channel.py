@@ -63,6 +63,6 @@ class Channel(object):
         the RF connector.
         """
         raise NotImplementedError
-    det setoutput(self):
+    def setoutput(self):
         raise NotImplementedError
     output = abc.abstractproperty(getoutput, setoutput)
