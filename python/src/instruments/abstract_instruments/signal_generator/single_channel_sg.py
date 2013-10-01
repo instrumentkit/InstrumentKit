@@ -55,4 +55,4 @@ class SingleChannelSG(SignalGenerator, Channel):
     
     @property
     def channel(self):
-        return ProxyList(self, Channel, xrange(1))
+        return (self,)
