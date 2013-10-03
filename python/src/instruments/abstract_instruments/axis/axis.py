@@ -33,7 +33,7 @@ import abc
 
 ## CLASSES #####################################################################
 
-class _Axis(object):
+class Axis(object):
     """
     Axis representing a single physical axis-object such as a stepper motor,
     galvos, piezo stages, etc.
