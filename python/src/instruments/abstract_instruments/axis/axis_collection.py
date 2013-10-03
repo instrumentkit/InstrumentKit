@@ -32,32 +32,37 @@ from __future__ import division
 import abc
 
 from instruments.abstract_instruments import Instrument
-from instruments.util_fns import ProxyList
 from axis_controller import Axis
 
 ## CLASSES #####################################################################
 
-class AxisList(ProxyList, AxisCollection):
-    
-    def __init__(self, parent, proxy_cls, valid_set):
-        super(AxisList, self).__init__(parent, proxy_cls, valid_set)
-
 class AxisCollection(object):
-    
-    def __init__(self, axis_list):
-        if isinstance(axis_list, AxisList):
-            self._is_root = True
-        elif isinstance(axis_list, AxisCollection):
-            self._is_root = False
-        else:
-            raise TypeError('AxisCollection init parameter must be of type '
-                            'AxisList or AxisCollection, instead received '
-                            '{}.'.format(type(axis_list)))
-        self._axis_list = axis_list
+    __metaclass__ = abc.ABCMeta
         
     ## PROPERTIES ##
     
-    @property
-    def axis(self):
-        return self._axis_list
-        
+    @abc.abstractproperty
+    def is_hardware_rasterable(self):
+        raise NotImplementedError
+    
+    def getlimits(self):
+        raise NotImplementedError
+    def setlimits(self, newval):
+        raise NotImplementedError
+    limits = abc.abstractproperty(getlimits, setlimits)
+    
+    def getposition(self):
+        raise NotImplementedError
+    def setposition(self, newval):
+        raise NotImplementedError
+    position = abc.abstractproperty(getposition, setposition)
+       
+    ## METHODS ##
+    
+    @abc.abstractmethod
+    def move(self, *args, absolute=True):
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def raster(self):
+        raise NotImplementedError
