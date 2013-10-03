@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# axis_collection.py: Represents a collection of axis-devices.
+# axis_list.py: A ProxyList-type class used to generate lists of Axis.
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
