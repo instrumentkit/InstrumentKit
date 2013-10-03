@@ -41,9 +41,12 @@ class AxisCollection(object):
         
     ## PROPERTIES ##
     
-    @abc.abstractproperty
-    def is_hardware_rasterable(self):
+    def get_is_hardware_rasterable(self):
         raise NotImplementedError
+    def set_is_hardware_rasterable(self):
+        raise NotImplementedError
+    is_hardware_rasterable = abc.abstractproperty(get_is_hardware_rasterable,
+                                                  set_is_hardware_rasterable)
     
     def getlimits(self):
         raise NotImplementedError
