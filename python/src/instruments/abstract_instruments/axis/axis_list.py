@@ -90,7 +90,7 @@ class AxisList(ProxyList, AxisCollection):
     
     ## METHODS ##
     
-    def move(self, *args, absolute=True):
+    def move(self, *args, **kwargs):
         raise NotImplementedError
         
     def raster(self):

@@ -32,7 +32,7 @@ from __future__ import division
 import abc
 
 from instruments.abstract_instruments import Instrument
-from axis_controller import Axis
+from .axis import Axis
 
 ## CLASSES #####################################################################
 
@@ -63,7 +63,9 @@ class AxisCollection(object):
     ## METHODS ##
     
     @abc.abstractmethod
-    def move(self, *args, absolute=True):
+    def move(self, *args, **kwargs):
+        # NOTE: (*args, absolute=True) causes a syntax error, so unfortunately
+        #       we have to hade absolute in **kwargs.
         raise NotImplementedError
     
     @abc.abstractmethod

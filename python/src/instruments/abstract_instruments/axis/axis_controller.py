@@ -33,8 +33,9 @@ import abc
 
 from instruments.abstract_instruments import Instrument
 
-from axis_collection import AxisCollection, AxisList
-from axis import _Axis
+from .axis_collection import AxisCollection
+from .axis_list import AxisList
+from .axis import Axis
 from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
