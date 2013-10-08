@@ -32,21 +32,32 @@ from __future__ import division
 import abc
 
 from instruments.abstract_instruments import Instrument
+from instruments.events import Event, event_property
 from .axis import Axis
 
 ## CLASSES #####################################################################
 
 class AxisCollection(object):
     __metaclass__ = abc.ABCMeta
+    
+    ## INITIALIZER ##
+    
+    def __init__(self):
+        # Setup events.
+        self._on_start_scan = Event()
         
     ## PROPERTIES ##
     
-    def get_is_hardware_rasterable(self):
+    on_start_scan = event_property('_on_start_scan', doc="""
+        Event fired whenever a scan across this axis collection is started.
+    """)
+    
+    def get_is_hardware_scannable(self):
         raise NotImplementedError
-    def set_is_hardware_rasterable(self):
+    def set_is_hardware_scannable(self):
         raise NotImplementedError
-    is_hardware_rasterable = abc.abstractproperty(get_is_hardware_rasterable,
-                                                  set_is_hardware_rasterable)
+    is_hardware_scannable = abc.abstractproperty(get_is_hardware_scannable,
+                                                  set_is_hardware_scannable)
     
     def getlimits(self):
         raise NotImplementedError
@@ -69,5 +80,12 @@ class AxisCollection(object):
         raise NotImplementedError
     
     @abc.abstractmethod
-    def raster(self):
+    def scan(self, *coords):
+        # This method should be called by derived classes to ensure that the
+        # event is fired correctly.
+        self.on_start_scan(coords)
+        
+    def raster(self, start, end, step):
+        # TODO: arange over start:end:step to generate arguments to scan.
         raise NotImplementedError
+    
