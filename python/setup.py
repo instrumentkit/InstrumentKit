@@ -10,6 +10,7 @@ setup(
     packages=[
         'instruments',
         'instruments.abstract_instruments',
+        'instruments.abstract_instruments.axis',
         'instruments.agilent',
         'instruments.hp',
         'instruments.generic_scpi',
