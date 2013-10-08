@@ -10,6 +10,7 @@ import instruments.tektronix
 import instruments.thorlabs
 import instruments.hp
 
+import instruments.events
 import instruments.units
 
 from instruments.config import load_instruments
