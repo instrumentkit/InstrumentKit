@@ -85,6 +85,11 @@ class AxisCollection(object):
         # event is fired correctly.
         self.on_start_scan(coords)
         
+    # Require implementors to say how long they are (that is, how many axes).
+    @abc.abstractmethod
+    def __len__(self):
+        pass
+        
     def raster(self, start, end, step):
         # TODO: arange over start:end:step to generate arguments to scan.
         raise NotImplementedError
