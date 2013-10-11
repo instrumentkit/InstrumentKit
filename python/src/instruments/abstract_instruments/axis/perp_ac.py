@@ -46,7 +46,7 @@ class PerpendicularAC(AxisCollection):
     
     Note that `scan` cannot in general be implemented more cleverly then just 
     calling a whole bunch of `move` commands, whereas `raster` can be 
-    implements with calls to `raster` on the minor axis and `move` on the 
+    implemented with calls to `raster` on the minor axis and `move` on the 
     major axis.
     
     In all methods and properties, this combined axis system places the major 
@@ -133,7 +133,7 @@ class PerpendicularAC(AxisCollection):
         
         
     def __repr__(self):
-        return 'Perpindicular({}, {}})'.format(self._major_axes.__repr__(), self._minor_axes.__repr__())
+        return 'Perpindicular({}, {})'.format(self._major_axes.__repr__(), self._minor_axes.__repr__())
         
     def __len__(self):
         return self._n_major_axes + self._n_minor_axes
