@@ -80,7 +80,7 @@ class AxisCollection(object):
         raise NotImplementedError
     
     @abc.abstractmethod
-    def scan(self, *coords):
+    def scan(self, dwell_time, *coords):
         # This method should be called by derived classes to ensure that the
         # event is fired correctly.
         self.on_start_scan(coords)
@@ -90,7 +90,7 @@ class AxisCollection(object):
     def __len__(self):
         pass
         
-    def raster(self, start, end, step):
+    def raster(self, start, stop, num):
         # TODO: arange over start:end:step to generate arguments to scan.
         raise NotImplementedError
     
