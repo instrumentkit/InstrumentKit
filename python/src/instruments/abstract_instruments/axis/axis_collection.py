@@ -31,9 +31,7 @@ from __future__ import division
 
 import abc
 
-from instruments.abstract_instruments import Instrument
 from instruments.events import Event, event_property
-from .axis import Axis
 
 ## CLASSES #####################################################################
 
@@ -52,45 +50,66 @@ class AxisCollection(object):
         Event fired whenever a scan across this axis collection is started.
     """)
     
-    def get_is_hardware_scannable(self):
-        raise NotImplementedError
-    def set_is_hardware_scannable(self):
-        raise NotImplementedError
-    is_hardware_scannable = abc.abstractproperty(get_is_hardware_scannable,
-                                                  set_is_hardware_scannable)
+    @abc.abstractproperty
+    def is_hardware_scannable(self): pass
     
-    def getlimits(self):
-        raise NotImplementedError
-    def setlimits(self, newval):
-        raise NotImplementedError
-    limits = abc.abstractproperty(getlimits, setlimits)
+    @abc.abstractproperty
+    def limits(self): pass
     
-    def getposition(self):
-        raise NotImplementedError
-    def setposition(self, newval):
-        raise NotImplementedError
-    position = abc.abstractproperty(getposition, setposition)
+    @abc.abstractproperty
+    def get_position(self): pass
+
+    # should return a quantities.quantity.Quantity
+    @abc.abstractproperty
+    def units(self): pass
        
     ## METHODS ##
     
     @abc.abstractmethod
-    def move(self, *args, **kwargs):
-        # NOTE: (*args, absolute=True) causes a syntax error, so unfortunately
-        #       we have to hade absolute in **kwargs.
-        raise NotImplementedError
+    def move(self, position, absulote=True):
+        """
+        Moves the axis to the given position.
+        
+        :param position: An iterable specifying the position of each axis to 
+            move to. Position can be unitful,
+        :param bool absolute: Absolute movement if True, relative movement 
+            if false.
+        """
+        pass
     
     @abc.abstractmethod
-    def scan(self, dwell_time, *coords):
+    def scan(self, coords, dwell_time=None):
+        """
+        Scans the axes through a parametric path.
+        
+        :param coords: An iterable (whose length is equal to the number of 
+            axes) where each element is an iterable specifying the path of 
+            the respective axis.
+        :param dwell_time: The amount of time to wait between each point in 
+            the scan. Can be set to None to wait for no time.
+        """
         # This method should be called by derived classes to ensure that the
         # event is fired correctly.
         self.on_start_scan(coords)
         
+    @abc.abstractmethod
+    def raster(self, start, stop, num, dwell_time=None):
+        """
+        Sets up the scan method with a path that fills a (hyper)-rectangle of
+        the axes parameter space. Whether this path is constructed snake-style 
+        or typerwriter-style or else is decided by the particular 
+        implementation of axes in question.
+        
+        :param start: An iterable specifying the start position of each axis.
+        :param stop: An iterable specifying the stop position of each axis.
+        :param num: An iterable specifying how many steps to take to get from
+            start to stop for each axis.
+        :param dwell_time: The amount of time to wait between each point in 
+            the scan. Can be set to None to wait for no time.
+        """
+        pass
+    
     # Require implementors to say how long they are (that is, how many axes).
     @abc.abstractmethod
     def __len__(self):
         pass
-        
-    def raster(self, start, stop, num):
-        # TODO: arange over start:end:step to generate arguments to scan.
-        raise NotImplementedError
-    
