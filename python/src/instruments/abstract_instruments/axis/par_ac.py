@@ -91,6 +91,10 @@ class ParallelAC(AxisCollection):
     ## PROPERTIES ##
     
     @property
+    def finest_axes(self):
+        return self._fine_axes
+    
+    @property
     def is_hardware_scannable(self):
         return self._coarse_axes.is_hardware_scannable + self._fine_axes.is_hardware_scannable
             
@@ -116,12 +120,15 @@ class ParallelAC(AxisCollection):
         self._fine_axes.move(fine_pos, absolute=absolute)
     
     def _scan(self, coords, dwell_time=None):
-        # Unfortuneately, can't do this more efficiently in general
+        # Unfortunately, can't do this more efficiently in general
+        self.on_scan_start((coords, dwell_time))
+        
         for coord in izip(*coords):
             # Call _move so we don't bloat the move history
             self._move(coord)
-            if dwell_time is not None:
-                time.sleep(assume_units(dwell_time, pq.s).rescale(pq.s).magnitude)
+            self.on_scan_step(((coord, ), dwell_time))
+                
+        self.on_scan_complete((coords, dwell_time))
     
     def _raster(self, start, stop, num, dwell_time=None, strict=True):
         

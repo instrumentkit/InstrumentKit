@@ -64,16 +64,37 @@ class AxisCollection(object):
     
     def __init__(self):
         # Setup events.
-        self._on_start_scan = Event()
+        self._on_scan_start = Event(self)
+        self._on_scan_complete = Event(self)
+        self._on_scan_step = Event(self)
         # Useful to have the startup position in the history
         self._move_history = [self.position]
         
     ## PROPERTIES ##
     
-    _max_history_length = 10
-    on_start_scan = event_property('_on_start_scan', doc="""
-        Event fired whenever a scan across this axis collection is started.
+    # By default, remember the last 100 move coordinates
+    _max_history_length = 100
+    
+    # Events publicly exposed
+    on_scan_start = event_property('_on_scan_start', doc="""
+        Event fired just before a scan/raster across this axis collection is started.
     """)
+    on_scan_complete = event_property('_on_scan_complete', doc="""
+        Event fired just after a scan/raster across this axis collection is completed.
+    """)
+    on_scan_step = event_property('_on_scan_step', doc="""
+        Event fired just after a step in a scan/raster is taken.
+        (If applicable - won't be possible whenever is_hardware_scannable 
+        is True, for example.)
+    """)
+    
+    @abc.abstractproperty
+    def finest_axes(self):
+        """
+        The subset of axes that are finest with respect to rastering/
+        scanning. If this collection is the finest, then this is just `self`.
+        """
+        pass
     
     @abc.abstractproperty
     def is_hardware_scannable(self): 
@@ -163,7 +184,7 @@ class AxisCollection(object):
     def _raster(self, start, stop, num, dwell_time=None, strict=True): pass
     def raster(self, start, stop, num, dwell_time=None, strict=True):
         """
-        Sets up the scan method with a path that fills a (hyper)-rectangle of
+        Makes the axes trace a path that fills a (hyper)-rectangle of
         the axes parameter space. Whether this path is constructed snake-style 
         or typerwriter-style or else is decided by the particular 
         implementation of axes in question.
