@@ -59,6 +59,8 @@ class PerpendicularAC(AxisCollection):
     """
 
     def __init__(self, major_axes, minor_axes):
+        
+        super(PerpendicularAC, self).__init__()
                                 
         self._major_axes = major_axes
         self._minor_axes = minor_axes
@@ -77,8 +79,8 @@ class PerpendicularAC(AxisCollection):
         return self._major_axes.limits + self._minor_axes.limits
         
     @property
-    def get_position(self):
-        return self._major_axes.get_position + self._minor_axes.get_position
+    def position(self):
+        return self._major_axes.position + self._minor_axes.position
         
     @property
     def units(self):
@@ -86,21 +88,22 @@ class PerpendicularAC(AxisCollection):
             
     ## METHODS ##
     
-    def move(self, position, absolute=True):
+    def _move(self, position, absolute=True):
         # separate the positions into the major and minor positions
         major_pos = position[:self._n_major_axes]
         minor_pos = position[self._n_major_axes:]
         self._major_axes.move(major_pos, absolute=absolute)
         self._minor_axes.move(minor_pos, absolute=absolute)
     
-    def scan(self, coords, dwell_time=None):
+    def _scan(self, coords, dwell_time=None):
         # Unfortuneately, can't do this more efficiently in general
         for coord in izip(*coords):
-            self.move(coord)
+            # Call _move so we don't bloat the move history
+            self._move(coord)
             if dwell_time is not None:
                 time.sleep(assume_units(dwell_time, pq.s).rescale(pq.s).magnitude)
     
-    def raster(self, start, stop, num, dwell_time=None):
+    def _raster(self, start, stop, num, dwell_time=None, strict=True):
         
         # Separate the major from the minor arguments...
         major_start = start[:self._n_major_axes ]

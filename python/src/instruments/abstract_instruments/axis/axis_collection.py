@@ -23,19 +23,41 @@
 ##
 ##
 
-## FEATURES ####################################################################
+## FEATURES ###################################################################
 
 from __future__ import division
 
-## IMPORTS #####################################################################
+## IMPORTS ####################################################################
 
 import abc
+import functools
+from itertools import izip
 
 from instruments.events import Event, event_property
 
-## CLASSES #####################################################################
+## DECORATORS #################################################################
+
+def update_history(fn):
+    """
+    Decorates the input function so that the date_modified property of the 
+    first argument (usually called 'self') is set to the current timestamp.
+    """
+    @functools.wraps(fn)
+    def move_wrapper(self, coords, absolute=True):
+        self._move_history = [coords] + self._move_history
+        self._move_history = self._move_history[:self._max_history_length]
+        return fn(self, coords, absolute=absolute)
+    return move_wrapper
+
+## CLASSES ####################################################################
 
 class AxisCollection(object):
+    """
+    Abstract class whose derived classes represent collections of axes. 
+    Instances of these derived classes can be nested in powerful ways to 
+    allow for the creation of complicated axis systems with a simple 
+    interface.    
+    """
     __metaclass__ = abc.ABCMeta
     
     ## INITIALIZER ##
@@ -43,30 +65,71 @@ class AxisCollection(object):
     def __init__(self):
         # Setup events.
         self._on_start_scan = Event()
+        # Useful to have the startup position in the history
+        self._move_history = [self.position]
         
     ## PROPERTIES ##
     
+    _max_history_length = 10
     on_start_scan = event_property('_on_start_scan', doc="""
         Event fired whenever a scan across this axis collection is started.
     """)
     
     @abc.abstractproperty
-    def is_hardware_scannable(self): pass
+    def is_hardware_scannable(self): 
+        """
+        Tuple specifying which of the constituent axes can perform a sequence 
+        of movements in hardware without software intervention.
+        """        
+        pass
     
     @abc.abstractproperty
-    def limits(self): pass
+    def limits(self): 
+        """
+        Tuple of range limits for each constituent axis. Each range limit 
+        should be of the form (min_pos, max_pos).
+        """        
+        pass
     
     @abc.abstractproperty
-    def get_position(self): pass
+    def position(self): 
+        """
+        The current position of each constituent axis.
+        """        
+        pass
+
+    @property
+    def move_history(self):
+        """
+        A list of the latest coordinates coordinates issued to the 
+        `move` command. The most recent is the 0th element of the list.
+        """
+        return self._move_history
 
     # should return a quantities.quantity.Quantity
     @abc.abstractproperty
-    def units(self): pass
-       
+    def units(self): 
+        """
+        A tuple of the native units of each constituent axis.
+        """        
+        pass
+
+    ## PRIVATE METHODS ##
+    
+    def _within_limits(self, coord):
+        each_axis_within = [lim[0] <= c and c <= lim[1] for c, lim in izip(coord, self.limits)]
+        return all(each_axis_within)
+
     ## METHODS ##
     
+    # We abstract the underscore versions of the following functions to 
+    # force certain actions like logging movement history, and enforcing
+    # software limits.
+    
     @abc.abstractmethod
-    def move(self, position, absulote=True):
+    def _move(self, position, absolute=True): pass
+    @update_history
+    def move(self, position, absolute=True):
         """
         Moves the axis to the given position.
         
@@ -75,9 +138,12 @@ class AxisCollection(object):
         :param bool absolute: Absolute movement if True, relative movement 
             if false.
         """
-        pass
+        if not self._within_limits(position):
+            raise ValueError('Position {} not within software limits {}.'.format(position, self.limits))
+        self._move(position, absolute=absolute)
     
     @abc.abstractmethod
+    def _scan(self, coords, dwell_time=None): pass
     def scan(self, coords, dwell_time=None):
         """
         Scans the axes through a parametric path.
@@ -88,12 +154,14 @@ class AxisCollection(object):
         :param dwell_time: The amount of time to wait between each point in 
             the scan. Can be set to None to wait for no time.
         """
-        # This method should be called by derived classes to ensure that the
-        # event is fired correctly.
-        self.on_start_scan(coords)
+        for coord in coords:
+            if not self._within_limits(coord):
+                raise ValueError('Scan coordinate {} not within software limits {}.'.format(coord, self.limits))
+        self._scan(coords, dwell_time=dwell_time)
         
     @abc.abstractmethod
-    def raster(self, start, stop, num, dwell_time=None):
+    def _raster(self, start, stop, num, dwell_time=None, strict=True): pass
+    def raster(self, start, stop, num, dwell_time=None, strict=True):
         """
         Sets up the scan method with a path that fills a (hyper)-rectangle of
         the axes parameter space. Whether this path is constructed snake-style 
@@ -106,8 +174,17 @@ class AxisCollection(object):
             start to stop for each axis.
         :param dwell_time: The amount of time to wait between each point in 
             the scan. Can be set to None to wait for no time.
+        :param bool strict: Whether or not the rastering pattern should be 
+            strict about following the start, stop, num parameters to the 
+            letter. (In some cases, like with parallel axes, when strict=False,
+            the raster algorithm can optimize the parameters a bit to 
+            fill space without overlapping.)
         """
-        pass
+        if not self._within_limits(start):
+            raise ValueError('Start coordinate {} not within software limits {}.'.format(start, self.limits))
+        if not self._within_limits(stop):
+            raise ValueError('Stop coordinate {} not within software limits {}.'.format(stop, self.limits))
+        self._raster(start, stop, num, dwell_time=dwell_time, strict=strict)
     
     # Require implementors to say how long they are (that is, how many axes).
     @abc.abstractmethod
