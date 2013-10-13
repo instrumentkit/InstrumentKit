@@ -41,6 +41,12 @@ def assume_units(value, units):
     if not isinstance(value, pq.Quantity):
         value = pq.Quantity(value, units)
     return value
+    
+def compatible_units(val1, val2):
+    """
+    Returns `True` if inputs have compatible units, and `False` otherwise.
+    """
+    return val1.dimensionality.simplified == val2.dimensionality.simplified
 
 ## CLASSES #####################################################################
 
