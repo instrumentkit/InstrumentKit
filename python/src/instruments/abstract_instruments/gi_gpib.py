@@ -193,7 +193,7 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         self.sendcmd(msg)
         if '?' not in msg:
             self._file.sendcmd('+read')
-        return self._file.read(size)
+        return self._file.read(size).strip()
         
         
     
