@@ -192,7 +192,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         
         :rtype: `_TekTDS224Channel`
         '''
-        return ProxyList(self, _TekTDS224, xrange(4))
+        return ProxyList(self, _TekTDS224Channel, xrange(4))
         
     @property
     def ref(self):
