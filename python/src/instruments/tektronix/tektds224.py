@@ -107,29 +107,29 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
         with self:
             
             if not bin_format:
-                self.sendcmd('DAT:ENC ASCI') # Set the data encoding format to ASCII
-                raw = self.query('CURVE?')
+                self._tek.sendcmd('DAT:ENC ASCI') # Set the data encoding format to ASCII
+                raw = self._tek.query('CURVE?')
                 raw = raw.split(',') # Break up comma delimited string
                 raw = map(float, raw) # Convert each list element to int
                 raw = array(raw) # Convert into numpy array
             else:
-                self.write('DAT:ENC RIB') # Set encoding to signed, big-endian
+                self._tek.write('DAT:ENC RIB') # Set encoding to signed, big-endian
                 data_width = self._tek.data_width
-                self.write('CURVE?')
-                raw = self.binblockread(data_width) # Read in the binary block, 
+                self._tek.write('CURVE?')
+                raw = self._tek.binblockread(data_width) # Read in the binary block, 
                                                     # data width of 2 bytes
 
                 #self.ser.read(2) # Read in the two ending \n\r characters
             
-            yoffs = self.query('WFMP:{}:YOF?'.format(self.name)) # Retrieve Y offset
-            ymult = self.query('WFMP:{}:YMU?'.format(self.name)) # Retrieve Y multiply
-            yzero = self.query('WFMP:{}:YZE?'.format(self.name)) # Retrieve Y zero
+            yoffs = self._tek.query('WFMP:{}:YOF?'.format(self.name)) # Retrieve Y offset
+            ymult = self._tek.query('WFMP:{}:YMU?'.format(self.name)) # Retrieve Y multiply
+            yzero = self._tek.query('WFMP:{}:YZE?'.format(self.name)) # Retrieve Y zero
             
             y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
             
-            xzero = self.query('WFMP:XZE?') # Retrieve X zero
-            xincr = self.query('WFMP:XIN?') # Retrieve X incr
-            ptcnt = self.query('WFMP:{}:NR_P?'.format(self.name)) # Retrieve number 
+            xzero = self._tek.query('WFMP:XZE?') # Retrieve X zero
+            xincr = self._tek.query('WFMP:XIN?') # Retrieve X incr
+            ptcnt = self._tek.query('WFMP:{}:NR_P?'.format(self.name)) # Retrieve number 
                                                                   # of data points
             
             x = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
