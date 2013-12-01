@@ -146,7 +146,7 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
         designed to be initialized by the `TekTDS224` class.
     '''
     
-    def __init(self, parent, idx):
+    def __init__(self, parent, idx):
         super(_TekTDS224Channel, self).__init__(parent, "CH{}".format(idx + 1))
         self._idx = idx + 1
 
