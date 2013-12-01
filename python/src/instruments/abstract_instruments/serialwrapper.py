@@ -119,13 +119,18 @@ class SerialWrapper(io.IOBase, WrapperABC):
         
     def read(self, size):
         if (size >= 0):
-            return self._conn.read(size)
+            resp = self._conn.read(size)
+            if self._debug:
+                print " -> {} ".format(repr(resp))
+            return resp
         elif (size == -1):
             result = bytearray()
             c = 0
             while c != self._terminator:
                 c = self._conn.read(1)
                 result += c
+            if self._debug:
+                print " -> {} ".format(repr(result))
             return bytes(result)
         else:
             raise ValueError('Must read a positive value of characters.')
@@ -155,8 +160,4 @@ class SerialWrapper(io.IOBase, WrapperABC):
         '''
         '''
         self.sendcmd(msg)
-        resp = self.read(size)
-        # FIXME: move the following debug to read().
-        if self._debug:
-            print " -> {}".format(repr(resp))
-        return resp
+        return self.read(size)
