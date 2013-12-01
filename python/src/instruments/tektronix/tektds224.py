@@ -28,6 +28,7 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
+import time
 import numpy as np
 import quantities as pq
 from flufl.enum import Enum
@@ -239,7 +240,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
             elif hasattr(newval, "name"): # Is a datasource with a name.
                 newval = newval.name
         self.sendcmd("DAT:SOU {}".format(newval))
-        sleep(0.01) # Let the instrument catch up.
+        time.sleep(0.01) # Let the instrument catch up.
         
     @property
     def data_width(self):
