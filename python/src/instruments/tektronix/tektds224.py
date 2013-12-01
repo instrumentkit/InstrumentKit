@@ -250,4 +250,9 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
             raise ValueError("Only one or two byte-width is supported.")
         
         self.sendcmd("DATA:WIDTH {}".format(newval))
+
+    @property
+    def force_trigger(self):
+        raise NotImplementedError
+    
         
