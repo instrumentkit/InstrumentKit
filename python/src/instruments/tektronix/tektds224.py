@@ -113,9 +113,9 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
                 raw = map(float, raw) # Convert each list element to int
                 raw = array(raw) # Convert into numpy array
             else:
-                self._tek.write('DAT:ENC RIB') # Set encoding to signed, big-endian
+                self._tek.sendcmd('DAT:ENC RIB') # Set encoding to signed, big-endian
                 data_width = self._tek.data_width
-                self._tek.write('CURVE?')
+                self._tek.sendcmd('CURVE?')
                 raw = self._tek.binblockread(data_width) # Read in the binary block, 
                                                     # data width of 2 bytes
 
