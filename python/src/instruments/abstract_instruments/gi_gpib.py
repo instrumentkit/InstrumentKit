@@ -157,8 +157,8 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         msg = self._file.read(size)
 
         # Check for extra terminators added by the GI-GPIB adapter.
-        if msg[-1] == "\r":
-            msg = msg[:-1]
+        #if msg[-1] == "\r":
+        #    msg = msg[:-1]
 
         return msg
     
