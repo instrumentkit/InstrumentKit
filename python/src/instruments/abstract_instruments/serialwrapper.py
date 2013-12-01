@@ -128,7 +128,8 @@ class SerialWrapper(io.IOBase, WrapperABC):
             c = 0
             while c != self._terminator:
                 c = self._conn.read(1)
-                result += c
+                if c != self._terminator:
+                    result += c
             if self._debug:
                 print " -> {} ".format(repr(result))
             return bytes(result)
