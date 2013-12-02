@@ -85,7 +85,8 @@ class WrapperABC(object):
         the communication channel without appending other data.
         '''
         raise NotImplementedError
-        
+    
+    @abc.abstractmethod    
     def query(self, msg, size=-1):
         '''
         Send a string to the connected instrument using sendcmd and read the
