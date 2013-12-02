@@ -170,6 +170,13 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         '''
         self._file.write(msg)
         
+    def flush_input(self):
+        '''
+        Instruct the wrapper to flush the input buffer, discarding the entirety
+        of its contents.
+        '''
+        self._file.flush_input()
+        
     ## METHODS ##
     
     def sendcmd(self, msg):

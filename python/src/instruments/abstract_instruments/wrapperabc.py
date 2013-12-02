@@ -99,4 +99,12 @@ class WrapperABC(object):
         instrument to send its response.
         '''
         raise NotImplementedError
+        
+    @abc.abstractmethod
+    def flush_input(self):
+        '''
+        Instruct the wrapper to flush the input buffer, discarding the entirety
+        of its contents.
+        '''
+        raise NotImplementedError
 

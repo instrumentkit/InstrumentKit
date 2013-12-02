@@ -149,6 +149,15 @@ class SerialWrapper(io.IOBase, WrapperABC):
     def tell(self):
         return NotImplemented
         
+    def flush_input(self):
+        '''
+        Instruct the wrapper to flush the input buffer, discarding the entirety
+        of its contents.
+        
+        Calls the pyserial flushInput() method.
+        '''
+        self._conn.flushInput()
+        
     ## METHODS ##
     
     def sendcmd(self, msg):

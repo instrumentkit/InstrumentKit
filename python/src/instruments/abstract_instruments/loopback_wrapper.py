@@ -111,6 +111,9 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
     def tell(self):
         return NotImplemented
         
+    def flush_input(self):
+        pass
+        
     ## METHODS ##
     
     def sendcmd(self, msg):
