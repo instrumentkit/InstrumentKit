@@ -119,7 +119,7 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
                 raw = self._tek.binblockread(data_width) # Read in the binary block, 
                                                     # data width of 2 bytes
 
-                #self.ser.read(2) # Read in the two ending \n\r characters
+                self._tek._file.flush_input() # Flush input buffer
             
             yoffs = self._tek.query('WFMP:{}:YOF?'.format(self.name)) # Retrieve Y offset
             ymult = self._tek.query('WFMP:{}:YMU?'.format(self.name)) # Retrieve Y multiply
