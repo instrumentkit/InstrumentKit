@@ -30,12 +30,16 @@ from __future__ import division
 
 import quantities as pq
 
+from instruments import (
+    PowerSupply,
+    PowerSupplyChannel,
+)
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units, ProxyList
 
 ## CLASSES #####################################################################
 
-class _HP6624aChannel(object):
+class _HP6624aChannel(PowerSupplyChannel):
     '''
     Class representing a power output channel on the HP6624a.
     
@@ -48,11 +52,22 @@ class _HP6624aChannel(object):
         self._idx = idx + 1
         
     ## PROPERTIES ##
+    
+    @property
+    def mode(self):
+        """
+        Gets/sets the mode for the specified channel.
+        """
+        raise NotImplementedError
+    @mode.setter
+    def mode(self, newval):
+        raise NotImplementedError
         
     @property
     def voltage(self):
         '''
-        Gets/sets the voltage of the specified channel.
+        Gets/sets the voltage of the specified channel. If the device is in
+        constant current mode, this sets the voltage limit.
         
         Note there is no bounds checking on the value specified.
         
@@ -71,7 +86,8 @@ class _HP6624aChannel(object):
     @property
     def current(self):
         '''
-        Gets/sets the current of the specified channel.
+        Gets/sets the current of the specified channel. If the device is in 
+        constant voltage mode, this sets the current limit.
         
         Note there is no bounds checking on the value specified.
         
@@ -86,6 +102,30 @@ class _HP6624aChannel(object):
             self._idx,
             assume_units(newval, pq.amp).rescale(pq.amp).magnitude
             ))
+            
+    @property
+    def voltage_sense(self):
+        """
+        Gets the actual voltage as measured by the sense wires for the 
+        specified channel.
+        
+        :units: :math:`\\text{V}` (volts)
+        :rtype: `~quantities.Quantity`
+        """
+        return pq.Quantity(float(self._hp.query(
+                        'VOUT? {}'.format(self._idx)).strip()[:-1]), pq.volt)
+    
+    @property
+    def current_sense(self):
+        """
+        Gets the actual output current as measured by the instrument for
+        the specified channel.
+        
+        :units: :math:`\\text{A}` (amps)
+        :rtype: `~quantities.Quantity`
+        """
+        return pq.Quantity(float(self._hp.query(
+                        'IOUT? {}'.format(self._idx)).strip()[:-1]), pq.amp)
         
     @property
     def overvoltage(self):
@@ -119,7 +159,7 @@ class _HP6624aChannel(object):
                 is '1' else False)
     @overcurrent.setter
     def overcurrent(self, newval):
-        if (newval is True) or (newval is 1):
+        if newval is True:
             newval = 1
         else:
             newval = 0
@@ -139,12 +179,11 @@ class _HP6624aChannel(object):
                 is '1' else False)
     @output.setter
     def output(self, newval):
-        if (newval is True) or (newval is 1):
+        if newval is True:
             newval = 1
         else:
             newval = 0
         self._hp.sendcmd('OUT {},{}'.format(self._idx, newval))
-    
     
     ## METHODS ##
     
@@ -156,13 +195,14 @@ class _HP6624aChannel(object):
         self._hp.sendcmd('OCRST {}'.format(self._idx))
 
     
-class HP6624a(Instrument):  
+class HP6624a(PowerSupply):  
     '''
     The HP6624a is a multi-output power supply. 
     
     This class can also be used for HP662xa, where x=1,2,3,4,7. Note that some 
     models have less channels then the HP6624 and it is up to the user to take 
-    this into account.
+    this into account. This can be changed with the `~HP6624a.channel_count`
+    property.
     
     Example usage:
     
@@ -170,6 +210,17 @@ class HP6624a(Instrument):
     >>> psu = ik.hp.HP6624a.open_gpibusb('/dev/ttyUSB0', 1)
     >>> psu.channel[0].voltage = 10 # Sets channel 1 voltage to 10V.
     '''  
+    
+    def __init__(self, filelike):
+        super(HP6624a, self).__init__(filelike)
+        self._channel_count = 4
+    
+    ## ENUMS ##
+    
+    def Mode(Enum):
+        #TODO: lookup correct values here...can this model even do this?
+        voltage = 0
+        current = 0
     
     ## PROPERTIES ##
     
@@ -184,7 +235,100 @@ class HP6624a(Instrument):
         .. seealso::
             `HP6624a` for example using this property.
         '''
-        return ProxyList(self, _HP6624aChannel, xrange(4))
+        return ProxyList(self, _HP6624aChannel, xrange(self.channel_count))
+        
+    @property
+    def voltage(self):
+        """
+        Gets/sets the voltage for all four channels.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units Volts.
+        :type: `list` of `~quantities.Quantity` with units Volt
+        """
+        values = []
+        for i in xrange(self.channel_count):
+            values.append(self.channel[i].voltage)
+        return tuple(values)
+    @voltage.setter
+    def voltage(self, newval):
+        if isinstance(newval, list) or isinstance(newval, tuple):
+            if len(newval) is not self.channel_count:
+                raise ValueError('When specifying the voltage for all channels '
+                                 'as a list or tuple, it must be of '
+                                 'length {}.'.format(self.channel_count))
+            self.channel[i].voltage = newval[i]
+        else:
+            for i in xrange(self.channel_count):
+                self.channel[i].voltage = newval
+                
+    @property
+    def current(self):
+        """
+        Gets/sets the current for all four channels.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units Amps.
+        :type: `list` of `~quantities.Quantity` with units Amp
+        """
+        values = []
+        for i in xrange(self.channel_count):
+            values.append(self.channel[i].current)
+        return tuple(values)
+    @current.setter
+    def current(self, newval):
+        if isinstance(newval, list) or isinstance(newval, tuple):
+            if len(newval) is not self.channel_count:
+                raise ValueError('When specifying the current for all channels '
+                                 'as a list or tuple, it must be of '
+                                 'length {}.'.format(self.channel_count))
+            self.channel[i].current = newval[i]
+        else:
+            for i in xrange(self.channel_count):
+                self.channel[i].current = newval
+                
+    @property
+    def voltage_sense(self):
+        """
+        Gets the actual voltage as measured by the sense wires for all channels.
+        
+        :units: :math:`\\text{V}` (volts)
+        :rtype: `tuple` of `~quantities.Quantity`
+        """
+        values = []
+        for i in xrange(self.channel_count):
+            values.append(self.channel[i].voltage_sense)
+        return tuple(values)
+        
+    @property
+    def current_sense(self):
+        """
+        Gets the actual current as measured by the instrument for all channels.
+        
+        :units: :math:`\\text{A}` (amps)
+        :rtype: `tuple` of `~quantities.Quantity`
+        """
+        values = []
+        for i in xrange(self.channel_count):
+            values.append(self.channel[i].current_sense)
+        return tuple(values)
+                
+    @property
+    def channel_count(self):
+        """
+        Gets/sets the number of output channels available for the connected
+        power supply.
+        
+        :type: `int`
+        """
+        return self._channel_count
+    @channel_count.setter
+    def channel_count(self, newval):
+        if not isinstance(newval, int):
+            raise TypeError('Channel count must be specified as an integer.')
+        if newval < 1:
+            raise ValueError('Channel count must be >=1')
+        self._channel_count = newval
     
     ## METHODS ##
         
