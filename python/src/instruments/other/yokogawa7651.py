@@ -182,7 +182,8 @@ class Yokogawa7651(PowerSupply, Instrument):
             of units Volts.
         :type: `~quantities.Quantity` with units Volt
         """
-        raise NotImplementedError
+        raise NotImplementedError('This instrument does not support querying '
+                                  'the output voltage setting.')
     @voltage.setter
     def voltage(self, newval):
         self.channel[0].voltage = newval
@@ -198,7 +199,8 @@ class Yokogawa7651(PowerSupply, Instrument):
             of units Amps.
         :type: `~quantities.Quantity` with units Amp
         """
-        raise NotImplementedError
+        raise NotImplementedError('This instrument does not support querying '
+                                  'the output current setting.')
     @current.setter
     def current(self, newval):
         self.channel[0].current = newval
