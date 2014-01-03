@@ -31,11 +31,11 @@ from __future__ import division
 import quantities as pq
 from flufl.enum import Enum
 from flufl.enum._enum import EnumValue
+
 from instruments import (
     PowerSupply,
     PowerSupplyChannel,
 )
-
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units, ProxyList
 
