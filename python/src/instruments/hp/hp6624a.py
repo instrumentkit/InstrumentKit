@@ -3,7 +3,7 @@
 ##
 # hp6624a.py: Python class for the HP 6624a power supply
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
