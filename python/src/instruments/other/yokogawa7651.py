@@ -3,7 +3,7 @@
 ##
 # yokogawa7651.py: Driver for the Yokogawa 7651 power supply.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -28,15 +28,182 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
+import quantities as pq
+from flufl.enum import Enum
+from flufl.enum._enum import EnumValue
+from instruments import (
+    PowerSupply,
+    PowerSupplyChannel,
+)
+
 from instruments.abstract_instruments import Instrument
+from instruments.util_fns import assume_units, ProxyList
 
 ## CLASSES #####################################################################
 
-class Yokogawa7651(Instrument):
+class _Yokogawa7651Channel(PowerSupplyChannel):
+    '''
+    Class representing the only channel on the Yokogawa 7651.
+    
+    This class inherits from `PowerSupplyChannel`.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `Yokogawa7651` class.
+    '''
+    
+    __init__(self, yoko, name):
+        self._yoko = yoko
+        self._name = name
+    
+    ## PROPERTIES ##
+    
+    @property
+    def mode(self):
+        """
+        Sets the output mode for the power supply channel.
+        This is either constant voltage or constant current.
+        
+        Querying the mode is not supported by this instrument.
+        
+        :type: `Yokogawa7651.Mode`
+        """
+        raise NotImplementedError('This instrument does not support querying '
+                                  'the operation mode.')
+    @mode.setter
+    def mode(self, newval):
+        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
+                                                           Yokogawa7651.Mode):
+            raise TypeError("Mode setting must be a `Yokogawa7651.Mode` "
+                            "value, got {} instead.".format(type(newval)))
+        self._yoko.sendcmd('F{};'.format(newval.value))
+        self._yoko.trigger()
+        
+    @property
+    def voltage(self):
+        """
+        Sets the voltage of the specified channel. This device has a voltage
+        range of 0V to +30V.
+        
+        Querying the voltage is not supported by this instrument.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units Volts.
+        :type: `~quantities.Quantity` with units Volt
+        """
+        raise NotImplementedError('This instrument does not support querying '
+                                  'the output voltage setting.')
+    @voltage.setter
+    def voltage(self, newval):
+        newval = float(assume_units(newval, pq.volt).rescale(pq.volt).magnitude)
+        self.mode = self._yoko.Mode.voltage
+        self._yoko.sendcmd('SA{};'.format(newval))
+        self._yoko.trigger()
+        
+    @property
+    def current(self):
+        """
+        Sets the current of the specified channel. This device has an max
+        setting of 100mA.
+        
+        Querying the current is not supported by this instrument.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units Amps.
+        :type: `~quantities.Quantity` with units Amp
+        """
+        raise NotImplementedError('This instrument does not support querying '
+                                  'the output current setting.')
+    @current.setter
+    def current(self, newval):
+        newval = float(assume_units(newval, pq.amp).rescale(pq.amp).magnitude)
+        self.mode = self._yoko.Mode.current
+        self._yoko.sendcmd('SA{};'.format(newval))
+        self._yoko.trigger()
+        
+    @property
+    def output(self):
+        """
+        Sets the output status of the specified channel. This either enables
+        or disables the output.
+        
+        Querying the output status is not supported by this instrument.
+        
+        :type: `bool`
+        """
+        raise NotImplementedError('This instrument does not support querying '
+                                  'the output status.')
+    @output.setter
+    def output(self, newval):
+        if newval is True:
+            self._yoko.sendcmd('O1;')
+            self._yoko.trigger()
+        else:
+            self._yoko.sendcmd('O0;')
+            self._yoko.trigger()
+
+class Yokogawa7651(PowerSupply, Instrument):
 
     def __init__(self, filelike):
         super(Yokogawa7651, self).__init__(filelike)
-        self._outputting = 0
+        self._outputting = 0 # TODO: Do we want to track output status anymore?
+        
+    ## ENUMS ##
+    
+    def Mode(Enum):
+        voltage = 1
+        current = 5
+        
+    ## PROPERTIES ##
+    
+    @property
+    def channel(self):
+        """
+        Gets the specific power supply channel object. Since the Yokogawa7651
+        is only equiped with a single channel, a list with a single element
+        will be returned.
+        
+        This (single) channel is accessed as a list in the following manner::
+        
+        >>> yoko = ik.other.Yokogawa7651.open_gpibusb('/dev/ttyUSB0', 10)
+        >>> yoko.channel[0].voltage = 1 # Sets output voltage to 1V
+        
+        :rtype: `_Yokogawa7651Channel`
+        """
+        return ProxyList(self, _Yokogawa7651Channel, [0])
+        
+    @property
+    def voltage(self):
+        """
+        Sets the voltage. This device has a voltage range of 0V to +30V.
+        
+        Querying the voltage is not supported by this instrument.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units Volts.
+        :type: `~quantities.Quantity` with units Volt
+        """
+        raise NotImplementedError
+    @voltage.setter
+    def voltage(self, newval):
+        self.channel[0].voltage = newval
+        
+    @property
+    def current(self):
+        """
+        Sets the current. This device has an max setting of 100mA.
+        
+        Querying the current is not supported by this instrument.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units Amps.
+        :type: `~quantities.Quantity` with units Amp
+        """
+        raise NotImplementedError
+    @current.setter
+    def current(self, newval):
+        self.channel[0].current = newval
+    
+    ## METHODS ##
         
     def trigger(self):
         '''
@@ -48,6 +215,7 @@ class Yokogawa7651(Instrument):
         self.sendcmd('E;')
     
     def set_voltage_range(self, voltage):
+    # TODO: refactor, or eliminate
         '''
         Function changes the voltage range of the power supply. 
         A float representing the desired voltage will have the range adjusted 
@@ -87,6 +255,7 @@ class Yokogawa7651(Instrument):
         self.trigger()
     
     def set_current_range(self, current):
+    # TODO: refactor, or eliminate
         '''
         Function changes the current range of the power supply. 
         A float representing the desired current will have the range adjusted 
@@ -119,81 +288,4 @@ class Yokogawa7651(Instrument):
         self.sendcmd('R{};'.format(yokoRange))
         self.trigger()
       
-    def set_function(self,func):
-        '''
-        Set the output of the Yokogawa 7651 to either constant voltage or 
-        constant current mode.
-        
-        func: Desired constant (voltage or current) mode.
-        func = {VOLTAGE|CURRENT},string
-        '''
-        if not isinstance(func, str):
-            raise TypeError('Parameter "func" must be a string.')
-            
-        func = func.lower()
-        
-        if func == 'voltage':
-            setting = 1
-        elif func == 'current':
-            setting = 5
-        else:
-            raise ValueError('Only allowed values are "voltage" '
-                               'and "current".')
-        
-        self.sendcmd('F{};'.format(setting))
-        self.trigger()
-       
-    def set_voltage(self,voltage):
-        '''
-        Set the output voltage of the power supply.
-        
-        :param float voltage: Desired constant output voltage
-        voltage = <0...+30.0>,float
-        '''
-        
-        if (isinstance(voltage, float)) or (isinstance(voltage, int)):
-            self.setVoltageRange(voltage)
-            self.sendcmd('S{};'.format(voltage))
-            self.trigger()
-        else:
-            raise TypeError('Please specify voltage as a integer for float.')
-       
-    def output(self,setting):
-        '''
-        Enable or disable the output of the Yokogawa 7651.
-        
-        :param setting: Specify the state of the power supply output. One of
-            {0|1|OFF|ON}
-        :type: `int` or `str`
-        '''
-        if isinstance(setting, str):
-            setting = setting.lower()
-        
-            if setting in ['off','on']:
-                setting = ['off','on'].index(setting)
-            if setting in ['0','1']:
-                setting = int(setting)
-                
-        if setting not in [0,1]:
-            raise ValueError('Valid parameters are "on", "off", 1 and 0.')
-        
-        if setting == 1: # If we want to turn the output on
-            if self._outputting == 0: # and we are NOT currently _outputting
-                self.sendcmd('O1;')
-                self.trigger()
-                self._outputting = 1
-        else: # If we want to turn the output off
-            if self._outputting == 1: # and we are curently _outputting
-                self.sendcmd('O0;')
-                self.trigger()
-                self._outputting = 0
-                
-        
-        
-        
-                
-                
-                
-                
-                
-                
+
