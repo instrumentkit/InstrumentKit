@@ -51,7 +51,7 @@ class _Yokogawa7651Channel(PowerSupplyChannel):
         designed to be initialized by the `Yokogawa7651` class.
     '''
     
-    __init__(self, yoko, name):
+    def __init__(self, yoko, name):
         self._yoko = yoko
         self._name = name
     
