@@ -4,6 +4,7 @@
 # keithley580.py: Driver for the Keithley 580 micro-ohmmeter.
 ##
 # © 2013 Willem Dijkstra (wpd@xs4all.nl).
+#   2014 Steven Casagrande (scasagrande@galvant.ca)
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -30,6 +31,10 @@ from __future__ import division
 
 import time
 import struct
+from flufl.enum import enum
+
+import quantities as pq
+import numpy as np
 
 from instruments.abstract_instruments import Instrument
 
@@ -50,8 +55,8 @@ class Keithley580(Instrument):
         Initialise the instrument and remove CRLF line termination
         '''
         super(Keithley580, self).__init__(self, filelike)
-        self.sendcmd('YX')
-
+        self.sendcmd('YX') # Removes the termination CRLF characters
+                           # from the instruments
 
     def trigger(self):
         self.sendcmd('X')
