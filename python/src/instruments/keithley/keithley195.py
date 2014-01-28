@@ -94,7 +94,7 @@ class Keithley195(Multimeter):
         
     ## METHODS ##
     
-    def measure(self, mode):
+    def measure(self, mode = None):
         '''
         Instruct the Keithley 195 to perform a one time measurement. The 
         instrument will use default parameters for the requested measurement.
@@ -115,8 +115,9 @@ class Keithley195(Multimeter):
         :type mode: `Keithley195.Mode`
         :rtype: `~quantities.quantity.Quantity`
         '''
-        self.mode = mode
-        time.sleep(0.1)
+        if mode is not None:
+            self.mode = mode
+            time.sleep(0.1)
         value = float(self.query(''))
         return value * UNITS[mode]
     
