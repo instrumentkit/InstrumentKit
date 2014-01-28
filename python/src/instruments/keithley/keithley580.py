@@ -32,6 +32,7 @@ from __future__ import division
 import time
 import struct
 from flufl.enum import enum
+from flufl.enum._enum import EnumValue
 
 import quantities as pq
 import numpy as np
@@ -57,42 +58,81 @@ class Keithley580(Instrument):
         super(Keithley580, self).__init__(self, filelike)
         self.sendcmd('YX') # Removes the termination CRLF characters
                            # from the instruments
+                           
+    ## ENUMS ##
+    
+    class Polarity(Enum):
+        positive = 0
+        negative = 1
+        
+    class Drive(Enum):
+        pulsed = 0
+        dc = 1
+        
+    ## PROPERTIES ##
+
+    @property
+    def polarity(self, func):
+        """
+        Sets instrument polarity.
+        
+        Example use:
+        
+        >>> import instruments as ik
+        >>> keithley = ik.keithley.Keithley580.open_gpibusb('/dev/ttyUSB0', 1)
+        >>> keithley.polarity = keithley.Polarity.positive
+        
+        :type: `Keithley580.Polarity`
+        """
+        raise NotImplementedError
+    @polarity.setter
+    def polarity(self, newval):
+        if isinstance(newval, str):
+            newval = Keithley580.Polarity[newval]
+        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
+                                                        Keithley580.Polarity):
+            raise TypeError('Polarity must be specified as a ' 
+                            'Keithley580.Polarity, got {} '
+                            'instead.'.format(newval))
+        
+        self.sendcmd('P{}X'.format(newval.value))
+
+    @property
+    def drive(self, func):
+        """
+        Sets the instrument drive to either pulsed or DC.
+        
+        Example use:
+        
+        >>> import instruments as ik
+        >>> keithley = ik.keithley.Keithley580.open_gpibusb('/dev/ttyUSB0', 1)
+        >>> keithley.drive = keithley.Drive.pulsed
+        
+        :type: `Keithley580.Drive`
+        """
+        raise NotImplementedError
+    @drive.setter
+    def drive(self, newval):
+        if  isinstance(newval, str):
+           newval = Keithley580.Drive[newval]
+        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
+                                                            Keithley580.Drive):
+            raise TypeError('Drive must be specified as a ' 
+                            'Keithley580.Drive, got {} '
+                            'instead.'.format(newval))
+
+        self.sendcmd('D{}X'.format(newval.value))
+
+    ## METHODS ## 
 
     def trigger(self):
+        '''
+        Tell the Keithley 580 to execute all commands that it has received.
+        
+        Do note that this is different from the standard SCPI \*TRG command
+        (which is not supported by the 580 anyways).
+        '''
         self.sendcmd('X')
-
-
-    def setPolarity(self, func):
-        if not isinstance(func, str):
-            raise TypeError('Polarity mode must be a string.')
-        func = func.lower()
-
-        valid = {'positive': 0, '+': 0,
-                 'negative': 1, '-': 1}
-
-        if valid.has_key(func):
-            func = valid[func]
-        else:
-            raise ValueError('Valid drive modes '
-                             'are: ' + ', '.join(valid.keys()))
-
-        self.sendcmd('P{}X'.format(func))
-
-
-    def setDrive(self, func):
-        if not isinstance(func, str):
-            raise TypeError('Drive mode must be a string.')
-        func = func.lower()
-
-        valid = ['pulsed', 'dc']
-
-        if func in valid:
-            func = valid.index(func)
-        else:
-            raise ValueError('Valid drive modes are: ' + str(valid))
-
-        self.sendcmd('D{}X'.format(func))
-
 
     def setDryCircuitTest(self, dc):
         if not isinstance(dc, bool):
