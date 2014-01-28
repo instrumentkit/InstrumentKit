@@ -134,14 +134,14 @@ class Keithley580(Instrument):
         '''
         self.sendcmd('X')
 
-    def setDryCircuitTest(self, dc):
+    def dry_circuit_test(self, dc):
         if not isinstance(dc, bool):
             raise TypeError('DryCircuitTest mode must be a boolean.')
 
         self.sendcmd('C{}X'.format(int(dc)))
 
 
-    def setResistanceRange(self, res):
+    def set_resistance_range(self, res):
         if isinstance(res, str):
             res = res.lower()
             if res == 'auto':
@@ -163,35 +163,41 @@ class Keithley580(Instrument):
         self.sendcmd('R{}X'.format(res))
 
 
-    def setAutoRange(self):
+    def set_auto_range(self):
+        """
+        Turn on auto range for the Keithley 580.
+        
+        This is the same as calling the `Keithley580.set_resistance_range`
+        method and setting the parameter to "AUTO".
+        """
         self.sendcmd('R0X')
 
 
-    def setOperate(self, dc):
+    def set_operate(self, dc):
         if not isinstance(dc, bool):
             raise TypeError('Operate mode must be a boolean.')
 
         self.sendcmd('O{}X'.format(int(dc)))
 
 
-    def setRelative(self, dc):
+    def set_relative(self, dc):
         if not isinstance(dc, bool):
             raise TypeError('Operate mode must be a boolean.')
 
         self.sendcmd('Z{}X'.fomrat(int(dc)))
 
 
-    def setCalibrationValue(self, value):
+    def set_calibration_value(self, value):
         # self.write('V+n.nnnnE+nn')
         raise NotImplementedError('setCalibrationValue not implemented')
 
 
-    def storeCalibrationConstants(self):
+    def store_calibration_constants(self):
         # self.write('L0X')
         raise NotImplementedError('setCalibrationConstants not implemented')
 
 
-    def setTrigger(self, trigger):
+    def set_trigger(self, trigger):
         if not isinstance(func, str):
             raise TypeError('Trigger mode must be a string.')
         func = func.lower()
@@ -212,7 +218,7 @@ class Keithley580(Instrument):
         self.sendcmd('T{}X'.format(func))
 
 
-    def getStatusWord(self):
+    def get_status_word(self):
         '''
         The keithley will not always respond with the statusword when asked. We
         use a simple heuristic here: request it up to 5 times, using a 1s
@@ -234,7 +240,7 @@ class Keithley580(Instrument):
         return statusword[:-1]
 
 
-    def parseStatusWord(self, statusword):
+    def parse_status_word(self, statusword):
         if statusword[:3] != '580':
             raise ValueError('Status word starts with wrong '
                              'prefix: {}'.format(statusword))
@@ -281,14 +287,14 @@ class Keithley580(Instrument):
                  'terminator' : terminator }
 
 
-    def getMeasurement(self):
+    def get_measurement(self):
         self.trigger()
         self.sendcmd('+read')
         return self._file.read(-1).strip() # Be sure to replace this 
                                            # during refactoring
 
 
-    def parseMeasurement(self, measurement):
+    def parse_measurement(self, measurement):
         (status, polarity, drycircuit, drive, resistance, terminator) = \
             struct.unpack('@4c11sc', measurement)
 
