@@ -32,7 +32,6 @@ from __future__ import division
 import time
 import struct
 from flufl.enum import enum
-from flufl.enum._enum import EnumValue
 
 import quantities as pq
 import numpy as np
@@ -89,8 +88,7 @@ class Keithley580(Instrument):
     def polarity(self, newval):
         if isinstance(newval, str):
             newval = Keithley580.Polarity[newval]
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                        Keithley580.Polarity):
+        if newval not in Keithley580.Polarity:
             raise TypeError('Polarity must be specified as a ' 
                             'Keithley580.Polarity, got {} '
                             'instead.'.format(newval))
@@ -114,9 +112,8 @@ class Keithley580(Instrument):
     @drive.setter
     def drive(self, newval):
         if  isinstance(newval, str):
-           newval = Keithley580.Drive[newval]
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                            Keithley580.Drive):
+            newval = Keithley580.Drive[newval]
+        if newval not in Keithley580.Drive:
             raise TypeError('Drive must be specified as a ' 
                             'Keithley580.Drive, got {} '
                             'instead.'.format(newval))

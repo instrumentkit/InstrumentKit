@@ -87,10 +87,9 @@ class Keithley195(Multimeter):
     def mode(self, newval):
         if isinstance(newval, str):
             newval = self.Mode[newval]
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                            Keithley195.Mode):
+        if newval not in Keithley195.Mode:
             raise TypeError("Mode must be specified as a Keithley195.Mode "
-                            "value, got {} instead.".format(type(newval)))
+                            "value, got {} instead.".format(newval))
         self.sendcmd('F{}X'.format(newval.value))
         
     ## METHODS ##
