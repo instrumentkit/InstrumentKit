@@ -95,7 +95,7 @@ class Keithley195(Multimeter):
         
     ## METHODS ##
     
-    def measure(self, mode = None):
+    def measure(self, mode):
         '''
         Instruct the Keithley 195 to perform a one time measurement. The 
         instrument will use default parameters for the requested measurement.
@@ -112,14 +112,13 @@ class Keithley195(Multimeter):
         >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
         >>> print dmm.measure(dmm.Mode.resistance)
         
-        :param mode: Desired measurement mode. If not specified, the current 
-            mode that the 195 is set to will be used.
+        :param mode: Desired measurement mode. This must always be specified
+            in order to provide the correct return units.
         :type mode: `Keithley195.Mode`
         :rtype: `~quantities.quantity.Quantity`
         '''
-        if mode is not None:
-            self.mode = mode
-            time.sleep(0.1)
+        self.mode = mode
+        time.sleep(0.1)
         value = float(self.query(''))
         return value * UNITS[mode]
     
