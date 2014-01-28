@@ -85,11 +85,12 @@ class Keithley195(Multimeter):
         raise NotImplementedError
     @mode.setter
     def mode(self, newval):
-        if newval.enum is not Keithley195.Mode:
-            raise TypeError("Mode must be specified as a Keithley195.Mode "
-                            "value, got {} instead.".format(type(newval)))
         if isinstance(newval, str):
             newval = self.Mode[newval]
+        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
+                                                            Keithley195.Mode):
+            raise TypeError("Mode must be specified as a Keithley195.Mode "
+                            "value, got {} instead.".format(type(newval)))
         self.sendcmd('F{}X'.format(newval.value))
         
     ## METHODS ##
