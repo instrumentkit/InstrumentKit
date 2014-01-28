@@ -111,7 +111,8 @@ class Keithley195(Multimeter):
         >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
         >>> print dmm.measure(dmm.Mode.resistance)
         
-        :param mode: Desired measurement mode.
+        :param mode: Desired measurement mode. If not specified, the current 
+            mode that the 195 is set to will be used.
         :type mode: `Keithley195.Mode`
         :rtype: `~quantities.quantity.Quantity`
         '''
