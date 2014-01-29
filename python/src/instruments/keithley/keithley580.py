@@ -67,13 +67,21 @@ class Keithley580(Instrument):
     class Drive(Enum):
         pulsed = 0
         dc = 1
+    
+    class TriggerMode(Enum):
+        talk_continuous = 0
+        talk_one-shot = 1
+        get_continuous = 2
+        get_one-shot = 3
+        trigger_continuous = 4
+        trigger_one-shot = 5
         
     ## PROPERTIES ##
 
     @property
-    def polarity(self, func):
+    def polarity(self):
         """
-        Sets instrument polarity.
+        Gets/sets instrument polarity.
         
         Example use:
         
@@ -83,7 +91,14 @@ class Keithley580(Instrument):
         
         :type: `Keithley580.Polarity`
         """
-        raise NotImplementedError
+        value = self.parse_status_word(self.get_status_word())['polarity']
+        if value == '+':
+            return Keithley580.Polarity.positive
+        elif value == '-'
+            return Keithley580.Polarity.negative
+        else:
+            raise ValueError('Not a valid polarity returned from '
+                             'instrument, got {}'.format(value))
     @polarity.setter
     def polarity(self, newval):
         if isinstance(newval, str):
@@ -98,7 +113,7 @@ class Keithley580(Instrument):
     @property
     def drive(self, func):
         """
-        Sets the instrument drive to either pulsed or DC.
+        Gets/sets the instrument drive to either pulsed or DC.
         
         Example use:
         
@@ -108,7 +123,8 @@ class Keithley580(Instrument):
         
         :type: `Keithley580.Drive`
         """
-        raise NotImplementedError
+        value = self.parse_status_word(self.get_status_word())['drive']
+        return Keithley580.Drive[value]
     @drive.setter
     def drive(self, newval):
         if  isinstance(newval, str):
@@ -119,6 +135,104 @@ class Keithley580(Instrument):
                             'instead.'.format(newval))
 
         self.sendcmd('D{}X'.format(newval.value))
+        
+    @property
+    def dry_circuit_test(self):
+        """
+        Gets/sets the 'dry circuit test' mode of the Keithley 580.
+        
+        This mode is used to minimize any physical and electrical changes in 
+        the contact junction by limiting the maximum source voltage to 20mV.
+        By limiting the voltage, the measuring circuit will leave the resistive
+        surface films built up on the contacts undisturbed. This allows for 
+        measurement of the resistance of these films.
+        
+        See the Keithley 580 manual for more information.
+        
+        :type: `bool`
+        """
+        return self.parse_status_word(self.get_status_word())['drycircuit']
+    @dry_circuit_test.setter
+    def dry_circuit_test(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError('DryCircuitTest mode must be a boolean.')
+        self.sendcmd('C{}X'.format(int(dc)))
+     
+    @property
+    def operate(self):
+        """
+        Gets/sets the operating mode of the Keithley 580. If set to true, the 
+        instrument will be in operate mode, while false sets the instruments 
+        into standby mode.
+        
+        :type: `bool`
+        """
+        return self.parse_status_word(self.get_status_word())['operate']
+    @operate.setter
+    def operate(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError('Operate mode must be a boolean.'
+        self.sendcmd('O{}X'.format(int(dc)))
+    
+    @property
+    def relative(self):
+        """
+        Gets/sets the relative measurement mode of the Keithley 580. 
+        
+        As stated in the manual: The relative function is used to establish a 
+        baseline reading. This reading is subtracted from all subsequent 
+        readings. The purpose of making relative measurements is to cancel test
+        lead and offset resistances or to store an input as a reference level.
+        
+        Once a relative level is established, it remains in effect until another
+        relative level is set. The relative value is only good for the range the
+        value was taken on and higher ranges. If a lower range is selected than
+        that on which the relative was taken, inaccurate results may occur.
+        Relative cannot be activated when "OL" is displayed.
+
+        See the manual for more information.
+        
+        :type: `bool`
+        """
+        return self.parse_status_word(self.get_status_word())['relative']
+    @relative.setter
+    def relative(self, newval):
+        if not isinstance(dc, bool):
+            raise TypeError('Relative mode must be a boolean.')
+        self.sendcmd('Z{}X'.fomrat(int(dc)))
+        
+    @property
+    def trigger_mode(self):
+        """
+        Gets/sets the trigger mode of the Keithley 580.
+        
+        There are two different trigger settings for three different sources.
+        This means there are six different settings for the trigger mode.
+        
+        The two types are continuous and one-shot. Continuous has the instrument
+        continuously sample the resistance. One-shot performs a single
+        resistance measurement.
+        
+        The three trigger sources are on talk, on GET, and on "X". On talk 
+        refers to addressing the instrument to talk over GPIB. On GET is when
+        the instrument receives the GPIB command byte for "group execute 
+        trigger". Last, on "X" is when one sends the ASCII character "X" to the 
+        instrument. This character is used as a general execute to confirm 
+        commands send to the instrument. In InstrumentKit, "X" is sent after
+        each command so it is not suggested that one uses on "X" triggering.
+        
+        :type: `Keithley580.TriggerMode`
+        """
+        raise NotImplementedError
+    @trigger_mode.setter
+    def trigger_mode(self, newval):
+        if  isinstance(newval, str):
+            newval = Keithley580.TriggerMode[newval]
+        if newval not in Keithley580.TriggerMode:
+            raise TypeError('Drive must be specified as a ' 
+                            'Keithley580.TriggerMode, got {} '
+                            'instead.'.format(newval))
+        self.sendcmd('T{}X'.format(newval.value))
 
     ## METHODS ## 
 
@@ -131,14 +245,14 @@ class Keithley580(Instrument):
         '''
         self.sendcmd('X')
 
-    def dry_circuit_test(self, dc):
-        if not isinstance(dc, bool):
-            raise TypeError('DryCircuitTest mode must be a boolean.')
-
-        self.sendcmd('C{}X'.format(int(dc)))
-
-
     def set_resistance_range(self, res):
+        """
+        Manually set the resistance range of the Keithley 580.
+        
+        :param res: Resistance range. One of 
+            ``{AUTO|2e-1|2|20|200|2000|2e5}``
+        :type: `str` or `int`
+        """
         if isinstance(res, str):
             res = res.lower()
             if res == 'auto':
@@ -159,8 +273,7 @@ class Keithley580(Instrument):
 
         self.sendcmd('R{}X'.format(res))
 
-
-    def set_auto_range(self):
+    def auto_range(self):
         """
         Turn on auto range for the Keithley 580.
         
@@ -169,75 +282,49 @@ class Keithley580(Instrument):
         """
         self.sendcmd('R0X')
 
-
-    def set_operate(self, dc):
-        if not isinstance(dc, bool):
-            raise TypeError('Operate mode must be a boolean.')
-
-        self.sendcmd('O{}X'.format(int(dc)))
-
-
-    def set_relative(self, dc):
-        if not isinstance(dc, bool):
-            raise TypeError('Operate mode must be a boolean.')
-
-        self.sendcmd('Z{}X'.fomrat(int(dc)))
-
-
     def set_calibration_value(self, value):
         # self.write('V+n.nnnnE+nn')
         raise NotImplementedError('setCalibrationValue not implemented')
-
 
     def store_calibration_constants(self):
         # self.write('L0X')
         raise NotImplementedError('setCalibrationConstants not implemented')
 
-
-    def set_trigger(self, trigger):
-        if not isinstance(func, str):
-            raise TypeError('Trigger mode must be a string.')
-        func = func.lower()
-
-        valid = {'talk:continuous': 0,
-                 'talk:one-shot' : 1,
-                 'get:continuous': 2,
-                 'get:one-shot' : 3,
-                 'x:continuous': 4,
-                 'x:one-shot' : 5 }
-
-        if valid.has_key(func):
-            func = valid[func]
-        else:
-            raise ValueError('Valid trigger modes '
-                             'are: ' + ', '.join(valid.keys()))
-
-        self.sendcmd('T{}X'.format(func))
-
-
     def get_status_word(self):
-        '''
+        """
         The keithley will not always respond with the statusword when asked. We
         use a simple heuristic here: request it up to 5 times, using a 1s
         delay to allow the keithley some thinking time.
-        '''
+        
+        :rtype: `str`
+        """
         tries = 5
         statusword = ''
         while statusword[:3] != '580' and tries != 0:
             tries -= 1
             self.sendcmd('U0X')
             time.sleep(1)
-            self.sendcmd('+read')
-            statusword = self._file.read(-1).strip() # Be sure to replace this
-                                                     # during refactoring
+            statusword = self.query('')
 
         if statusword == None:
             raise IOError('could not retrieve status word')
 
         return statusword[:-1]
 
-
     def parse_status_word(self, statusword):
+        """
+        Parse the status word returned by the function 
+        `~Keithley580.get_status_word`.
+        
+        Returns a `dict` with the following keys:
+        ``{drive,polarity,drycircuit,operate,range,relative,eoi,trigger,
+        sqrondata,sqronerror,linefreq,terminator}``
+        
+        :param statusword: Byte string to be unpacked and parsed
+        :type: `str`
+        
+        :rtype: `dict`
+        """
         if statusword[:3] != '580':
             raise ValueError('Status word starts with wrong '
                              'prefix: {}'.format(statusword))
@@ -283,15 +370,30 @@ class Keithley580(Instrument):
                  'linefreq' : linefreq,
                  'terminator' : terminator }
 
-
-    def get_measurement(self):
+    def measure(self, mode = None):
+        """
+        Perform a measurement with the Keithley 580.
+        
+        :param mode: This parameter is ignored for the Keithley 580 as the only
+            valid mode is resistance.
+        
+        :rtype: `~quantities.quantity.Quantity`
+        """
         self.trigger()
-        self.sendcmd('+read')
-        return self._file.read(-1).strip() # Be sure to replace this 
-                                           # during refactoring
-
+        return self.parse_measurement(self.query(''))['resistance']
 
     def parse_measurement(self, measurement):
+        """
+        Parse the measurement string returned by the instrument.
+        
+        Returns a dict with the following keys: 
+        ``{status,polarity,drycircuit,drive,resistance}``
+        
+        :param measurement: String to be unpacked and parsed
+        :type: `str`
+        
+        :rtype: `dict`
+        """
         (status, polarity, drycircuit, drive, resistance, terminator) = \
             struct.unpack('@4c11sc', measurement)
 
@@ -310,7 +412,7 @@ class Keithley580(Instrument):
             polarity = valid['polarity'][polarity]
             drycircuit = valid['drycircuit'][drycircuit]
             drive = valid['drive'][drive]
-            resistance = float(resistance)
+            resistance = float(resistance) * pq.ohm
         except:
             raise Exception('Cannot parse measurement: {}'.format(measurement))
 
