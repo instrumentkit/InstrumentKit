@@ -68,6 +68,16 @@ class Keithley195(Multimeter):
         current_dc = 3
         current_ac = 4
         
+    class TriggerMode(IntEnum):
+        talk_continuous = 0
+        talk_one_shot = 1
+        get_continuous = 2
+        get_one_shot = 3
+        x_continuous = 4
+        x_one_shot = 5
+        ext_continuous = 6
+        ext_one_shot = 7
+        
     ## PROPERTIES ##    
         
     @property
@@ -95,6 +105,42 @@ class Keithley195(Multimeter):
             raise TypeError("Mode must be specified as a Keithley195.Mode "
                             "value, got {} instead.".format(newval))
         self.sendcmd('F{}DX'.format(newval.value))
+        
+    @property
+    def trigger_mode(self):
+        """
+        Gets/sets the trigger mode of the Keithley 195.
+        
+        There are two different trigger settings for four different sources.
+        This means there are eight different settings for the trigger mode.
+        
+        The two types are continuous and one-shot. Continuous has the instrument
+        continuously sample the resistance. One-shot performs a single
+        resistance measurement.
+        
+        The three trigger sources are on talk, on GET, and on "X". On talk 
+        refers to addressing the instrument to talk over GPIB. On GET is when
+        the instrument receives the GPIB command byte for "group execute 
+        trigger". On "X" is when one sends the ASCII character "X" to the 
+        instrument. This character is used as a general execute to confirm 
+        commands send to the instrument. In InstrumentKit, "X" is sent after
+        each command so it is not suggested that one uses on "X" triggering.
+        Last, is external triggering. This is the port on the rear of the 
+        instrument. Refer to the manual for electrical characteristics of this
+        port.
+        
+        :type: `Keithley195.TriggerMode`
+        """
+        return self.parse_status_word(self.get_status_word())['trigger']
+    @trigger_mode.setter
+    def trigger_mode(self, newval):
+        if isinstance(newval, str):
+            newval = Keithley195.TriggerMode[newval]
+        if newval not in Keithley195.TriggerMode:
+            raise TypeError('Drive must be specified as a ' 
+                            'Keithley195.TriggerMode, got {} '
+                            'instead.'.format(newval))
+        self.sendcmd('T{}X'.format(newval.value))
         
     ## METHODS ##
     
@@ -159,7 +205,7 @@ class Keithley195(Multimeter):
          delay, multiplex, selftest, data_fmt, data_ctrl, filter_mode, \
          terminator) = struct.unpack('@4c2s3c2s5c2s', statusword[4:])
         
-        return { 'trigger': trigger,
+        return { 'trigger': Keithley195.TriggerMode[int(trigger)],
                  'mode': Keithley195.Mode[int(function)],
                  'range': input_range,
                  'eoi': (eoi == '1'),
