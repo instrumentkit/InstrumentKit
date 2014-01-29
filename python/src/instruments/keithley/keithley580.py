@@ -156,7 +156,7 @@ class Keithley580(Instrument):
     def dry_circuit_test(self, newval):
         if not isinstance(newval, bool):
             raise TypeError('DryCircuitTest mode must be a boolean.')
-        self.sendcmd('C{}X'.format(int(dc)))
+        self.sendcmd('C{}X'.format(int(newval)))
      
     @property
     def operate(self):
@@ -172,7 +172,7 @@ class Keithley580(Instrument):
     def operate(self, newval):
         if not isinstance(newval, bool):
             raise TypeError('Operate mode must be a boolean.')
-        self.sendcmd('O{}X'.format(int(dc)))
+        self.sendcmd('O{}X'.format(int(newval)))
     
     @property
     def relative(self):
@@ -197,9 +197,9 @@ class Keithley580(Instrument):
         return self.parse_status_word(self.get_status_word())['relative']
     @relative.setter
     def relative(self, newval):
-        if not isinstance(dc, bool):
+        if not isinstance(newval, bool):
             raise TypeError('Relative mode must be a boolean.')
-        self.sendcmd('Z{}X'.fomrat(int(dc)))
+        self.sendcmd('Z{}X'.format(int(newval)))
         
     @property
     def trigger_mode(self):
