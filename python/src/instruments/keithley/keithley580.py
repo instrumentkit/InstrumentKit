@@ -31,7 +31,7 @@ from __future__ import division
 
 import time
 import struct
-from flufl.enum import Enum
+from flufl.enum import Enum, IntEnum
 
 import quantities as pq
 import numpy as np
@@ -60,21 +60,21 @@ class Keithley580(Instrument):
                            
     ## ENUMS ##
     
-    class Polarity(Enum):
+    class Polarity(IntEnum):
         positive = 0
         negative = 1
         
-    class Drive(Enum):
+    class Drive(IntEnum):
         pulsed = 0
         dc = 1
     
-    class TriggerMode(Enum):
+    class TriggerMode(IntEnum):
         talk_continuous = 0
-        talk_one-shot = 1
+        talk_one_shot = 1
         get_continuous = 2
-        get_one-shot = 3
+        get_one_shot = 3
         trigger_continuous = 4
-        trigger_one-shot = 5
+        trigger_one_shot = 5
         
     ## PROPERTIES ##
 
@@ -94,7 +94,7 @@ class Keithley580(Instrument):
         value = self.parse_status_word(self.get_status_word())['polarity']
         if value == '+':
             return Keithley580.Polarity.positive
-        elif value == '-'
+        elif value == '-':
             return Keithley580.Polarity.negative
         else:
             raise ValueError('Not a valid polarity returned from '
@@ -171,7 +171,7 @@ class Keithley580(Instrument):
     @operate.setter
     def operate(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('Operate mode must be a boolean.'
+            raise TypeError('Operate mode must be a boolean.')
         self.sendcmd('O{}X'.format(int(dc)))
     
     @property
