@@ -72,7 +72,10 @@ class Keithley195(Multimeter):
     @property
     def mode(self):
         '''
-        Sets the current measurement mode for the Keithley 195.
+        Sets the current measurement mode for the Keithley 195. The base model
+        only has DC voltage and resistance measurements. In order to use AC
+        voltage, DC current, and AC current measurements your unit must be 
+        equiped with option 1950.
         
         Example use:
         
@@ -90,7 +93,7 @@ class Keithley195(Multimeter):
         if newval not in Keithley195.Mode:
             raise TypeError("Mode must be specified as a Keithley195.Mode "
                             "value, got {} instead.".format(newval))
-        self.sendcmd('F{}X'.format(newval.value))
+        self.sendcmd('F{}DX'.format(newval.value))
         
     ## METHODS ##
     
@@ -209,7 +212,7 @@ class Keithley195(Multimeter):
             raise TypeError('Instrument current range must be specified as '
                 'a float, integer, or string.')
             
-        self.sendcmd('R' + current + 'X')
+        self.sendcmd('R{}X'.format(current))
             
     def set_resistance_range(self, res='AUTO'):
         '''
