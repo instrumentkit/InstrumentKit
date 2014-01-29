@@ -29,7 +29,7 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 import time
-from flufl.enum import Enum
+from flufl.enum import Enum, IntEnum
 import struct
 
 import quantities as pq
@@ -61,7 +61,7 @@ class Keithley195(Multimeter):
 
     ## ENUMS ##
     
-    class Mode(Enum):
+    class Mode(IntEnum):
         voltage_dc = 0
         voltage_ac = 1
         resistance = 2
