@@ -97,7 +97,7 @@ class Keithley195(Multimeter):
         
     ## METHODS ##
     
-    def measure(self, mode):
+    def measure(self, mode=None):
         '''
         Instruct the Keithley 195 to perform a one time measurement. The 
         instrument will use default parameters for the requested measurement.
@@ -119,10 +119,11 @@ class Keithley195(Multimeter):
         :type mode: `Keithley195.Mode`
         :rtype: `~quantities.quantity.Quantity`
         '''
-        self.mode = mode
-        time.sleep(0.1)
-        value = float(self.query(''))
-        return value * UNITS[mode]
+        #self.mode = mode
+        #time.sleep(0.1)
+        value = self.query('')
+        
+        return float(value[4:]) * UNITS[value[1:4]]
     
     def trigger(self):
         '''
@@ -253,10 +254,10 @@ class Keithley195(Multimeter):
 ## UNITS #######################################################################
 
 UNITS = {
-    Keithley195.Mode.voltage_dc:  pq.volt,
-    Keithley195.Mode.voltage_ac:  pq.volt,
-    Keithley195.Mode.current_ac:  pq.amp,
-    Keithley195.Mode.current_dc:  pq.amp,
-    Keithley195.Mode.resistance:  pq.ohm,
+    'DCV':  pq.volt,
+    'ACV':  pq.volt,
+    'ACA':  pq.amp,
+    'DCA':  pq.amp,
+    'OHM':  pq.ohm,
 }            
         
