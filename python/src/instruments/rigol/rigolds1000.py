@@ -135,3 +135,13 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
     
     def force_trigger(self):
         self.sendcmd(":FORC")
+        
+        
+    # TODO: consider moving the next few methods to Oscilloscope.
+    def run(self):
+        self.sendcmd(":RUN")
+        
+    def stop(self):
+        self.sendcmd(":STOP")
+        
+    # TODO: unitful timebase!
