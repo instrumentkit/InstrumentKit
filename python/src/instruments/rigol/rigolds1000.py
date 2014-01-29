@@ -64,7 +64,21 @@ def bool_property(name, inst_true, inst_false, doc=None):
 class RigolDS1000Series(SCPIInstrument, Oscilloscope):
 
     class DataSource(OscilloscopeDataSource):
-        pass
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+        @property
+        def name(self):
+            return self._name
+            
+        def read_waveform(self):
+            # TODO: add DIG, FFT.
+            if self.name not in ["CHAN1", "CHAN2", "DIG", "MATH", "FFT"]:
+                raise NotImplementedError("Rigol DS1000 series does not support reading waveforms from {}.".format(self.name))
+            self._parent.sendcmd(":WAV:DATA? {}".format(self.name))
+            data = self._parent.binblockread(2) # TODO: check width
+            return data
     
 
     class Channel(DataSource, OscilloscopeChannel):
@@ -73,7 +87,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
             self._idx = idx + 1 # Rigols are 1-based.
             
             # Initialize as a data source with name CHAN{}.
-            super(Channel, self).__init__("CHAN{}".format(self._idx))
+            super(RigolDS1000Series.Channel, self).__init__(self._parent, "CHAN{}".format(self._idx))
             
         def sendcmd(self, cmd):
             self._parent.sendcmd(":CHAN{}:{}".format(self._idx, cmd))
