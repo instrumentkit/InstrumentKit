@@ -105,7 +105,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
     ## PROPERTIES ##
     
     @property
-    def channel(self, idx):
+    def channel(self):
         # Rigol DS1000 series oscilloscopes all have two channels,
         # according to the documentation.
         return ProxyList(self, self.Channel, xrange(2))
