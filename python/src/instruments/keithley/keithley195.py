@@ -141,6 +141,33 @@ class Keithley195(Multimeter):
                             'Keithley195.TriggerMode, got {} '
                             'instead.'.format(newval))
         self.sendcmd('T{}X'.format(newval.value))
+    
+    @property
+    def relative(self):
+        """
+        Gets/sets the zero command (relative measurement) mode of the 
+        Keithley 195.
+        
+        As stated in the manual: The zero mode serves as a means for a baseline
+        suppression. When the correct zero command is send over the bus, the 
+        instrument will enter the zero mode, as indicated by the front panel
+        ZERO indicator light. All reading displayed or send over the bus while
+        zero is enabled are the difference between the stored baseline adn the 
+        actual voltage level. For example, if a 100mV baseline is stored, 100mV
+        will be subtracted from all subsequent readings as long as the zero mode
+        is enabled. The value of the stored baseline can be as little as a few 
+        microvolts or as large as the selected range will permit.
+        
+        See the manual for more information.
+        
+        :type: `bool`
+        """
+        return self.parse_status_word(self.get_status_word())['relative']
+    @relative.setter
+    def relative(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError('Relative mode must be a boolean.')
+        self.sendcmd('Z{}DX'.format(int(newval)))
         
     ## METHODS ##
     
@@ -189,7 +216,7 @@ class Keithley195(Multimeter):
         `~Keithley195.get_status_word`.
         
         Returns a `dict` with teh following keys:
-        ``{trigger,mode,range,eoi,buffer,rate,srqmode,zero,delay,multiplex,
+        ``{trigger,mode,range,eoi,buffer,rate,srqmode,relative,delay,multiplex,
         selftest,dataformat,datacontrol,filter,terminator}``
         
         :param statusword: Byte string to be unpacked and parsed
@@ -201,7 +228,7 @@ class Keithley195(Multimeter):
             raise ValueError('Status word starts with wrong prefix, expected '
                              '195, got {}'.format(statusword))
         
-        (trigger, function, input_range, eoi, buf, rate, srqmode, zero, \
+        (trigger, function, input_range, eoi, buf, rate, srqmode, relative, \
          delay, multiplex, selftest, data_fmt, data_ctrl, filter_mode, \
          terminator) = struct.unpack('@4c2s3c2s5c2s', statusword[4:])
         
@@ -212,7 +239,7 @@ class Keithley195(Multimeter):
                  'buffer': buf,
                  'rate': rate,
                  'srqmode': srqmode,
-                 'zero': (zero == '1'),
+                 'relative': (relative == '1'),
                  'delay': delay,
                  'multiplex': (multiplex == '1'),
                  'selftest': selftest,
