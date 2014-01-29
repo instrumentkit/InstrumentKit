@@ -73,7 +73,7 @@ class Keithley195(Multimeter):
     @property
     def mode(self):
         '''
-        Sets the current measurement mode for the Keithley 195. The base model
+        Gets/sets the measurement mode for the Keithley 195. The base model
         only has DC voltage and resistance measurements. In order to use AC
         voltage, DC current, and AC current measurements your unit must be 
         equiped with option 1950.
@@ -86,7 +86,7 @@ class Keithley195(Multimeter):
         
         :type: `Keithley195.Mode`
         '''
-        raise NotImplementedError
+        return self.parse_status_word(self.get_status_word())['mode']
     @mode.setter
     def mode(self, newval):
         if isinstance(newval, str):
