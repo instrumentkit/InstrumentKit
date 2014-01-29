@@ -30,6 +30,7 @@ from __future__ import division
 
 import time
 from flufl.enum import Enum
+import struct
 
 import quantities as pq
 import numpy as np
@@ -122,8 +123,57 @@ class Keithley195(Multimeter):
         #self.mode = mode
         #time.sleep(0.1)
         value = self.query('')
-        
         return float(value[4:]) * UNITS[value[1:4]]
+        
+    def get_status_word(self):
+        """
+        Retreive the status word from the instrument. This contains information
+        regarding the various settings of the instrument.
+        
+        The function `~Keithley195.parse_status_word` is designed to parse
+        the return string from this function.
+        
+        :rtype: `str`
+        """
+        return self.query('U0DX')
+        
+    def parse_status_word(self, statusword):
+        """
+        Parse the status word returned by the function
+        `~Keithley195.get_status_word`.
+        
+        Returns a `dict` with teh following keys:
+        ``{trigger,mode,range,eoi,buffer,rate,srqmode,zero,delay,multiplex,
+        selftest,dataformat,datacontrol,filter,terminator}``
+        
+        :param statusword: Byte string to be unpacked and parsed
+        :type: `str`
+        
+        :rtype: `dict`
+        """
+        if statusword[:3] != '195':
+            raise ValueError('Status word starts with wrong prefix, expected '
+                             '195, got {}'.format(statusword))
+        
+        (trigger, function, input_range, eoi, buf, rate, srqmode, zero, \
+         delay, multiplex, selftest, data_fmt, data_ctrl, filter_mode, \
+         terminator) = struct.unpack('@4c2s3c2s5c2s', statusword[4:])
+        
+        return { 'trigger': trigger,
+                 'mode': Keithley195.Mode[int(function)],
+                 'range': input_range,
+                 'eoi': (eoi == '1'),
+                 'buffer': buf,
+                 'rate': rate,
+                 'srqmode': srqmode,
+                 'zero': (zero == '1'),
+                 'delay': delay,
+                 'multiplex': (multiplex == '1'),
+                 'selftest': selftest,
+                 'dataformat': data_fmt,
+                 'datacontrol': data_ctrl,
+                 'filter': filter_mode,
+                 'terminator': terminator }
     
     def trigger(self):
         '''
