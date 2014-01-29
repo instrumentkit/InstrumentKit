@@ -31,7 +31,7 @@ from __future__ import division
 
 import time
 import struct
-from flufl.enum import enum
+from flufl.enum import Enum
 
 import quantities as pq
 import numpy as np

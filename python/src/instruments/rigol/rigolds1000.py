@@ -31,6 +31,8 @@ from __future__ import division
 
 import abc
 
+from flufl.enum import Enum
+
 from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
 )
@@ -59,12 +61,19 @@ def bool_property(name, inst_true, inst_false, doc=None):
 
 ## CLASSES #####################################################################
 
-class RigolDS1000Series(SCIPInstrument, Oscilloscope):
+class RigolDS1000Series(SCPIInstrument, Oscilloscope):
 
-    class Channel(OscilloscopeChannel):
+    class DataSource(OscilloscopeDataSource):
+        pass
+    
+
+    class Channel(DataSource, OscilloscopeChannel):
         def __init__(self, parent, idx):
             self._parent = parent
             self._idx = idx + 1 # Rigols are 1-based.
+            
+            # Initialize as a data source with name CHAN{}.
+            super(Channel, self).__init__("CHAN{}".format(self._idx))
             
         def sendcmd(self, cmd):
             self._parent.sendcmd(":CHAN{}:{}".format(self._idx, cmd))
@@ -93,9 +102,6 @@ class RigolDS1000Series(SCIPInstrument, Oscilloscope):
         
         vernier = bool_property("VERN", "ON", "OFF")
     
-    class DataSource(OscilloscopeDataSource):
-        pass
-    
     ## PROPERTIES ##
     
     @property
@@ -104,4 +110,14 @@ class RigolDS1000Series(SCIPInstrument, Oscilloscope):
         # according to the documentation.
         return ProxyList(self, self.Channel, xrange(2))
         
+    @property
+    def math(self):
+        return DataSource("MATH")
+    @property
+    def ref(self):
+        return DataSource("REF")
         
+    ## METHODS ##
+    
+    def force_trigger(self):
+        self.sendcmd(":FORC")

@@ -1,3 +1,3 @@
-from instruments.rigol.ds1000 import (
+from instruments.rigol.rigolds1000 import (
     RigolDS1000Series
 )

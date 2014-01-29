@@ -5,6 +5,7 @@ import instruments.agilent
 import instruments.keithley
 import instruments.lakeshore
 import instruments.other
+import instruments.rigol
 import instruments.srs
 import instruments.tektronix
 import instruments.thorlabs
