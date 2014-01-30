@@ -128,10 +128,30 @@ class Keithley2182(SCPIInstrument, Multimeter):
         
     @property
     def relative(self):
-        raise NotImplementedError
+        """
+        Gets/sets the relative measurement function of the Keithley 2182.
+        
+        This is used to enable or disable the relative function for the 
+        currently set mode. When enabling, the current reading is used as a 
+        baseline which is subtracted from future measurements. 
+        
+        See the manual for more information.
+        
+        :type: `bool`
+        """
+        mode = self.mode
+        return self.query('SENS:{}:CHAN1:REF:STAT?'.format(mode.value)) == 'ON'
     @relative.setter
     def relative(self, newval):
-        raise NotImplementedError
+        if not isinstance(newval, bool):
+            raise TypeError('Relative mode must be a boolean.')
+        mode = self.mode
+        if self.relative:
+            self.sendcmd('SENS:{}:CHAN1:REF:ACQ'.format(mode.value)
+        else:
+            newval = ('ON' if newval is True else 'OFF')
+            self.sendcmd('SENS:{}:CHAN1:REF:STAT {}'.format(mode.value, newval)
+        
         
     @property
     def input_range(self):
