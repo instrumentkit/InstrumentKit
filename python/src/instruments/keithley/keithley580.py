@@ -54,8 +54,8 @@ class Keithley580(Instrument):
         '''
         Initialise the instrument and remove CRLF line termination
         '''
-        super(Keithley580, self).__init__(self, filelike)
-        self.sendcmd('YX') # Removes the termination CRLF characters
+        super(Keithley580, self).__init__(filelike)
+        self.sendcmd('Y:X') # Removes the termination CRLF characters
                            # from the instruments
                            
     ## ENUMS ##
@@ -421,3 +421,11 @@ class Keithley580(Instrument):
                  'drycircuit': drycircuit,
                  'drive': drive,
                  'resistance': resistance }
+     
+    ## COMMUNICATOR METHODS ##
+     
+    def sendcmd(self, msg):
+        super(Keithley580, self).sendcmd(msg + ':')
+        
+    def query(self, msg):
+        return super(Keithley580, self).query(msg + ':')[:-1]
