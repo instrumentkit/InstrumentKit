@@ -37,6 +37,62 @@ from instruments.util_fns import assume_units, ProxyList
 
 ## CLASSES #####################################################################
 
+class _Keithley2182Channel(Multimeter):
+    """
+    Class representing a channel on the Keithley 2182 nano-voltmeter.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `Keithley2182` class.
+    """
+    
+    def __init__(self, parent, idx):
+        self._parent = parent
+        self._idx = idx + 1
+        
+    ## PROPERTIES ##
+    
+    @property
+    def mode(self):
+        return Keithley2182.Mode[self.parent.query('SENS:FUNC?')]
+    @mode.setter
+    def mode(self, newval):
+        raise NotImplementedError
+    
+    @property
+    def trigger_mode(self):
+        raise NotImplementedError
+    @trigger_mode.setter
+    def trigger_mode(self, newval):
+        raise NotImplementedError
+        
+    @property
+    def relative(self):
+        raise NotImplementedError
+    @relative.setter
+    def relative(self, newval):
+        raise NotImplementedError
+    
+    @property
+    def input_range(self):
+        raise NotImplementedError
+    @input_range.setter
+    def input_range(self, newval):
+        raise NotImplementedError
+        
+    ## METHODS ##
+    
+    def measure(self, mode=None):
+        """
+        #TODO docstring
+        """
+        if mode is not None:
+            self.mode = mode
+        self.parent.sendcmd('SENS:CHAN {}'.format(idx))
+        value = float(self.parent.query('SENS:DATA:FRES?'))
+        unit = self.parent.units
+        return value * unit
+        
+
 class Keithley2182(SCPIInstrument, Multimeter):
     """
     The Keithley 2182 is a nano-voltmeter. You can find the full specifications
@@ -77,8 +133,15 @@ class Keithley2182(SCPIInstrument, Multimeter):
         specified like one would access a list.
         
         Although not default, the 2182 has up to two channels.
+        
+        For example, the following would print the measurement from channel 1:
+        
+        >>> meter = ik.keithley.Keithley2182.open_gpibusb('/dev/ttyUSB0', 10)
+        >>> print meter.channel[0].
+        
+        :rtype: `_Keithley2182Channel`
         """
-        raise NotImplementedError
+        return ProxyList(self, _Keithley2182Channel, xrange(2))
     
     @property
     def mode(self):
@@ -134,6 +197,9 @@ class Keithley2182(SCPIInstrument, Multimeter):
         This is used to enable or disable the relative function for the 
         currently set mode. When enabling, the current reading is used as a 
         baseline which is subtracted from future measurements. 
+        
+        If relative is already on, the stored value is refreshed with the 
+        currently read value.
         
         See the manual for more information.
         
@@ -257,6 +323,25 @@ class Keithley2182(SCPIInstrument, Multimeter):
         
         self.sendcmd('SAMP:COUN {}'.format(newval))
         
+    @property
+    def units(self):
+        """
+        #TODO: Docstring
+        """
+        mode = self.mode
+        if mode == Keithley2182.Mode.voltage_dc:
+            return pq.ohm
+        unit = self.query('UNIT:TEMP?')
+        if unit == 'C':
+            unit = pq.celsius
+        elif unit == 'K':
+            unit = pq.kelvin
+        elif unit == 'F':
+            unit = pq.fahrenheit
+        else:
+            raise ValueError('Unknown temperature units.') 
+        return unit
+        
     ## METHODS ##
         
     def fetch(self):
@@ -295,17 +380,6 @@ class Keithley2182(SCPIInstrument, Multimeter):
             raise TypeError("Mode must be specified as a Keithley2182.Mode "
                             "value, got {} instead.".format(newval))
         value = float(self.query('MEAS:{}?'.format(mode)))
-        if mode == Keithley2182.Mode.voltage_dc:
-            return value * pq.volt
-        else:
-            unit = self.query('UNIT:TEMP?')
-            if unit == 'C':
-                unit = pq.celsius
-            elif unit == 'K':
-                unit = pq.kelvin
-            elif unit == 'F':
-                unit = pq.fahrenheit
-            else:
-                raise ValueError('Unknown temperature units.')
-            return value * unit
+        unit = self.units
+        return value * unit
 
