@@ -240,6 +240,11 @@ class Keithley195(Multimeter):
         Method returns a Python quantity consisting of a numpy array with the
         instrument value and appropriate units.
         
+        With the 195, it is HIGHLY recommended that you seperately set the 
+        mode and let the instrument settle into the new mode. This can sometimes
+        take longer than the 2 second delay added in this method. In our testing
+        the 2 seconds seems to be sufficient but we offer no guarentee.
+        
         Example usage:
     
         >>> import instruments as ik
@@ -252,8 +257,13 @@ class Keithley195(Multimeter):
         :type mode: `Keithley195.Mode`
         :rtype: `~quantities.quantity.Quantity`
         '''
-        #self.mode = mode
-        #time.sleep(0.1)
+        if mode is not None:
+            current_mode = self.mode
+            print mode
+            print current_mode
+            if mode != current_mode:
+                self.mode = mode
+                time.sleep(2) # Gives the instrument a moment to settle
         value = self.query('')
         return float(value[4:]) * UNITS[value[1:4]]
         
