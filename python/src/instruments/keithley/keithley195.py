@@ -40,7 +40,7 @@ from instruments.abstract_instruments import Multimeter
 ## CLASSES #####################################################################
 
 class Keithley195(Multimeter):
-    '''
+    """
     The Keithley 195 is a 5 1/2 digit auto-ranging digital multimeter. You can 
     find the full specifications list in the `user's guide`_.
     
@@ -52,7 +52,7 @@ class Keithley195(Multimeter):
     >>> print dmm.measure(dmm.Mode.resistance)
     
     .. _user's guide: http://www.keithley.com/data?asset=803
-    '''
+    """
 
     def __init__(self, filelike):
         super(Keithley195, self).__init__(filelike)
@@ -89,7 +89,7 @@ class Keithley195(Multimeter):
         
     @property
     def mode(self):
-        '''
+        """
         Gets/sets the measurement mode for the Keithley 195. The base model
         only has DC voltage and resistance measurements. In order to use AC
         voltage, DC current, and AC current measurements your unit must be 
@@ -102,7 +102,7 @@ class Keithley195(Multimeter):
         >>> dmm.mode = dmm.Mode.resistance
         
         :type: `Keithley195.Mode`
-        '''
+        """
         return self.parse_status_word(self.get_status_word())['mode']
     @mode.setter
     def mode(self, newval):
@@ -212,6 +212,9 @@ class Keithley195(Multimeter):
             if newval.lower() == 'auto':
                 self.sendcmd('R0DX')
                 return
+            else:
+                raise ValueError('Only "auto" is acceptable when specifying '
+                                 'the input range as a string.')
         if isinstance(newval, pq.quantity.Quantity):
             newval = float(newval)
             
@@ -231,7 +234,7 @@ class Keithley195(Multimeter):
     ## METHODS ##
     
     def measure(self, mode=None):
-        '''
+        """
         Instruct the Keithley 195 to perform a one time measurement. The 
         instrument will use default parameters for the requested measurement.
         The measurement will immediately take place, and the results are 
@@ -258,7 +261,7 @@ class Keithley195(Multimeter):
         
         :return: A measurement from the multimeter.
         :rtype: `~quantities.quantity.Quantity`
-        '''
+        """
         if mode is not None:
             current_mode = self.mode
             print mode
