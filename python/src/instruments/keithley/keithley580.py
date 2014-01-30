@@ -427,5 +427,5 @@ class Keithley580(Instrument):
     def sendcmd(self, msg):
         super(Keithley580, self).sendcmd(msg + ':')
         
-    def query(self, msg):
-        return super(Keithley580, self).query(msg + ':')[:-1]
+    def query(self, msg, size=-1):
+        return super(Keithley580, self).query(msg + ':', size)[:-1]
