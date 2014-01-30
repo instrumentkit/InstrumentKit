@@ -78,6 +78,13 @@ class Keithley195(Multimeter):
         ext_continuous = 6
         ext_one_shot = 7
         
+    class ValidRange(Enum):
+        voltage_dc = (20e-3, 200e-3, 2, 20, 200, 1000)
+        voltage_ac = (20e-3, 200e-3, 2, 20, 200, 700)
+        current_dc = (20e-6, 200e-6, 2e-3, 20e-3, 200e-3, 2)
+        current_ac = (20e-6, 200e-6, 2e-3, 20e-3, 200e-3, 2, 2)
+        resistance = (20, 200, 2000, 20e3, 200e3, 2e6, 20e6)
+        
     ## PROPERTIES ##    
         
     @property
@@ -169,6 +176,58 @@ class Keithley195(Multimeter):
             raise TypeError('Relative mode must be a boolean.')
         self.sendcmd('Z{}DX'.format(int(newval)))
         
+    @property
+    def input_range(self):
+        """
+        Gets/sets the range of the Keithley 195 input terminals. The valid range
+        settings depends on the current mode of the instrument. They are listed
+        as follows:
+        
+        #) voltage_dc = ``(20e-3, 200e-3, 2, 20, 200, 1000)``
+        
+        #) voltage_ac = ``(20e-3, 200e-3, 2, 20, 200, 700)``
+        
+        #) current_dc = ``(20e-6, 200e-6, 2e-3, 20e-3, 200e-3, 2)``
+        
+        #) current_ac = ``(20e-6, 200e-6, 2e-3, 20e-3, 200e-3, 2)``
+        
+        #) resistance = ``(20, 200, 2000, 20e3, 200e3, 2e6, 20e6)``
+        
+        All modes will also accept the string ``auto`` which will set the 195
+        into auto ranging mode.
+        
+        :rtype: `~quantities.quantity.Quantity` or `str`
+        """
+        index = self.parse_status_word(self.get_status_word())['range']
+        if index == 0:
+            return 'auto'
+        else:
+            mode = self.mode
+            value = Keithley195.ValidRange[mode.name].value[index-1]
+            units = UNITS2[mode]
+            return value * units
+    @input_range.setter
+    def input_range(self, newval):
+        if isinstance(newval, str):
+            if newval.lower() == 'auto':
+                self.sendcmd('R0DX')
+                return
+        if isinstance(newval, pq.quantity.Quantity):
+            newval = float(newval)
+            
+        mode = self.mode
+        valid = Keithley195.ValidRange[mode.name].value
+        if isinstance(newval, float) or isinstance(newval, int):
+            if newval in valid:
+                newval = valid.index(newval) + 1
+            else:
+                raise ValueError('Valid range settings for mode {} '
+                                 'are: {}'.format(mode, valid))
+        else:
+            raise TypeError('Range setting must be specified as a float, int, '
+                            'or the string "auto", got {}'.format(type(newval)))
+        self.sendcmd('R{}DX'.format(newval))
+        
     ## METHODS ##
     
     def measure(self, mode=None):
@@ -234,7 +293,7 @@ class Keithley195(Multimeter):
         
         return { 'trigger': Keithley195.TriggerMode[int(trigger)],
                  'mode': Keithley195.Mode[int(function)],
-                 'range': input_range,
+                 'range': int(input_range),
                  'eoi': (eoi == '1'),
                  'buffer': buf,
                  'rate': rate,
@@ -256,123 +315,14 @@ class Keithley195(Multimeter):
         (which is not supported by the 195 anyways).
         '''
         self.sendcmd('X')
-        
-    def set_voltage_dc_range(self, voltage='AUTO'):
-        '''
-        Manually set the voltage DC range of the Keithley 195.
-        
-        :param voltage: Voltage DC range. One of 
-            ``{AUTO|20e-3|200e-3|2|20|200|1000}``
-        :type: `str` or `int`
-        '''
-        if isinstance(voltage, str):
-            voltage = voltage.lower()
-            if voltage == 'auto':
-                voltage = 0
-            else:
-                raise ValueError('Only valid string for voltage range '
-                    'is "auto".')
-        elif isinstance(voltage, float) or isinstance(voltage, int):
-            valid = [20e-3, 200e-3, 2, 20, 200, 1000]
-            if voltage in valid:
-                voltage = valid.index(voltage) + 1
-            else:
-                raise ValueError('Valid voltage ranges are: ' + str(valid))
-        else:
-            raise TypeError('Instrument voltage range must be specified as '
-                'a float, integer, or string.')
-            
-        self.sendcmd('R{}X'.format(voltage))
-    
-    def set_voltage_ac_range(self, voltage='AUTO'):
-        '''
-        Manually set the voltage AC range of the Keithley 195.
-        
-        :param voltage: Voltage AC range. One of 
-            ``{AUTO|20e-3|200e-3|2|20|200|700}``
-        :type: `str` or `int`
-        '''
-        if isinstance(voltage,str):
-            voltage = voltage.lower()
-            if voltage == 'auto':
-                voltage = 0
-            else:
-                raise ValueError('Only valid string for voltage range '
-                    'is "auto".')
-        elif isinstance(voltage, float) or isinstance(voltage, int):
-            valid = [20e-3, 200e-3, 2, 20, 200, 700]
-            if voltage in valid:
-                voltage = valid.index(voltage) + 1
-            else:
-                raise ValueError('Valid voltage ranges are: ' + str(valid))
-        else:
-            raise TypeError('Instrument voltage range must be specified as '
-                'a float, integer, or string.')
-            
-        self.sendcmd('R{}X'.format(voltage))
-            
-    def set_current_range(self, current='AUTO'):
-        '''
-        Manually set the current range of the Keithley 195.
-        
-        :param current: Current range. One of 
-            ``{AUTO|20e-6|200e-6|2e-3|20e-3|200e-3|2}``
-        :type: `str` or `int`
-        '''
-        if isinstance(current, str):
-            current = current.lower()
-            if current == 'auto':
-                current = 0
-            else:
-                raise ValueError('Only valid string for current range '
-                    'is "auto".')
-        elif isinstance(current, float) or isinstance(current, int):
-            valid = [20e-6, 200e-6, 2e-3, 20e-3, 200e-3, 2]
-            if current in valid:
-                current = valid.index(current) + 1
-            else:
-                raise ValueError('Valid current ranges are: ' + str(valid))
-        else:
-            raise TypeError('Instrument current range must be specified as '
-                'a float, integer, or string.')
-            
-        self.sendcmd('R{}X'.format(current))
-            
-    def set_resistance_range(self, res='AUTO'):
-        '''
-        Manually set the resistance range of the Keithley 195.
-        
-        :param res: Resistance range. One of 
-            ``{AUTO|20|200|2000|20e3|200e3|2e6|20e6}``
-        :type: `str` or `int`
-        '''
-        if isinstance(res,str):
-            res = res.lower()
-            if res == 'auto':
-                res = 0
-            else:
-                raise ValueError('Only valid string for resistance range '
-                    'is "auto".')
-        elif isinstance(res, float) or isinstance(res, int):
-            valid = [20, 200, 2000, 20e3, 200e3, 2e6, 20e6]
-            if res in valid:
-                res = valid.index(res) + 1
-            else:
-                raise ValueError('Valid resistance ranges are: ' + str(valid))
-        else:
-            raise TypeError('Instrument resistance range must be specified '
-                'as a float, integer, or string.')
-            
-        self.sendcmd('R{}X'.format(res))
-            
+                    
     def auto_range(self):
         '''
         Turn on auto range for the Keithley 195. 
         
-        This is the same as calling the associated set_[function]_range method
-        and setting the parameter to "AUTO".
+        This is the same as calling ``Keithley195.input_range = 'auto'``
         '''
-        self.sendcmd('R0X')
+        self.input_range = 'auto'
             
 ## UNITS #######################################################################
 
@@ -384,3 +334,11 @@ UNITS = {
     'OHM':  pq.ohm,
 }            
         
+UNITS2 = {
+    Keithley195.Mode.voltage_dc:  pq.volt,
+    Keithley195.Mode.voltage_ac:  pq.volt,
+    Keithley195.Mode.current_dc:  pq.amp,
+    Keithley195.Mode.current_ac:  pq.amp,
+    Keithley195.Mode.resistance:  pq.ohm,
+}
+
