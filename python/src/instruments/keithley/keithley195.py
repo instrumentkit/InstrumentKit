@@ -255,6 +255,8 @@ class Keithley195(Multimeter):
         :param mode: Desired measurement mode. This must always be specified
             in order to provide the correct return units.
         :type mode: `Keithley195.Mode`
+        
+        :return: A measurement from the multimeter.
         :rtype: `~quantities.quantity.Quantity`
         '''
         if mode is not None:
@@ -275,6 +277,7 @@ class Keithley195(Multimeter):
         The function `~Keithley195.parse_status_word` is designed to parse
         the return string from this function.
         
+        :return: String containing setting information of the instrument 
         :rtype: `str`
         """
         return self.query('U0DX')
@@ -284,13 +287,14 @@ class Keithley195(Multimeter):
         Parse the status word returned by the function
         `~Keithley195.get_status_word`.
         
-        Returns a `dict` with teh following keys:
+        Returns a `dict` with the following keys:
         ``{trigger,mode,range,eoi,buffer,rate,srqmode,relative,delay,multiplex,
         selftest,dataformat,datacontrol,filter,terminator}``
         
         :param statusword: Byte string to be unpacked and parsed
         :type: `str`
         
+        :return: A parsed version of the status word as a Python dictionary
         :rtype: `dict`
         """
         if statusword[:3] != '195':
@@ -318,20 +322,20 @@ class Keithley195(Multimeter):
                  'terminator': terminator }
     
     def trigger(self):
-        '''
+        """
         Tell the Keithley 195 to execute all commands that it has received.
         
         Do note that this is different from the standard SCPI \*TRG command
         (which is not supported by the 195 anyways).
-        '''
+        """
         self.sendcmd('X')
                     
     def auto_range(self):
-        '''
+        """
         Turn on auto range for the Keithley 195. 
         
         This is the same as calling ``Keithley195.input_range = 'auto'``
-        '''
+        """
         self.input_range = 'auto'
             
 ## UNITS #######################################################################
