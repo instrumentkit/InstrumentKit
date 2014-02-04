@@ -212,13 +212,12 @@ class Keithley2182(SCPIInstrument, Multimeter):
         if not isinstance(newval, bool):
             raise TypeError('Relative mode must be a boolean.')
         mode = self.mode
-        if self.relative:
-            self.sendcmd('SENS:{}:CHAN1:REF:ACQ'.format(mode.value)
+        if (self.relative):
+            self.sendcmd('SENS:{}:CHAN1:REF:ACQ'.format(mode.value))
         else:
             newval = ('ON' if newval is True else 'OFF')
-            self.sendcmd('SENS:{}:CHAN1:REF:STAT {}'.format(mode.value, newval)
-        
-        
+            self.sendcmd('SENS:{}:CHAN1:REF:STAT {}'.format(mode.value, newval))
+
     @property
     def input_range(self):
         raise NotImplementedError
