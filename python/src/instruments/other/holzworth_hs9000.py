@@ -156,10 +156,10 @@ class HolzworthHS9000(Instrument):
         
         @property
         def power_on(self):
-            return bool(self._query("PWR:RF?"))
+            return (self._query("PWR:RF?").strip() == 'ON')
         @power_on.setter
         def power_on(self, newval):
-            self._sendcmd("PWR:RF {}".format("ON" if newval else "OFF"))
+            self._sendcmd("PWR:RF:{}".format("ON" if newval else "OFF"))
                 
     ## PROXY LIST ##
     
