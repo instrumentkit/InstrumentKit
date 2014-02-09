@@ -182,6 +182,8 @@ class GPIBWrapper(io.IOBase, WrapperABC):
     def sendcmd(self, msg):
         '''
         '''
+        if msg == '':
+            return
         self._file.sendcmd('+a:' + str(self._gpib_address))
         time.sleep(0.01)
         self._file.sendcmd('+eoi:{}'.format(self._eoi))
