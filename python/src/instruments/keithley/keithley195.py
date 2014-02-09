@@ -264,8 +264,6 @@ class Keithley195(Multimeter):
         """
         if mode is not None:
             current_mode = self.mode
-            print mode
-            print current_mode
             if mode != current_mode:
                 self.mode = mode
                 time.sleep(2) # Gives the instrument a moment to settle
