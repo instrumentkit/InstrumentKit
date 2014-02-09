@@ -58,6 +58,7 @@ class Keithley195(Multimeter):
         super(Keithley195, self).__init__(filelike)
         self.sendcmd('YX') # Removes the termination CRLF 
                            # characters from the instrument
+        self.sendcmd('G1DX') # Disable returning prefix and suffix
 
     ## ENUMS ##
     
@@ -267,8 +268,10 @@ class Keithley195(Multimeter):
             if mode != current_mode:
                 self.mode = mode
                 time.sleep(2) # Gives the instrument a moment to settle
+        else:
+            mode = self.mode
         value = self.query('')
-        return float(value[4:]) * UNITS[value[1:4]]
+        return float(value) * UNITS2[mode]
         
     def get_status_word(self):
         """
