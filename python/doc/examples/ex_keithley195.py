@@ -39,5 +39,5 @@ dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 1)
 
 # <codecell>
 
-print dmm.read()
+print dmm.measure()
 
