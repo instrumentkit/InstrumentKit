@@ -43,6 +43,11 @@ from instruments.util_fns import assume_units, ProxyList
 # TODO: reach some sort of decision about whether enums live inside or outside
 #       the classes to which they are related.
 
+class AcquisitionType(Enum):
+    normal = "NORM"
+    average = "AVER"
+    peak_detect = "PEAK"
+
 class Coupling(Enum):
     ac = "AC"
     dc = "DC"
@@ -58,6 +63,15 @@ def bool_property(name, inst_true, inst_false, doc=None):
         self.sendcmd("{} {}".format(name, inst_true if newval else inst_false))
         
     return property(fget=getter, fset=setter, doc=doc)
+    
+def enum_property(name, enum, doc=None):
+    def getter(self):
+        return enum[self.query("{}?".format(name))]
+    def setter(self, newval):
+        self.sendcmd("{} {}".format(name, enum[newval].value))
+    
+    return property(fget=getter, fset=setter, doc=doc)
+    
 
 ## CLASSES #####################################################################
 
@@ -95,12 +109,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
         def query(self, cmd):
             return self._parent.query(":CHAN{}:{}".format(self._idx, cmd))
         
-        @property
-        def coupling(self):
-            return Coupling[self.query("COUP?")]
-        @coupling.setter
-        def coupling(self, newval):
-            self.sendcmd(Coupling[newval].value)
+        coupling = enum_property("COUP", Coupling)
     
         bw_limit = bool_property("BWL", "ON", "OFF")
         display = bool_property("DISP", "ON", "OFF")
@@ -131,11 +140,29 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
     def ref(self):
         return DataSource("REF")
         
+    acquire_type = enum_property(":ACQ:TYPE", AcquisitionType)
+    # TODO: implement :ACQ:MODE. This is confusing in the documentation, though.
+    
+    @property
+    def acquire_averages(self):
+        return int(self.query(":ACQ:AVER?"))
+    @acquire_averages.setter
+    def acquire_averages(self, newval):
+        if newval not in [2**i for i in xrange(1,9)]:
+            raise ValueError(
+                "Number of averages {} not supported by instrument; "
+                "must be a power of 2 from 2 to 256.".format(newval)
+            )
+        self.sendcmd(":ACQ:AVER {}".format(newval))
+    
+    # TODO: implement :ACQ:SAMP in a meaningful way. This should probably be
+    #       under Channel, and needs to be unitful.
+    # TODO: I don't understand :ACQ:MEMD yet.
+        
     ## METHODS ##
     
     def force_trigger(self):
         self.sendcmd(":FORC")
-        
         
     # TODO: consider moving the next few methods to Oscilloscope.
     def run(self):
@@ -145,3 +172,22 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
         self.sendcmd(":STOP")
         
     # TODO: unitful timebase!
+    
+    ## FRONT-PANEL KEY EMULATION METHODS ##
+    # These methods correspond one-to-one with physical keys on the front
+    # (local) control panel, except for release_panel, which enables the local
+    # panel and disables any remote lockouts, and for panel_locked.
+    #
+    # Many of the :KEY: commands are not yet implemented as methods.
+    
+    panel_locked = bool_property(":KEY:LOCK", "ON", "OFF")
+    
+    def release_panel(self):
+        # TODO: better name?
+        # NOTE: method may be redundant with the panel_locked property.
+        """
+        Releases any lockout of the local control panel.
+        """
+        self.sendcmf(":KEY:FORC")
+        
+    
