@@ -54,8 +54,8 @@ class Keithley580(Instrument):
         '''
         Initialise the instrument and remove CRLF line termination
         '''
-        super(Keithley580, self).__init__(self, filelike)
-        self.sendcmd('YX') # Removes the termination CRLF characters
+        super(Keithley580, self).__init__(filelike)
+        self.sendcmd('Y:X') # Removes the termination CRLF characters
                            # from the instruments
                            
     ## ENUMS ##
@@ -156,7 +156,7 @@ class Keithley580(Instrument):
     def dry_circuit_test(self, newval):
         if not isinstance(newval, bool):
             raise TypeError('DryCircuitTest mode must be a boolean.')
-        self.sendcmd('C{}X'.format(int(dc)))
+        self.sendcmd('C{}X'.format(int(newval)))
      
     @property
     def operate(self):
@@ -172,7 +172,7 @@ class Keithley580(Instrument):
     def operate(self, newval):
         if not isinstance(newval, bool):
             raise TypeError('Operate mode must be a boolean.')
-        self.sendcmd('O{}X'.format(int(dc)))
+        self.sendcmd('O{}X'.format(int(newval)))
     
     @property
     def relative(self):
@@ -197,9 +197,9 @@ class Keithley580(Instrument):
         return self.parse_status_word(self.get_status_word())['relative']
     @relative.setter
     def relative(self, newval):
-        if not isinstance(dc, bool):
+        if not isinstance(newval, bool):
             raise TypeError('Relative mode must be a boolean.')
-        self.sendcmd('Z{}X'.fomrat(int(dc)))
+        self.sendcmd('Z{}X'.format(int(newval)))
         
     @property
     def trigger_mode(self):
@@ -233,6 +233,40 @@ class Keithley580(Instrument):
                             'Keithley580.TriggerMode, got {} '
                             'instead.'.format(newval))
         self.sendcmd('T{}X'.format(newval.value))
+        
+    @property
+    def input_range(self):
+        """
+        Gets/sets the range of the Keithley 580 input terminals. The valid 
+        ranges are one of ``{AUTO|2e-1|2|20|200|2000|2e4|2e5}``
+        
+        :type: `~quantities.quantity.Quantity` or `str`
+        """
+        value = float(self.parse_status_word(self.get_status_word())['range'])
+        return value * pq.ohm
+    @input_range.setter
+    def input_range(self, newval):
+        valid = ('auto', 2e-1, 2e0, 2e1, 2e2, 2e3, 2e4, 2e5)
+        if isisntance(newval, str):
+            newval = newval.lower()
+            if newval == 'auto':
+                self.sendcmd('R0X')
+                return
+            else:
+                raise ValueError('Only "auto" is acceptable when specifying '
+                                 'the input range as a string.')
+        if isinstance(newval, pq.quantity.Quantity):
+            newval = float(newval)
+            
+        if isinstance(newval, float) or isinstance(newval, int):
+            if newval in valid:
+                newval = valid.index(newval)
+            else:
+                raise ValueError('Valid range settings are: {}'.format(valid))
+        else:
+            raise TypeError('Range setting must be specified as a float, int, '
+                            'or the string "auto", got {}'.format(type(newval)))
+        self.sendcmd('R{}X'.format(newval))
 
     ## METHODS ## 
 
@@ -244,34 +278,6 @@ class Keithley580(Instrument):
         (which is not supported by the 580 anyways).
         '''
         self.sendcmd('X')
-
-    def set_resistance_range(self, res):
-        """
-        Manually set the resistance range of the Keithley 580.
-        
-        :param res: Resistance range. One of 
-            ``{AUTO|2e-1|2|20|200|2000|2e5}``
-        :type: `str` or `int`
-        """
-        if isinstance(res, str):
-            res = res.lower()
-            if res == 'auto':
-                res = 0
-            else:
-                raise ValueError('Only valid string for resistance '
-                                 'range is "auto".')
-        elif isinstance(res, float) or isinstance(res, int):
-            valid = [2e-1, 2e0, 2e1, 2e2, 2e3, 2e4, 2e5]
-            if res in valid:
-                res = valid.index(res) + 1
-            else:
-                raise ValueError('Valid resistance ranges are: '
-                                 '{}'.format(valid))
-        else:
-            raise TypeError('Instrument resistance range must be specified '
-                            'as a float, integer, or string.')
-
-        self.sendcmd('R{}X'.format(res))
 
     def auto_range(self):
         """
@@ -338,13 +344,13 @@ class Keithley580(Instrument):
                   'polarity'   : { '0': '+',
                                    '1': '-' },
                   'range'      : { '0': 'auto',
-                                   '1': '0.2',
-                                   '2': '2',
-                                   '3': '20',
-                                   '4': '200',
-                                   '5': '2k',
-                                   '6': '20k',
-                                   '7': '200k' },
+                                   '1': 0.2,
+                                   '2': 2,
+                                   '3': 20,
+                                   '4': 2e2,
+                                   '5': 2e3,
+                                   '6': 2e4,
+                                   '7': 2e5 },
                   'linefreq'   : { '0': '60Hz',
                                    '1': '50Hz' }}
 
@@ -421,3 +427,11 @@ class Keithley580(Instrument):
                  'drycircuit': drycircuit,
                  'drive': drive,
                  'resistance': resistance }
+     
+    ## COMMUNICATOR METHODS ##
+     
+    def sendcmd(self, msg):
+        super(Keithley580, self).sendcmd(msg + ':')
+        
+    def query(self, msg, size=-1):
+        return super(Keithley580, self).query(msg + ':', size)[:-1]

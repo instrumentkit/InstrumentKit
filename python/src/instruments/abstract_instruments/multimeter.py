@@ -41,16 +41,54 @@ class Multimeter(Instrument):
     ## PROPERTIES ##
     
     def getmode(self):
-        '''
+        """
         Read measurement mode the multimeter is currently in.
-        '''
+        """
         raise NotImplementedError
     def setmode(self, newval):
-        '''
+        """
         Change the mode the multimeter is in.
-        '''
+        """
         raise NotImplementedError
     mode = abc.abstractproperty(getmode, setmode)
+    
+    def gettrigger_mode(self):
+        """
+        Get the current trigger mode the multimeter is set to.
+        """
+        raise NotImplementedError
+    def settrigger_mode(self, newval):
+        """
+        Set the multimeter triggering mode.
+        """
+        raise NotImplementedError
+    trigger_mode = abc.abstractproperty(gettrigger_mode, settrigger_mode)
+    
+    def getrelative(self):
+        """
+        Get the status of relative measuring mode (usually on or off).
+        """
+        raise NotImplementedError
+    def setrelative(self, newval):
+        """
+        Set (enable/disable) the relative measuring mode of the multimeter.
+        """
+        raise NotImplementedError
+    relative = abc.abstractproperty(getrelative, setrelative)
+    
+    def getinput_range(self):
+        """
+        Get the current input range setting of the multimeter.
+        """
+        raise NotImplementedError
+    def setinput_range(self, newval):
+        """
+        Set the input range setting of the multimeter.
+        """
+        raise NotImplementedError
+    input_range = abc.abstractproperty(getinput_range, setinput_range)
+    
+    
     
     ## METHODS ##
     
