@@ -48,14 +48,11 @@ class Axis(object):
         
     ## PROPERTIES ##
     
-    def getposition(self):
+    @abc.abstractproperty
+    def position(self):
         raise NotImplementedError
-    def setposition(self, newval):
-        raise NotImplementedError
-    position = abc.abstractproperty(getposition, setposition)
     
-    def getvelocity(self):
+    @abc.abstractproperty
+    def velocity(self):
         raise NotImplementedError
-    def setvelocity(self):
-        raise NotImplementedError
-    velocity = abc.abstractproperty(getvelocity, setvelocity)
+

@@ -39,7 +39,9 @@ from contextlib import contextmanager
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument
+from instruments.abstract_instruments.axis import Axis, AxisList
 from instruments.util_fns import assume_units
+
 ## ENUMS #######################################################################
 
 
@@ -238,28 +240,6 @@ class NewportError(IOError):
     def getMessage(self,code):
         return NewportError.messageDict.get(code,"Error code not recognised")
 
-
-class _AxisList(object):
-    # TODO: make this a ProxyList.
-    """
-    Used to make expressions like ``NewportESP301.axis[idx]``
-    work as expected.
-    """
-    def __init__(self, controller):
-        self._controller = controller
-        self._axisDict = dict()
-    def __getitem__(self, idx):
-        # FIXME: need to check MAX AXES, but the docs are not clear
-        #        on how to do this. Once that's done, expose it as len.
-        if idx < 0:
-            raise IndexError("Negative axis indices are not allowed.")
-        # Change one-based indices to zero-based for easier
-        # Python programming.
-        axis = self._axisDict.get(idx+1,NewportESP301Axis(self._controller, idx + 1))
-        self._axisDict[idx+1] = axis
-        return axis
-
-
 class NewportESP301(Instrument):
     """
     Handles communication with the Newport ESP-301 multiple-axis motor
@@ -293,7 +273,7 @@ class NewportESP301(Instrument):
         :type: :class:`NewportESP301Axis`
         """
         
-        return _AxisList(self)
+        return AxisList(self, NewportESP301Axis, xrange(3))
 
     ## LOW-LEVEL COMMAND METHODS ##
 
@@ -447,7 +427,7 @@ class NewportESP301(Instrument):
         self._newport_cmd("EX", target=program_id)
     
         
-class NewportESP301Axis(object):
+class NewportESP301Axis(Axis):
     """
     Encapsulates communication concerning a single axis
     of an ESP-301 controller. This class should not be
@@ -485,7 +465,7 @@ class NewportESP301Axis(object):
         # TODO: check axis_id
         
         self._controller = controller
-        self._axis_id = axis_id
+        self._axis_id = axis_id + 1 # Convert out from Python to Newport notation.
 
         self._units = self.units
         
@@ -512,9 +492,9 @@ class NewportESP301Axis(object):
         .. seealso::
             NewportESP301Units
         """
-        return NewportESP301Units(
+        return NewportESP301Units(int(
             self._controller._newport_cmd("SN?", target=self.axis_id)
-        )
+        ))
         
     def _set_units(self, new_units):
         return self._controller._newport_cmd(

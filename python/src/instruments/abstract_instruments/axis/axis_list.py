@@ -42,27 +42,19 @@ class AxisList(ProxyList, AxisCollection):
             raise TypeError('Only Axis classes are allowed in AxisList, '
                             'received type {}.'.format(type(proxy_cls)))
         super(AxisList, self).__init__(parent, proxy_cls, valid_set)
-        self._is_rasterable = False
         self._valid_set = valid_set
         
     ## PROPERTIES ##
     
     @property
-    def is_hardware_rasterable(self):
-        return self._is_rasterable
-    @is_hardware_rasterable.setter
-    def is_hardware_rasterable(self, newval):
-        if newval:
-            self._is_rasterable = True
-        else:
-            self._is_rasterable = False
-            
+    def is_hardware_scannable(self):
+        return False
+    @property
+    def finest_axes(self):
+        return self
+        
     @property
     def limits(self):
-        """
-        Gets/sets the flag used to signify if the Axis within this AxisList
-        are rasterable.
-        """
         raise NotImplementedError
     @limits.setter
     def limits(self, newval):
@@ -90,8 +82,17 @@ class AxisList(ProxyList, AxisCollection):
     
     ## METHODS ##
     
-    def move(self, *args, **kwargs):
+    # TODO!
+    
+    def _move(self, position, absolute=True):
+        # TODO: This one might require adding the appropriate move()
+        #       function to the Axis, rather than just specifying things through
+        #       the position property mutator.
         raise NotImplementedError
         
-    def raster(self):
+    def _raster(self):
         raise NotImplementedError
+        
+    def _scan(self, coords, dwell_time=None):
+        raise NotImplementedError
+    
