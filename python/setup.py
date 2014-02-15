@@ -17,6 +17,7 @@ setup(
         'instruments.keithley',
         'instruments.lakeshore',
         'instruments.other',
+        'instruments.rigol',
         'instruments.srs',
         'instruments.tektronix',  
         'instruments.thorlabs',

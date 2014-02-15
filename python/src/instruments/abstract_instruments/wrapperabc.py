@@ -85,7 +85,8 @@ class WrapperABC(object):
         the communication channel without appending other data.
         '''
         raise NotImplementedError
-        
+    
+    @abc.abstractmethod    
     def query(self, msg, size=-1):
         '''
         Send a string to the connected instrument using sendcmd and read the
@@ -96,6 +97,14 @@ class WrapperABC(object):
         you are connected to an older instrument and the query command does not
         contain a `?`, then the command `+read` needs to be send to force the
         instrument to send its response.
+        '''
+        raise NotImplementedError
+        
+    @abc.abstractmethod
+    def flush_input(self):
+        '''
+        Instruct the wrapper to flush the input buffer, discarding the entirety
+        of its contents.
         '''
         raise NotImplementedError
 

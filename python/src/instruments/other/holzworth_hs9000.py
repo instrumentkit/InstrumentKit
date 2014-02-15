@@ -41,7 +41,7 @@ import re
 ## FUNCTIONS ###################################################################
 
 # TODO: promote the following to util_fns in case another module needs it.
-def split_unit_str(s):
+def split_unit_str(s, default_units=pq.dimensionless):
     """
     Given a string of the form "12 C" or "14.7 GHz", returns a tuple of the
     numeric part and the unit part, irrespective of how many (if any) whitespace
@@ -49,20 +49,23 @@ def split_unit_str(s):
     """
     # Borrowed from:
     # http://stackoverflow.com/questions/430079/how-to-split-strings-into-text-and-number
-    match = re.match(r"([0-9\.]+)\s*([a-z]+)", s.strip(), re.I)
+    match = re.match(r"(-?[0-9\.]+)\s*([a-z]+)", s.strip(), re.I)
     if match:
         val, units = match.groups()
         return float(val), units
     else:
         try:
-            return float(s), pq.dimensionless
+            return float(s), default_units
         except ValueError:
             raise ValueError("Could not split '{}' into value and units.".format(repr(s)))
             
 def _bounded_property(base_name, allowed_units, default_units, doc=""):
     
     def getter(self):
-        return pq.Quantity(*split_unit_str(self._query("{}?".format(base_name))))
+        return pq.Quantity(*split_unit_str(
+            self._query("{}?".format(base_name)),
+            default_units
+        ))
     
     def min_getter(self):
         return pq.Quantity(*split_unit_str(self._query("{}:MIN?".format(base_name))))
@@ -79,7 +82,7 @@ def _bounded_property(base_name, allowed_units, default_units, doc=""):
         if newval.units not in allowed_units:
             newval = newval.rescale(default_units)
             
-        self._sendcmd("{} {}".format(base_name, newval))
+        self._sendcmd("{}:{}".format(base_name, newval))
         
     return property(getter, setter, doc=doc), property(min_getter), property(max_getter)
     
@@ -106,15 +109,20 @@ class HolzworthHS9000(Instrument):
             # We unpacked the channel index from the string of the form "CH1",
             # in order to make the API more Pythonic, but now we need to put
             # it back.
-            self._ch_name = "CH{}".format(idx_chan)
-           
+            # Some channel names, like "REF", are special and are preserved
+            # as strs.
+            self._ch_name = (
+                idx_chan if isinstance(idx_chan, str)
+                else "CH{}".format(idx_chan + 1)
+            )
+                      
         ## PRIVATE METHODS ##
             
         def _sendcmd(self, cmd):
-            self._hs.sendcmd("{ch}:{cmd}".format(ch=self._ch_name, cmd=cmd))
+            self._hs.sendcmd(":{ch}:{cmd}".format(ch=self._ch_name, cmd=cmd))
             
         def _query(self, cmd):
-            return self._hs.query("{ch}:{cmd}".format(ch=self._ch_name, cmd=cmd))
+            return self._hs.query(":{ch}:{cmd}".format(ch=self._ch_name, cmd=cmd))
             
         
         ## STATE METHODS ##
@@ -148,18 +156,24 @@ class HolzworthHS9000(Instrument):
         
         @property
         def power_on(self):
-            return bool(self._query("PWR:RF?"))
+            return (self._query("PWR:RF?").strip() == 'ON')
         @power_on.setter
         def power_on(self, newval):
-            self._sendcmd("PWR:RF {}".format("ON" if newval else "OFF"))
+            self._sendcmd("PWR:RF:{}".format("ON" if newval else "OFF"))
                 
     ## PROXY LIST ##
     
     def _channel_idxs(self):
         # The command :ATTACH? returns a string of the form ":CH1:CH2" to
         # indicate what channels are attached to the internal USB bus.
+        # We convert what channel names we can to integers, and leave the
+        # rest as strings.
         return [
-            int(ch_name.replace("CH", "")) - 1
+            (
+                int(ch_name.replace("CH", "")) - 1
+                if ch_name.startswith('CH') else
+                ch_name.strip()
+            )
             for ch_name in self.query(":ATTACH?").split(":")
             if ch_name
         ]

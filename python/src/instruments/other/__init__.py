@@ -1,6 +1,9 @@
 from instruments.other.oxforditc503 import OxfordITC503
 from instruments.other.picowattavs47 import PicowattAVS47
-from instruments.other.yokogawa7651 import Yokogawa7651
+from instruments.other.yokogawa7651 import (
+    Yokogawa7651,
+    _Yokogawa7651Channel,
+)
 from instruments.other.newportesp301 import (
     NewportESP301, NewportESP301Axis, NewportError, NewportESP301HomeSearchMode
 )

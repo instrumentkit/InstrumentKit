@@ -112,6 +112,13 @@ class USBWrapper(io.IOBase, WrapperABC):
         
     def tell(self):
         return NotImplemented
+        
+    def flush_input(self):
+        '''
+        Instruct the wrapper to flush the input buffer, discarding the entirety
+        of its contents.
+        '''
+        raise NotImplementedError
     
     ## METHODS ##
     

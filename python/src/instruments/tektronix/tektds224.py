@@ -28,6 +28,7 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
+import time
 import numpy as np
 import quantities as pq
 from flufl.enum import Enum
@@ -106,29 +107,29 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
         with self:
             
             if not bin_format:
-                self.sendcmd('DAT:ENC ASCI') # Set the data encoding format to ASCII
-                raw = self.query('CURVE?')
+                self._tek.sendcmd('DAT:ENC ASCI') # Set the data encoding format to ASCII
+                raw = self._tek.query('CURVE?')
                 raw = raw.split(',') # Break up comma delimited string
                 raw = map(float, raw) # Convert each list element to int
                 raw = array(raw) # Convert into numpy array
             else:
-                self.write('DAT:ENC RIB') # Set encoding to signed, big-endian
+                self._tek.sendcmd('DAT:ENC RIB') # Set encoding to signed, big-endian
                 data_width = self._tek.data_width
-                self.write('CURVE?')
-                raw = self.binblockread(data_width) # Read in the binary block, 
+                self._tek.sendcmd('CURVE?')
+                raw = self._tek.binblockread(data_width) # Read in the binary block, 
                                                     # data width of 2 bytes
 
-                #self.ser.read(2) # Read in the two ending \n\r characters
+                self._tek._file.flush_input() # Flush input buffer
             
-            yoffs = self.query('WFMP:{}:YOF?'.format(self.name)) # Retrieve Y offset
-            ymult = self.query('WFMP:{}:YMU?'.format(self.name)) # Retrieve Y multiply
-            yzero = self.query('WFMP:{}:YZE?'.format(self.name)) # Retrieve Y zero
+            yoffs = self._tek.query('WFMP:{}:YOF?'.format(self.name)) # Retrieve Y offset
+            ymult = self._tek.query('WFMP:{}:YMU?'.format(self.name)) # Retrieve Y multiply
+            yzero = self._tek.query('WFMP:{}:YZE?'.format(self.name)) # Retrieve Y zero
             
             y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
             
-            xzero = self.query('WFMP:XZE?') # Retrieve X zero
-            xincr = self.query('WFMP:XIN?') # Retrieve X incr
-            ptcnt = self.query('WFMP:{}:NR_P?'.format(self.name)) # Retrieve number 
+            xzero = self._tek.query('WFMP:XZE?') # Retrieve X zero
+            xincr = self._tek.query('WFMP:XIN?') # Retrieve X incr
+            ptcnt = self._tek.query('WFMP:{}:NR_P?'.format(self.name)) # Retrieve number 
                                                                   # of data points
             
             x = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
@@ -145,7 +146,7 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
         designed to be initialized by the `TekTDS224` class.
     '''
     
-    def __init(self, parent, idx):
+    def __init__(self, parent, idx):
         super(_TekTDS224Channel, self).__init__(parent, "CH{}".format(idx + 1))
         self._idx = idx + 1
 
@@ -192,7 +193,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         
         :rtype: `_TekTDS224Channel`
         '''
-        return ProxyList(self, _TekTDS224, xrange(4))
+        return ProxyList(self, _TekTDS224Channel, xrange(4))
         
     @property
     def ref(self):
@@ -239,7 +240,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
             elif hasattr(newval, "name"): # Is a datasource with a name.
                 newval = newval.name
         self.sendcmd("DAT:SOU {}".format(newval))
-        sleep(0.01) # Let the instrument catch up.
+        time.sleep(0.01) # Let the instrument catch up.
         
     @property
     def data_width(self):
@@ -250,4 +251,9 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
             raise ValueError("Only one or two byte-width is supported.")
         
         self.sendcmd("DATA:WIDTH {}".format(newval))
+
+    @property
+    def force_trigger(self):
+        raise NotImplementedError
+    
         
