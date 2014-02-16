@@ -352,7 +352,7 @@ class Instrument(object):
         .. seealso::
             `~serial.Serial` for description of `port`, baud rates and timeouts.
         """
-        ser = sm.newSerialConnection(port, 
+        ser = serialManager.newSerialConnection(port, 
                                      baud,
                                      timeout, 
                                      writeTimeout)
@@ -383,7 +383,7 @@ class Instrument(object):
             
         .. _Galvant Industries GPIB-USB adapter: http://galvant.ca/shop/gpibusb/
         """
-        ser = sm.newSerialConnection(port,
+        ser = serialManager.newSerialConnection(port,
                 timeout=timeout,
                  writeTimeout=writeTimeout)
         return cls(GPIBWrapper(ser, gpib_address))
