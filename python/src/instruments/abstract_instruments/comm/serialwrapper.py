@@ -40,7 +40,7 @@ class SerialWrapper(io.IOBase, AbstractCommunicator):
     """
     
     def __init__(self, conn):
-        AbstractCommmunicator.__init__(self)
+        AbstractCommunicator.__init__(self)
         
         if isinstance(conn, serial.Serial):
             self._conn = conn
