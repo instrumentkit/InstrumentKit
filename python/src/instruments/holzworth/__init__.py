@@ -1,2 +1,2 @@
-from instruments.holzworth import HolzworthHS9000
+from instruments.holzworth.holzworth_hs9000 import HolzworthHS9000
 
