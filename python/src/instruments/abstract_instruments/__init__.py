@@ -7,5 +7,8 @@ from instruments.abstract_instruments.oscilloscope import (
     OscilloscopeDataSource,
     Oscilloscope,
 )
-
+from instruments.abstract_instruments.power_supply import (
+    PowerSupplyChannel,
+    PowerSupply,
+)
 import instruments.abstract_instruments.signal_generator

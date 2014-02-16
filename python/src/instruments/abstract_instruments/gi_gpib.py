@@ -157,8 +157,8 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         msg = self._file.read(size)
 
         # Check for extra terminators added by the GI-GPIB adapter.
-        if msg[-1] == "\r":
-            msg = msg[:-1]
+        #if msg[-1] == "\r":
+        #    msg = msg[:-1]
 
         return msg
     
@@ -170,22 +170,31 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         '''
         self._file.write(msg)
         
+    def flush_input(self):
+        '''
+        Instruct the wrapper to flush the input buffer, discarding the entirety
+        of its contents.
+        '''
+        self._file.flush_input()
+        
     ## METHODS ##
     
     def sendcmd(self, msg):
         '''
         '''
+        if msg == '':
+            return
         self._file.sendcmd('+a:' + str(self._gpib_address))
-        time.sleep(0.02)
+        time.sleep(0.01)
         self._file.sendcmd('+eoi:{}'.format(self._eoi))
-        time.sleep(0.02)
+        time.sleep(0.01)
         self._file.sendcmd('+strip:{}'.format(self._strip))
-        time.sleep(0.02)
+        time.sleep(0.01)
         if self._eoi is 0:
             self._file.sendcmd('+eos:{}'.format(self._terminator))
-            time.sleep(0.02)
+            time.sleep(0.01)
         self._file.sendcmd(msg)
-        time.sleep(0.02)
+        time.sleep(0.01)
         
     def query(self, msg, size=-1):
         '''
@@ -193,7 +202,7 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         self.sendcmd(msg)
         if '?' not in msg:
             self._file.sendcmd('+read')
-        return self._file.read(size)
+        return self._file.read(size).strip()
         
         
     

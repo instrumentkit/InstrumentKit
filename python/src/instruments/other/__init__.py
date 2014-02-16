@@ -1,8 +1,13 @@
-from instruments.other.oxforditc503 import OxfordITC503
-from instruments.other.picowattavs47 import PicowattAVS47
-from instruments.other.yokogawa7651 import Yokogawa7651
-from instruments.other.newportesp301 import (
+# Provide the classes that used to be in instruments.other by importing them
+# from their new homes.
+from instruments.oxford import OxfordITC503
+from instruments.picowatt import PicowattAVS47
+from instruments.yokogawa import (
+    Yokogawa7651,
+)
+from instruments.newport import (
     NewportESP301, NewportESP301Axis, NewportError, NewportESP301HomeSearchMode
 )
-from instruments.other.phasematrix_fsw0020 import PhaseMatrixFSW0020, dBm, cBm, mHz
-from instruments.other.holzworth_hs9000 import HolzworthHS9000
+from instruments.phasematrix import PhaseMatrixFSW0020
+from instruments.holzworth import HolzworthHS9000
+

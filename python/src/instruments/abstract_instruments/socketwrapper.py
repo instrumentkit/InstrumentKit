@@ -117,6 +117,13 @@ class SocketWrapper(io.IOBase, WrapperABC):
     def tell(self):
         return NotImplemented
         
+    def flush_input(self):
+        '''
+        Instruct the wrapper to flush the input buffer, discarding the entirety
+        of its contents.
+        '''
+        _ = self.read(-1) # Read in everything in the buffer and trash it
+        
     ## METHODS ##
     
     def sendcmd(self, msg):

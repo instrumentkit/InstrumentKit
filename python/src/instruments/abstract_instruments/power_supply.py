@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# multimeter.py: Python class for multimeters
+# power_supply.py: Python ABC for power supplies
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -21,7 +21,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
-##
 
 ## FEATURES ####################################################################
 
@@ -35,67 +34,73 @@ from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 
-class Multimeter(Instrument):
+class PowerSupplyChannel(object):
     __metaclass__ = abc.ABCMeta
-
+    
     ## PROPERTIES ##
     
     def getmode(self):
         """
-        Read measurement mode the multimeter is currently in.
+        Get/set the mode for this channel
         """
         raise NotImplementedError
     def setmode(self, newval):
-        """
-        Change the mode the multimeter is in.
-        """
         raise NotImplementedError
     mode = abc.abstractproperty(getmode, setmode)
     
-    def gettrigger_mode(self):
+    def getvoltage(self):
         """
-        Get the current trigger mode the multimeter is set to.
-        """
-        raise NotImplementedError
-    def settrigger_mode(self, newval):
-        """
-        Set the multimeter triggering mode.
+        Get/set the voltage for this channel
         """
         raise NotImplementedError
-    trigger_mode = abc.abstractproperty(gettrigger_mode, settrigger_mode)
+    def setvoltage(self, newval):
+        raise NotImplementedError
+    voltage = abc.abstractproperty(getvoltage, setvoltage)
     
-    def getrelative(self):
+    def getcurrent(self):
         """
-        Get the status of relative measuring mode (usually on or off).
-        """
-        raise NotImplementedError
-    def setrelative(self, newval):
-        """
-        Set (enable/disable) the relative measuring mode of the multimeter.
+        Get/set the current for this channel
         """
         raise NotImplementedError
-    relative = abc.abstractproperty(getrelative, setrelative)
+    def setcurrent(self, newval):
+        raise NotImplementedError
+    current = abc.abstractproperty(getcurrent, setcurrent)
     
-    def getinput_range(self):
+    def getoutput(self):
         """
-        Get the current input range setting of the multimeter.
+        Get/set the output state of this channel
         """
         raise NotImplementedError
-    def setinput_range(self, newval):
+    def setoutput(self, newval):
+        raise NotImplementedError
+    output = abc.abstractproperty(getoutput, setoutput)
+    
+
+class PowerSupply(Instrument):
+    __metaclass__ = abc.ABCMeta
+    
+    ## PROPERTIES ##
+    
+    @abc.abstractproperty
+    def channel(self):
+        raise NotImplementedError
+    
+    def getvoltage(self):
         """
-        Set the input range setting of the multimeter.
+        Get/set the voltage for all channels
         """
         raise NotImplementedError
-    input_range = abc.abstractproperty(getinput_range, setinput_range)
-    
-    
-    
-    ## METHODS ##
-    
-    @abc.abstractmethod
-    def measure(self, mode):
-        '''
-        Perform a measurement as specified by mode parameter.
-        '''
+    def setvoltage(self, newval):
         raise NotImplementedError
-        
+    voltage = abc.abstractproperty(getvoltage, setvoltage)
+    
+    def getcurrent(self):
+        """
+        Get/set the current for all channels
+        """
+        raise NotImplementedError
+    def setcurrent(self, newval):
+        raise NotImplementedError
+    current = abc.abstractproperty(getcurrent, setcurrent)
+    
+    

@@ -137,13 +137,24 @@ class FileCommunicator(io.IOBase, WrapperABC):
     def query(self, msg, size=-1):
         self.sendcmd(msg)
         time.sleep(0.02) # Give the bus time to respond.
+        resp = ""
         try:
-            # Note that we use readline here to avoid having to wait for
-            # the timeout to be convinced that there was no more output
-            # from the device.
-            resp = self._filelike.readline()
+            # FIXME: this is slow, but we do it to avoid unreliable
+            #        filelike devices such as some usbtmc-class devices.
+            while True:
+                nextchar = self._filelike.read(1)
+                if not nextchar:
+                    break
+                resp += nextchar
+                if nextchar.endswith(self._terminator):
+                    break
         except IOError as ex:
-            if ex.errno != errno.EPIPE:
+            if ex.errno == errno.ETIMEDOUT:
+                # We don't mind timeouts if resp is nonempty,
+                # and will just return what we have.
+                if not resp:
+                    raise
+            elif ex.errno != errno.EPIPE:
                 raise # Reraise the existing exception.
             else: # Give a more helpful and specific exception.
                 raise IOError(

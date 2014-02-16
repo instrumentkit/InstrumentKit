@@ -23,6 +23,11 @@ Most of the required and optional dependencies can be obtained using
 Required Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
+If you're using ``pip``, these requirements can be obtained automatically
+by using the provided ``requirements.txt``::
+
+$ pip install -r requirements.txt
+
 - NumPy
 - `PySerial`_
 - `quantities`_
@@ -59,7 +64,6 @@ For some instruments, a specific instrument class is not needed, as the
 instruments. If you don't see your specific instrument listed, then, please
 check in the instrument's manual whether it uses a standard set of SCPI
 commands.
-
 
 Connecting to Instruments
 -------------------------
