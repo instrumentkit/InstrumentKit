@@ -38,7 +38,7 @@ from instruments.abstract_instruments.comm import (
     FileCommunicator,
     LoopbackWrapper,
     GPIBWrapper,
-    WrapperABC,
+    AbstractCommunicator,
     SerialWrapper,
     serialManager
 )
@@ -84,12 +84,12 @@ class Instrument(object):
     _terminator = "\n"
     
     def __init__(self, filelike):
-        # Check to make sure filelike is a subclass of WrapperABC
-        if isinstance(filelike, WrapperABC):
+        # Check to make sure filelike is a subclass of AbstractCommunicator
+        if isinstance(filelike, AbstractCommunicator):
             self._file = filelike
         else:
             raise TypeError('Instrument must be initialized with a filelike '
-                              'object that is a subclass of WrapperABC.')
+                              'object that is a subclass of AbstractCommunicator.')
     
     ## COMMAND-HANDLING METHODS ##
     

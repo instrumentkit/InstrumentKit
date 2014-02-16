@@ -27,26 +27,25 @@
 ## IMPORTS #####################################################################
 
 import io
-from instruments.abstract_instruments.comm import WrapperABC
+from instruments.abstract_instruments.comm import AbstractCommunicator
+import sys
 
 ## CLASSES #####################################################################
 
-class LoopbackWrapper(io.IOBase, WrapperABC):
+class LoopbackWrapper(AbstractCommunicator, io.IOBase):
     """
     Used for testing various controllers
     """
     
     def __init__(self):
+        AbstractCommunicator.__init__(self)
         self._terminator = '\n'
-    def __repr__(self):
-        return "<LoopbackWrapper object at 0x{:X} "\
-                .format(id(self))
     
     ## PROPERTIES ##
     
     @property
     def address(self):
-        raise NotImplementedError()
+        return sys.stdin.name
     @address.setter
     def address(self, newval):
         raise NotImplementedError()
@@ -70,19 +69,6 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
     @timeout.setter
     def timeout(self, newval):
         pass
-
-    @property
-    def debug(self):
-        """
-        Gets/sets whether debug mode is enabled for this connection.
-        If `True`, all output is echoed to stdout.
-
-        :type: `bool`
-        """
-        return self._debug
-    @debug.setter
-    def debug(self, newval):
-        self._debug = bool(newval)
         
     ## FILE-LIKE METHODS ##
     
@@ -101,7 +87,6 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
         return input_var
         
     def write(self, msg):
-        
         print " <- {} ".format(repr(msg))
         
         
@@ -116,20 +101,23 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
         
     ## METHODS ##
     
-    def sendcmd(self, msg):
+    def _sendcmd(self, msg):
         '''
         Receives a command and passes off to write function
+        
         :param str msg: The command to be received
         '''
         msg = msg + self._terminator
         self.write(msg)
         
-    def query(self, msg, size=-1):
+    def _query(self, msg, size=-1):
         '''
         Receives a query and returns the generated Response
+        
         :param str msg: The message to received
         :rtype: `str`
         '''
         self.sendcmd(msg)
         resp = self.read(size)
         return resp
+

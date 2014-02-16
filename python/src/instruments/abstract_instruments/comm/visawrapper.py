@@ -39,34 +39,31 @@ except (ImportError, WindowsError, OSError):
 
 import numpy as np
 
-from instruments.abstract_instruments.comm import WrapperABC
+from instruments.abstract_instruments.comm import AbstractCommunicator
 
 ## CLASSES #####################################################################
 
-class VisaWrapper(io.IOBase, WrapperABC):
+class VisaWrapper(io.IOBase, AbstractCommunicator):
     """
     Wraps a connection exposed by the VISA library.
     """
     
     def __init__(self, conn):
+        AbstractCommunicator.__init__(self)
+    
         if visa is None:
             raise ImportError("PyVISA required for accessing VISA instruments.")
             
         if isinstance(conn, visa.Instrument):
             self._conn = conn
             self._terminator = '\n'
-            self._debug = False
         else:
             raise TypeError('VisaWrapper must wrap a VISA Instrument.')
 
         # Make a bytearray for holding data read in from the device
         # so that we can buffer for two-argument read.
         self._buf = bytearray()
-    
-    def __repr__(self):
-        return "<VisaWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), repr(self._conn))
-    
+        
     ## PROPERTIES ##
     
     @property
@@ -97,19 +94,6 @@ class VisaWrapper(io.IOBase, WrapperABC):
     def timeout(self, newval):
         self._conn.timeout = newval
 
-    @property
-    def debug(self):
-        """
-        Gets/sets whether debug mode is enabled for this connection.
-        If `True`, all output is echoed to stdout.
-
-        :type: `bool`
-        """
-        return self._debug
-    @debug.setter
-    def debug(self, newval):
-        self._debug = bool(newval)
-        
     ## FILE-LIKE METHODS ##
     
     def close(self):
@@ -133,14 +117,9 @@ class VisaWrapper(io.IOBase, WrapperABC):
         else:
             raise ValueError('Must read a positive value of characters, or -1 for all characters.')
 
-        if self._debug:
-            print " -> {} ".format(repr(msg))
-            
         return msg
         
     def write(self, msg):
-        if self._debug:
-            print " <- {} ".format(repr(msg))
         self._conn.write(msg)
         
     def seek(self, offset):
@@ -159,17 +138,15 @@ class VisaWrapper(io.IOBase, WrapperABC):
         
     ## METHODS ##
     
-    def sendcmd(self, msg):
+    def _sendcmd(self, msg):
         '''
         '''
         msg = msg + self._terminator
         self.write(msg)
         
-    def query(self, msg, size=-1):
+    def _query(self, msg, size=-1):
         '''
         '''
         msg += self._terminator
-        if self._debug:
-            print " <- {} ".format(repr(msg))
         return self._conn.ask(msg)
         

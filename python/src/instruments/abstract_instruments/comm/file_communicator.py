@@ -28,12 +28,12 @@
 import errno
 import io
 import time
-from instruments.abstract_instruments.comm import WrapperABC
+from instruments.abstract_instruments.comm import AbstractCommunicator
 import os
 
 ## CLASSES #####################################################################
 
-class FileCommunicator(io.IOBase, WrapperABC):
+class FileCommunicator(io.IOBase, AbstractCommunicator):
     """
     Wraps a `file` object, providing ``sendcmd`` and ``query`` methods,
     while passing everything else through.
@@ -47,16 +47,12 @@ class FileCommunicator(io.IOBase, WrapperABC):
     """
     
     def __init__(self, filelike):
+        AbstractCommunicator.__init__(self)
         if isinstance(filelike, str):
             filelike = open(filelike, 'r+')
             
         self._filelike = filelike
         self._terminator = "\n" # Use the system default line ending by default.
-        self._debug = False
-    
-    def __repr__(self):
-        return "<FileCommunicator object at 0x{:X} "\
-                "connected to {}>".format(id(self), repr(self._filelike))
     
     ## PROPERTIES ##
     
@@ -85,19 +81,6 @@ class FileCommunicator(io.IOBase, WrapperABC):
     def timeout(self, newval):
         raise NotImplementedError
 
-    @property
-    def debug(self):
-        """
-        Gets/sets whether debug mode is enabled for this connection.
-        If `True`, all output is echoed to stdout.
-
-        :type: `bool`
-        """
-        return self._debug
-    @debug.setter
-    def debug(self, newval):
-        self._debug = bool(newval)
-        
     ## FILE-LIKE METHODS ##
     
     def close(self):
@@ -108,13 +91,9 @@ class FileCommunicator(io.IOBase, WrapperABC):
         
     def read(self, size):
         msg = self._filelike.read(size)
-        if self._debug:
-            print " -> {} ".format(repr(msg))
         return msg
         
     def write(self, msg):
-        if self._debug:
-            print " <- {} ".format(repr(msg))
         self._filelike.write(msg)
         
     def seek(self, offset):
@@ -128,12 +107,12 @@ class FileCommunicator(io.IOBase, WrapperABC):
         
     ## METHODS ##
     
-    def sendcmd(self, msg):
+    def _sendcmd(self, msg):
         msg = msg + self._terminator
         self.write(msg)
         self.flush()        
         
-    def query(self, msg, size=-1):
+    def _query(self, msg, size=-1):
         self.sendcmd(msg)
         time.sleep(0.02) # Give the bus time to respond.
         resp = ""
@@ -163,7 +142,5 @@ class FileCommunicator(io.IOBase, WrapperABC):
                     "the instrument. Consider restarting the instrument.".format(
                         self.address
                     ))
-        if self._debug:
-            print " -> {}".format(repr(resp))
         return resp
         

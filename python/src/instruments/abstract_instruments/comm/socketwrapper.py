@@ -30,11 +30,11 @@ import socket
 
 import numpy as np
 
-from instruments.abstract_instruments.comm import WrapperABC
+from instruments.abstract_instruments.comm import AbstractCommunicator
 
 ## CLASSES #####################################################################
 
-class SocketWrapper(io.IOBase, WrapperABC):
+class SocketWrapper(io.IOBase, AbstractCommunicator):
     """
     Wraps a socket to make it look like a `file`. Note that this is used instead
     of `socket.makefile`, as that method does not support timeouts. We do not
@@ -43,16 +43,12 @@ class SocketWrapper(io.IOBase, WrapperABC):
     """
     
     def __init__(self, conn):
+        AbstractCommunicator.__init__(self)
         if isinstance(conn, socket.socket):
             self._conn = conn
             self._terminator = '\n'
-            self._debug = False
         else:
             raise TypeError('SocketWrapper must wrap a socket.socket object.')
-        
-    def __repr__(self):
-        return "<SocketWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), self._conn.getpeername())
         
     ## PROPERTIES ##
     
@@ -125,19 +121,16 @@ class SocketWrapper(io.IOBase, WrapperABC):
         
     ## METHODS ##
     
-    def sendcmd(self, msg):
+    def _sendcmd(self, msg):
         '''
         '''
         msg = msg + self._terminator
-        if self._debug:
-            print " <- {} ".format(repr(msg))
         self._conn.sendall(msg)
         
-    def query(self, msg, size=-1):
+    def _query(self, msg, size=-1):
         '''
         '''
         self.sendcmd(msg)
         resp = self.read(size)
-        if self._debug:
-            print " -> {}".format(repr(resp))
         return resp
+    

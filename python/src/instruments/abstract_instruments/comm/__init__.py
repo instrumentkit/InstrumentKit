@@ -1,4 +1,4 @@
-from instruments.abstract_instruments.comm.wrapperabc import WrapperABC
+from instruments.abstract_instruments.comm.abstract_comm import AbstractCommunicator
 
 from instruments.abstract_instruments.comm.socketwrapper import SocketWrapper
 from instruments.abstract_instruments.comm.usbwrapper import USBWrapper

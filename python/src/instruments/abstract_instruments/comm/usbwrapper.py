@@ -28,24 +28,19 @@ import io
 
 import numpy as np
 
-from instruments.abstract_instruments.comm import WrapperABC
+from instruments.abstract_instruments.comm import AbstractCommunicator
 
 ## CLASSES #####################################################################
 
-class USBWrapper(io.IOBase, WrapperABC):
+class USBWrapper(io.IOBase, AbstractCommunicator):
     '''
     
     '''
     def __init__(self, conn):
+        AbstractCommunicator.__init__(self)
         # TODO: Check to make sure this is a USB connection
         self._conn = conn
         self._terminator = '\n'
-        self._debug = False
-    
-    def __repr__(self):
-        # TODO: put in correct connection name
-        return "<USBWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), 'placeholder')
     
     ## PROPERTIES ##
     
@@ -79,19 +74,6 @@ class USBWrapper(io.IOBase, WrapperABC):
     def timeout(self, newval):
         raise NotImplementedError
     
-    @property
-    def debug(self):
-        """
-        Gets/sets whether debug mode is enabled for this connection.
-        If `True`, all output is echoed to stdout.
-
-        :type: `bool`
-        """
-        return self._debug
-    @debug.setter
-    def debug(self, newval):
-        self._debug = bool(newval)
-    
     ## FILE-LIKE METHODS ##
     
     def close(self):
@@ -121,16 +103,15 @@ class USBWrapper(io.IOBase, WrapperABC):
     
     ## METHODS ##
     
-    def sendcmd(self, msg):
+    def _sendcmd(self, msg):
         '''
         '''
         msg = msg + self._terminator
-        if self._debug:
-            print " <- {} ".format(repr(msg))
         self._conn.sendall(msg)
         
-    def query(self, msg, size=-1):
+    def _query(self, msg, size=-1):
         '''
         '''
         self.sendcmd(msg)
-        self.read(size)
+        return self.read(size)
+    

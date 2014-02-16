@@ -29,17 +29,19 @@ import serial
 
 import numpy as np
 
-from instruments.abstract_instruments.comm import WrapperABC
+from instruments.abstract_instruments.comm import AbstractCommunicator
 
 ## CLASSES #####################################################################
 
-class SerialWrapper(io.IOBase, WrapperABC):
+class SerialWrapper(io.IOBase, AbstractCommunicator):
     """
     Wraps a pyserial Serial object to add a few properties as well as
     handling of termination characters.
     """
     
     def __init__(self, conn):
+        AbstractCommmunicator.__init__(self)
+        
         if isinstance(conn, serial.Serial):
             self._conn = conn
             self._terminator = '\n'
@@ -47,10 +49,6 @@ class SerialWrapper(io.IOBase, WrapperABC):
             self._capture = False
         else:
             raise TypeError('SerialWrapper must wrap a serial.Serial object.')
-    
-    def __repr__(self):
-        return "<SerialWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), self._conn.port)
     
     ## PROPERTIES ##
     
@@ -86,19 +84,6 @@ class SerialWrapper(io.IOBase, WrapperABC):
         self._conn.timeout = newval
 
     @property
-    def debug(self):
-        """
-        Gets/sets whether debug mode is enabled for this connection.
-        If `True`, all output is echoed to stdout.
-
-        :type: `bool`
-        """
-        return self._debug
-    @debug.setter
-    def debug(self, newval):
-        self._debug = bool(newval)
-
-    @property
     def capture(self):
         return self._capture
     @capture.setter
@@ -119,8 +104,6 @@ class SerialWrapper(io.IOBase, WrapperABC):
     def read(self, size):
         if (size >= 0):
             resp = self._conn.read(size)
-            if self._debug:
-                print " -> {} ".format(repr(resp))
             return resp
         elif (size == -1):
             result = bytearray()
@@ -129,15 +112,11 @@ class SerialWrapper(io.IOBase, WrapperABC):
                 c = self._conn.read(1)
                 if c != self._terminator:
                     result += c
-            if self._debug:
-                print " -> {} ".format(repr(result))
             return bytes(result)
         else:
             raise ValueError('Must read a positive value of characters.')
         
     def write(self, msg):
-        if self._debug:
-            print " <- {} ".format(repr(msg))
         if self._capture:
             self._capture_log += msg
         self._conn.write(msg)
@@ -159,14 +138,15 @@ class SerialWrapper(io.IOBase, WrapperABC):
         
     ## METHODS ##
     
-    def sendcmd(self, msg):
+    def _sendcmd(self, msg):
         '''
         '''
         msg = msg + self._terminator
         self.write(msg)
         
-    def query(self, msg, size=-1):
+    def _query(self, msg, size=-1):
         '''
         '''
         self.sendcmd(msg)
         return self.read(size)
+        

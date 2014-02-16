@@ -30,11 +30,11 @@ import time
 
 import numpy as np
 
-from instruments.abstract_instruments.comm import serialManager, WrapperABC
+from instruments.abstract_instruments.comm import serialManager, AbstractCommunicator
 
 ## CLASSES #####################################################################
 
-class GPIBWrapper(io.IOBase, WrapperABC):
+class GPIBWrapper(io.IOBase, AbstractCommunicator):
     '''
     Wraps a SocketWrapper or PySerial.Serial connection for use with
     Galvant Industries GPIBUSB or GPIBETHERNET adapters.
@@ -43,17 +43,15 @@ class GPIBWrapper(io.IOBase, WrapperABC):
     classes.
     '''
     def __init__(self, filelike, gpib_address):
+        AbstractCommunicator.__init__(self)
+        
         self._file = filelike
         self._gpib_address = gpib_address
         self._terminator = 10
         self._eoi = 1
         self._file.terminator = '\r'
         self._strip = 0
-    
-    def __repr__(self):
-        return "<GPIBWrapper object at 0x{:X} "\
-                "wrapping {}>".format(id(self), self._file)
-                
+        
     ## PROPERTIES ##
     
     @property
@@ -178,7 +176,7 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         
     ## METHODS ##
     
-    def sendcmd(self, msg):
+    def _sendcmd(self, msg):
         '''
         '''
         if msg == '':
@@ -195,14 +193,11 @@ class GPIBWrapper(io.IOBase, WrapperABC):
         self._file.sendcmd(msg)
         time.sleep(0.01)
         
-    def query(self, msg, size=-1):
+    def _query(self, msg, size=-1):
         '''
         '''
         self.sendcmd(msg)
         if '?' not in msg:
             self._file.sendcmd('+read')
         return self._file.read(size).strip()
-        
-        
-    
     
