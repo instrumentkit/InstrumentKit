@@ -42,7 +42,7 @@ from instruments.abstract_instruments import Multimeter
 class Keithley195(Multimeter):
     """
     The Keithley 195 is a 5 1/2 digit auto-ranging digital multimeter. You can 
-    find the full specifications list in the `user's guide`_.
+    find the full specifications list in the `Keithley 195 user's guide`_.
     
     Example usage:
     
@@ -51,7 +51,7 @@ class Keithley195(Multimeter):
     >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
     >>> print dmm.measure(dmm.Mode.resistance)
     
-    .. _user's guide: http://www.keithley.com/data?asset=803
+    .. _Keithley 195 user's guide: http://www.keithley.com/data?asset=803
     """
 
     def __init__(self, filelike):

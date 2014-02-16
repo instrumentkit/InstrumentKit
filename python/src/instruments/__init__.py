@@ -47,9 +47,12 @@ from instruments.abstract_instruments import *
 
 import instruments.generic_scpi
 import instruments.agilent
+import instruments.holzworth
 import instruments.keithley
 import instruments.lakeshore
-import instruments.other
+import instruments.oxford
+import instruments.phasematrix
+import instruments.picowatt
 import instruments.rigol
 import instruments.srs
 import instruments.tektronix
@@ -60,4 +63,28 @@ import instruments.events
 import instruments.units
 
 from instruments.config import load_instruments
+
+# Replace instruments.other with a deprecation warning.
+
+import instruments.other as _other
+
+class _Other(object):
+    def __getattr__(self, name):
+        import warnings
+        attr = getattr(_other, name)
+        
+        msg = (
+            "The instruments.other package is deprecated. "
+            "Please use the {} package instead.".format(
+                ".".join(attr.__module__.split(".")[:2])
+            )
+        )
+        
+        # This really should be a DeprecationWarning, except those are silenced
+        # by default. Why?
+        warnings.warn(msg, UserWarning)
+        
+        return attr
+        
+other = _Other()
 
