@@ -24,7 +24,7 @@
 
 ## IMPORTS #####################################################################
 
-from quantities import Hz, milli, GHz, UnitQuantity, Quantity
+from quantities import Hz, milli, GHz, UnitQuantity, Quantity, inch
 from quantities.unitquantity import IrreducibleUnit
 
 ## UNITS #######################################################################
@@ -45,8 +45,6 @@ dBm = UnitLogPower('decibel-milliwatt', symbol='dBm')
 # and centibel-milliwatts (cBm). We define those units here to make conversions
 # easier later on.
 
-# TODO: move custom units out to another module.
-
 mHz = UnitQuantity('millihertz', milli * Hz, symbol='mHz', doc="""
 `~quantities.UnitQuantity` representing millihertz, the native unit of the
 Phase Matrix FSW-0020.
@@ -55,4 +53,8 @@ Phase Matrix FSW-0020.
 #: Centibel-milliwatts, the native log-power unit supported by the
 #: Phase Matrix FSW-0020.
 cBm = UnitLogPower('centibel-milliwatt', dBm / 10, symbol='cBm')
+
+#: The micro-inch is a unit employed by some Newport instruments.
+micro_inch = pq.UnitQuantity('micro-inch', inch / 1e6, symbol = 'uin')
+
 

@@ -21,7 +21,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
-##
 
 ## FEATURES ####################################################################
 
@@ -38,7 +37,14 @@ class Axis(object):
     Axis representing a single physical axis-object such as a stepper motor,
     galvos, piezo stages, etc.
     
-    .. warning:: This class shoult NOT be manually created by the user.
+    At its most basic, an axis is something that has a position and that can be
+    moved. By querying and setting the position, the origin for this axis
+    can be defined, while the :meth:`~Axis.move` method instructs the device
+    exposing this axis to move to a specified position.
+    
+    .. warning::
+    
+        This class shoult NOT be manually created by the user.
     """
     __metaclass__ = abc.ABCMeta
         
@@ -46,7 +52,7 @@ class Axis(object):
         self._parent = parent
         self._idx = idx
         
-    ## PROPERTIES ##
+    ## ABSTRACT PROPERTIES ##
     
     @abc.abstractproperty
     def position(self):
@@ -56,3 +62,25 @@ class Axis(object):
     def velocity(self):
         raise NotImplementedError
 
+    ## ABSTRACT METHODS ##
+    
+    @abc.abstractmethod
+    def move(self, new_position, absolute=True):
+        """
+        Instructs the device exposing this axis to move to a given position.
+        """
+        pass
+    
+    ## CONCRETE PROPERTIES ##
+    
+    @property
+    def limits(self):
+        """
+        Returns the limits to which this axis can travel as a tuple ``(lower,
+        upper)``. If no limit is known or exists, then the relevant tuple
+        element is `None`.
+        """
+        # TODO: enforce limits in move and position.
+        # By default, there are no limits given.
+        return (None, None)
+        
