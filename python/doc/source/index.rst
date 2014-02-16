@@ -10,6 +10,7 @@ Contents:
     :maxdepth: 2
 
     intro
+    guide/index
     apiref/index
 
 
