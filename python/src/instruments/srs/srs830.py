@@ -39,8 +39,7 @@ from flufl.enum._enum import EnumValue
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
-from instruments.abstract_instruments import gi_gpib as gw
-from instruments.abstract_instruments import serialwrapper as sw
+from instruments.abstract_instruments.comm import GPIBWrapper, SerialWrapper
 from instruments.util_fns import assume_units
 
 ## CONSTANTS ###################################################################
@@ -76,9 +75,9 @@ class SRS830(SCPIInstrument):
         elif outx_mode is 2:
             self.sendcmd('OUTX 2')
         else:
-            if isinstance(self._file, gw.GPIBWrapper):
+            if isinstance(self._file, GPIBWrapper):
                 self.sendcmd('OUTX 1')
-            elif isinstance(self._file, sw.SerialWrapper):
+            elif isinstance(self._file, SerialWrapper):
                 self.sendcmd('OUTX 2')
             else:
                 print 'OUTX command has not been set. Instrument behavour is '\

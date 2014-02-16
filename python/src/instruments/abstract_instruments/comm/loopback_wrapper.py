@@ -27,7 +27,7 @@
 ## IMPORTS #####################################################################
 
 import io
-from instruments.abstract_instruments import WrapperABC
+from instruments.abstract_instruments.comm import WrapperABC
 
 ## CLASSES #####################################################################
 

@@ -4,7 +4,6 @@
 # socketwrapper.py: Wraps sockets into a filelike object.
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
-#        Chris Granade (cgranade@cgranade.com).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -22,50 +21,48 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
-##
 
 ## IMPORTS #####################################################################
 
 import io
-import socket
+import serial
 
 import numpy as np
 
-from instruments.abstract_instruments import WrapperABC
+from instruments.abstract_instruments.comm import WrapperABC
 
 ## CLASSES #####################################################################
 
-class SocketWrapper(io.IOBase, WrapperABC):
+class SerialWrapper(io.IOBase, WrapperABC):
     """
-    Wraps a socket to make it look like a `file`. Note that this is used instead
-    of `socket.makefile`, as that method does not support timeouts. We do not
-    support all features of `file`-like objects here, but enough to make
-    `~instrument.Instrument` happy.
+    Wraps a pyserial Serial object to add a few properties as well as
+    handling of termination characters.
     """
     
     def __init__(self, conn):
-        if isinstance(conn, socket.socket):
+        if isinstance(conn, serial.Serial):
             self._conn = conn
             self._terminator = '\n'
             self._debug = False
+            self._capture = False
         else:
-            raise TypeError('SocketWrapper must wrap a socket.socket object.')
-        
+            raise TypeError('SerialWrapper must wrap a serial.Serial object.')
+    
     def __repr__(self):
-        return "<SocketWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), self._conn.getpeername())
-        
+        return "<SerialWrapper object at 0x{:X} "\
+                "connected to {}>".format(id(self), self._conn.port)
+    
     ## PROPERTIES ##
     
     @property
     def address(self):
-        '''
-        Returns the socket peer address information as a tuple.
-        '''
-        return self._conn.getpeername()
+        return self._conn.port
     @address.setter
     def address(self, newval):
-        raise NotImplementedError('Unable to change address of sockets.')
+        # TODO: Input checking on Serial port newval
+        # TODO: Add port changing capability to serialmanager
+        # self._conn.port = newval
+        raise NotImplementedError
         
     @property
     def terminator(self):
@@ -73,19 +70,43 @@ class SocketWrapper(io.IOBase, WrapperABC):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for SocketWrapper must be specified '
+            raise TypeError('Terminator for SerialWrapper must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for SocketWrapper must only be 1 '
+            raise ValueError('Terminator for SerialWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
         
     @property
     def timeout(self):
-        return self._conn.gettimeout()
+        return self._conn.timeout
     @timeout.setter
     def timeout(self, newval):
-        self._conn.settimeout(newval)
+        newval = int(newval)
+        self._conn.timeout = newval
+
+    @property
+    def debug(self):
+        """
+        Gets/sets whether debug mode is enabled for this connection.
+        If `True`, all output is echoed to stdout.
+
+        :type: `bool`
+        """
+        return self._debug
+    @debug.setter
+    def debug(self, newval):
+        self._debug = bool(newval)
+
+    @property
+    def capture(self):
+        return self._capture
+    @capture.setter
+    def capture(self, value):
+        self._capture = value
+        if value:
+            self._capture_log = ""
+    
         
     ## FILE-LIKE METHODS ##
     
@@ -97,19 +118,29 @@ class SocketWrapper(io.IOBase, WrapperABC):
         
     def read(self, size):
         if (size >= 0):
-            return self._conn.recv(size)
+            resp = self._conn.read(size)
+            if self._debug:
+                print " -> {} ".format(repr(resp))
+            return resp
         elif (size == -1):
             result = bytearray()
             c = 0
             while c != self._terminator:
-                c = self._conn.recv(1)
-                result += c
+                c = self._conn.read(1)
+                if c != self._terminator:
+                    result += c
+            if self._debug:
+                print " -> {} ".format(repr(result))
             return bytes(result)
         else:
             raise ValueError('Must read a positive value of characters.')
         
-    def write(self, string):
-        self._conn.sendall(string)
+    def write(self, msg):
+        if self._debug:
+            print " <- {} ".format(repr(msg))
+        if self._capture:
+            self._capture_log += msg
+        self._conn.write(msg)
         
     def seek(self, offset):
         return NotImplemented
@@ -121,8 +152,10 @@ class SocketWrapper(io.IOBase, WrapperABC):
         '''
         Instruct the wrapper to flush the input buffer, discarding the entirety
         of its contents.
+        
+        Calls the pyserial flushInput() method.
         '''
-        _ = self.read(-1) # Read in everything in the buffer and trash it
+        self._conn.flushInput()
         
     ## METHODS ##
     
@@ -130,15 +163,10 @@ class SocketWrapper(io.IOBase, WrapperABC):
         '''
         '''
         msg = msg + self._terminator
-        if self._debug:
-            print " <- {} ".format(repr(msg))
-        self._conn.sendall(msg)
+        self.write(msg)
         
     def query(self, msg, size=-1):
         '''
         '''
         self.sendcmd(msg)
-        resp = self.read(size)
-        if self._debug:
-            print " -> {}".format(repr(resp))
-        return resp
+        return self.read(size)

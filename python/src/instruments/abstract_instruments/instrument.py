@@ -31,14 +31,18 @@ import struct
 import socket
 import urlparse
 
-import serialManager as sm
-import socketwrapper as sw
-import usbwrapper as uw
-import visawrapper as vw
-import file_communicator as fc
-import loopback_wrapper as lw
-import gi_gpib
-from instruments.abstract_instruments import WrapperABC
+from instruments.abstract_instruments.comm import (
+    SocketWrapper,
+    USBWrapper,
+    VisaWrapper,
+    FileCommunicator,
+    LoopbackWrapper,
+    GPIBWrapper,
+    WrapperABC,
+    SerialWrapper,
+    serialManager
+)
+
 import os
 
 try:
@@ -324,7 +328,7 @@ class Instrument(object):
         """
         conn = socket.socket()
         conn.connect((host, port))
-        return cls(sw.SocketWrapper(conn))
+        return cls(SocketWrapper(conn))
         
     @classmethod
     def open_serial(cls, port, baud, timeout=3, writeTimeout=3):
@@ -342,8 +346,7 @@ class Instrument(object):
             instrument before timing out.
         :param float writeTimeout: Number of seconds to wait when writing to the
             instrument before timing out.
-        
-        :rtype: `Instrument`
+        : `Instrument`
         :return: Object representing the connected instrument.
         
         .. seealso::
@@ -383,13 +386,13 @@ class Instrument(object):
         ser = sm.newSerialConnection(port,
                 timeout=timeout,
                  writeTimeout=writeTimeout)
-        return cls(gi_gpib.GPIBWrapper(ser, gpib_address))
+        return cls(GPIBWrapper(ser, gpib_address))
         
     @classmethod
     def open_gpibethernet(cls, host, port, gpib_address):
         conn = socket.socket()
         conn.connect((host, port))
-        return cls(gi_gpib.GPIBWrapper(conn, gpib_address))
+        return cls(GPIBWrapper(conn, gpib_address))
 
     @classmethod
     def open_visa(cls, resource_name):
@@ -414,11 +417,11 @@ class Instrument(object):
             raise ImportError("PyVISA is required for loading VISA "
                                 "instruments.")
         ins = visa.instrument(resource_name)
-        return cls(vw.VisaWrapper(ins))
+        return cls(VisaWrapper(ins))
 
     @classmethod
     def open_test(cls):
-        return cls(lw.LoopbackWrapper())
+        return cls(LoopbackWrapper())
 
     @classmethod
     def open_usb(cls, vid, pid):
@@ -472,7 +475,7 @@ class Instrument(object):
         if ep is None:
             raise IOError("USB descriptor not found.")
 
-        return cls(uw.USBWrapper(ep))
+        return cls(USBWrapper(ep))
         
     @classmethod
     def open_file(cls, filename):
@@ -487,4 +490,4 @@ class Instrument(object):
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
         """
-        return cls(fc.FileCommunicator(filename))
+        return cls(FileCommunicator(filename))

@@ -37,7 +37,7 @@ from contextlib import contextmanager
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
-from instruments.abstract_instruments.gi_gpib import GPIBWrapper
+from instruments.abstract_instruments.comm import GPIBWrapper
 from instruments.util_fns import assume_units, ProxyList
 
 ## ENUMS #######################################################################

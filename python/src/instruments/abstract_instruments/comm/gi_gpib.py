@@ -30,8 +30,7 @@ import time
 
 import numpy as np
 
-import serialManager
-from instruments.abstract_instruments import WrapperABC
+from instruments.abstract_instruments.comm import serialManager, WrapperABC
 
 ## CLASSES #####################################################################
 

@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# usbwrapper.py: Wraps USB connections into a filelike object.
+# socketwrapper.py: Wraps sockets into a filelike object.
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
+#        Chris Granade (cgranade@cgranade.com).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -21,78 +22,70 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
-##
 
 ## IMPORTS #####################################################################
 
 import io
+import socket
 
 import numpy as np
 
-from instruments.abstract_instruments import WrapperABC
+from instruments.abstract_instruments.comm import WrapperABC
 
 ## CLASSES #####################################################################
 
-class USBWrapper(io.IOBase, WrapperABC):
-    '''
+class SocketWrapper(io.IOBase, WrapperABC):
+    """
+    Wraps a socket to make it look like a `file`. Note that this is used instead
+    of `socket.makefile`, as that method does not support timeouts. We do not
+    support all features of `file`-like objects here, but enough to make
+    `~instrument.Instrument` happy.
+    """
     
-    '''
     def __init__(self, conn):
-        # TODO: Check to make sure this is a USB connection
-        self._conn = conn
-        self._terminator = '\n'
-        self._debug = False
-    
+        if isinstance(conn, socket.socket):
+            self._conn = conn
+            self._terminator = '\n'
+            self._debug = False
+        else:
+            raise TypeError('SocketWrapper must wrap a socket.socket object.')
+        
     def __repr__(self):
-        # TODO: put in correct connection name
-        return "<USBWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), 'placeholder')
-    
+        return "<SocketWrapper object at 0x{:X} "\
+                "connected to {}>".format(id(self), self._conn.getpeername())
+        
     ## PROPERTIES ##
     
     @property
     def address(self):
         '''
-        
+        Returns the socket peer address information as a tuple.
         '''
-        raise NotImplementedError
+        return self._conn.getpeername()
     @address.setter
     def address(self, newval):
-        raise ValueError('Unable to change USB target address.')
-    
+        raise NotImplementedError('Unable to change address of sockets.')
+        
     @property
     def terminator(self):
         return self._terminator
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for USBWrapper must be specified '
+            raise TypeError('Terminator for SocketWrapper must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for USBWrapper must only be 1 '
+            raise ValueError('Terminator for SocketWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
         
     @property
     def timeout(self):
-        raise NotImplementedError
+        return self._conn.gettimeout()
     @timeout.setter
     def timeout(self, newval):
-        raise NotImplementedError
-    
-    @property
-    def debug(self):
-        """
-        Gets/sets whether debug mode is enabled for this connection.
-        If `True`, all output is echoed to stdout.
-
-        :type: `bool`
-        """
-        return self._debug
-    @debug.setter
-    def debug(self, newval):
-        self._debug = bool(newval)
-    
+        self._conn.settimeout(newval)
+        
     ## FILE-LIKE METHODS ##
     
     def close(self):
@@ -100,12 +93,22 @@ class USBWrapper(io.IOBase, WrapperABC):
             self._conn.shutdown()
         finally:
             self._conn.close()
-            
+        
     def read(self, size):
-        raise NotImplementedError
-    
+        if (size >= 0):
+            return self._conn.recv(size)
+        elif (size == -1):
+            result = bytearray()
+            c = 0
+            while c != self._terminator:
+                c = self._conn.recv(1)
+                result += c
+            return bytes(result)
+        else:
+            raise ValueError('Must read a positive value of characters.')
+        
     def write(self, string):
-        self._conn.write(string)
+        self._conn.sendall(string)
         
     def seek(self, offset):
         return NotImplemented
@@ -118,8 +121,8 @@ class USBWrapper(io.IOBase, WrapperABC):
         Instruct the wrapper to flush the input buffer, discarding the entirety
         of its contents.
         '''
-        raise NotImplementedError
-    
+        _ = self.read(-1) # Read in everything in the buffer and trash it
+        
     ## METHODS ##
     
     def sendcmd(self, msg):
@@ -134,4 +137,7 @@ class USBWrapper(io.IOBase, WrapperABC):
         '''
         '''
         self.sendcmd(msg)
-        self.read(size)
+        resp = self.read(size)
+        if self._debug:
+            print " -> {}".format(repr(resp))
+        return resp
