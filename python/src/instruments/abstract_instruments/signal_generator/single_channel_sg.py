@@ -32,12 +32,12 @@ import abc
 
 from instruments.abstract_instruments import Instrument
 from signal_generator import SignalGenerator
-from channel import Channel
+from channel import SGChannel
 from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
 
-class SingleChannelSG(SignalGenerator, Channel):
+class SingleChannelSG(SignalGenerator, SGChannel):
     """
     Class for representing a Signal Generator that only has a single output
     channel. The sole property in this class allows for the user to use the API

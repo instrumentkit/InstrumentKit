@@ -32,7 +32,10 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 from instruments.abstract_instruments import Instrument
-from instruments.abstract_instruments.signal_generator import SignalGenerator, Channel
+from instruments.abstract_instruments.signal_generator import (
+    SignalGenerator, 
+    SGChannel
+)
 from instruments.util_fns import assume_units, ProxyList
 from instruments.units import dBm
 
@@ -100,7 +103,7 @@ class HolzworthHS9000(SignalGenerator):
     
     ## INNER CLASSES ##
     
-    class Channel(Channel): # <- this works, believe it or not.
+    class Channel(SGChannel):
         # TODO: docstring!
         
         def __init__(self, hs, idx_chan):
