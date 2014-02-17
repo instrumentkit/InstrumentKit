@@ -23,6 +23,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
+## VERSION METADATA ###########################################################
+# In keeping with PEP-396, we define a version number of the form
+# {major}.{minor}[.{postrelease}]{prerelease-tag}
+
+__version__ = '1.0a1'
+
 ## VERSION CHECKING ###########################################################
 
 # We hide version checking in a function so that imports from here don't
