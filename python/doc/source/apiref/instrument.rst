@@ -35,7 +35,7 @@ Instrument Base Classes
     :members:
     :undoc-members:
 
-:class:`SingleChannelSG` - Abstract class for Signal Generators with a Single Channel
+:class:`SingleChannelSG` - Class for Signal Generators with a Single Channel
 =====================================================================================
 
 .. autoclass:: SingleChannelSG

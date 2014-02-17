@@ -35,23 +35,39 @@ from instruments.abstract_instruments import Instrument
 ## CLASSES #####################################################################
 
 class SGChannel(object):
+    """
+    Python abstract base class representing a single channel for a signal 
+    generator. 
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `~instruments.SignalGenerator` class.
+    """
     __metaclass__ = abc.ABCMeta
     
     ## PROPERTIES ##
     
     def getfreq(self):
+        """
+        Gets/sets the output frequency of the SG channel
+        """
         raise NotImplementedError
     def setfreq(self):
         raise NotImplementedError
     freq = abc.abstractproperty(getfreq, setfreq)
     
     def getpower(self):
+        """
+        Gets/sets the output power of the SG channel
+        """
         raise NotImplementedError
     def setpower(self):
         raise NotImplementedError
     power = abc.abstractproperty(getpower, setpower)
     
     def getphase(self):
+        """
+        Gets/sets the output phase of the SG channel
+        """
         raise NotImplementedError
     def setphase(self):
         raise NotImplementedError
