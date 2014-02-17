@@ -13,3 +13,8 @@ from instruments.abstract_instruments.power_supply import (
 )
 import instruments.abstract_instruments.signal_generator
 
+from instruments.abstract_instruments.signal_generator import (
+    SignalGenerator,
+    SingleChannelSG,
+    SGChannel
+)
