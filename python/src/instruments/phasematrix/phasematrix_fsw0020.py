@@ -30,14 +30,16 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 from instruments.abstract_instruments import Instrument
+from instruments.abstract_instruments.signal_generator import SingleChannelSG
 from instruments.util_fns import assume_units
 from quantities import Hz, milli, GHz, UnitQuantity, Quantity
 from quantities.unitquantity import IrreducibleUnit
 from instruments.units import *
 
+
 ## CLASSES #####################################################################
 
-class PhaseMatrixFSW0020(Instrument):
+class PhaseMatrixFSW0020(SingleChannelSG):
     """
     Communicates with a Phase Matrix FSW-0020 signal generator via the
     "Native SPI" protocol, supported on all FSW firmware versions.
@@ -98,6 +100,13 @@ class PhaseMatrixFSW0020(Instrument):
 
         # Command code 0x03, parameter length 2 bytes (4 nybbles)
         self.sendcmd('03{:04X}.'.format(newval))
+        
+    @property
+    def phase(self):
+        raise NotImplementedError
+    @phase.setter
+    def phase(self, newval):
+        raise NotImplementedError
 
     @property
     def blanking(self):
@@ -125,15 +134,15 @@ class PhaseMatrixFSW0020(Instrument):
 
 
     @property
-    def rf_output(self):
+    def output(self):
         """
         :type: `bool`
         """
         # TODO
         pass
 
-    @rf_output.setter
-    def rf_output(self, newval):
+    @output.setter
+    def output(self, newval):
         self.sendcmd('0F{:02X}.'.format(1 if newval else 0))
 
 

@@ -15,6 +15,7 @@ Contents:
     generic_scpi
     agilent
     hp
+    holzworth
     keithley
     lakeshore
     other
