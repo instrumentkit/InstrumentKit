@@ -17,35 +17,35 @@ Instrument Base Classes
 :class:`Multimeter` - Abstract class for multimeter instruments
 ===============================================================
 
-.. autoclass:: Multimeter
+.. autoclass:: instruments.abstract_instruments.Multimeter
     :members:
     :undoc-members:
 
 :class:`FunctionGenerator` - Abstract class for function generator instruments
 ==============================================================================
 
-.. autoclass:: FunctionGenerator
+.. autoclass:: instruments.abstract_instruments.FunctionGenerator
     :members:
     :undoc-members:
 
 :class:`SignalGenerator` - Abstract class for Signal Generators
 ===============================================================
 
-.. autoclass:: SignalGenerator
+.. autoclass:: instruments.abstract_instruments.signal_generator.SignalGenerator
     :members:
     :undoc-members:
 
 :class:`SingleChannelSG` - Class for Signal Generators with a Single Channel
 =====================================================================================
 
-.. autoclass:: SingleChannelSG
+.. autoclass:: instruments.abstract_instruments.signal_generator.SingleChannelSG
     :members:
     :undoc-members:
 
 :class:`SGChannel` - Abstract class for Signal Generator Channels
 =================================================================
 
-.. autoclass:: SGChannel
+.. autoclass:: instruments.abstract_instruments.signal_generator.SGChannel
     :members:
     :undoc-members:
 
