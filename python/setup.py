@@ -23,6 +23,7 @@ setup(
     packages=[
         'instruments',
         'instruments.abstract_instruments',
+        'instruments.abstract_instruments.signal_generator',
         'instruments.agilent',
         'instruments.generic_scpi',
         'instruments.holzworth',
