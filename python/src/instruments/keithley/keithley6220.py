@@ -30,7 +30,7 @@ from __future__ import division
 
 import quantities as pq
 
-from instruments import PowerSupply
+from instruments.abstract_instruments import PowerSupply
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units
 

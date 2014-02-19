@@ -49,7 +49,8 @@ __check_versions()
 
 ## IMPORTS ####################################################################
 
-from instruments.abstract_instruments import *
+from instruments.abstract_instruments import Instrument
+import instruments.abstract_instruments
 
 import instruments.generic_scpi
 import instruments.agilent

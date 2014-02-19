@@ -33,7 +33,7 @@ from flufl.enum._enum import EnumValue
 
 import quantities as pq
 
-from instruments import FunctionGenerator
+from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units
 

@@ -30,11 +30,10 @@ from __future__ import division
 
 import quantities as pq
 
-from instruments import (
+from instruments.abstract_instruments import (
     PowerSupply,
-    PowerSupplyChannel,
+    PowerSupplyChannel
 )
-from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units, ProxyList
 
 ## CLASSES #####################################################################
