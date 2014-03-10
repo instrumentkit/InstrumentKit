@@ -57,7 +57,7 @@ def newSerialConnection(port, baud=460800, timeout=3, writeTimeout=3):
     if not isinstance(port,str):
         raise TypeError('Serial port must be specified as a string.')
     
-    if port not in serialObjDict or serialObjDict['port'] is None:
+    if port not in serialObjDict or serialObjDict[port] is None:
         conn = sw.SerialWrapper(serial.Serial(
                                             port,
                                             baudrate=baud,
