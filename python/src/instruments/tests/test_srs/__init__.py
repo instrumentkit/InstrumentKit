@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# __init__.py: Package for InstrumentKit unit tests.
+# __init__.py: Tests for SRS-brand instruments.
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
@@ -25,17 +25,32 @@
 ## IMPORTS ####################################################################
 
 import instruments as ik
+from instruments.tests import expected_protocol, make_name_test, unit_eq
+
 import cStringIO as StringIO
 import quantities as pq
 
-## SETUP ######################################################################
+## TESTS ######################################################################
 
-def test_srsdg645_name():
-    with ik.tests.expected_protocol(ik.srs.SRSDG645, "*IDN?\n", "Name") as ddg:
-        assert ddg.name == "Name"
+test_srsdg645_name = make_name_test(ik.srs.SRSDG645)
+    
+def test_srsdg645_output_level():
+    with expected_protocol(ik.srs.SRSDG645, "LAMP? 1\nLAMP 1,4.0\n", "3.2") as ddg:
+        unit_eq(ddg.output['AB'].level_amplitude, pq.Quantity(3.2, "V"))
+        ddg.output['AB'].level_amplitude = 4.0
+        
+def test_srsdg645_output_polarity():
+    with expected_protocol(
+        ik.srs.SRSDG645,
+        "LPOL? 1\nLPOL 2,0\n",
+        "1"
+    ) as ddg:
+        assert ddg.output['AB'].polarity == ddg.LevelPolarity.positive
+        ddg.output['CD'].polarity = ddg.LevelPolarity.negative
+    
     
 def test_srsdg645_trigger_source():
-    with ik.tests.expected_protocol(ik.srs.SRSDG645, "DLAY?2\nDLAY 3,2,60.0\n", "0,42") as ddg:
+    with expected_protocol(ik.srs.SRSDG645, "DLAY?2\nDLAY 3,2,60.0\n", "0,42") as ddg:
         ref, t = ddg.channel['A'].delay
         assert ref == ddg.Channels.T0
         assert abs((t - pq.Quantity(42, 's')).magnitude) < 1e5

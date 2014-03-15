@@ -27,10 +27,20 @@
 import contextlib
 import cStringIO as StringIO
 
+from nose.tools import nottest, eq_
+
 ## FUNCTIONS ##################################################################
 
 @contextlib.contextmanager
 def expected_protocol(ins_class, host_to_ins, ins_to_host):
+    """
+    Given an instrument class, expected output from the host and expected input
+    from the instrument, asserts that the protocol in a context block proceeds
+    according to that expectation.
+    
+    For an example of how to write tests using this context manager, see
+    the ``make_name_test`` function below.
+    """
     stdin = StringIO.StringIO(ins_to_host)
     stdout = StringIO.StringIO()
     
@@ -44,4 +54,22 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host):
 Got:
 
 {}""".format(repr(host_to_ins), repr(stdout.getvalue()))
+    
+@nottest
+def unit_eq(a, b, msg=None, thresh=1e-5):
+    assert abs((a - b).magnitude) <= thresh, "{} - {} = {}.{}".format(
+        a, b, a - b,
+        "\n" + msg if msg is not None else ""
+    )
+    
+@nottest  
+def make_name_test(ins_class, name_cmd="*IDN?"):
+    """
+    Given an instrument class, produces a test which asserts that the instrument
+    correctly reports its name in response to a standard command.
+    """
+    def test():
+        with expected_protocol(ins_class, name_cmd + "\n", "NAME") as ins:
+            assert ins.name == "NAME"
+    return test
     
