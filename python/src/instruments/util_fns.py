@@ -29,6 +29,7 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 import quantities as pq
+from flufl.enum import Enum, IntEnum
 
 ## FUNCTIONS ###################################################################
 
@@ -49,10 +50,21 @@ class ProxyList(object):
         self._parent = parent
         self._proxy_cls = proxy_cls
         self._valid_set = valid_set
+        
+        # FIXME: This only checks the next level up the chain!
+        self._isenum = (Enum in valid_set.__bases__) or (IntEnum in valid_set.__bases__)
     def __iter__(self):
         for idx in self._valid_set:
             yield self._proxy_cls(self._parent, idx)
     def __getitem__(self, idx):
+        # If we have an enum, try to normalize by using getitem. This will
+        # allow for things like 'x' to be used instead of enum.x.
+        if self._isenum:
+            try:
+                idx = self._valid_set[idx]
+            except ValueError:
+                pass
+            
         if idx not in self._valid_set:
             raise IndexError("Index out of range. Must be "
                                 "in {}.".format(self._valid_set))
