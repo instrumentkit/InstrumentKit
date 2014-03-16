@@ -8,7 +8,7 @@ Picowatt-brand Instruments
 ==========================
 
 :class:`PicowattAVS47`
-===================
+======================
 
 .. autoclass:: PicowattAVS47
     :members:

@@ -43,6 +43,14 @@ logger.addHandler(logging.NullHandler())
 ## CLASSES #####################################################################
 
 class PM100USB(SCPIInstrument):
+    """
+    Instrument class for the `ThorLabs PM100USB`_ power meter.
+    Note that as this is an SCPI-compliant instrument, the properties and
+    methods of :class:`~instruments.generic_scpi.SCPIInstrument` may be used
+    as well.
+    
+    .. _ThorLabs PM100USB: http://www.thorlabs.com/thorproduct.cfm?partnumber=PM100USB
+    """
     
     ## ENUMS ##
     
@@ -96,6 +104,17 @@ class PM100USB(SCPIInstrument):
         @property
         def flags(self):
             return self._flags
+       
+    ## SENSOR PROPERTIES ##
+    
+    @property
+    def sensor(self):
+        """
+        Returns information about the currently connected sensor.
+        
+        :type: :class:`PM100USB.Sensor`
+        """
+        return self.Sensor(self)
        
     ## SENSING CONFIGURATION PROPERTIES ##
     

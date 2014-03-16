@@ -8,7 +8,7 @@ Oxford-brand Instruments
 ========================
     
 :class:`OxfordITC503`
-===================
+=====================
 
 .. autoclass:: OxfordITC503
     :members:

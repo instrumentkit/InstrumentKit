@@ -4,11 +4,11 @@
 .. currentmodule:: instruments.phasematrix
     
 =============================
-Phasematrix-brand Instruments
+PhaseMatrix-brand Instruments
 =============================
 
 :class:`PhaseMatrixFSW0020`
-===================
+===========================
 
 .. autoclass:: PhaseMatrixFSW0020
     :members:
