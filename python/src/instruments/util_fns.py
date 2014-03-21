@@ -48,6 +48,22 @@ def compatible_units(val1, val2):
     """
     return val1.dimensionality.simplified == val2.dimensionality.simplified
 
+def bool_property(name, inst_true, inst_false, doc=None):
+    def getter(self):
+        return self.query(name + "?").strip() == inst_true
+    def setter(self, newval):
+        self.sendcmd("{} {}".format(name, inst_true if newval else inst_false))
+        
+    return property(fget=getter, fset=setter, doc=doc)
+    
+def enum_property(name, enum, doc=None):
+    def getter(self):
+        return enum[self.query("{}?".format(name))]
+    def setter(self, newval):
+        self.sendcmd("{} {}".format(name, enum[newval].value))
+    
+    return property(fget=getter, fset=setter, doc=doc)
+
 ## CLASSES #####################################################################
 
 class ProxyList(object):
