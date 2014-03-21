@@ -37,7 +37,7 @@ from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
 )
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units, ProxyList
+from instruments.util_fns import assume_units, ProxyList, bool_property, enum_property
 
 ## ENUMS #######################################################################
 # TODO: reach some sort of decision about whether enums live inside or outside
@@ -55,23 +55,6 @@ class Coupling(Enum):
 
 ## FUNCTIONS ###################################################################
 
-# TODO: promote to util_fns.
-def bool_property(name, inst_true, inst_false, doc=None):
-    def getter(self):
-        return self.query(name + "?").strip() == inst_true
-    def setter(self, newval):
-        self.sendcmd("{} {}".format(name, inst_true if newval else inst_false))
-        
-    return property(fget=getter, fset=setter, doc=doc)
-    
-def enum_property(name, enum, doc=None):
-    def getter(self):
-        return enum[self.query("{}?".format(name))]
-    def setter(self, newval):
-        self.sendcmd("{} {}".format(name, enum[newval].value))
-    
-    return property(fget=getter, fset=setter, doc=doc)
-    
 
 ## CLASSES #####################################################################
 
