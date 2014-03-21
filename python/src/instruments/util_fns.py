@@ -44,6 +44,12 @@ def assume_units(value, units):
     return value
 
 def bool_property(name, inst_true, inst_false, doc=None):
+    """
+    Called inside of SCPI classes to instantiate boolean properties 
+    of the device cleanly.
+    Example:
+    my_property = bool_property("BEST:PROPERTY", "ON", "OFF")
+    """
     def getter(self):
         return self.query(name + "?").strip() == inst_true
     def setter(self, newval):
@@ -52,6 +58,12 @@ def bool_property(name, inst_true, inst_false, doc=None):
     return property(fget=getter, fset=setter, doc=doc)
     
 def enum_property(name, enum, doc=None):
+    """
+    Called inside of SCPI classes to instantiate Enum properties 
+    of the device cleanly.
+    Example:
+    my_property = bool_property("BEST:PROPERTY", enum_class)
+    """
     def getter(self):
         return enum[self.query("{}?".format(name))]
     def setter(self, newval):
