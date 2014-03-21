@@ -36,6 +36,7 @@ import quantities as pq
 import numpy as np
 
 from instruments.abstract_instruments import Electrometer
+from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units, ProxyList, bool_property, enum_property
 
 ## CLASSES #####################################################################
@@ -53,15 +54,6 @@ class Keithley6514(SCPIInstrument, Electrometer):
     
     .. _Keithley 6514 user's guide: http://www.tunl.duke.edu/documents/public/electronics/Keithley/keithley-6514-electrometer-manual.pdf
     """
-
-    ## CONSTANTS ##
-
-    _MODE_UNITS = {
-        Mode.voltage: pq.volt,
-        Mode.current: pq.amp,
-        Mode.resistance: pq.ohm,
-        Mode.charge: pq.coulomb
-    }
 
     ## ENUMS ##
     
@@ -91,6 +83,15 @@ class Keithley6514(SCPIInstrument, Electrometer):
         resistance = (2e3, 20e3, 200e3, 2e6, 20e6, 200e6, 2e9, 20e9, 200e9)
         charge = (20e-9, 200e-9, 2e-6, 20e-6)
 
+    ## CONSTANTS ##
+
+    _MODE_UNITS = {
+        Mode.voltage: pq.volt,
+        Mode.current: pq.amp,
+        Mode.resistance: pq.ohm,
+        Mode.charge: pq.coulomb
+    }
+        
     ## PRIVATE METHODS ##    
     
     def _get_auto_range(self, mode):
@@ -100,14 +101,14 @@ class Keithley6514(SCPIInstrument, Electrometer):
         val = value.rescale(self._MODE_UNITS[mode]).item()
         if val not in self._valid_range(mode):
             raise ValueError('Unexpected range limit for current mode.')
-        self.sendcmd('{}:RANGE AUTO {}'.format(mode.value, 'ON' if value else 'OFF')
+        self.sendcmd('{}:RANGE AUTO {}'.format(mode.value, 'ON' if value else 'OFF'))
 
     def _get_range(self, mode):
         self.query('{}:RANGE:UPPER?'.format(mode.value))
     def _set_range(self, mode, value):
         val = value.rescale(self._MODE_UNITS[mode]).item()
         
-        self.sendcmd('{}:RANGE:LOWER {:e}'.format(mode.value, val)
+        self.sendcmd('{}:RANGE:LOWER {:e}'.format(mode.value, val))
 
     def _valid_range(mode):
         if mode == Mode.voltage:
@@ -125,17 +126,17 @@ class Keithley6514(SCPIInstrument, Electrometer):
     ## PROPERTIES ##  
 
     mode = enum_property('FUNCTION', 
-        self.TriggerMode, 
+        TriggerMode, 
         'Gets/sets the measurement mode of the Keithley 6514.'
     )
 
     trigger_mode = enum_property('TRIGGER:SOURCE', 
-        self.Mode, 
+        Mode, 
         'Gets/sets the trigger mode of the Keithley 6514.'
     )
 
     trigger_mode = enum_property('ARM:SOURCE', 
-        self.ArmSource, 
+        ArmSource, 
         'Gets/sets the arm source of the Keithley 6514.'
     )
 
