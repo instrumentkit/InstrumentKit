@@ -21,6 +21,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
+##
 
 ## FEATURES ####################################################################
 
@@ -39,12 +40,9 @@ class AxisList(ProxyList, AxisCollection):
     def __init__(self, parent, proxy_cls, valid_set):
         if not isinstance(proxy_cls, Axis):
             raise TypeError('Only Axis classes are allowed in AxisList, '
-                            'but received type {}.'.format(type(proxy_cls)))
+                            'received type {}.'.format(type(proxy_cls)))
         super(AxisList, self).__init__(parent, proxy_cls, valid_set)
-        
-        # Make sure we store the indices for this axis list as a tuple, such
-        # that the order is predictible.
-        self._valid_set = tuple(valid_set)
+        self._valid_set = valid_set
         
     ## PROPERTIES ##
     
@@ -57,32 +55,40 @@ class AxisList(ProxyList, AxisCollection):
         
     @property
     def limits(self):
-        return [axis.limits for axis in self]
+        raise NotImplementedError
+    @limits.setter
+    def limits(self, newval):
+        raise NotImplementedError
         
     @property
     def position(self):
         """
         Gets/sets the position of each Axis attached to this AxisList.
         """
-        return tuple(axis.position for axis in self)
+        pos = []
+        for i in self._valid_set:
+            pos.append(self[i].position)
+        return tuple(pos)
     @position.setter
     def position(self, newval):
         if not isinstance(newval, tuple) or not isinstance(newval, list):
             raise TypeError('AxisList position must be specified as a tuple or'
                             ' as a list, got {}.'.format(type(newval)))
         if len(self._valid_set) is not len(newval):
-            raise ValueError('Wrong number of positions specified. Expected {} '
+            raise ValueError('Not enough positions specified. Expected {} '
                              'got {}.'.format(len(self._valid_set), len(newval)))
-        for axis, newpos in zip(self, newval):
-            axis.position = newpos
+        for i in xrange(len(newval)):
+            self[self._valid_set[i]].position = newval[i]
     
     ## METHODS ##
     
     # TODO!
     
     def _move(self, position, absolute=True):
-        for axis, axis_pos in zip(self, position):
-            axis.move(axis_pos, absolute)
+        # TODO: This one might require adding the appropriate move()
+        #       function to the Axis, rather than just specifying things through
+        #       the position property mutator.
+        raise NotImplementedError
         
     def _raster(self):
         raise NotImplementedError

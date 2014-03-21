@@ -42,8 +42,6 @@ from instruments.abstract_instruments import Instrument
 from instruments.abstract_instruments.axis import Axis, AxisList
 from instruments.newport.errors import NewportError
 from instruments.util_fns import assume_units
-from instruments.units import micro_inch
-
 ## ENUMS #######################################################################
 
 
@@ -290,7 +288,10 @@ class NewportESP301Axis(Axis):
     of an ESP-301 controller. This class should not be
     instantiated by the user directly, but is
     returned by `NewportESP301.axis`.
-    """    
+    """
+    # quantities micro inch
+    micro_inch = pq.UnitQuantity('micro-inch',pq.inch/1e6, symbol = 'uin')
+    
     # Some more work might need to be done here to make
     # the encoder_step and motor_step functional
     # I really don't have a concrete idea how I'm 
@@ -355,15 +356,6 @@ class NewportESP301Axis(Axis):
             "SN", target=self.axis_id,
             params=[int(new_units)]
         )
-        
-    ## AXIS CONTRACT ##
-    
-    @property
-    def limits(self):
-        return (self.left_limit, self.right_limit)
-    @limits.setter
-    def limits(self, newlimits):
-        self.left_limit, self.right_limit = newlimits
         
     ## PROPERTIES ##
     
