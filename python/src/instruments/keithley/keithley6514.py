@@ -58,8 +58,8 @@ class Keithley6514(SCPIInstrument, Electrometer):
     ## ENUMS ##
     
     class Mode(Enum):
-        voltage = 'VOLT'
-        current = 'CURR'
+        voltage = 'VOLT:DC'
+        current = 'CURR:DC'
         resistance = 'RES'
         charge = 'CHAR'
        
@@ -96,46 +96,56 @@ class Keithley6514(SCPIInstrument, Electrometer):
     
     def _get_auto_range(self, mode):
         out = self.query('{}:RANGE:AUTO?'.format(mode.value))
-        return out.strip() == 'ON'
+        return out.strip() == '1'
     def _set_auto_range(self, mode, value):
-        val = value.rescale(self._MODE_UNITS[mode]).item()
-        if val not in self._valid_range(mode):
-            raise ValueError('Unexpected range limit for current mode.')
-        self.sendcmd('{}:RANGE AUTO {}'.format(mode.value, 'ON' if value else 'OFF'))
+        self.sendcmd('{}:RANGE:AUTO {}'.format(mode.value, '1' if value else '0'))
 
     def _get_range(self, mode):
-        self.query('{}:RANGE:UPPER?'.format(mode.value))
+        out = self.query('{}:RANGE:UPPER?'.format(mode.value)).strip()
+        return float(out) * self._MODE_UNITS[mode]
     def _set_range(self, mode, value):
         val = value.rescale(self._MODE_UNITS[mode]).item()
-        
-        self.sendcmd('{}:RANGE:LOWER {:e}'.format(mode.value, val))
+        if val not in self._valid_range(mode):
+            raise ValueError('Unexpected range limit for currently selected mode.')
+        self.sendcmd('{}:RANGE:UPPER {:e}'.format(mode.value, val))
 
-    def _valid_range(mode):
-        if mode == Mode.voltage:
-            vrange = ValidRange.voltage
-        elif mode == Mode.current:
-            vrange = ValidRange.current
-        elif mode == Mode.resistance:
-            vrange = ValidRange.resistance
-        elif mode == Mode.charge:
-            vrange = ValidRange.charge
+    def _valid_range(self, mode):
+        if mode == self.Mode.voltage:
+            vrange = self.ValidRange.voltage
+        elif mode == self.Mode.current:
+            vrange = self.ValidRange.current
+        elif mode == self.Mode.resistance:
+            vrange = self.ValidRange.resistance
+        elif mode == self.Mode.charge:
+            vrange = self.ValidRange.charge
         else:
             raise ValueError('Invalid mode.')
         return vrange
+        
+    def _parse_measurement(self, ascii):
+        # TODO: don't assume ASCII data format
+        vals = map(float, ascii.split(','))
+        reading = vals[0] * self.unit
+        timestamp = vals[1]
+        status = vals[2]
+        return reading, timestamp, status
     
     ## PROPERTIES ##  
 
+    # The mode values have quotes around them for some annoying reason.
     mode = enum_property('FUNCTION', 
-        TriggerMode, 
-        'Gets/sets the measurement mode of the Keithley 6514.'
+        Mode, 
+        doc='Gets/sets the measurement mode of the Keithley 6514.',
+        input_decoration=lambda val: val[1:-1],
+        output_decoration=lambda val: '"{}"'.format(val)
     )
 
     trigger_mode = enum_property('TRIGGER:SOURCE', 
-        Mode, 
+        TriggerMode, 
         'Gets/sets the trigger mode of the Keithley 6514.'
     )
 
-    trigger_mode = enum_property('ARM:SOURCE', 
+    arm_source = enum_property('ARM:SOURCE', 
         ArmSource, 
         'Gets/sets the arm source of the Keithley 6514.'
     )
@@ -151,30 +161,30 @@ class Keithley6514(SCPIInstrument, Electrometer):
 
     @property
     def unit(self):
-        return self._MODE_UNITS(self.mode)
+        return self._MODE_UNITS[self.mode]
   
     @property
     def auto_range(self):
         """
-        Gets/sets the auto_range setting
+        Gets/sets the auto range setting
                
         :type: `Keithley6514.TriggerMode`
         """
         return self._get_auto_range(self.mode)
-    @trigger_mode.setter
+    @auto_range.setter
     def auto_range(self, newval):
         self._set_auto_range(self.mode, newval)
 
     @property
     def input_range(self):
         """
-        Gets/sets the auto_range setting
+        Gets/sets the upper limit of the current range.
                
         :type: `Keithley6514.TriggerMode`
         """
         return self._get_range(self.mode)
-    @trigger_mode.setter
-    def auto_range(self, newval):
+    @input_range.setter
+    def input_range(self, newval):
         self._set_range(self.mode, newval)
         
         
@@ -193,21 +203,29 @@ class Keithley6514(SCPIInstrument, Electrometer):
             - Disable buffer operation
             - Enable autozero
         '''
-        self.send_cmd('CONF:{}'.format(mode.value))
+        self.sendcmd('CONF:{}'.format(mode.value))
     
     def fetch(self):
         '''
         Request the latest post-processed readings using the current mode. 
         (So does not issue a trigger)
+        Returns a tuple of the form (reading, timestamp)
         '''
-        return self.query('FETC?')
+        # TODO: figure out what to do with the status info
+        raw = self.query('FETC?')
+        reading, timestamp, status = self._parse_measurement(raw)
+        return reading, timestamp
 
 
     def read(self):
         '''
         Trigger and acquire readings using the current mode.
+        Returns a tuple of the form (reading, timestamp)
         '''
-        return self.query('READ?')
+        # TODO: figure out what to do with the status info
+        raw = self.query('READ?')
+        reading, timestamp, status = self._parse_measurement(raw)
+        return reading, timestamp
 
         
 

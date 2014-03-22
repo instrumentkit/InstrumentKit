@@ -40,17 +40,17 @@ class Electrometer(Instrument):
 
     ## PROPERTIES ##
     
-    def getmode(self):
+    def _getmode(self):
         """
         Read measurement mode the electrometer is currently in.
         """
         raise NotImplementedError
-    def setmode(self, newval):
+    def _setmode(self, newval):
         """
         Change the mode the electrometer is in.
         """
         raise NotImplementedError
-    mode = abc.abstractproperty(getmode, setmode)
+    mode = abc.abstractproperty(_getmode, _setmode)
 
     @abc.abstractproperty
     def unit(self):
@@ -59,55 +59,55 @@ class Electrometer(Instrument):
         """
         raise NotImplementedError
     
-    def gettrigger_mode(self):
+    def _gettrigger_mode(self):
         """
         Get the current trigger mode the electrometer is set to.
         """
         raise NotImplementedError
-    def settrigger_mode(self, newval):
+    def _settrigger_mode(self, newval):
         """
         Set the electrometer triggering mode.
         """
         raise NotImplementedError
-    trigger_mode = abc.abstractproperty(gettrigger_mode, settrigger_mode)
+    trigger_mode = abc.abstractproperty(_gettrigger_mode, _settrigger_mode)
     
    
-    def getinput_range(self):
+    def _getinput_range(self):
         """
         Get the current input range setting of the electrometer.
         """
         raise NotImplementedError
-    def setinput_range(self, newval):
+    def _setinput_range(self, newval):
         """
         Set the input range setting of the electrometer.
         """
         raise NotImplementedError
-    input_range = abc.abstractproperty(getinput_range, setinput_range)
+    input_range = abc.abstractproperty(_getinput_range, _setinput_range)
 
     
-    def getzero_check(self):
+    def _getzero_check(self):
         """
         Get the current zero check status.
         """
         raise NotImplementedError
-    def setzero_check(self, newval):
+    def _setzero_check(self, newval):
         """
         Set the current zero check status.
         """
         raise NotImplementedError
-    zero_check = abc.abstractproperty(getzero_check, setzero_check)
+    zero_check = abc.abstractproperty(_getzero_check, _setzero_check)
 
-    def getzero_correct(self):
+    def _getzero_correct(self):
         """
         Get the current zero correct status.
         """
         raise NotImplementedError
-    def setzero_correct(self, newval):
+    def _setzero_correct(self, newval):
         """
         Set the current zero correct status.
         """
         raise NotImplementedError
-    zero_correct = abc.abstractproperty(getzero_correct, setzero_correct)
+    zero_correct = abc.abstractproperty(_getzero_correct, _setzero_correct)
     
     
     ## METHODS ##

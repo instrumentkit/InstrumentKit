@@ -57,17 +57,24 @@ def bool_property(name, inst_true, inst_false, doc=None):
         
     return property(fget=getter, fset=setter, doc=doc)
     
-def enum_property(name, enum, doc=None):
+def enum_property(name, enum, doc=None, input_decoration=None, output_decoration=None):
     """
     Called inside of SCPI classes to instantiate Enum properties 
     of the device cleanly.
+    The decorations can be functions which modify the incoming and outgoing 
+    values for dumb instruments that do stuff like include superfluous quotes
+    that you might not want in your enum.
     Example:
     my_property = bool_property("BEST:PROPERTY", enum_class)
     """
+    def in_decor_fcn(val):
+        return val if input_decoration is None else input_decoration(val)
+    def out_decor_fcn(val):
+        return val if output_decoration is None else output_decoration(val)
     def getter(self):
-        return enum[self.query("{}?".format(name))]
+        return enum[in_decor_fcn(self.query("{}?".format(name)))]
     def setter(self, newval):
-        self.sendcmd("{} {}".format(name, enum[newval].value))
+        self.sendcmd("{} {}".format(name, out_decor_fcn(enum[newval].value)))
     
     return property(fget=getter, fset=setter, doc=doc)
 
