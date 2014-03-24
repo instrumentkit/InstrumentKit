@@ -36,44 +36,36 @@ from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
 )
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units, ProxyList
+from instruments.util_fns import *
 
-## ENUMS #######################################################################
-# TODO: reach some sort of decision about whether enums live inside or outside
-#       the classes to which they are related.
-
-class AcquisitionMode(Enum):
-    sample = "SAM"
-    peak_detect = "PEAK"
-    hi_res = "HIR"
-    average = "AVE"
-    waveform_db = "WFMDB"
-    envelope = "ENV"
-    
-
-## FUNCTIONS ###################################################################
-
-# TODO: promote to util_fns.
-def bool_property(name, inst_true, inst_false, doc=None):
-    def getter(self):
-        return self.query(name + "?").strip() == inst_true
-    def setter(self, newval):
-        self.sendcmd("{} {}".format(name, inst_true if newval else inst_false))
-        
-    return property(fget=getter, fset=setter, doc=doc)
-    
-def enum_property(name, enum, doc=None):
-    def getter(self):
-        return enum[self.query("{}?".format(name))]
-    def setter(self, newval):
-        self.sendcmd("{} {}".format(name, enum[newval].value))
-    
-    return property(fget=getter, fset=setter, doc=doc)
-    
 
 ## CLASSES #####################################################################
 
 class TekDPO70000Series(SCPIInstrument, Oscilloscope):
+
+    ## CONSTANTS ##
+
+    # The number of horizontal and vertical divisions.
+    HOR_DIVS = 10
+    VERT_DIVS = 10
+
+    ## ENUMS ##
+
+    class AcquisitionMode(Enum):
+        sample = "SAM"
+        peak_detect = "PEAK"
+        hi_res = "HIR"
+        average = "AVE"
+        waveform_db = "WFMDB"
+        envelope = "ENV"
+
+    class Coupling(Enum):
+        ac = "AC"
+        dc = "DC"
+        dc_reject = "DCREJ"
+        ground = "GND"
+
+    ## CLASSES ##
 
     class DataSource(OscilloscopeDataSource):
         def __init__(self, parent, name):
@@ -83,49 +75,138 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         @property
         def name(self):
             return self._name
+
+        @abs.abstract_property
+        def _scale_raw_data(self, data):
+            '''
+            Takes the int16 data and figures out how to make it unitful.
+            '''
             
         def read_waveform(self):
             # TODO: DO
             pass
     
-
-    class Channel(DataSource, OscilloscopeChannel):
+    class Math(DataSource):
+        """
+        Represents a single math channel on the oscilliscope.
+        """
         def __init__(self, parent, idx):
             self._parent = parent
             self._idx = idx + 1 # 1-based.
             
-            # Initialize as a data source with name CHAN{}.
-            super(TekDPO70000Series.Channel, self).__init__(self._parent, "CHAN{}".format(self._idx))
+            # Initialize as a data source with name MATH{}.
+            super(TekDPO70000Series.Channel, self).__init__(self._parent, "MATH{}".format(self._idx))
             
         def sendcmd(self, cmd):
-            self._parent.sendcmd(":CHAN{}:{}".format(self._idx, cmd))
+            self._parent.sendcmd("MATH{}:{}".format(self._idx, cmd))
             
         def query(self, cmd):
-            return self._parent.query(":CHAN{}:{}".format(self._idx, cmd))
+            return self._parent.query("MATH{}:{}".format(self._idx, cmd))
+        
+        class FilterMode(Enum):
+            centered = "CENT"
+            shifted = "SHIF"
+
+        class Mag(Enum):
+            linear = "LINEA"
+            db = "DB"
+            dbm = "DBM"
+
+        class Phase(Enum):
+            degrees = "DEG"
+            radians = "RAD"
+            group_delay = "GROUPD"
+
+        class SpectralWindow(Enum):
+            rectangular = "RECTANG"
+            hamming = "HAMM"
+            hanning = "HANN"
+            kaiser_besse = "KAISERB"
+            blackman_harris = "BLACKMANH"
+            flattop2 = "FLATTOP2"
+            gaussian = "GAUSS"
+            tek_exponential = "TEKEXP"
+
+        define = string_property("DEF", doc="A text string specifying the math to do, ex. CH1+CH2")
+        filter_mode = enum_property("FILT:MOD", FilterMode)
+        filter_risetime = unitful_property("FILT:RIS", pq.second)
+
+        label = string_property('LAB:NAM', doc="Just a human readable label for the channel.")
+        label_xpos = unitless_property('LAB:XPOS', doc="The x position, in divisions, to place the label.")
+        label_ypos = unitless_property('LAB:YPOS', doc="The y position, in divisions, to place the label.")
+
+        num_avg = unitless_property('NUMAV', doc="The number of acquisistions over which exponential averaging is performed.")
+
+        spectral_center = unitful_property('SPEC:CENTER', pq.Hz, doc="The desired frequency of the spectral analyzer output data span in Hz.")
+        spectral_gatepos = unitful_property('SPEC:GATEPOS', pq.second, doc="The gate position. Units are represented in seconds, with respect to trigger position.")
+        spectral_gatewidth = unitful_property('SPEC:GATEWIDTH', pq.second, doc="The time across the 10-division screen in seconds.")
+        spectral_lock = bool_property('SPEC:LOCK', 'ON', 'OFF')
+        spectral_mag = unitful_property('SPEC:MAG', Mag, doc="Whether the spectral magnitude is linear, db, or dbm.")
+        spectral_mag = unitful_property('SPEC:PHASE', Mag, doc="Whether the spectral phase is degrees, radians, or group delay.")
+        spectral_reflevel = unitless_property('SPEC:REFL', doc="The value that represents the topmost display screen graticule. The units depend on spectral_mag.")
+        spectral_reflevel_offset = unitless_property('SPEC:REFLEVELO')
+        spectral_resolution_bandwidth = unitful_property('SPEC:RESB', pq.Hz, doc="The desired resolution bandwidth value. Units are represented in Hertz.")
+        spectral_span = unitlful_property('SPEC:SPAN', pq.Hz, doc="Specifies the frequency span of the output data vector from the spectral analyzer.")
+        spectral_suppress = unitless_property('SPEC:SUPP', doc="The magnitude level that data with magnitude values below this value are displayed as zero phase.")    
+        spectral_unwrap = bool_property('SPEC:UNWR', 'ON', 'OFF', doc="Enables or disables phase wrapping.")
+        spectral_window = enum_property('SPEC:WIN', SpectralWindow)
+
+        threshhold = unitful_property('THRESH', pq.volt, doc="The math threshhold in volts")
+        unit_string = string_property('UNITS', doc="Just a label for the units...doesn't actually change anything.")
+        
+        autoscale = bool_property('VERT:AUTOSC', 'ON', 'OFF', doc="Enables or disables the auto-scaling of new math waveforms.")
+        position = unitless_property('VERT:POS', doc="The vertical position, in divisions from the center graticule.")
+        scale = unitful_property('VERT:SCALE', pq.volt, doc="The scale in volts per division. The range is from 100e-36 to 100e+36.")
+
+        def _scale_raw_data(self, data):
+            # TODO: incorperate the unit_string somehow
+            return self.scale*(
+                ((TekDPO70000Series.VERT_DIVS/2)*float(data)/(2^15)
+                - self.position
+            )
+
+    class Channel(DataSource, OscilloscopeChannel):
+        """
+        Represents a single physical channel on the oscilliscope.
+        """
+        def __init__(self, parent, idx):
+            self._parent = parent
+            self._idx = idx + 1 # 1-based.
+            
+            # Initialize as a data source with name CH{}.
+            super(TekDPO70000Series.Channel, self).__init__(self._parent, "CH{}".format(self._idx))
+            
+        def sendcmd(self, cmd):
+            self._parent.sendcmd("CH{}:{}".format(self._idx, cmd))
+            
+        def query(self, cmd):
+            return self._parent.query("CH{}:{}".format(self._idx, cmd))
         
         coupling = enum_property("COUP", Coupling)
-    
-        bw_limit = bool_property("BWL", "ON", "OFF")
-        display = bool_property("DISP", "ON", "OFF")
-        invert = bool_property("INV", "ON", "OFF")
+        bandwidth = unitful_property('BAN', pq.Hz)
+        deskew = unitful_property('DESK', pq.second)
+        termination = unitful_property('TERM', pq.ohm)
+
+        label = string_property('LAB:NAM', doc="Just a human readable label for the channel.")
+        label_xpos = unitless_property('LAB:XPOS', doc="The x position, in divisions, to place the label.")
+        label_ypos = unitless_property('LAB:YPOS', doc="The y position, in divisions, to place the label.")
+
+        offset = unitful_property('OFFS', pq.volt, doc="The vertical offset in units of volts. Voltage is given by offset+scale*(5*raw/2^15 - position).")
+        position = unitless_property('POS', doc="The vertical position, in divisions from the center graticule, ranging from -8 to 8. Voltage is given by offset+scale*(5*raw/2^15 - position).")
+        scale = unitful_property('SCALE', pq.volt, doc="Vertical channel scale in units volts/division. Voltage is given by offset+scale*(5*raw/2^15 - position).")
         
-        # TODO: :CHAN<n>:OFFset
-        # TODO: :CHAN<n>:PROBe
-        # TODO: :CHAN<n>:SCALe
-        
-        filter = bool_property("FILT", "ON", "OFF")
-        
-        # TODO: :CHAN<n>:MEMoryDepth
-        
-        vernier = bool_property("VERN", "ON", "OFF")
+        def _scale_raw_data(self, data):
+            return self.scale*(
+                ((TekDPO70000Series.VERT_DIVS/2)*float(data)/(2^15)
+                - self.position
+            ) + self.offset
     
     ## PROPERTIES ##
     
     @property
     def channel(self):
-        # Rigol DS1000 series oscilloscopes all have two channels,
-        # according to the documentation.
-        return ProxyList(self, self.Channel, xrange(2))
+        # Support four channels
+        return ProxyList(self, self.Channel, xrange(4))
         
     @property
     def math(self):
