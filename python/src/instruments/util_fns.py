@@ -78,6 +78,20 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     
     return property(fget=getter, fset=setter, doc=doc)
 
+def unitless_property(name, format_code='{:e}', doc=None):
+    """
+    Called inside of SCPI classes to instantiate properties with unitless 
+    numeric values.
+    """
+    def getter(self):
+        raw = self.query("{}?".format(name))
+        return float(raw)
+    def setter(self, newval):
+        strval = format_code.format(newval)
+        self.sendcmd("{} {}".format(name, strval))
+
+    return property(fget=getter, fset=setter, doc=doc)
+
 def unitful_property(name, units, format_code='{:e}', doc=None):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
