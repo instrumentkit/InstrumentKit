@@ -78,6 +78,21 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     
     return property(fget=getter, fset=setter, doc=doc)
 
+def unitful_property(name, units, format_code='{:e}', doc=None):
+    """
+    Called inside of SCPI classes to instantiate properties with unitful numeric
+    values.
+    """
+    def getter(self):
+        raw = self.query("{}?".format(name))
+        return float(raw) * unit
+    def setter(self, newval):
+        # Rescale to the correct unit before printing. This will also catch bad units.
+        strval = format_code.format(newval.rescale(units).item())
+        self.sendcmd("{} {}".format(name, strval))
+
+    return property(fget=getter, fset=setter, doc=doc)
+
 ## CLASSES #####################################################################
 
 class ProxyList(object):
