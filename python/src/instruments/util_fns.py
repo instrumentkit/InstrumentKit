@@ -88,8 +88,21 @@ def unitful_property(name, units, format_code='{:e}', doc=None):
         return float(raw) * unit
     def setter(self, newval):
         # Rescale to the correct unit before printing. This will also catch bad units.
-        strval = format_code.format(newval.rescale(units).item())
+        strval = format_code.format(assume_units(newval, units).rescale(units).item())
         self.sendcmd("{} {}".format(name, strval))
+
+    return property(fget=getter, fset=setter, doc=doc)
+
+def string_property(name, bookmark_symbol='"', doc=None):
+    """
+    Called inside of SCPI classes to instantiate properties with a string value.
+    """
+    bookmark_length = len(bookmark_symbol)
+    def getter(self):
+        raw = self.query("{}?".format(name))
+        return raw[bookmark_length:-bookmark_length]
+    def setter(self, newval):
+        self.sendcmd("{} {}{}{}".format(name, bookmark_symbol, newval, bookmark_symbol))
 
     return property(fget=getter, fset=setter, doc=doc)
 
