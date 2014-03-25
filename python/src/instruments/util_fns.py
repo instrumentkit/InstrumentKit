@@ -43,7 +43,13 @@ def assume_units(value, units):
         value = pq.Quantity(value, units)
     return value
 
-def bool_property(name, inst_true, inst_false, doc=None):
+def rproperty(fget=None, fset=None, doc=None, readonly=False):
+    if readonly:
+        return property(fget=fget, fset=None, doc=doc)
+    else:
+        return property(fget=fget, fset=fset, doc=doc)  
+
+def bool_property(name, inst_true, inst_false, doc=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate boolean properties 
     of the device cleanly.
@@ -55,9 +61,9 @@ def bool_property(name, inst_true, inst_false, doc=None):
     def setter(self, newval):
         self.sendcmd("{} {}".format(name, inst_true if newval else inst_false))
         
-    return property(fget=getter, fset=setter, doc=doc)
+    return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
     
-def enum_property(name, enum, doc=None, input_decoration=None, output_decoration=None):
+def enum_property(name, enum, doc=None, input_decoration=None, output_decoration=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate Enum properties 
     of the device cleanly.
@@ -76,9 +82,9 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     def setter(self, newval):
         self.sendcmd("{} {}".format(name, out_decor_fcn(enum[newval].value)))
     
-    return property(fget=getter, fset=setter, doc=doc)
+    return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
-def unitless_property(name, format_code='{:e}', doc=None):
+def unitless_property(name, format_code='{:e}', doc=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate properties with unitless 
     numeric values.
@@ -90,9 +96,9 @@ def unitless_property(name, format_code='{:e}', doc=None):
         strval = format_code.format(newval)
         self.sendcmd("{} {}".format(name, strval))
 
-    return property(fget=getter, fset=setter, doc=doc)
+    return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
-def unitful_property(name, units, format_code='{:e}', doc=None):
+def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
     values.
@@ -105,9 +111,9 @@ def unitful_property(name, units, format_code='{:e}', doc=None):
         strval = format_code.format(assume_units(newval, units).rescale(units).item())
         self.sendcmd("{} {}".format(name, strval))
 
-    return property(fget=getter, fset=setter, doc=doc)
+    return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
-def string_property(name, bookmark_symbol='"', doc=None):
+def string_property(name, bookmark_symbol='"', doc=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate properties with a string value.
     """
@@ -118,7 +124,7 @@ def string_property(name, bookmark_symbol='"', doc=None):
     def setter(self, newval):
         self.sendcmd("{} {}{}{}".format(name, bookmark_symbol, newval, bookmark_symbol))
 
-    return property(fget=getter, fset=setter, doc=doc)
+    return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
 ## CLASSES #####################################################################
 
