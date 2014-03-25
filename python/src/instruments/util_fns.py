@@ -98,6 +98,20 @@ def unitless_property(name, format_code='{:e}', doc=None, readonly=False):
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
+def int_property(name, format_code='{:d}', doc=None, readonly=False):
+    """
+    Called inside of SCPI classes to instantiate properties with unitless 
+    numeric values.
+    """
+    def getter(self):
+        raw = self.query("{}?".format(name))
+        return int(raw)
+    def setter(self, newval):
+        strval = format_code.format(newval)
+        self.sendcmd("{} {}".format(name, strval))
+
+    return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
+
 def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
@@ -119,8 +133,9 @@ def string_property(name, bookmark_symbol='"', doc=None, readonly=False):
     """
     bookmark_length = len(bookmark_symbol)
     def getter(self):
-        raw = self.query("{}?".format(name))
-        return raw[bookmark_length:-bookmark_length]
+        string = self.query("{}?".format(name))
+        string = string[bookmark_length:-bookmark_length] if bookmark_length>0 else string
+        return string
     def setter(self, newval):
         self.sendcmd("{} {}{}{}".format(name, bookmark_symbol, newval, bookmark_symbol))
 

@@ -59,11 +59,31 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         waveform_db = "WFMDB"
         envelope = "ENV"
 
+    class AcquisitionState(Enum):
+        on = 'ON'
+        off = 'OFF'
+        run = 'RUN'
+        stop = 'STOP'
+
+    class StopAfter(Enum):
+        run_stop = 'RUNST'
+        sequence = 'SEQ'
+
+    class SamplingMode(Enum):
+        real_time = "RT"
+        equivalent_time_allowed = "ET"
+        interpolation_allowed = "IT"
+
     class Coupling(Enum):
         ac = "AC"
         dc = "DC"
         dc_reject = "DCREJ"
         ground = "GND"
+
+    class HorizontalMode(Enum):
+        auto = "AUTO"
+        constant = "CONST"
+        manual = "MAN"
 
     ## CLASSES ##
 
@@ -202,42 +222,60 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
             ) + self.offset
     
     ## PROPERTIES ##
-    
+
     @property
     def channel(self):
-        # Support four channels
         return ProxyList(self, self.Channel, xrange(4))
         
     @property
     def math(self):
-        return DataSource("MATH")
+        return ProxyList(self, self.Math, xrange(4))
+
     @property
     def ref(self):
-        return DataSource("REF")
-        
-    acquire_type = enum_property(":ACQ:TYPE", AcquisitionMode)
-    # TODO: implement :ACQ:MODE. This is confusing in the documentation, though.
+        raise NotImplementedError
+
+
+    # For some settings that probably won't be used that often, use 
+    # string_property instead of setting up an enum property.
+    acquire_enhanced_enob = string_property('ACQ:ENHANCEDE', bookmark_symbol='', doc='Valid values are AUTO and OFF.')
+    acquire_enhanced_enob = bool_proprety('ACQ:ENHANCEDE:STATE', '0', '1')
+    acquire_interp_8bit = string_property('ACQ:INTERPE', bookmark_symbol='',  doc='Valid values are AUTO, ON and OFF.')
+    acquire_magnivu = bool_property('ACQ:MAG', 'ON', 'OFF')
+    acquire_mode = enum_property('ACQ:MOD', AcquisitionMode)
+    acquire_mode_actual = enum_property('ACQ:MOD:ACT', AcquisitionMode, readonly=True)
+    acquire_num_acquisitions = int_property('ACQ:NUMAC', readonly=True, doc="The number of waveform acquisitions that have occurred since starting acquisition with the ACQuire:STATE RUN command")
+    acquire_num_avgs = int_property('ACQ:NUMAV', doc="The number of waveform acquisitions to average.")
+    acquire_num_envelop = int_property('ACQ:NUME', doc="The number of waveform acquisitions to be enveloped");
+    acquire_num_frames = int_property('ACQ:NUMFRAMESACQ', readonly=True, doc="The number of frames acquired when in FastFrame Single Sequence and acquisitions are running.")  
+    acquire_num_samples = int_property('ACQ:NUMSAM', doc="The minimum number of acquired samples that make up a waveform database (WfmDB) waveform for single sequence mode and Mask Pass/Fail Completion Test. The default value is 16,000 samples. The range is 5,000 to 2,147,400,000 samples.")
+    acquire_sampling_mode = enum_property('ACQ:SAMP', SamplingMode)
+    acquire_state = enum_property('ACQ:STATE', AcquisitionState, doc="This command starts or stops acquisitions.")
+    acquire_stop_after = enum_property('ACQ:STOPA', StopAfter, doc="This command sets or queries whether the instrument continually acquires acquisitions or acquires a single sequence.")
+
+
+    horiz_acq_duration = unitful_property('HOR:ACQDURATION', pq.second, readonly=True, doc="The duration of the acquisition.")
+    horiz_acq_length = int_property('HOR:ACQLENGTH', readonly=True, doc="The record length.")
+    horiz_delay_mode = bool_property('HOR:DEL:MOD', '1', '0')
+    horiz_delay_pos = unitful_property('HOR:DEL:POS', pq.percent, doc="The percentage of the waveform that is displayed left of the center graticule.")
+    horiz_delay_time = unitful_property('HOR:DEL:TIM', pq.second, doc="The base trigger delay time setting.")
+    horiz_interp_ratio = unitless_property('HOR:MAI:INTERPR', readonly=True, doc="The ratio of interpolated points to measured points.")
+    horiz_main_pos = unitful_property('HOR:MAI:POS', pq.percent, doc="The percentage of the waveform that is displayed left of the center graticule.")
+    horiz_unit = string_property('HOR:MAI:UNI')
+    horiz_mode = enum_property('HOR:MODE', HorizontalMode)
+    horiz_record_length_lim = int_property('HOR:MODE:AUTO:LIMIT', doc="The recond length limit in samples.")
+    horiz_record_length = int_property('HOR:MODE:RECO', doc="The recond length in samples. See `horiz_mode`; manual mode lets you change the record length, while the length is readonly for auto and constant mode.")
+    horiz_sample_rate = unitful_property('HOR:MODE:SAMPLER', pq.Hz, doc="The sample rate in samples per second.")
+    horiz_scale = unitful_property('HOR:MODE:SCA', pq.second, doc="The horizontal scale in seconds per division. The horizontal scale is readonly when `horiz_mode` is manual.")
+    horiz_pos = unitful_property('HOR:POS', pq.percent, doc="The position of the trigger point on the screen, left is 0%, right is 100%.")
+    horiz_roll = string_property('HOR:ROLL',  bookmark_symbol='', doc="Valid arguments are AUTO, OFF, and ON.")
     
-    @property
-    def acquire_averages(self):
-        return int(self.query(":ACQ:AVER?"))
-    @acquire_averages.setter
-    def acquire_averages(self, newval):
-        if newval not in [2**i for i in xrange(1,9)]:
-            raise ValueError(
-                "Number of averages {} not supported by instrument; "
-                "must be a power of 2 from 2 to 256.".format(newval)
-            )
-        self.sendcmd(":ACQ:AVER {}".format(newval))
-    
-    # TODO: implement :ACQ:SAMP in a meaningful way. This should probably be
-    #       under Channel, and needs to be unitful.
-    # TODO: I don't understand :ACQ:MEMD yet.
-        
+
+
     ## METHODS ##
     
     def force_trigger(self):
-        self.sendcmd(":FORC")
+        raise NotImplementedError
         
     # TODO: consider moving the next few methods to Oscilloscope.
     def run(self):
@@ -245,23 +283,5 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         
     def stop(self):
         self.sendcmd(":STOP")
-        
-    # TODO: unitful timebase!
-    
-    ## FRONT-PANEL KEY EMULATION METHODS ##
-    # These methods correspond one-to-one with physical keys on the front
-    # (local) control panel, except for release_panel, which enables the local
-    # panel and disables any remote lockouts, and for panel_locked.
-    #
-    # Many of the :KEY: commands are not yet implemented as methods.
-    
-    panel_locked = bool_property(":KEY:LOCK", "ON", "OFF")
-    
-    def release_panel(self):
-        # TODO: better name?
-        # NOTE: method may be redundant with the panel_locked property.
-        """
-        Releases any lockout of the local control panel.
-        """
-        self.sendcmf(":KEY:FORC")
+
     
