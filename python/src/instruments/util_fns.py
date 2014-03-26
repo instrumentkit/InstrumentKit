@@ -28,6 +28,8 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
+import sys
+
 import quantities as pq
 from flufl.enum import Enum, IntEnum
 
@@ -71,3 +73,20 @@ class ProxyList(object):
         return self._proxy_cls(self._parent, idx)
     def __len__(self):
         return len(self._valid_set)
+        
+## CLASSES ####################################################################
+
+if sys.version_info.major == 2 and sys.version_info.minor == 6:
+
+    import logging
+
+    class NullHandler(logging.Handler):
+        """
+        Emulates the Python 2.7 NullHandler when on Python 2.6.
+        """
+        def emit(self, record):
+            pass
+
+else:
+
+    from logging import NullHandler

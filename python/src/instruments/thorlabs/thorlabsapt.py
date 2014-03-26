@@ -42,8 +42,10 @@ import struct
 ## LOGGING #####################################################################
 
 import logging
+from instruments.util_fns import NullHandler
+
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+logger.addHandler(NullHandler())
 
 ## CLASSES #####################################################################
 
