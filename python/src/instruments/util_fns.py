@@ -38,6 +38,14 @@ def assume_units(value, units):
     If units are not provided for ``value`` (that is, if it is a raw
     `float`), then returns a `~quantities.Quantity` with magnitude
     given by ``value`` and units given by ``units``.
+    
+    :param value: A value that may or may not be unitful.
+    :param units: Units to be assumed for ``value`` if it does not already
+        have units.
+        
+    :return: A unitful quantity that has either the units of ``value`` or
+        ``units``, depending on if ``value`` is unitful.
+    :rtype: `Quantity`
     """
     if not isinstance(value, pq.Quantity):
         value = pq.Quantity(value, units)
@@ -53,8 +61,18 @@ def bool_property(name, inst_true, inst_false, doc=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate boolean properties 
     of the device cleanly.
-    Example:
-    my_property = bool_property("BEST:PROPERTY", "ON", "OFF")
+    For example:
+    
+    >>> my_property = bool_property("BEST:PROPERTY", "ON", "OFF") # doctest: +SKIP
+    
+    :param str name: Name of the SCPI command corresponding to this property.
+    :param str inst_true: String returned and accepted by the instrument for
+        `True` values.
+    :param str inst_false: String returned and accepted by the instrument for
+        `False` values.
+    :param str doc: Docstring to be associated with the new property.
+    :param bool readonly: If `False`, the returned property does not have a
+        setter.
     """
     def getter(self):
         return self.query(name + "?").strip() == inst_true
@@ -72,6 +90,16 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     that you might not want in your enum.
     Example:
     my_property = bool_property("BEST:PROPERTY", enum_class)
+    
+    :param str name: Name of the SCPI command corresponding to this property.
+    :param type enum: Class derived from `Enum` representing valid values.
+    :param callable input_decoration: Function called on responses from
+        the instrument before passing to user code.
+    :param callable input_decoration: Function called on commands to the
+        instrument.
+    :param str doc: Docstring to be associated with the new property.
+    :param bool readonly: If `False`, the returned property does not have a
+        setter.
     """
     def in_decor_fcn(val):
         return val if input_decoration is None else input_decoration(val)
@@ -88,6 +116,13 @@ def unitless_property(name, format_code='{:e}', doc=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate properties with unitless 
     numeric values.
+    
+    :param str name: Name of the SCPI command corresponding to this property.
+    :param str format_code: Argument to `str.format` used in sending values
+        to the instrument.
+    :param str doc: Docstring to be associated with the new property.
+    :param bool readonly: If `False`, the returned property does not have a
+        setter.
     """
     def getter(self):
         raw = self.query("{}?".format(name))
@@ -102,6 +137,13 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate properties with unitless 
     numeric values.
+    
+    :param str name: Name of the SCPI command corresponding to this property.
+    :param str format_code: Argument to `str.format` used in sending values
+        to the instrument.
+    :param str doc: Docstring to be associated with the new property.
+    :param bool readonly: If `False`, the returned property does not have a
+        setter.
     """
     def getter(self):
         raw = self.query("{}?".format(name))
@@ -115,7 +157,20 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False):
 def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
-    values.
+    values. This function assumes that the instrument only accepts
+    and returns magnitudes without unit annotations, such that all unit
+    information is provided by the ``units`` argument. This is not suitable
+    for instruments where the units can change dynamically due to front-panel
+    interaction or due to remote commands.
+    
+    :param str name: Name of the SCPI command corresponding to this property.
+    :param units: Units to assume in sending and receiving magnitudes to and
+        from the instrument.
+    :param str format_code: Argument to `str.format` used in sending the
+        magnitude of values to the instrument.
+    :param str doc: Docstring to be associated with the new property.
+    :param bool readonly: If `False`, the returned property does not have a
+        setter.
     """
     def getter(self):
         raw = self.query("{}?".format(name))
@@ -169,3 +224,4 @@ class ProxyList(object):
         return self._proxy_cls(self._parent, idx)
     def __len__(self):
         return len(self._valid_set)
+
