@@ -8,7 +8,7 @@ Rigol-brand Instruments
 =======================
     
 :class:`RigolDS1000Series`
-===================
+==========================
 
 .. autoclass:: RigolDS1000Series
     :members:
