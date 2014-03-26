@@ -65,7 +65,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         FunctionGenerator.VoltageMode.dBm:          "DB",
     }
     
-    _MNEMONIC_UNITS = {mnem: unit for unit, mnem in _UNIT_MNEMONICS.iteritems()}
+    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.iteritems())
     
     ## FunctionGenerator CONTRACT ##
     

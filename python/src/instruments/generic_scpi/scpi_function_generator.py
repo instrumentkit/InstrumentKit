@@ -45,13 +45,14 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     
     ## CONSTANTS ##
     
+    # TODO: document these.
     _UNIT_MNEMONICS = {
         FunctionGenerator.VoltageMode.peak_to_peak: "VPP",
         FunctionGenerator.VoltageMode.rms:          "VRMS",
         FunctionGenerator.VoltageMode.dBm:          "DBM",
     }
     
-    _MNEMONIC_UNITS = {mnem: unit for unit, mnem in _UNIT_MNEMONICS.iteritems()}
+    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.iteritems())
     
     ## FunctionGenerator CONTRACT ##
     

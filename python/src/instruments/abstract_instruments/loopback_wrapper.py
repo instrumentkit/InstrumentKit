@@ -36,8 +36,11 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
     Used for testing various controllers
     """
     
-    def __init__(self):
+    def __init__(self, stdin=None, stdout=None):
         self._terminator = '\n'
+        self._stdout = stdout
+        self._stdin = stdin
+        
     def __repr__(self):
         return "<LoopbackWrapper object at 0x{:X} "\
                 .format(id(self))
@@ -97,12 +100,17 @@ class LoopbackWrapper(io.IOBase, WrapperABC):
         Gets desired response command from user
         :rtype: `str`
         """
-        input_var = raw_input("Desired Response: ")
+        if self._stdin is not None:
+            input_var = self._stdin.read(size)
+        else:
+            input_var = raw_input("Desired Response: ")
         return input_var
         
     def write(self, msg):
-        
-        print " <- {} ".format(repr(msg))
+        if self._stdout is not None:
+            self._stdout.write(msg)
+        else:
+            print " <- {} ".format(repr(msg))
         
         
     def seek(self, offset):
