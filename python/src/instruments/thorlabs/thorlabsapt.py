@@ -409,10 +409,10 @@ class APTMotorController(ThorLabsAPT):
             resp_data = self._apt.querypacket(pkt)._data[:14]
             ch_ident, position, enc_count, status_bits = struct.unpack('<HLLL', resp_data)
             
-            status_dict = {
-                key: (status_bits & bit_mask > 0)
+            status_dict = dict(
+                (key, (status_bits & bit_mask > 0))
                 for key, bit_mask in self.__STATUS_BIT_MASK.iteritems()
-            }
+            )
             
             return status_dict
         
