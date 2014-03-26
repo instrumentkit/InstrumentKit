@@ -6,6 +6,7 @@ InstrumentKit Development Guide
     :maxdepth: 2
     
     design_philosophy
+    util_fns
     
 Introduction
 ============
