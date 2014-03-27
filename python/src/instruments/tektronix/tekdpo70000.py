@@ -84,6 +84,32 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         auto = "AUTO"
         constant = "CONST"
         manual = "MAN"
+        
+    class WaveformEncoding(Enum):
+        ascii = "ASC"
+        binary = "BIN"
+        
+    class BinaryFormat(Enum):
+        int = "RI"
+        uint = "RP"
+        float = "FP" # Single-precision!
+        
+    class ByteOrder(Enum):
+        little_endian = "LSB"
+        big_endian = "MSB"
+        
+    ## STATIC METHODS ##
+    
+    @staticmethod
+    def _dtype(binary_format, byte_order, n_bytes):
+        return "{}{}{}".format({
+            TekDPO70000Series.ByteOrder.big_endian: ">",
+            TekDPO70000Series.ByteOrder.little_endian: "<"
+        }, {
+            TekDPO70000Series.BinaryFormat.int: "i",
+            TekDPO70000Series.BinaryFormat.uint: "u",
+            TekDPO70000Series.BinaryFormat.float: "f"
+        }, n_bytes)
 
     ## CLASSES ##
 
@@ -102,9 +128,41 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
             Takes the int16 data and figures out how to make it unitful.
             '''
             
+        ## CONTEXT MANAGER PROTOCOL ##
+        # TODO: add to docstring.
+        # We want a DataSource to act as a context manager, so that the
+        # commands on the parent instrument reflect this data source,
+        # irrespective of exceptions or other abnormal conditions.
+        def __enter__(self):
+            self._old_dsrc = self._parent.data_source
+            if self._old_dsrc != self:
+                # Set the new data source, and let __exit__ cleanup.
+                self._parent.data_source = self
+            else:
+                # There's nothing to do or undo in this case.
+                self._old_dsrc = None
+            
+        
+        def __exit__(self, type, value, traceback):
+            if self._old_dsrc is not None:
+                self._parent.data_source = self._old_dsrc
+        
+        ## WAVEFORM READING ##
+            
         def read_waveform(self):
-            # TODO: DO
-            pass
+            # We want to get the data back in binary, as it's just too much
+            # otherwise.
+            with self:
+                self._parent.select_fastest_encoding()
+                dtype = self._parent._dtype(
+                    self._parent.outgoing_binary_format,
+                    self._parent.outgoing_byte_order,
+                    self._parent.outgoing_n_bytes
+                )
+                raw = self._tek.binblockread(data_width, fmt=dtype)
+                
+                # TODO: rescale and offset in a unitful way.
+                return raw
     
     class Math(DataSource):
         """
@@ -115,7 +173,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
             self._idx = idx + 1 # 1-based.
             
             # Initialize as a data source with name MATH{}.
-            super(TekDPO70000Series.Channel, self).__init__(self._parent, "MATH{}".format(self._idx))
+            super(TekDPO70000Series.DataSource, self).__init__(self._parent, "MATH{}".format(self._idx))
             
         def sendcmd(self, cmd):
             self._parent.sendcmd("MATH{}:{}".format(self._idx, cmd))
@@ -181,7 +239,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         def _scale_raw_data(self, data):
             # TODO: incorperate the unit_string somehow
             return self.scale*(
-                ((TekDPO70000Series.VERT_DIVS/2)*float(data)/(2^15)
+                ((TekDPO70000Series.VERT_DIVS/2)*float(data)/(2**15)
                 - self.position
             )
 
@@ -234,7 +292,23 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
     @property
     def ref(self):
         raise NotImplementedError
-
+        
+    @property
+    def data_source(self):
+        name = self.query("DAT:SOU?").strip()
+        if name.startswith("CH"):
+            return self.channel[int(name[2:]) - 1]
+        elif name.startswith("MATH"):
+            return self.channel[int(name[4:]) - 1]
+        else:
+            raise NotImplementedError("Retrieving data source {} is not yet supported.".format(name))
+            
+    @data_source.setter
+    def data_source(self, newval):
+        if not isinstance(newval, OscilloscopeDataSource):
+            raise TypeError("{} is not a valid data source.".format(type(newval)))
+        self.sendcmd("DAT:SOU {}".format(newval.name))
+        
 
     # For some settings that probably won't be used that often, use 
     # string_property instead of setting up an enum property.
@@ -270,9 +344,32 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
     horiz_pos = unitful_property('HOR:POS', pq.percent, doc="The position of the trigger point on the screen, left is 0%, right is 100%.")
     horiz_roll = string_property('HOR:ROLL',  bookmark_symbol='', doc="Valid arguments are AUTO, OFF, and ON.")
     
-
+    # Waveform Transfer Properties
+    outgoing_waveform_encoding = enum_property('WFMO:ENC', WaveformEncoding, doc="""
+        Controls the encoding used for outgoing waveforms (instrument → host).
+    """)
+    outgoing_binary_format = enum_property("WFMO:BN_F", BinaryFormat, doc="""
+        Controls the data type of samples when transferring waveforms from
+        the instrument to the host using binary encoding.
+    """)
+    outgoing_byte_order = enum_property("WFMO:BYT_O", ByteOrder, doc="""
+        Controls whether binary data is returned in little or big endian.
+    """)
+    outgoing_n_bytes = int_property("WFMO:BYT_N", valid_set=set((1, 2, 4, 8)), doc="""
+        The number of bytes per sample used in representing outgoing
+        waveforms in binary encodings.
+        
+        Must be either 1, 2, 4 or 8.
+    """)
 
     ## METHODS ##
+    
+    def select_fastest_encoding(self):
+        """
+        Sets the encoding for data returned by this instrument to be the
+        fastest encoding method consistent with the current data source.
+        """
+        self.sendcmd("DAT:ENC FAS")
     
     def force_trigger(self):
         raise NotImplementedError
