@@ -111,6 +111,14 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
             TekDPO70000Series.BinaryFormat.float: "f"
         }, n_bytes)
 
+
+    class TriggerState(Enum):
+        armed = "ARMED"
+        auto = "AUTO"
+        dpo = "DPO"
+        partial = "PARTIAL"
+        ready = "READY"
+
     ## CLASSES ##
 
     class DataSource(OscilloscopeDataSource):
@@ -127,27 +135,6 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
             '''
             Takes the int16 data and figures out how to make it unitful.
             '''
-            
-        ## CONTEXT MANAGER PROTOCOL ##
-        # TODO: add to docstring.
-        # We want a DataSource to act as a context manager, so that the
-        # commands on the parent instrument reflect this data source,
-        # irrespective of exceptions or other abnormal conditions.
-        def __enter__(self):
-            self._old_dsrc = self._parent.data_source
-            if self._old_dsrc != self:
-                # Set the new data source, and let __exit__ cleanup.
-                self._parent.data_source = self
-            else:
-                # There's nothing to do or undo in this case.
-                self._old_dsrc = None
-            
-        
-        def __exit__(self, type, value, traceback):
-            if self._old_dsrc is not None:
-                self._parent.data_source = self._old_dsrc
-        
-        ## WAVEFORM READING ##
             
         def read_waveform(self):
             # We want to get the data back in binary, as it's just too much
@@ -292,23 +279,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
     @property
     def ref(self):
         raise NotImplementedError
-        
-    @property
-    def data_source(self):
-        name = self.query("DAT:SOU?").strip()
-        if name.startswith("CH"):
-            return self.channel[int(name[2:]) - 1]
-        elif name.startswith("MATH"):
-            return self.channel[int(name[4:]) - 1]
-        else:
-            raise NotImplementedError("Retrieving data source {} is not yet supported.".format(name))
-            
-    @data_source.setter
-    def data_source(self, newval):
-        if not isinstance(newval, OscilloscopeDataSource):
-            raise TypeError("{} is not a valid data source.".format(type(newval)))
-        self.sendcmd("DAT:SOU {}".format(newval.name))
-        
+
 
     # For some settings that probably won't be used that often, use 
     # string_property instead of setting up an enum property.
@@ -327,6 +298,30 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
     acquire_state = enum_property('ACQ:STATE', AcquisitionState, doc="This command starts or stops acquisitions.")
     acquire_stop_after = enum_property('ACQ:STOPA', StopAfter, doc="This command sets or queries whether the instrument continually acquires acquisitions or acquires a single sequence.")
 
+    data_framestart = int_property('DAT:FRAMESTAR')
+    data_framestop = int_property('DAT:FRAMESTOP')
+    data_start = int_property('DAT:STAR', doc="The first data point that will be transferred, which ranges from 1 to the record length.")
+    # TODO: Look into the following troublesome datasheet note: "When using the 
+    # CURVe command, DATa:STOP is ignored and WFMInpre:NR_Pt is used."
+    data_stop = int_property('DAT:STOP', doc="The last data point that will be transferred.")
+    data_sync_sources = bool_property('DAT:SYNCSOU', 'ON', 'OFF')
+    @property
+    def data_source(self):
+        val = self.query('DAT:SOU?')
+        if val[0:2] == 'CH':
+            out = self.channel[int(val[2])-1]
+        elif val[0:2] == 'MA':
+            out = self.math[int(val[4])-1]
+        elif val[0:2] == 'RE':
+            out = self.ref[int(val[3])-1]
+        else:
+            raise NotImplementedError
+        return out
+    @data_source.setter
+    def data_source(self, value):
+        if not isinstance(newval, OscilloscopeDataSource):
+            raise TypeError("{} is not a valid data source.".format(type(newval)))
+        self.sendcmd("DAT:SOU {}".format(value.name))
 
     horiz_acq_duration = unitful_property('HOR:ACQDURATION', pq.second, readonly=True, doc="The duration of the acquisition.")
     horiz_acq_length = int_property('HOR:ACQLENGTH', readonly=True, doc="The record length.")
@@ -344,6 +339,9 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
     horiz_pos = unitful_property('HOR:POS', pq.percent, doc="The position of the trigger point on the screen, left is 0%, right is 100%.")
     horiz_roll = string_property('HOR:ROLL',  bookmark_symbol='', doc="Valid arguments are AUTO, OFF, and ON.")
     
+
+    trigger_state = enum_property('TRIG:STATE', TriggerState)
+
     # Waveform Transfer Properties
     outgoing_waveform_encoding = enum_property('WFMO:ENC', WaveformEncoding, doc="""
         Controls the encoding used for outgoing waveforms (instrument → host).
@@ -372,7 +370,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         self.sendcmd("DAT:ENC FAS")
     
     def force_trigger(self):
-        raise NotImplementedError
+        self.sendcmd('TRIG FORC')
         
     # TODO: consider moving the next few methods to Oscilloscope.
     def run(self):
