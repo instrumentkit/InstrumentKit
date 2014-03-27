@@ -135,7 +135,7 @@ def unitless_property(name, format_code='{:e}', doc=None, readonly=False):
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
-def int_property(name, format_code='{:d}', doc=None, readonly=False):
+def int_property(name, format_code='{:d}', doc=None, readonly=False, valid_set=None):
     """
     Called inside of SCPI classes to instantiate properties with unitless 
     numeric values.
@@ -146,13 +146,25 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False):
     :param str doc: Docstring to be associated with the new property.
     :param bool readonly: If `False`, the returned property does not have a
         setter.
+    :param valid_set: Set of valid values for the property, or `None` if all
+        `int` values are valid.
     """
     def getter(self):
         raw = self.query("{}?".format(name))
         return int(raw)
-    def setter(self, newval):
-        strval = format_code.format(newval)
-        self.sendcmd("{} {}".format(name, strval))
+    if valid_set is None:
+        def setter(self, newval):
+            strval = format_code.format(newval)
+            self.sendcmd("{} {}".format(name, strval))
+    else:
+        def setter(self, newval):
+            if newval not in valid_set:
+                raise ValueError(
+                    "{} is not an allowed value for this property; "
+                    "must be one of {}.".format(newval, valid_set)
+                )
+            strval = format_code.format(newval)
+            self.sendcmd("{} {}".format(name, strval))
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 

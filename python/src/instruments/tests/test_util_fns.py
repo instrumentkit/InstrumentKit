@@ -29,7 +29,9 @@ from cStringIO import StringIO
 
 from nose.tools import raises, eq_
 
-from instruments.util_fns import assume_units, bool_property, enum_property
+from instruments.util_fns import (
+    assume_units, bool_property, enum_property, int_property
+)
 
 from flufl.enum import Enum
 
@@ -108,4 +110,12 @@ def test_enum_property():
     eq_(mock.value, 'MOCK:A?\nMOCK:B?\nMOCK:A bb\nMOCK:B aa\nMOCK:B bb\n')
 
 # TODO: test other property factories!
+
+@raises(ValueError)
+def test_int_property_valid_set():
+    class IntMock(MockInstrument):
+        mock = int_property('MOCK', valid_set=set([1, 2]))
+        
+    mock = IntMock()
+    mock.mock = 3
 
