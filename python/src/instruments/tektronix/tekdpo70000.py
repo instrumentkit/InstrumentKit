@@ -85,6 +85,13 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         constant = "CONST"
         manual = "MAN"
 
+    class TriggerState(Enum):
+        armed = "ARMED"
+        auto = "AUTO"
+        dpo = "DPO"
+        partial = "PARTIAL"
+        ready = "READY"
+
     ## CLASSES ##
 
     class DataSource(OscilloscopeDataSource):
@@ -253,6 +260,28 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
     acquire_state = enum_property('ACQ:STATE', AcquisitionState, doc="This command starts or stops acquisitions.")
     acquire_stop_after = enum_property('ACQ:STOPA', StopAfter, doc="This command sets or queries whether the instrument continually acquires acquisitions or acquires a single sequence.")
 
+    data_framestart = int_property('DAT:FRAMESTAR')
+    data_framestop = int_property('DAT:FRAMESTOP')
+    data_start = int_property('DAT:STAR', doc="The first data point that will be transferred, which ranges from 1 to the record length.")
+    # TODO: Look into the following troublesome datasheet note: "When using the 
+    # CURVe command, DATa:STOP is ignored and WFMInpre:NR_Pt is used."
+    data_stop = int_property('DAT:STOP', doc="The last data point that will be transferred.")
+    data_sync_sources = bool_property('DAT:SYNCSOU', 'ON', 'OFF')
+    @property
+    def data_source(self):
+        val = self.query('DAT:SOU?')
+        if val[0:2] == 'CH':
+            out = self.channel[int(val[2])-1]
+        elif val[0:2] == 'MA':
+            out = self.math[int(val[4])-1]
+        elif val[0:2] == 'RE':
+            out = self.ref[int(val[3])-1]
+        else:
+            raise NotImplementedError
+        return out
+    @data_source.setter
+    def data_source(self, value):
+        self.sendcmd("DAT:SOU {}".format(value.name))
 
     horiz_acq_duration = unitful_property('HOR:ACQDURATION', pq.second, readonly=True, doc="The duration of the acquisition.")
     horiz_acq_length = int_property('HOR:ACQLENGTH', readonly=True, doc="The record length.")
@@ -271,11 +300,12 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
     horiz_roll = string_property('HOR:ROLL',  bookmark_symbol='', doc="Valid arguments are AUTO, OFF, and ON.")
     
 
+    trigger_state = enum_property('TRIG:STATE', TriggerState)
 
     ## METHODS ##
     
     def force_trigger(self):
-        raise NotImplementedError
+        self.sendcmd('TRIG FORC')
         
     # TODO: consider moving the next few methods to Oscilloscope.
     def run(self):
