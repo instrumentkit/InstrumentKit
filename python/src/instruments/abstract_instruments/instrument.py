@@ -417,8 +417,8 @@ class Instrument(object):
         return cls(vw.VisaWrapper(ins))
 
     @classmethod
-    def open_test(cls):
-        return cls(lw.LoopbackWrapper())
+    def open_test(cls, stdin=None, stdout=None):
+        return cls(lw.LoopbackWrapper(stdin, stdout))
 
     @classmethod
     def open_usb(cls, vid, pid):
