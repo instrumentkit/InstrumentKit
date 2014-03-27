@@ -130,7 +130,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         def name(self):
             return self._name
 
-        @abs.abstract_property
+        @abs.abstract_method
         def _scale_raw_data(self, data):
             '''
             Takes the int16 data and figures out how to make it unitful.
@@ -148,8 +148,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
                 )
                 raw = self._tek.binblockread(data_width, fmt=dtype)
                 
-                # TODO: rescale and offset in a unitful way.
-                return raw
+                return self._scale_raw_data(raw)
     
     class Math(DataSource):
         """
@@ -262,7 +261,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         
         def _scale_raw_data(self, data):
             return self.scale*(
-                ((TekDPO70000Series.VERT_DIVS/2)*float(data)/(2^15)
+                ((TekDPO70000Series.VERT_DIVS/2)*float(data)/(2**15)
                 - self.position
             ) + self.offset
     
