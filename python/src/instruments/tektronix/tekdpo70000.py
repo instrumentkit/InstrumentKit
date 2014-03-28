@@ -29,6 +29,7 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 import abc
+import time
 
 from flufl.enum import Enum
 
@@ -80,8 +81,10 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         manual = "MAN"
         
     class WaveformEncoding(Enum):
-        ascii = "ASC"
-        binary = "BIN"
+        # NOTE: For some reason, it uses the full names here instead of
+        # returning the mneonics listed in the manual.
+        ascii = "ASCII"
+        binary = "BINARY"
         
     class BinaryFormat(Enum):
         int = "RI"
@@ -99,11 +102,11 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         return "{}{}{}".format({
             TekDPO70000Series.ByteOrder.big_endian: ">",
             TekDPO70000Series.ByteOrder.little_endian: "<"
-        }, {
+        }[byte_order], {
             TekDPO70000Series.BinaryFormat.int: "i",
             TekDPO70000Series.BinaryFormat.uint: "u",
             TekDPO70000Series.BinaryFormat.float: "f"
-        }, n_bytes)
+        }[binary_format], n_bytes)
 
 
     class TriggerState(Enum):
@@ -135,14 +138,35 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
             # otherwise.
             with self:
                 self._parent.select_fastest_encoding()
+                n_bytes = self._parent.outgoing_n_bytes
                 dtype = self._parent._dtype(
                     self._parent.outgoing_binary_format,
                     self._parent.outgoing_byte_order,
-                    self._parent.outgoing_n_bytes
+                    n_bytes
                 )
-                raw = self._tek.binblockread(data_width, fmt=dtype)
+                self._parent.sendcmd("CURV?")
+                raw = self._parent.binblockread(n_bytes, fmt=dtype)
+                # Clear the queue by trying to read.
+                # FIXME: this is a hack-y way of doing so.
+                if hasattr(self._parent._file, 'flush_input'):
+                    self._parent._file.flush_input()
+                else:
+                    self._parent._file.readline()
                 
                 return self._scale_raw_data(raw)
+                
+        def __enter__(self):
+            self._old_dsrc = self._parent.data_source
+            if self._old_dsrc != self:
+                # Set the new data source, and let __exit__ cleanup.
+                self._parent.data_source = self
+            else:
+                # There's nothing to do or undo in this case.
+                self._old_dsrc = None
+                
+        def __exit__(self, type, value, traceback):
+            if self._old_dsrc is not None:
+                self._parent.data_source = self._old_dsrc
     
     class Math(DataSource):
         """
@@ -219,7 +243,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         def _scale_raw_data(self, data):
             # TODO: incorperate the unit_string somehow
             return self.scale*(
-                (TekDPO70000Series.VERT_DIVS/2)*float(data)/(2**15)
+                (TekDPO70000Series.VERT_DIVS/2)*data.astype(float)/(2**15)
                 - self.position
             )
 
@@ -261,7 +285,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         
         def _scale_raw_data(self, data):
             return self.scale*(
-                (TekDPO70000Series.VERT_DIVS/2)*float(data)/(2**15)
+                (TekDPO70000Series.VERT_DIVS/2)*data.astype(float)/(2**15)
                 - self.position
             ) + self.offset
     
@@ -317,10 +341,14 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
             raise NotImplementedError
         return out
     @data_source.setter
-    def data_source(self, value):
+    def data_source(self, newval):
         if not isinstance(newval, OscilloscopeDataSource):
             raise TypeError("{} is not a valid data source.".format(type(newval)))
-        self.sendcmd("DAT:SOU {}".format(value.name))
+        self.sendcmd("DAT:SOU {}".format(newval.name))
+        
+        # Some Tek scopes require this after the DAT:SOU command, or else
+        # they will stop responding.
+        time.sleep(0.02)
 
     horiz_acq_duration = unitful_property('HOR:ACQDURATION', pq.second, readonly=True, doc="The duration of the acquisition.")
     horiz_acq_length = int_property('HOR:ACQLENGTH', readonly=True, doc="The record length.")

@@ -108,7 +108,7 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     def out_decor_fcn(val):
         return val if output_decoration is None else output_decoration(val)
     def getter(self):
-        return enum[in_decor_fcn(self.query("{}?".format(name)))]
+        return enum[in_decor_fcn(self.query("{}?".format(name)).strip())]
     def setter(self, newval):
         self.sendcmd("{} {}".format(name, out_decor_fcn(enum[newval].value)))
     
@@ -188,7 +188,7 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False):
     """
     def getter(self):
         raw = self.query("{}?".format(name))
-        return float(raw) * unit
+        return float(raw) * units
     def setter(self, newval):
         # Rescale to the correct unit before printing. This will also catch bad units.
         strval = format_code.format(assume_units(newval, units).rescale(units).item())
@@ -219,7 +219,10 @@ class ProxyList(object):
         self._valid_set = valid_set
         
         # FIXME: This only checks the next level up the chain!
-        self._isenum = (Enum in valid_set.__bases__) or (IntEnum in valid_set.__bases__)
+        if hasattr(valid_set, '__bases__'):
+            self._isenum = (Enum in valid_set.__bases__) or (IntEnum in valid_set.__bases__)
+        else:
+            self._isenum = False
     def __iter__(self):
         for idx in self._valid_set:
             yield self._proxy_cls(self._parent, idx)
