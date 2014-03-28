@@ -74,12 +74,6 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         equivalent_time_allowed = "ET"
         interpolation_allowed = "IT"
 
-    class Coupling(Enum):
-        ac = "AC"
-        dc = "DC"
-        dc_reject = "DCREJ"
-        ground = "GND"
-
     class HorizontalMode(Enum):
         auto = "AUTO"
         constant = "CONST"
@@ -130,7 +124,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         def name(self):
             return self._name
 
-        @abs.abstract_method
+        @abc.abstractmethod
         def _scale_raw_data(self, data):
             '''
             Takes the int16 data and figures out how to make it unitful.
@@ -210,7 +204,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         spectral_reflevel = unitless_property('SPEC:REFL', doc="The value that represents the topmost display screen graticule. The units depend on spectral_mag.")
         spectral_reflevel_offset = unitless_property('SPEC:REFLEVELO')
         spectral_resolution_bandwidth = unitful_property('SPEC:RESB', pq.Hz, doc="The desired resolution bandwidth value. Units are represented in Hertz.")
-        spectral_span = unitlful_property('SPEC:SPAN', pq.Hz, doc="Specifies the frequency span of the output data vector from the spectral analyzer.")
+        spectral_span = unitful_property('SPEC:SPAN', pq.Hz, doc="Specifies the frequency span of the output data vector from the spectral analyzer.")
         spectral_suppress = unitless_property('SPEC:SUPP', doc="The magnitude level that data with magnitude values below this value are displayed as zero phase.")    
         spectral_unwrap = bool_property('SPEC:UNWR', 'ON', 'OFF', doc="Enables or disables phase wrapping.")
         spectral_window = enum_property('SPEC:WIN', SpectralWindow)
@@ -225,7 +219,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         def _scale_raw_data(self, data):
             # TODO: incorperate the unit_string somehow
             return self.scale*(
-                ((TekDPO70000Series.VERT_DIVS/2)*float(data)/(2**15)
+                (TekDPO70000Series.VERT_DIVS/2)*float(data)/(2**15)
                 - self.position
             )
 
@@ -245,6 +239,12 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
             
         def query(self, cmd):
             return self._parent.query("CH{}:{}".format(self._idx, cmd))
+            
+        class Coupling(Enum):
+            ac = "AC"
+            dc = "DC"
+            dc_reject = "DCREJ"
+            ground = "GND"
         
         coupling = enum_property("COUP", Coupling)
         bandwidth = unitful_property('BAN', pq.Hz)
@@ -261,7 +261,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
         
         def _scale_raw_data(self, data):
             return self.scale*(
-                ((TekDPO70000Series.VERT_DIVS/2)*float(data)/(2**15)
+                (TekDPO70000Series.VERT_DIVS/2)*float(data)/(2**15)
                 - self.position
             ) + self.offset
     
@@ -283,7 +283,7 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
     # For some settings that probably won't be used that often, use 
     # string_property instead of setting up an enum property.
     acquire_enhanced_enob = string_property('ACQ:ENHANCEDE', bookmark_symbol='', doc='Valid values are AUTO and OFF.')
-    acquire_enhanced_enob = bool_proprety('ACQ:ENHANCEDE:STATE', '0', '1')
+    acquire_enhanced_enob = bool_property('ACQ:ENHANCEDE:STATE', '0', '1')
     acquire_interp_8bit = string_property('ACQ:INTERPE', bookmark_symbol='',  doc='Valid values are AUTO, ON and OFF.')
     acquire_magnivu = bool_property('ACQ:MAG', 'ON', 'OFF')
     acquire_mode = enum_property('ACQ:MOD', AcquisitionMode)
