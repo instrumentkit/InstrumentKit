@@ -30,6 +30,7 @@ from cStringIO import StringIO
 from nose.tools import raises, eq_
 
 from instruments.util_fns import (
+    ProxyList,
     assume_units, bool_property, enum_property, int_property
 )
 
@@ -59,6 +60,29 @@ class MockInstrument(object):
         return self._responses[cmd.strip()]
 
 ## TEST CASES #################################################################
+
+def test_ProxyList():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+    class MockEnum(Enum):
+        a = "aa"
+        b = "bb"
+            
+    parent = object()
+    
+    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    
+    child = proxy_list[0]
+    assert child._parent is parent
+    assert child._name == 0
+    
+    proxy_list = ProxyList(parent, ProxyChild, MockEnum)
+    assert proxy_list['aa']._name == MockEnum.a
+    assert proxy_list['b']._name  == MockEnum.b
+    assert proxy_list[MockEnum.a]._name == MockEnum.a
 
 def test_assume_units_correct():
     m = pq.Quantity(1, 'm')
