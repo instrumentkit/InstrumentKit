@@ -346,7 +346,8 @@ class Instrument(object):
             instrument before timing out.
         :param float writeTimeout: Number of seconds to wait when writing to the
             instrument before timing out.
-        : `Instrument`
+        
+        :rtype: `Instrument`
         :return: Object representing the connected instrument.
         
         .. seealso::
@@ -420,8 +421,8 @@ class Instrument(object):
         return cls(VisaWrapper(ins))
 
     @classmethod
-    def open_test(cls):
-        return cls(LoopbackWrapper())
+    def open_test(cls, stdin=None, stdout=None):
+        return cls(lw.LoopbackWrapper(stdin, stdout))
 
     @classmethod
     def open_usb(cls, vid, pid):

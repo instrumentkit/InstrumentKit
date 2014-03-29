@@ -40,3 +40,9 @@ send, one can use the following functions to do so:
 >>> inst.sendcmd('DATA') # Send command with no response
 >>> resp = inst.query('*IDN?') # Send command and retrieve response
 ```
+
+Documentation
+-------------
+
+You can find the project documentation at our ReadTheDocs pages located at
+http://instrumentkit.readthedocs.org/en/latest/index.html

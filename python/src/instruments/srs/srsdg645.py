@@ -31,6 +31,7 @@ from __future__ import division
 from time import time, sleep
 
 from flufl.enum import IntEnum
+from flufl.enum._enum import EnumValue
 
 from contextlib import contextmanager
 
@@ -80,7 +81,7 @@ class _SRSDG645Channel(object):
     def delay(self, newval):
         self._ddg.sendcmd("DLAY {},{},{}".format(
             int(self._chan),
-            int(newval[0]),
+            int(newval[0]._chan),
             newval[1].rescale("s").magnitude
         ))
 
@@ -94,7 +95,8 @@ class SRSDG645(SCPIInstrument):
     >>> import instruments as ik
     >>> import quantities as pq
     >>> srs = ik.srs.SRSDG645.open_gpibusb('/dev/ttyUSB0', 1)
-    >>> srs.channel[srs.Channels.B] = (srs.Channels.A, pq.Quantity(10, 'ps'))
+    >>> srs.channel["B"].delay = (srs.channel["A"], pq.Quantity(10, 'ns'))
+    >>> srs.output["AB"].level_amplitude = pq.Quantity(4.0, "V")
 
     .. _user's guide: http://www.thinksrs.com/downloads/PDFs/Manuals/DG645m.pdf
     """
@@ -108,7 +110,27 @@ class SRSDG645(SCPIInstrument):
     
     ## ENUMS ##
     
+    class LevelPolarity(IntEnum):
+        """
+        Polarities for output levels.
+        """
+        positive = 1
+        negative = 0
+    
+    class Outputs(IntEnum):
+        """
+        Enumeration of valid outputs from the DDG.
+        """
+        T0 = 0
+        AB = 1
+        CD = 2
+        EF = 3
+        GH = 4
+    
     class Channels(IntEnum):
+        """
+        Enumeration of valid delay channels for the DDG.
+        """
         T0 = 0
         T1 = 1
         A  = 2
@@ -121,6 +143,9 @@ class SRSDG645(SCPIInstrument):
         H  = 9
 
     class DisplayMode(IntEnum):
+        """
+        Enumeration of possible modes for the physical front-panel display.
+        """
         trigger_rate          = 0
         trigger_threshold     = 1
         trigger_single_shot   = 2
@@ -138,6 +163,9 @@ class SRSDG645(SCPIInstrument):
         burst_T0_config       = 14
 
     class TriggerSource(IntEnum):
+        """
+        Enumeration of the different allowed trigger sources and modes.
+        """
         internal            = 0
         external_rising     = 1
         external_falling    = 2
@@ -145,6 +173,50 @@ class SRSDG645(SCPIInstrument):
         ss_external_falling = 4
         single_shot         = 5
         line                = 6
+        
+    ## INNER CLASSES ##
+    
+    class Output(object):
+        """
+        An output from the DDG.
+        """
+        
+        def __init__(self, parent, idx):
+            self._parent = parent
+            self._idx    = int(idx)
+            
+        @property
+        def polarity(self):
+            """
+            Polarity of this output.
+            
+            :type: :class:`SRSDG645.LevelPolarity`
+            """
+            return self._parent.LevelPolarity[
+                int(self._parent.query("LPOL? {}".format(self._idx)))
+            ]
+        @polarity.setter
+        def polarity(self, newval):
+            self._parent.sendcmd("LPOL {},{}".format(
+                self._idx, int(self._parent.LevelPolarity[newval])
+            ))
+            
+        @property
+        def level_amplitude(self):
+            """
+            Amplitude (in voltage) of the output level for this output.
+            
+            :type: `float` or :class:`~quantities.Quantity`
+            :units: As specified, or :math:`\\text{V}` by default.
+            """
+            return pq.Quantity(
+                float(self._parent.query('LAMP? {}'.format(self._idx))),
+                'V'
+            )
+        @level_amplitude.setter
+        def level_amplitude(self, newval):
+            newval = assume_units(newval, 'V').magnitude
+            self._parent.sendcmd("LAMP {},{}".format(self._idx, newval))
         
     ## PROPERTIES ##
 
@@ -163,6 +235,15 @@ class SRSDG645(SCPIInstrument):
         :rtype: `_SRSDG645Channel`
         '''
         return ProxyList(self, _SRSDG645Channel, SRSDG645.Channels)
+
+    @property
+    def output(self):
+        """
+        Gets the specified output port.
+        
+        :type: :class:`SRSDG645.Output`
+        """
+        return ProxyList(self, self.Output, self.Outputs)
 
     @property
     def display(self):
@@ -210,7 +291,7 @@ class SRSDG645(SCPIInstrument):
         """
         Gets/sets the source for the trigger.
 
-        :type: SRSDG645.TriggerSource
+        :type: :class:`SRSDG645.TriggerSource`
         """
         return SRSDG645.TriggerSource(int(self.query("TSRC?")))
     @trigger_source.setter

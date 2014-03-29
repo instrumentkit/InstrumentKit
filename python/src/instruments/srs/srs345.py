@@ -33,7 +33,7 @@ from flufl.enum._enum import EnumValue
 
 import quantities as pq
 
-from instruments import FunctionGenerator
+from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units
 
@@ -65,7 +65,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         FunctionGenerator.VoltageMode.dBm:          "DB",
     }
     
-    _MNEMONIC_UNITS = {mnem: unit for unit, mnem in _UNIT_MNEMONICS.iteritems()}
+    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.iteritems())
     
     ## FunctionGenerator CONTRACT ##
     

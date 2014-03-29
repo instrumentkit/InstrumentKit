@@ -37,7 +37,7 @@ from contextlib import contextmanager
 
 import quantities as pq
 
-from instruments import (
+from instruments.abstract_instruments import (
     OscilloscopeChannel,
     OscilloscopeDataSource,
     Oscilloscope,

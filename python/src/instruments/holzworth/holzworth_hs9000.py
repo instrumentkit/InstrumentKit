@@ -32,6 +32,10 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 from instruments.abstract_instruments import Instrument
+from instruments.abstract_instruments.signal_generator import (
+    SignalGenerator, 
+    SGChannel
+)
 from instruments.util_fns import assume_units, ProxyList
 from instruments.units import dBm
 
@@ -89,7 +93,7 @@ def _bounded_property(base_name, allowed_units, default_units, doc=""):
 
 ## CLASSES #####################################################################
 
-class HolzworthHS9000(Instrument):
+class HolzworthHS9000(SignalGenerator):
     """
     Communicates with a `Holzworth HS-9000 series`_ multi-channel frequency
     synthesizer. 
@@ -99,7 +103,7 @@ class HolzworthHS9000(Instrument):
     
     ## INNER CLASSES ##
     
-    class Channel(object):
+    class Channel(SGChannel):
         # TODO: docstring!
         
         def __init__(self, hs, idx_chan):
@@ -144,7 +148,7 @@ class HolzworthHS9000(Instrument):
             units = "deg{}".format(units)
             return pq.Quantity(val, units)
             
-        frequency, frequency_min, frequency_max = _bounded_property(
+        freq, freq_min, freq_max = _bounded_property(
             "FREQ", [pq.Hz, pq.kHz, pq.MHz, pq.GHz], pq.GHz
         )
         power, power_min, power_max = _bounded_property(
@@ -155,10 +159,10 @@ class HolzworthHS9000(Instrument):
         )
         
         @property
-        def power_on(self):
+        def output(self):
             return (self._query("PWR:RF?").strip() == 'ON')
-        @power_on.setter
-        def power_on(self, newval):
+        @output.setter
+        def output(self, newval):
             self._sendcmd("PWR:RF:{}".format("ON" if newval else "OFF"))
                 
     ## PROXY LIST ##

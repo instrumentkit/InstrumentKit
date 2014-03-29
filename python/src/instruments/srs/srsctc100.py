@@ -253,10 +253,10 @@ class SRSCTC100(SCPIInstrument):
             unit_str.strip()
             for unit_str in self.query('getOutput.units?').split(',')
         ]
-        return {
-            chan_name: self._UNIT_NAMES[unit_str]
+        return dict(
+            (chan_name, self._UNIT_NAMES[unit_str])
             for chan_name, unit_str in zip(self._channel_names(), unit_strings)
-        }
+        )
         
     def _errcheck(self):
         errs = super(SRSCTC100, self).query('geterror?').strip()

@@ -32,7 +32,7 @@ import quantities as pq
 from flufl.enum import Enum
 from flufl.enum._enum import EnumValue
 
-from instruments import (
+from instruments.abstract_instruments import (
     PowerSupply,
     PowerSupplyChannel,
 )

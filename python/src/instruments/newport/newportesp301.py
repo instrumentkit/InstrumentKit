@@ -254,15 +254,15 @@ class NewportESP301(Instrument):
         Erases any existing programs with a given program ID
         and instructs the device to record the commands within this
         ``with`` block to be saved as a program with that ID.
-
-        For instance::
-
+        
+        For instance:
+        
         >>> controller = NewportESP301.open_serial("COM3")
         >>> with controller.define_program(15):
         ...     controller.axis[0].move(0.001, absolute=False)
         ...
         >>> controller.run_program(15)
-
+        
         :param int program_id: An integer label for the new program.
             Must be in ``xrange(1, 101)``.
         """

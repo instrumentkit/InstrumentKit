@@ -32,7 +32,7 @@ import sys
 
 ## CLASSES #####################################################################
 
-class LoopbackWrapper(AbstractCommunicator, io.IOBase):
+class LoopbackWrapper(io.IOBase, WrapperABC):
     """
     Used for testing various controllers
     """
@@ -40,6 +40,8 @@ class LoopbackWrapper(AbstractCommunicator, io.IOBase):
     def __init__(self):
         AbstractCommunicator.__init__(self)
         self._terminator = '\n'
+        self._stdout = stdout
+        self._stdin = stdin
     
     ## PROPERTIES ##
     
@@ -87,7 +89,10 @@ class LoopbackWrapper(AbstractCommunicator, io.IOBase):
         return input_var
         
     def write(self, msg):
-        print " <- {} ".format(repr(msg))
+        if self._stdout is not None:
+            self._stdout.write(msg)
+        else:
+            print " <- {} ".format(repr(msg))
         
         
     def seek(self, offset):
@@ -101,7 +106,7 @@ class LoopbackWrapper(AbstractCommunicator, io.IOBase):
         
     ## METHODS ##
     
-    def _sendcmd(self, msg):
+    def sendcmd(self, msg):
         '''
         Receives a command and passes off to write function
         
@@ -110,7 +115,7 @@ class LoopbackWrapper(AbstractCommunicator, io.IOBase):
         msg = msg + self._terminator
         self.write(msg)
         
-    def _query(self, msg, size=-1):
+    def query(self, msg, size=-1):
         '''
         Receives a query and returns the generated Response
         

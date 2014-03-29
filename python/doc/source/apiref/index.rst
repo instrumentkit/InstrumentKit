@@ -14,10 +14,18 @@ Contents:
     instrument
     generic_scpi
     agilent
+    holzworth
     hp
     keithley
     lakeshore
+    newport
     other
+    oxford
+    phasematrix
+    picowatt
+    rigol
     srs
-    tektronix    
+    tektronix  
+    thorlabs
+    yokogawa 
     config

@@ -38,9 +38,18 @@ import serial
 
 from instruments.abstract_instruments.comm import SerialWrapper
 
+# We want to only *weakly* hold references to serial ports, to allow for them
+# to be deleted and reopened as need be.
+import weakref
+
 ## GLOBALS #####################################################################
 
-serialObjDict = {}
+# Note that a WeakValueDictionary *will* delete entries when their values
+# no longer exist. As a consequence, great care must be taken when iterating
+# over the dictionary in any way.
+# See http://docs.python.org/2/library/weakref.html#weakref.WeakValueDictionary
+# for more details about what "great care" implies.
+serialObjDict = weakref.WeakValueDictionary()
 
 ## METHODS #####################################################################
 
@@ -48,13 +57,13 @@ def newSerialConnection(port, baud=460800, timeout=3, writeTimeout=3):
     if not isinstance(port,str):
         raise TypeError('Serial port must be specified as a string.')
     
-    if port not in serialObjDict:
+    if port not in serialObjDict or serialObjDict[port] is None:
         conn = SerialWrapper(serial.Serial(
-                                            port,
-                                            baudrate=baud,
-                                            timeout=timeout,
-                                            writeTimeout=writeTimeout
-                                            ))
+                                         port,
+                                         baudrate=baud,
+                                         timeout=timeout,
+                                         writeTimeout=writeTimeout
+                                         ))
         serialObjDict[port] = conn
            # raise  'Serial connection error. Connection not added to serial \
            #     manager. Error message:{}'.format(e.strerror)
