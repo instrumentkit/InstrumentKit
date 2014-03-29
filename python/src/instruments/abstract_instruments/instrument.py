@@ -433,7 +433,7 @@ class Instrument(object):
     @classmethod
     def open_usbtmc(cls, *args, **kwargs):
         # TODO: docstring
-        usbtmc_comm = USBTMC(*args, **kwargs)
+        usbtmc_comm = USBTMCCommunicator(*args, **kwargs)
         return cls(usbtmc_comm)
 
     @classmethod
