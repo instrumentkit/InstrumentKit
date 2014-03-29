@@ -157,13 +157,14 @@ class PM100USB(SCPIInstrument):
     
     ## METHODS ##
     
-    _READ_UNITS = defaultdict({
+    _READ_UNITS = defaultdict(lambda: pq.dimensionless)
+    _READ_UNITS.update({
         MeasurementConfiguration.power: pq.W,
         MeasurementConfiguration.current: pq.A,
         MeasurementConfiguration.frequency: pq.Hz,
         MeasurementConfiguration.voltage: pq.V,
         
-    }, lambda: pq.dimensionless)
+    })
     def read(self):
         # TODO: wrap in something that will add units!
         #       Doing so will take access to an actual device, however, since
