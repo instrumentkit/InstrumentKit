@@ -66,8 +66,15 @@ class PM100USB(SCPIInstrument):
         has_temperature_sensor = 256
         
     class MeasurementConfiguration(Enum):
-        current
+        current = "CURR"
         power = "POW"
+        voltage = "VOLT"
+        energy = "ENER"
+        frequency = "FREQ"
+        power_density = "PDEN"
+        energy_density = "EDEN"
+        resistance = "RES"
+        temperature = "TEMP"
         
         
     # We will cheat and also represent things by a named tuple over bools.
