@@ -31,7 +31,7 @@ from __future__ import division
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import enum_property
 
-from flufl.enum import IntEnum
+from flufl.enum import Enum, IntEnum
 from collections import defaultdict
 
 import quantities as pq
