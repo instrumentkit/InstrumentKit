@@ -39,6 +39,7 @@ from instruments.abstract_instruments.comm import (
     LoopbackWrapper,
     GPIBWrapper,
     AbstractCommunicator,
+    USBTMCCommunicator,
     SerialWrapper,
     serialManager
 )
@@ -216,7 +217,7 @@ class Instrument(object):
             
     ## CLASS METHODS ##
 
-    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa', 'file']
+    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa', 'file', 'usbtmc']
     
     @classmethod
     def open_from_uri(cls, uri):
@@ -234,6 +235,7 @@ class Instrument(object):
             gpib+serial://COM3/15
             gpib+serial:///dev/ttyACM0/15 # Currently non-functional.
             visa://USB::0x0699::0x0401::C0000001::0::INSTR
+            usbtmc://USB::0x0699::0x0401::C0000001::0::INSTR
 
         For the ``serial`` URI scheme, baud rates may be explicitly specified
         using the query parameter ``baud=``, as in the example
@@ -303,6 +305,10 @@ class Instrument(object):
             #     where {VID}, {PID} and {SERIAL} are to be replaced with
             #     the vendor ID, product ID and serial number of the USB-VISA
             #     device.
+            return cls.open_visa(parsed_uri.netloc, **kwargs)
+        elif parsed_uri.scheme == "usbtmc":
+            # TODO: check for other kinds of usbtmc URLs.
+            # Ex: usbtmc can take URIs exactly like visa://.
             return cls.open_visa(parsed_uri.netloc, **kwargs)
         elif parsed_uri.scheme == 'file':
             return cls.open_file(os.path.join(parsed_uri.netloc, 
@@ -423,6 +429,12 @@ class Instrument(object):
     @classmethod
     def open_test(cls, stdin=None, stdout=None):
         return cls(LoopbackWrapper(stdin, stdout))
+
+    @classmethod
+    def open_usbtmc(cls, *args, **kwargs):
+        # TODO: docstring
+        usbtmc_comm = USBTMC(*args, **kwargs)
+        return cls(usbtmc_comm)
 
     @classmethod
     def open_usb(cls, vid, pid):

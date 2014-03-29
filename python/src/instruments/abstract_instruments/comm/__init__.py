@@ -7,4 +7,4 @@ from instruments.abstract_instruments.comm.visawrapper import VisaWrapper
 from instruments.abstract_instruments.comm.loopback_wrapper import LoopbackWrapper
 from instruments.abstract_instruments.comm.gi_gpib import GPIBWrapper
 from instruments.abstract_instruments.comm.file_communicator import FileCommunicator
-
+from instruments.abstract_instruments.comm.usbtmc import USBTMCCommunicator
