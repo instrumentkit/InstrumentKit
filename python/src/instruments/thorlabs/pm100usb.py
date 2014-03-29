@@ -29,7 +29,10 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 from instruments.generic_scpi import SCPIInstrument
+from instruments.util_fns import enum_property
+
 from flufl.enum import IntEnum
+from collections import defaultdict
 
 import quantities as pq
 from collections import namedtuple
@@ -61,6 +64,11 @@ class PM100USB(SCPIInstrument):
         wavelength_settable = 32
         tau_settable = 64
         has_temperature_sensor = 256
+        
+    class MeasurementConfiguration(Enum):
+        current
+        power = "POW"
+        
         
     # We will cheat and also represent things by a named tuple over bools.
     # TODO: make a flagtuple into a new type in util_fns, copying this out
@@ -118,6 +126,14 @@ class PM100USB(SCPIInstrument):
        
     ## SENSING CONFIGURATION PROPERTIES ##
     
+    measurement_configuration = enum_property("CONF", MeasurementConfiguration,
+        doc="""
+        Returns the current measurement configuration.
+        
+        :rtype: :class:`PM100USB.MeasurementConfiguration`
+        """
+    )
+    
     @property
     def averaging_count(self):
         """
@@ -134,10 +150,19 @@ class PM100USB(SCPIInstrument):
     
     ## METHODS ##
     
+    _READ_UNITS = defaultdict({
+        MeasurementConfiguration.power: pq.W,
+        MeasurementConfiguration.current: pq.A,
+        MeasurementConfiguration.frequency: pq.Hz,
+        MeasurementConfiguration.voltage: pq.V,
+        
+    }, lambda: pq.dimensionless)
     def read(self):
         # TODO: wrap in something that will add units!
         #       Doing so will take access to an actual device, however, since
         #       the ThorLabs manual is pathetically incomplete on that point.
         #       Specifically, what does "CONF?" return?
-        return float(self.query('READ?'))
+        # Get the current configuration to find out the units we need to
+        # attach.
+        return float(self.query('READ?')) * self._READ_UNITS[self.measurement_configuration]
         
