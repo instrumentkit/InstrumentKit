@@ -422,7 +422,7 @@ class Instrument(object):
 
     @classmethod
     def open_test(cls, stdin=None, stdout=None):
-        return cls(lw.LoopbackWrapper(stdin, stdout))
+        return cls(LoopbackWrapper(stdin, stdout))
 
     @classmethod
     def open_usb(cls, vid, pid):

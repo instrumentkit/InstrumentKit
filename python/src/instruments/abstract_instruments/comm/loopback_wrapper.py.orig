@@ -32,16 +32,25 @@ import sys
 
 ## CLASSES #####################################################################
 
-class LoopbackWrapper(io.IOBase, AbstractCommunicator):
+class LoopbackWrapper(AbstractCommunicator, io.IOBase):
     """
     Used for testing various controllers
     """
     
-    def __init__(self, stdin=None, stdout=None):
+<<<<<<< HEAD:python/src/instruments/abstract_instruments/comm/loopback_wrapper.py
+    def __init__(self):
         AbstractCommunicator.__init__(self)
+        self._terminator = '\n'
+=======
+    def __init__(self, stdin=None, stdout=None):
         self._terminator = '\n'
         self._stdout = stdout
         self._stdin = stdin
+        
+    def __repr__(self):
+        return "<LoopbackWrapper object at 0x{:X} "\
+                .format(id(self))
+>>>>>>> dev:python/src/instruments/abstract_instruments/loopback_wrapper.py
     
     ## PROPERTIES ##
     
@@ -83,7 +92,6 @@ class LoopbackWrapper(io.IOBase, AbstractCommunicator):
     def read(self, size):
         """
         Gets desired response command from user
-        
         :rtype: `str`
         """
         if self._stdin is not None:
@@ -93,10 +101,14 @@ class LoopbackWrapper(io.IOBase, AbstractCommunicator):
         return input_var
         
     def write(self, msg):
+<<<<<<< HEAD:python/src/instruments/abstract_instruments/comm/loopback_wrapper.py
+        print " <- {} ".format(repr(msg))
+=======
         if self._stdout is not None:
             self._stdout.write(msg)
         else:
             print " <- {} ".format(repr(msg))
+>>>>>>> dev:python/src/instruments/abstract_instruments/loopback_wrapper.py
         
         
     def seek(self, offset):
@@ -110,7 +122,7 @@ class LoopbackWrapper(io.IOBase, AbstractCommunicator):
         
     ## METHODS ##
     
-    def sendcmd(self, msg):
+    def _sendcmd(self, msg):
         '''
         Receives a command and passes off to write function
         
@@ -119,7 +131,7 @@ class LoopbackWrapper(io.IOBase, AbstractCommunicator):
         msg = msg + self._terminator
         self.write(msg)
         
-    def query(self, msg, size=-1):
+    def _query(self, msg, size=-1):
         '''
         Receives a query and returns the generated Response
         
