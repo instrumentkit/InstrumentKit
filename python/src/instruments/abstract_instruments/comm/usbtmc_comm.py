@@ -81,7 +81,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
             pass
         
     def read(self, size):
-        msg = self._filelike.read(size)
+        msg = self._inst.read_raw(size)
         return msg
         
     def write(self, msg):
@@ -99,7 +99,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
     ## METHODS ##
     
     def _sendcmd(self, msg):
-        self.query(msg)
+        self._inst.write("{}{}".format(msg, self.terminator))
         
     def _query(self, msg, size=-1):
         return self._inst.ask(msg)

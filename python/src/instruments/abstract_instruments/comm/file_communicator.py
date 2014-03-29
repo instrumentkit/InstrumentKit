@@ -31,6 +31,12 @@ import time
 from instruments.abstract_instruments.comm import AbstractCommunicator
 import os
 
+from instruments.util_fns import NullHandler
+
+import logging
+logger = logging.getLogger(__name__)
+logger.addHandler(NullHandler())
+
 ## CLASSES #####################################################################
 
 class FileCommunicator(io.IOBase, AbstractCommunicator):
@@ -110,7 +116,10 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
     def _sendcmd(self, msg):
         msg = msg + self._terminator
         self.write(msg)
-        self.flush()        
+        try:
+            self.flush()        
+        except Exception as e:
+            logger.warn("Exception {} occured during flush().".format(e))
         
     def _query(self, msg, size=-1):
         self.sendcmd(msg)
