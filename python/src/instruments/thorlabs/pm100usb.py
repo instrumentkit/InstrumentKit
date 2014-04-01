@@ -120,6 +120,34 @@ class PM100USB(SCPIInstrument):
         def flags(self):
             return self._flags
        
+    ## PRIVATE ATTRIBUTES ##
+    
+    _cache_units = False
+       
+    ## UNIT CACHING ##
+    
+    @property
+    def cache_units(self):
+        """
+        If enabled, then units are not checked every time a measurement is
+        made, reducing by half the number of round-trips to the device.
+        
+        .. warning::
+            
+            Setting this to `True` may cause incorrect values to be returned,
+            if any commands are sent to the device either by its local panel,
+            or by software other than InstrumentKit.       
+        
+        :type: `bool`
+        """
+        return bool(self._cache_units)
+    @cache_units.setter
+    def cache_units(self, newval):
+        self._cache_units = (
+            self._READ_UNITS[self.measurement_configuration]
+            if newval else False
+        )
+       
     ## SENSOR PROPERTIES ##
     
     @property
@@ -133,6 +161,7 @@ class PM100USB(SCPIInstrument):
        
     ## SENSING CONFIGURATION PROPERTIES ##
     
+    # TODO: make a setting of this refresh cache_units.
     measurement_configuration = enum_property("CONF", MeasurementConfiguration,
         doc="""
         Returns the current measurement configuration.
@@ -166,11 +195,18 @@ class PM100USB(SCPIInstrument):
         
     })
     def read(self):
-        # TODO: wrap in something that will add units!
-        #       Doing so will take access to an actual device, however, since
-        #       the ThorLabs manual is pathetically incomplete on that point.
-        #       Specifically, what does "CONF?" return?
+        """
+        Reads a measurement from this instrument, according to its current
+        configuration mode.
+        
+        :units: As specified by :attr:`~PM100USB.measurement_configuration`.
+        :rtype: :class:`~quantities.Quantity`
+        """
         # Get the current configuration to find out the units we need to
         # attach.
-        return float(self.query('READ?')) * self._READ_UNITS[self.measurement_configuration]
+        units = (
+            self._READ_UNITS[self.measurement_configuration]
+            if not self._cache_units else self._cache_units
+        )
+        return float(self.query('READ?')) * units
         
