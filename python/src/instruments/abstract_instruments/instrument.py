@@ -31,14 +31,19 @@ import struct
 import socket
 import urlparse
 
-import serialManager as sm
-import socketwrapper as sw
-import usbwrapper as uw
-import visawrapper as vw
-import file_communicator as fc
-import loopback_wrapper as lw
-import gi_gpib
-from instruments.abstract_instruments import WrapperABC
+from instruments.abstract_instruments.comm import (
+    SocketWrapper,
+    USBWrapper,
+    VisaWrapper,
+    FileCommunicator,
+    LoopbackWrapper,
+    GPIBWrapper,
+    AbstractCommunicator,
+    USBTMCCommunicator,
+    SerialWrapper,
+    serialManager
+)
+
 import os
 
 try:
@@ -80,12 +85,12 @@ class Instrument(object):
     _terminator = "\n"
     
     def __init__(self, filelike):
-        # Check to make sure filelike is a subclass of WrapperABC
-        if isinstance(filelike, WrapperABC):
+        # Check to make sure filelike is a subclass of AbstractCommunicator
+        if isinstance(filelike, AbstractCommunicator):
             self._file = filelike
         else:
             raise TypeError('Instrument must be initialized with a filelike '
-                              'object that is a subclass of WrapperABC.')
+                              'object that is a subclass of AbstractCommunicator.')
     
     ## COMMAND-HANDLING METHODS ##
     
@@ -212,7 +217,7 @@ class Instrument(object):
             
     ## CLASS METHODS ##
 
-    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa', 'file']
+    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa', 'file', 'usbtmc']
     
     @classmethod
     def open_from_uri(cls, uri):
@@ -230,6 +235,7 @@ class Instrument(object):
             gpib+serial://COM3/15
             gpib+serial:///dev/ttyACM0/15 # Currently non-functional.
             visa://USB::0x0699::0x0401::C0000001::0::INSTR
+            usbtmc://USB::0x0699::0x0401::C0000001::0::INSTR
 
         For the ``serial`` URI scheme, baud rates may be explicitly specified
         using the query parameter ``baud=``, as in the example
@@ -300,6 +306,10 @@ class Instrument(object):
             #     the vendor ID, product ID and serial number of the USB-VISA
             #     device.
             return cls.open_visa(parsed_uri.netloc, **kwargs)
+        elif parsed_uri.scheme == "usbtmc":
+            # TODO: check for other kinds of usbtmc URLs.
+            # Ex: usbtmc can take URIs exactly like visa://.
+            return cls.open_visa(parsed_uri.netloc, **kwargs)
         elif parsed_uri.scheme == 'file':
             return cls.open_file(os.path.join(parsed_uri.netloc, 
                                                parsed_uri.path), **kwargs)
@@ -324,7 +334,7 @@ class Instrument(object):
         """
         conn = socket.socket()
         conn.connect((host, port))
-        return cls(sw.SocketWrapper(conn))
+        return cls(SocketWrapper(conn))
         
     @classmethod
     def open_serial(cls, port, baud, timeout=3, writeTimeout=3):
@@ -349,7 +359,7 @@ class Instrument(object):
         .. seealso::
             `~serial.Serial` for description of `port`, baud rates and timeouts.
         """
-        ser = sm.newSerialConnection(port, 
+        ser = serialManager.newSerialConnection(port, 
                                      baud,
                                      timeout, 
                                      writeTimeout)
@@ -380,16 +390,16 @@ class Instrument(object):
             
         .. _Galvant Industries GPIB-USB adapter: http://galvant.ca/shop/gpibusb/
         """
-        ser = sm.newSerialConnection(port,
+        ser = serialManager.newSerialConnection(port,
                 timeout=timeout,
                  writeTimeout=writeTimeout)
-        return cls(gi_gpib.GPIBWrapper(ser, gpib_address))
+        return cls(GPIBWrapper(ser, gpib_address))
         
     @classmethod
     def open_gpibethernet(cls, host, port, gpib_address):
         conn = socket.socket()
         conn.connect((host, port))
-        return cls(gi_gpib.GPIBWrapper(conn, gpib_address))
+        return cls(GPIBWrapper(conn, gpib_address))
 
     @classmethod
     def open_visa(cls, resource_name):
@@ -414,11 +424,17 @@ class Instrument(object):
             raise ImportError("PyVISA is required for loading VISA "
                                 "instruments.")
         ins = visa.instrument(resource_name)
-        return cls(vw.VisaWrapper(ins))
+        return cls(VisaWrapper(ins))
 
     @classmethod
     def open_test(cls, stdin=None, stdout=None):
-        return cls(lw.LoopbackWrapper(stdin, stdout))
+        return cls(LoopbackWrapper(stdin, stdout))
+
+    @classmethod
+    def open_usbtmc(cls, *args, **kwargs):
+        # TODO: docstring
+        usbtmc_comm = USBTMCCommunicator(*args, **kwargs)
+        return cls(usbtmc_comm)
 
     @classmethod
     def open_usb(cls, vid, pid):
@@ -472,7 +488,7 @@ class Instrument(object):
         if ep is None:
             raise IOError("USB descriptor not found.")
 
-        return cls(uw.USBWrapper(ep))
+        return cls(USBWrapper(ep))
         
     @classmethod
     def open_file(cls, filename):
@@ -487,4 +503,4 @@ class Instrument(object):
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
         """
-        return cls(fc.FileCommunicator(filename))
+        return cls(FileCommunicator(filename))

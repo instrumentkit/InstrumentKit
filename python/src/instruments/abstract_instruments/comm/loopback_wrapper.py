@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# usbwrapper.py: Wraps USB connections into a filelike object.
+# loopback_wrappper.py: Loopback wrapper, just prints what it receives or 
+#                       queries return empty string
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
@@ -26,86 +27,77 @@
 ## IMPORTS #####################################################################
 
 import io
-
-import numpy as np
-
-from instruments.abstract_instruments import WrapperABC
+from instruments.abstract_instruments.comm import AbstractCommunicator
+import sys
 
 ## CLASSES #####################################################################
 
-class USBWrapper(io.IOBase, WrapperABC):
-    '''
+class LoopbackWrapper(io.IOBase, AbstractCommunicator):
+    """
+    Used for testing various controllers
+    """
     
-    '''
-    def __init__(self, conn):
-        # TODO: Check to make sure this is a USB connection
-        self._conn = conn
+    def __init__(self, stdin=None, stdout=None):
+        AbstractCommunicator.__init__(self)
         self._terminator = '\n'
-        self._debug = False
-    
-    def __repr__(self):
-        # TODO: put in correct connection name
-        return "<USBWrapper object at 0x{:X} "\
-                "connected to {}>".format(id(self), 'placeholder')
+        self._stdout = stdout
+        self._stdin = stdin
     
     ## PROPERTIES ##
     
     @property
     def address(self):
-        '''
-        
-        '''
-        raise NotImplementedError
+        return sys.stdin.name
     @address.setter
     def address(self, newval):
-        raise ValueError('Unable to change USB target address.')
-    
+        raise NotImplementedError()
+        
     @property
     def terminator(self):
         return self._terminator
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for USBWrapper must be specified '
+            raise TypeError('Terminator must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for USBWrapper must only be 1 '
+            raise ValueError('Terminator for LoopbackWrapper must only be 1 '
                                 'character long.')
         self._terminator = newval
         
     @property
     def timeout(self):
-        raise NotImplementedError
+        return 0
     @timeout.setter
     def timeout(self, newval):
-        raise NotImplementedError
-    
-    @property
-    def debug(self):
-        """
-        Gets/sets whether debug mode is enabled for this connection.
-        If `True`, all output is echoed to stdout.
-
-        :type: `bool`
-        """
-        return self._debug
-    @debug.setter
-    def debug(self, newval):
-        self._debug = bool(newval)
-    
+        pass
+        
     ## FILE-LIKE METHODS ##
     
     def close(self):
         try:
-            self._conn.shutdown()
-        finally:
             self._conn.close()
-            
+        except:
+            pass
+        
     def read(self, size):
-        raise NotImplementedError
-    
-    def write(self, string):
-        self._conn.write(string)
+        """
+        Gets desired response command from user
+        
+        :rtype: `str`
+        """
+        if self._stdin is not None:
+            input_var = self._stdin.read(size)
+        else:
+            input_var = raw_input("Desired Response: ")
+        return input_var
+        
+    def write(self, msg):
+        if self._stdout is not None:
+            self._stdout.write(msg)
+        else:
+            print " <- {} ".format(repr(msg))
+        
         
     def seek(self, offset):
         return NotImplemented
@@ -114,24 +106,27 @@ class USBWrapper(io.IOBase, WrapperABC):
         return NotImplemented
         
     def flush_input(self):
-        '''
-        Instruct the wrapper to flush the input buffer, discarding the entirety
-        of its contents.
-        '''
-        raise NotImplementedError
-    
+        pass
+        
     ## METHODS ##
     
     def sendcmd(self, msg):
         '''
+        Receives a command and passes off to write function
+        
+        :param str msg: The command to be received
         '''
         msg = msg + self._terminator
-        if self._debug:
-            print " <- {} ".format(repr(msg))
-        self._conn.sendall(msg)
+        self.write(msg)
         
     def query(self, msg, size=-1):
         '''
+        Receives a query and returns the generated Response
+        
+        :param str msg: The message to received
+        :rtype: `str`
         '''
         self.sendcmd(msg)
-        self.read(size)
+        resp = self.read(size)
+        return resp
+

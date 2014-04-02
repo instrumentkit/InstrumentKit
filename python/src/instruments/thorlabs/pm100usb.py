@@ -29,7 +29,10 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 from instruments.generic_scpi import SCPIInstrument
-from flufl.enum import IntEnum
+from instruments.util_fns import enum_property
+
+from flufl.enum import Enum, IntEnum
+from collections import defaultdict
 
 import quantities as pq
 from collections import namedtuple
@@ -61,6 +64,18 @@ class PM100USB(SCPIInstrument):
         wavelength_settable = 32
         tau_settable = 64
         has_temperature_sensor = 256
+        
+    class MeasurementConfiguration(Enum):
+        current = "CURR"
+        power = "POW"
+        voltage = "VOLT"
+        energy = "ENER"
+        frequency = "FREQ"
+        power_density = "PDEN"
+        energy_density = "EDEN"
+        resistance = "RES"
+        temperature = "TEMP"
+        
         
     # We will cheat and also represent things by a named tuple over bools.
     # TODO: make a flagtuple into a new type in util_fns, copying this out
@@ -105,6 +120,34 @@ class PM100USB(SCPIInstrument):
         def flags(self):
             return self._flags
        
+    ## PRIVATE ATTRIBUTES ##
+    
+    _cache_units = False
+       
+    ## UNIT CACHING ##
+    
+    @property
+    def cache_units(self):
+        """
+        If enabled, then units are not checked every time a measurement is
+        made, reducing by half the number of round-trips to the device.
+        
+        .. warning::
+            
+            Setting this to `True` may cause incorrect values to be returned,
+            if any commands are sent to the device either by its local panel,
+            or by software other than InstrumentKit.       
+        
+        :type: `bool`
+        """
+        return bool(self._cache_units)
+    @cache_units.setter
+    def cache_units(self, newval):
+        self._cache_units = (
+            self._READ_UNITS[self.measurement_configuration]
+            if newval else False
+        )
+       
     ## SENSOR PROPERTIES ##
     
     @property
@@ -117,6 +160,15 @@ class PM100USB(SCPIInstrument):
         return self.Sensor(self)
        
     ## SENSING CONFIGURATION PROPERTIES ##
+    
+    # TODO: make a setting of this refresh cache_units.
+    measurement_configuration = enum_property("CONF", MeasurementConfiguration,
+        doc="""
+        Returns the current measurement configuration.
+        
+        :rtype: :class:`PM100USB.MeasurementConfiguration`
+        """
+    )
     
     @property
     def averaging_count(self):
@@ -134,10 +186,27 @@ class PM100USB(SCPIInstrument):
     
     ## METHODS ##
     
+    _READ_UNITS = defaultdict(lambda: pq.dimensionless)
+    _READ_UNITS.update({
+        MeasurementConfiguration.power: pq.W,
+        MeasurementConfiguration.current: pq.A,
+        MeasurementConfiguration.frequency: pq.Hz,
+        MeasurementConfiguration.voltage: pq.V,
+        
+    })
     def read(self):
-        # TODO: wrap in something that will add units!
-        #       Doing so will take access to an actual device, however, since
-        #       the ThorLabs manual is pathetically incomplete on that point.
-        #       Specifically, what does "CONF?" return?
-        return float(self.query('READ?'))
+        """
+        Reads a measurement from this instrument, according to its current
+        configuration mode.
+        
+        :units: As specified by :attr:`~PM100USB.measurement_configuration`.
+        :rtype: :class:`~quantities.Quantity`
+        """
+        # Get the current configuration to find out the units we need to
+        # attach.
+        units = (
+            self._READ_UNITS[self.measurement_configuration]
+            if not self._cache_units else self._cache_units
+        )
+        return float(self.query('READ?')) * units
         

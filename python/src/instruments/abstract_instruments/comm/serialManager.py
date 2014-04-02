@@ -36,7 +36,7 @@ pyserial connections can be open at the same time to the same serial port.
 
 import serial
 
-import serialwrapper as sw
+from instruments.abstract_instruments.comm import SerialWrapper
 
 # We want to only *weakly* hold references to serial ports, to allow for them
 # to be deleted and reopened as need be.
@@ -58,12 +58,12 @@ def newSerialConnection(port, baud=460800, timeout=3, writeTimeout=3):
         raise TypeError('Serial port must be specified as a string.')
     
     if port not in serialObjDict or serialObjDict[port] is None:
-        conn = sw.SerialWrapper(serial.Serial(
-                                            port,
-                                            baudrate=baud,
-                                            timeout=timeout,
-                                            writeTimeout=writeTimeout
-                                            ))
+        conn = SerialWrapper(serial.Serial(
+                                         port,
+                                         baudrate=baud,
+                                         timeout=timeout,
+                                         writeTimeout=writeTimeout
+                                         ))
         serialObjDict[port] = conn
            # raise  'Serial connection error. Connection not added to serial \
            #     manager. Error message:{}'.format(e.strerror)
