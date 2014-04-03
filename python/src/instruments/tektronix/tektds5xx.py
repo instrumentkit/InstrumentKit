@@ -60,23 +60,24 @@ class _TekTDS5XXMeasurement(object):
         self._tek = tek
         self._id = idx+1
         resp = self._tek.query('MEASU:MEAS{}?'.format(self._id))
-        self.data = dict(zip(['enabled', 'type', 'units', 'src1', 'src2',
+        self._data = dict(zip(['enabled', 'type', 'units', 'src1', 'src2',
                               'edge1','edge2', 'dir'], resp.split(';')))
     
-    def get(self):
+    def read(self):
         '''
         Gets the current measurement value of the channel, and returns a dict
         of all relevent informatio
+		:rtype: `dict` of measurement parameters
         '''
         if int(self.data['enabled']):
             resp = self._tek.query('MEASU:MEAS{}:VAL?'.format(self._id))
-            self.data['value'] = float(resp)
-            return self.data
+            self._data['value'] = float(resp)
+            return self._data
         else:
-            return self.data
+            return self._data
     
     def set(self):
-        raise NotImplemented
+        raise NotImplementedError
     
 
 class _TekTDS5XXDataSource(OscilloscopeDataSource):
@@ -352,17 +353,6 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
         return ProxyList(self,
             lambda s, idx: _TekTDS5XXDataSource(s, "MATH{}".format(idx  + 1)),
             xrange(3))
-        
-    @property
-    def data_source(self):
-        '''
-        Gets/sets the the data source for waveform transfer.
-        '''
-        name = self.query("DAT:SOU?")
-        if name.startswith("CH"):
-            return _TekTDS5XXChannel(self, int(name[2:]) - 1)
-        else:
-            return _TekTDS5XXDataSource(self, name)
     @property
     def sources(self):
         '''
@@ -381,6 +371,17 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
             if channels[idx]:
                 active.append(_TekTDS5XXDataSource(self, "REF{}".format(idx-6)))
         return active
+		
+    @property
+    def data_source(self):
+        '''
+        Gets/sets the the data source for waveform transfer.
+        '''
+        name = self.query("DAT:SOU?")
+        if name.startswith("CH"):
+            return _TekTDS5XXChannel(self, int(name[2:]) - 1)
+        else:
+            return _TekTDS5XXDataSource(self, name)
         
     @data_source.setter
     def data_source(self, newval):
@@ -425,6 +426,7 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
     def trigger_level(self):
         '''
         Get/Set trigger level
+		:type: `float`
         '''
         return float(self.query('TRIG:MAI:LEV?'))
     
@@ -440,6 +442,7 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
     def trigger_coupling(self):
         '''
         Get/Set trigger coupling
+		:type: `TekTDS5XX.Coupling`
         '''
         return TekTDS5XX.Coupling[self.query("TRIG:MAI:EDGE:COUP?")]
     
@@ -456,6 +459,7 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
     def trigger_slope(self):
         '''
         Get/Set trigger slope
+		:type: `TekTDS5XX.Edge`
         '''
         return TekTDS5XX.Edge[self.query("TRIG:MAI:EDGE:SLO?")]
     
@@ -472,6 +476,7 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
     def trigger_source(self):
         '''
         Get/Set trigger source
+		:type: `TekTDS5XX.Trigger`
         '''
         return TekTDS5XX.Trigger[self.query("TRIG:MAI:EDGE:SOU?")]
     
@@ -487,19 +492,19 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
     def get_hardcopy(self):
         '''
         Gets a screenshot of the display
+		:rtype: `string`
         '''
         self.sendcmd('HARDC:PORT GPI;HARDC:LAY PORT;:HARDC:FORM BMP')
         self.sendcmd('HARDC START')
         sleep(1)
-        self.sendcmd('++read eoi')
-        header = self._file.read(54)
+        header = self.query(msg="", size=54)
         print(header)
         print(len(header))
         #Get BMP Length  in kilobytes from DIB header, because file header is bad
         length = reduce(operator.mul, struct.unpack('<iihh', header[18:30]))/8
         length = int(length)+8#Add 8 bytes for our monochrome colour table
         print(length)
-        data = header+self._file.read(length)
-        print(len(self._file.read(10)))
+        data = header+self.query(msg="", size=length)
+        #print(len(self._file.read(10)))
         return data
         
