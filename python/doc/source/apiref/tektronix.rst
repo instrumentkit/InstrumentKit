@@ -35,3 +35,10 @@ Tektronix-brand Instruments
 .. autoclass:: TekTDS224
     :members:
     :undoc-members:
+
+:class:`TekTDS5xx`
+==================
+
+.. autoclass:: TekTDS5xx
+    :members:
+    :undoc-members:

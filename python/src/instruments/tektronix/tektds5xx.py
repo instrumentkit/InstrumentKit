@@ -33,11 +33,11 @@ from __future__ import division
 
 import time
 import numpy as np
-import quantities as pq
 from flufl.enum import Enum
 from flufl.enum._enum import EnumValue
 
 from time import sleep
+from datetime import datetime
 import operator
 import struct
 
@@ -47,14 +47,14 @@ from instruments.abstract_instruments import (
     Oscilloscope,
 )
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units, ProxyList
+from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
 
-class _TekTDS5XXMeasurement(object):
-    '''
+class _TekTDS5xxMeasurement(object):
+    """
     Class representing a measurement channel on the Tektronix TDS5xx
-    '''
+    """
     
     def __init__(self, tek, idx):
         self._tek = tek
@@ -64,12 +64,13 @@ class _TekTDS5XXMeasurement(object):
                               'edge1','edge2', 'dir'], resp.split(';')))
     
     def read(self):
-        '''
+        """
         Gets the current measurement value of the channel, and returns a dict
-        of all relevent informatio
-		:rtype: `dict` of measurement parameters
-        '''
-        if int(self.data['enabled']):
+        of all relevent information
+        
+        :rtype: `dict` of measurement parameters
+        """
+        if int(self._data['enabled']):
             resp = self._tek.query('MEASU:MEAS{}:VAL?'.format(self._id))
             self._data['value'] = float(resp)
             return self._data
@@ -80,14 +81,14 @@ class _TekTDS5XXMeasurement(object):
         raise NotImplementedError
     
 
-class _TekTDS5XXDataSource(OscilloscopeDataSource):
-    '''
+class _TekTDS5xxDataSource(OscilloscopeDataSource):
+    """
     Class representing a data source (channel, math, or ref) on the Tektronix 
-    TDS 5XX.
+    TDS 5xx.
     
     .. warning:: This class should NOT be manually created by the user. It is 
-        designed to be initialized by the `TekTDS5XX` class.
-    '''
+        designed to be initialized by the `TekTDS5xx` class.
+    """
     
     def __init__(self, tek, name):
         self._tek = tek
@@ -96,11 +97,11 @@ class _TekTDS5XXDataSource(OscilloscopeDataSource):
         
     @property
     def name(self):
-        '''
+        """
         Gets the name of this data source, as identified over SCPI.
         
         :type: `str`
-        '''
+        """
         return self._name
     
     def __enter__(self):
@@ -123,7 +124,7 @@ class _TekTDS5XXDataSource(OscilloscopeDataSource):
             return other.name == self.name
     
     def read_waveform(self, bin_format=True):
-        '''
+        """
         Read waveform from the oscilloscope.
         This function is all inclusive. After reading the data from the 
         oscilloscope, it unpacks the data and scales it accordingly.
@@ -139,50 +140,57 @@ class _TekTDS5XXDataSource(OscilloscopeDataSource):
             in a binary format. Otherwise, data is transferred in ASCII.
         
         :rtype: two item `tuple` of `numpy.ndarray`
-        '''
+        """
         with self:
             
             if not bin_format:
-                self._tek.sendcmd('DAT:ENC ASCI') # Set the data encoding format to ASCII
+                # Set the data encoding format to ASCII
+                self._tek.sendcmd('DAT:ENC ASCI')
                 raw = self._tek.query('CURVE?')
                 raw = raw.split(',') # Break up comma delimited string
                 raw = map(float, raw) # Convert each list element to int
                 raw = np.array(raw) # Convert into numpy array
             else:
-                self._tek.sendcmd('DAT:ENC RIB') # Set encoding to signed, big-endian
+                # Set encoding to signed, big-endian
+                self._tek.sendcmd('DAT:ENC RIB')
                 data_width = self._tek.data_width
                 self._tek.sendcmd('CURVE?')
-                raw = self._tek.binblockread(data_width) # Read in the binary block, 
-                                                    # data width of 2 bytes
+                # Read in the binary block, data width of 2 bytes
+                raw = self._tek.binblockread(data_width)
 
                 self._tek._file.flush_input() # Flush input buffer
             
-            yoffs = self._tek.query('WFMP:{}:YOF?'.format(self.name)) # Retrieve Y offset
-            ymult = self._tek.query('WFMP:{}:YMU?'.format(self.name)) # Retrieve Y multiply
-            yzero = self._tek.query('WFMP:{}:YZE?'.format(self.name)) # Retrieve Y zero
+            # Retrieve Y offset
+            yoffs = self._tek.query('WFMP:{}:YOF?'.format(self.name))
+            # Retrieve Y multiply
+            ymult = self._tek.query('WFMP:{}:YMU?'.format(self.name))
+            # Retrieve Y zero
+            yzero = self._tek.query('WFMP:{}:YZE?'.format(self.name))
             
             y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
             
-            xincr = self._tek.query('WFMP:{}:XIN?'.format(self.name)) # Retrieve X incr
-            ptcnt = self._tek.query('WFMP:{}:NR_P?'.format(self.name)) # Retrieve number 
-                                                                  # of data points
+            # Retrieve X incr
+            xincr = self._tek.query('WFMP:{}:XIN?'.format(self.name))
+            # Retrieve number of data points
+            ptcnt = self._tek.query('WFMP:{}:NR_P?'.format(self.name))  
+            
             x = np.arange(float(ptcnt)) * float(xincr)
             
             
             return (x, y)
             
-class _TekTDS5XXChannel(_TekTDS5XXDataSource, OscilloscopeChannel):
-    '''
-    Class representing a channel on the Tektronix TDS 5XX.
+class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
+    """
+    Class representing a channel on the Tektronix TDS 5xx.
     
-    This class inherits from `_TekTDS5XXDataSource`.
+    This class inherits from `_TekTDS5xxDataSource`.
     
     .. warning:: This class should NOT be manually created by the user. It is 
-        designed to be initialized by the `TekTDS5XX` class.
-    '''
+        designed to be initialized by the `TekTDS5xx` class.
+    """
     
     def __init__(self, parent, idx):
-        super(_TekTDS5XXChannel, self).__init__(parent, "CH{}".format(idx + 1))
+        super(_TekTDS5xxChannel, self).__init__(parent, "CH{}".format(idx + 1))
         self._idx = idx + 1
 
     @property
@@ -190,16 +198,16 @@ class _TekTDS5XXChannel(_TekTDS5XXDataSource, OscilloscopeChannel):
         """
         Gets/sets the coupling setting for this channel.
 
-        :type: `TekTDS5XX.Coupling`
+        :type: `TekTDS5xx.Coupling`
         """
-        return TekTDS5XX.Coupling[self._tek.query("CH{}:COUPL?".format(
+        return TekTDS5xx.Coupling[self._tek.query("CH{}:COUPL?".format(
                                                                 self._idx)
                                                                 )]
     @coupling.setter
     def coupling(self, newval):
         if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                           TekTDS5XX.Coupling):
-            raise TypeError("Coupling setting must be a `TekTDS5XX.Coupling`"
+                                                           TekTDS5xx.Coupling):
+            raise TypeError("Coupling setting must be a `TekTDS5xx.Coupling`"
                 " value, got {} instead.".format(type(newval)))
 
         self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
@@ -209,16 +217,16 @@ class _TekTDS5XXChannel(_TekTDS5XXDataSource, OscilloscopeChannel):
         """
         Gets/sets the Bandwidth setting for this channel.
 
-        :type: `TekTDS5XX.Bandwidth`
+        :type: `TekTDS5xx.Bandwidth`
         """
-        return TekTDS5XX.Bandwidth[self._tek.query("CH{}:BAND?".format(
+        return TekTDS5xx.Bandwidth[self._tek.query("CH{}:BAND?".format(
                                                                 self._idx)
                                                                 )]
     @bandwidth.setter
     def bandwidth(self, newval):
         if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                           TekTDS5XX.Bandwidth):
-            raise TypeError("Bandwidth setting must be a `TekTDS5XX.Bandwidth`"
+                                                           TekTDS5xx.Bandwidth):
+            raise TypeError("Bandwidth setting must be a `TekTDS5xx.Bandwidth`"
                 " value, got {} instead.".format(type(newval)))
 
         self._tek.sendcmd("CH{}:BAND {}".format(self._idx, newval.value))
@@ -228,16 +236,16 @@ class _TekTDS5XXChannel(_TekTDS5XXDataSource, OscilloscopeChannel):
         """
         Gets/sets the impedance setting for this channel.
 
-        :type: `TekTDS5XX.Impedance`
+        :type: `TekTDS5xx.Impedance`
         """
-        return TekTDS5XX.Impedance[self._tek.query("CH{}:IMP?".format(
+        return TekTDS5xx.Impedance[self._tek.query("CH{}:IMP?".format(
                                                                 self._idx)
                                                                 )]
     @impedance.setter
     def impedance(self, newval):
         if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                           TekTDS5XX.Impedance):
-            raise TypeError("Impedance setting must be a `TekTDS5XX.Impedance`"
+                                                           TekTDS5xx.Impedance):
+            raise TypeError("Impedance setting must be a `TekTDS5xx.Impedance`"
                 " value, got {} instead.".format(type(newval)))
 
         self._tek.sendcmd("CH{}:IMP {}".format(self._idx, newval.value))
@@ -256,9 +264,8 @@ class _TekTDS5XXChannel(_TekTDS5XXDataSource, OscilloscopeChannel):
         """
         Gets/sets the scale setting for this channel.
 
-        :type: `TekTDS5XX.Impedance`
+        :type: `TekTDS5xx.Impedance`
         """
-        print(self._tek.query("CH{}:SCA?".format(self._idx)))
         return float(self._tek.query("CH{}:SCA?".format(self._idx)))
     
     @scale.setter
@@ -270,30 +277,54 @@ class _TekTDS5XXChannel(_TekTDS5XXDataSource, OscilloscopeChannel):
                 " instead".format(self._idx, newval, resp))
         
         
-class TekTDS5XX(SCPIInstrument, Oscilloscope):
+class TekTDS5xx(SCPIInstrument, Oscilloscope):
+    """
+    Support for the TDS5xx series of oscilloscopes
+     Implemented from:
+      | TDS Family Digitizing Oscilloscopes
+      | (TDS 410A, 420A, 460A, 520A, 524A, 540A, 544A,
+      | 620A, 640A, 644A, 684A, 744A & 784A)
+      | Tektronix Document: 070-8709-07
+    """
 
     ## ENUMS ##
     
     class Coupling(Enum):
+        """
+        Available coupling options for input sources and trigger
+        """
         ac = "AC"
         dc = "DC"
         ground = "GND"
         
     class Bandwidth(Enum):
+        """
+        Bandwidth in MHz
+        """
         Twenty = "TWE"
         OneHundred = "HUN"
         TwoHundred = "TWO"
         FULL = "FUL"
     
     class Impedance(Enum):
+        """
+        Available options for input source impedance
+        """
         Fifty = "FIF"
-        OneM = "MEG"
+        OneMeg = "MEG"
         
     class Edge(Enum):
+        """
+        Available Options for trigger slope
+        """
         Rising = 'RIS'
         Falling = 'FALL'
         
     class Trigger(Enum):
+        """
+        Available Trigger sources
+        (AUX not Available on TDS520A/TDS540A)
+        """
         CH1 = 'CH1'
         CH2 = 'CH2'
         CH3 = 'CH3'
@@ -301,101 +332,131 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
         AUX = 'AUX'
         LINE = 'LINE'
     
+    class Source(Enum):
+        """
+        Available Data sources
+        """
+        CH1   = "CH1"
+        CH2   = "CH2"
+        CH3   = "CH3"
+        CH4   = "CH4"
+        Math1 = "MATH1"
+        Math2 = "MATH2"
+        Math3 = "MATH3"
+        Ref1  = "REF1"
+        Ref2  = "REF2"
+        Ref3  = "REF3"
+        Ref4  = "REF4"
+    
     ## PROPERTIES ##
     @property
     def measurement(self):
-        '''
+        """
         Gets a specific oscilloscope measurement object. The desired channel is
         specified like one would access a list.
-        '''
-        return ProxyList(self, _TekTDS5XXMeasurement, xrange(3))
+        
+        :rtype: `_TDS5xxMeasurement`
+        """
+        return ProxyList(self, _TekTDS5xxMeasurement, xrange(3))
     
     
     @property
     def channel(self):
-        '''
+        """
         Gets a specific oscilloscope channel object. The desired channel is 
         specified like one would access a list.
         
         For instance, this would transfer the waveform from the first channel::
         
-        >>> tek = ik.tektronix.TekTDS5XX.open_tcpip('192.168.0.2', 8888)
+        >>> tek = ik.tektronix.TekTDS5xx.open_tcpip('192.168.0.2', 8888)
         >>> [x, y] = tek.channel[0].read_waveform()
         
-        :rtype: `_TekTDS5XXChannel`
-        '''
-        return ProxyList(self, _TekTDS5XXChannel, xrange(4))
+        :rtype: `_TekTDS5xxChannel`
+        """
+        return ProxyList(self, _TekTDS5xxChannel, xrange(4))
         
     @property
     def ref(self):
-        '''
+        """
         Gets a specific oscilloscope reference channel object. The desired 
         channel is specified like one would access a list.
         
         For instance, this would transfer the waveform from the first channel::
         
-        >>> tek = ik.tektronix.TekTDS5XX.open_tcpip('192.168.0.2', 8888)
+        >>> tek = ik.tektronix.TekTDS5xx.open_tcpip('192.168.0.2', 8888)
         >>> [x, y] = tek.ref[0].read_waveform()
         
-        :rtype: `_TekTDS5XXDataSource`
-        '''
+        :rtype: `_TekTDS5xxDataSource`
+        """
         return ProxyList(self,
-            lambda s, idx: _TekTDS5XXDataSource(s, "REF{}".format(idx  + 1)),
+            lambda s, idx: _TekTDS5xxDataSource(s, "REF{}".format(idx  + 1)),
             xrange(4))
         
     @property
     def math(self):
-        '''
+        """
         Gets a data source object corresponding to the MATH channel.
         
-        :rtype: `_TekTDS5XXDataSource`
-        '''
+        :rtype: `_TekTDS5xxDataSource`
+        """
         return ProxyList(self,
-            lambda s, idx: _TekTDS5XXDataSource(s, "MATH{}".format(idx  + 1)),
+            lambda s, idx: _TekTDS5xxDataSource(s, "MATH{}".format(idx  + 1)),
             xrange(3))
+    
     @property
     def sources(self):
-        '''
+        """
         Returns list of all active sources
-        '''
+        
+        :rtype: `list`
+        """
         active = []
         channels = map(int, self.query('SEL?').split(';')[0:11])
         for idx in range(0, 4):
             if channels[idx]:
-                active.append(_TekTDS5XXChannel(self, idx))
+                active.append(_TekTDS5xxChannel(self, idx))
         for idx in range(4, 7):
             if channels[idx]:
-                active.append(_TekTDS5XXDataSource(self, "MATH{}".format(
+                active.append(_TekTDS5xxDataSource(self, "MATH{}".format(
                                                                         idx-3)))
         for idx in range(7, 11):
             if channels[idx]:
-                active.append(_TekTDS5XXDataSource(self, "REF{}".format(idx-6)))
+                active.append(_TekTDS5xxDataSource(self, "REF{}".format(idx-6)))
         return active
 		
     @property
     def data_source(self):
-        '''
+        """
         Gets/sets the the data source for waveform transfer.
-        '''
+        
+        :type: `TekTDS5xx.Source` or `_TekTDS5xxDataSource`
+        :rtype: '_TekTDS5xxDataSource`
+        """
         name = self.query("DAT:SOU?")
         if name.startswith("CH"):
-            return _TekTDS5XXChannel(self, int(name[2:]) - 1)
+            return _TekTDS5xxChannel(self, int(name[2:]) - 1)
         else:
-            return _TekTDS5XXDataSource(self, name)
+            return _TekTDS5xxDataSource(self, name)
         
     @data_source.setter
     def data_source(self, newval):
-        # TODO: clean up type-checking here.
-        if not isinstance(newval, str):
-            if hasattr(newval, "value"): # Is an enum with a value.
-                newval = newval.value
-            elif hasattr(newval, "name"): # Is a datasource with a name.
-                newval = newval.name
-        self.sendcmd("DAT:SOU {}".format(newval))
+        if isinstance(newval, _TekTDS5xxDataSource):
+            newval = TekTDS5xx.Source[newval.name]
+        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
+                                                            TekTDS5xx.Source):
+            raise TypeError("Source setting must be a `TekTDS5xx.Source`"
+                " value, got {} instead.".format(type(newval)))
+
+        self.sendcmd("DAT:SOU {}".format(newval.value))
         time.sleep(0.01) # Let the instrument catch up.
         
     @property
     def data_width(self):
+        """
+        Gets/Sets the data width for waveform transfers
+        
+        :type: `int`
+        """
         return int(self.query("DATA:WIDTH?"))
     @data_width.setter
     def data_width(self, newval):
@@ -410,9 +471,11 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
     
     @property
     def horizontal_scale(self):
-        '''
+        """
         Get/Set Horizontal Scale
-        '''
+        
+        :type: `float`
+        """
         return float(self.query('HOR:MAI:SCA?'))
     
     @horizontal_scale.setter
@@ -424,10 +487,11 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
                 " instead".format(newval, resp))
     @property
     def trigger_level(self):
-        '''
+        """
         Get/Set trigger level
-		:type: `float`
-        '''
+
+        :type: `float`
+        """
         return float(self.query('TRIG:MAI:LEV?'))
     
     @trigger_level.setter
@@ -440,71 +504,106 @@ class TekTDS5XX(SCPIInstrument, Oscilloscope):
         
     @property
     def trigger_coupling(self):
-        '''
+        """
         Get/Set trigger coupling
-		:type: `TekTDS5XX.Coupling`
-        '''
-        return TekTDS5XX.Coupling[self.query("TRIG:MAI:EDGE:COUP?")]
+        
+        :type: `TekTDS5xx.Coupling`
+        """
+        return TekTDS5xx.Coupling[self.query("TRIG:MAI:EDGE:COUP?")]
     
     @trigger_coupling.setter
     def trigger_coupling(self, newval):
         if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                   TekTDS5XX.Coupling):
-            raise TypeError("Coupling setting must be a `TekTDS5XX.Coupling`"
+                                                   TekTDS5xx.Coupling):
+            raise TypeError("Coupling setting must be a `TekTDS5xx.Coupling`"
                 " value, got {} instead.".format(type(newval)))
 
         self.sendcmd("TRIG:MAI:EDGE:COUP {}".format(newval.value))
     
     @property
     def trigger_slope(self):
-        '''
+        """
         Get/Set trigger slope
-		:type: `TekTDS5XX.Edge`
-        '''
-        return TekTDS5XX.Edge[self.query("TRIG:MAI:EDGE:SLO?")]
+        
+        :type: `TekTDS5xx.Edge`
+        """
+        return TekTDS5xx.Edge[self.query("TRIG:MAI:EDGE:SLO?")]
     
     @trigger_slope.setter
     def trigger_slope(self, newval):
         if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                   TekTDS5XX.Edge):
-            raise TypeError("Edge setting must be a `TekTDS5XX.Edge`"
+                                                   TekTDS5xx.Edge):
+            raise TypeError("Edge setting must be a `TekTDS5xx.Edge`"
                 " value, got {} instead.".format(type(newval)))
 
         self.sendcmd("TRIG:MAI:EDGE:SLO {}".format(newval.value))
     
     @property
     def trigger_source(self):
-        '''
+        """
         Get/Set trigger source
-		:type: `TekTDS5XX.Trigger`
-        '''
-        return TekTDS5XX.Trigger[self.query("TRIG:MAI:EDGE:SOU?")]
+        
+        :type: `TekTDS5xx.Trigger`
+        """
+        return TekTDS5xx.Trigger[self.query("TRIG:MAI:EDGE:SOU?")]
     
     @trigger_source.setter
     def trigger_source(self, newval):
         if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                   TekTDS5XX.Trigger):
-            raise TypeError("Trigger source setting must be a `TekTDS5XX.source`"
-                " value, got {} instead.".format(type(newval)))
+                                                   TekTDS5xx.Trigger):
+            raise TypeError("Trigger source setting must be a"
+                "`TekTDS5xx.source` value, got {} instead.".format(type(newval)))
 
         self.sendcmd("TRIG:MAI:EDGE:SOU {}".format(newval.value))
     
+    @property
+    def clock(self):
+        """
+        Get/Set oscilloscope clock
+        
+        :type: `datetime.datetime`
+        """
+        resp = self.query('DATE?;:TIME?')
+        return datetime.strptime(resp, '"%Y-%m-%d";"%H:%M:%S"')
+    
+    @clock.setter
+    def clock(self, newval):
+        if not isinstance(newval, datetime):
+            raise ValueError("Expected datetime.datetime"
+                "but got {} instead".format(type(newval)))
+        self.sendcmd(newval.strftime('DATE "%Y-%m-%d";:TIME "%H:%M:%S"'))    
+    
+    @property
+    def display_clock(self):
+        """
+        Get/Set the visibility of clock on the display
+        
+        :type: `bool`
+        """
+        return bool(int(self.query('DISPLAY:CLOCK?')))
+    
+    @display_clock.setter
+    def display_clock(self, newval):
+        if not isinstance(newval, bool):
+            raise ValueError("Expected bool but got"
+                                            "{} instead".format(type(newval)))
+        self.sendcmd('DISPLAY:CLOCK {}'.format(int(newval)))
+    
+    
     def get_hardcopy(self):
-        '''
+        """
         Gets a screenshot of the display
-		:rtype: `string`
-        '''
+        
+        :rtype: `string`
+        """
         self.sendcmd('HARDC:PORT GPI;HARDC:LAY PORT;:HARDC:FORM BMP')
         self.sendcmd('HARDC START')
         sleep(1)
-        header = self.query(msg="", size=54)
-        print(header)
-        print(len(header))
+        header = self.query("", size=54)
         #Get BMP Length  in kilobytes from DIB header, because file header is bad
         length = reduce(operator.mul, struct.unpack('<iihh', header[18:30]))/8
-        length = int(length)+8#Add 8 bytes for our monochrome colour table
-        print(length)
-        data = header+self.query(msg="", size=length)
-        #print(len(self._file.read(10)))
+        length = int(length)+8# Add 8 bytes for our monochrome colour table
+        data = header+self.query("", size=length)
+        self._file.flush_input() # Flush input buffer
         return data
         
