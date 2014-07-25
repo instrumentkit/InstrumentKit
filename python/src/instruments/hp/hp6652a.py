@@ -254,4 +254,4 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
         :rtype: 'tuple'
         """
-        return (self)
+        return (self,)
