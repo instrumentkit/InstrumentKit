@@ -190,6 +190,12 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     @property
     def name(self):
+        """
+        The name of the connected instrument, as reported by the
+        standard SCPI command ``*IDN?``.
+        
+        :rtype: `str`
+        """
         idn_string = self.query("*IDN?")
         idn_list = idn_string.split(',')
         return ' '.join(idn_list[:2])
