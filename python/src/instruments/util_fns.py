@@ -97,7 +97,7 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     :param type enum: Class derived from `Enum` representing valid values.
     :param callable input_decoration: Function called on responses from
         the instrument before passing to user code.
-    :param callable input_decoration: Function called on commands to the
+    :param callable output_decoration: Function called on commands to the
         instrument.
     :param str doc: Docstring to be associated with the new property.
     :param bool readonly: If `True`, the returned property does not have a
