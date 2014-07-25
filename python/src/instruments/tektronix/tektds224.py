@@ -111,7 +111,7 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
                 raw = self._tek.query('CURVE?')
                 raw = raw.split(',') # Break up comma delimited string
                 raw = map(float, raw) # Convert each list element to int
-                raw = array(raw) # Convert into numpy array
+                raw = np.array(raw) # Convert into numpy array
             else:
                 self._tek.sendcmd('DAT:ENC RIB') # Set encoding to signed, big-endian
                 data_width = self._tek.data_width
