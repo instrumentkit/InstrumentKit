@@ -52,8 +52,8 @@ class HP6652a(PowerSupply):
     Example usage:
     
     >>> import instruments as ik
-    >>> psu = ik.hp.HP6652a.open_gpibusb('/dev/ttyUSB0', 1)
-    >>> psu.voltage = 10 # Sets channel 1 voltage to 10V.
+    >>> psu = ik.hp.HP6652a.open_serial('/dev/ttyUSB0', 57600)
+    >>> psu.voltage = 10 # Sets output voltage to 10V.
     """
     
     def __init__(self, filelike):
@@ -61,7 +61,8 @@ class HP6652a(PowerSupply):
 
     ## ENUMS ##
 
-    # TODO
+    # I don't know of any possible enumerations supported
+    # by this instrument.
 
     ## PROPERTIES ##
 
@@ -76,7 +77,7 @@ class HP6652a(PowerSupply):
         :type: `float` or `~quantities.Quantity`
         """
         return pq.Quantity(
-            float(self.query('VOLT?'.strip()[:-1])),
+            float(self.query('VOLT?')),
             pq.volt
         )
 
@@ -99,7 +100,7 @@ class HP6652a(PowerSupply):
         :type: `float` or `~quantities.Quantity`
         """
         return pq.Quantity(
-            float(self.query('CURR?'.strip()[:-1])),
+            float(self.query('CURR?')),
             pq.amp
         )
 
@@ -121,7 +122,7 @@ class HP6652a(PowerSupply):
         :rtype: `~quantities.Quantity`
         """
         return pq.Quantity(
-            float(self.query('MEAS:VOLT?'.strip()[:-1])),
+            float(self.query('MEAS:VOLT?')),
             pq.volt
         )
 
@@ -135,7 +136,7 @@ class HP6652a(PowerSupply):
         :rtype: `~quantities.Quantity`
         """
         return pq.Quantity(
-            float(self.query('MEAS:CURR?'.strip()[:-1])),
+            float(self.query('MEAS:CURR?')),
             pq.amp
         )
 
@@ -150,7 +151,7 @@ class HP6652a(PowerSupply):
         :type: `float` or `~quantities.Quantity`
         """
         return pq.Quantity(
-            float(self.query('VOLT:PROT?'.strip()[:-1])),
+            float(self.query('VOLT:PROT?')),
             pq.volt
         )
 
@@ -171,7 +172,7 @@ class HP6652a(PowerSupply):
 
         :type: `bool`
         """
-        return (True if self.query('CURR:PROT:STAT?'.strip()[:-1])
+        return (True if self.query('CURR:PROT:STAT?')
                 is '1' else False)
 
     @overcurrent.setter
@@ -192,7 +193,7 @@ class HP6652a(PowerSupply):
 
         :type: `bool`
         """
-        return (True if self.query('OUTP?'.strip()[:-1])
+        return (True if self.query('OUTP?')
                 is '1' else False)
 
     @output.setter
@@ -218,7 +219,7 @@ class HP6652a(PowerSupply):
 
         :type: `bool`
         """
-        return (True if self.query('DISP:MODE?'.strip()[:-1])
+        return (True if self.query('DISP:MODE?')
                 is 'TEXT' else False)
 
     @display_mode_text.setter
@@ -264,6 +265,6 @@ class HP6652a(PowerSupply):
             text_to_display = text_to_display[:15]
         text_to_display = text_to_display.upper()
 
-        self.sendcmd('DISP:TEXT {}'.format(text_to_display))
+        self.sendcmd('DISP:TEXT "{}"'.format(text_to_display))
 
         return text_to_display
