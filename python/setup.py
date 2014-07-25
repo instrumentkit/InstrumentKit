@@ -42,4 +42,9 @@ setup(
         'instruments.thorlabs',
         'instruments.yokogawa',
     ]
+    extras_require = {
+        'USBTMC' : ["python-usbtmc"],
+        'VISA' : ["pyvisa"],
+        'USB' : ["pyusb"]
+    }
 )
