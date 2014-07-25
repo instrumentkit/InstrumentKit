@@ -17,3 +17,11 @@ HP-brand Instruments
 .. autoclass:: _HP6624aChannel
     :members:
     :undoc-members:
+    
+:class:`HP6652a`
+================
+
+.. autoclass:: HP6652a
+    :members:
+    :undoc-members:
+
