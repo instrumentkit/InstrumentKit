@@ -14,3 +14,6 @@ Picowatt-brand Instruments
     :members:
     :undoc-members:
 
+.. autoclass:: _PicowattAVS47Sensor
+    :members:
+    :undoc-members:
