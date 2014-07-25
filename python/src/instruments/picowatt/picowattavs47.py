@@ -32,7 +32,7 @@ import quantities as pq
 from flufl.enum import IntEnum
 
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import (unitful_property, bool_property, int_property,
+from instruments.util_fns import (enum_property, bool_property, int_property,
                                  ProxyList)
 
 ## CLASSES #####################################################################
