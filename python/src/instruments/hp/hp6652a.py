@@ -3,10 +3,9 @@
 ##
 # hp6652a.py: Python class for the HP 6652a power supply
 ##
-# © 2014 Wil Langford (wil.langford+instrumentkit@gmail.com)
-#
-# portions adapted from hp6624a.py by:
-# © 2014 Steven Casagrande (scasagrande@galvant.ca).
+# © 2014 Steven Casagrande (scasagrande@galvant.ca)
+# hp6652a class authored by Wil Langford (wil.langford+instrumentkit@gmail.com)
+# portions adapted from hp6624a.py by Steven Casagrande
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -252,5 +251,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
     def channel(self):
         """
         Return the channel (which in this case is the entire instrument.)
+
+        :rtype: 'tuple'
         """
-        return self
+        return (self)
