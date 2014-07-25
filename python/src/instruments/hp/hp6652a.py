@@ -34,12 +34,13 @@ from __future__ import division
 import quantities as pq
 
 from instruments.abstract_instruments import (PowerSupply)
-from instruments.util_fns import assume_units, ProxyList
+from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
-    
+
+
 class HP6652a(PowerSupply):
-    '''
+    """
     The HP6652a is a single output power supply.
 
     According to the manual, this class MIGHT be usable for any HP power supply
@@ -53,7 +54,7 @@ class HP6652a(PowerSupply):
     >>> import instruments as ik
     >>> psu = ik.hp.HP6652a.open_gpibusb('/dev/ttyUSB0', 1)
     >>> psu.voltage = 10 # Sets channel 1 voltage to 10V.
-    '''  
+    """
     
     def __init__(self, filelike):
         super(HP6652a, self).__init__(filelike)
@@ -66,18 +67,18 @@ class HP6652a(PowerSupply):
 
     @property
     def voltage(self):
-        '''
+        """
         Gets/sets the output voltage.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        '''
+        """
         return pq.Quantity(
             float(self.query('VOLT?'.strip()[:-1])),
             pq.volt
-            )
+        )
 
     @voltage.setter
     def voltage(self, newval):
@@ -89,18 +90,19 @@ class HP6652a(PowerSupply):
 
     @property
     def current(self):
-        '''
+        """
         Gets/sets the output current.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        '''
+        """
         return pq.Quantity(
             float(self.query('CURR?'.strip()[:-1])),
             pq.amp
         )
+
     @current.setter
     def current(self, newval):
         self.sendcmd(
@@ -119,7 +121,7 @@ class HP6652a(PowerSupply):
         :rtype: `~quantities.Quantity`
         """
         return pq.Quantity(
-            float(self._hp.query('MEAS:VOLT?'.strip()[:-1])),
+            float(self.query('MEAS:VOLT?'.strip()[:-1])),
             pq.volt
         )
 
@@ -133,22 +135,22 @@ class HP6652a(PowerSupply):
         :rtype: `~quantities.Quantity`
         """
         return pq.Quantity(
-            float(self._hp.query('MEAS:CURR?'.strip()[:-1])),
+            float(self.query('MEAS:CURR?'.strip()[:-1])),
             pq.amp
         )
 
     @property
     def overvoltage(self):
-        '''
+        """
         Gets/sets the overvoltage protection setting for the specified channel.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        '''
+        """
         return pq.Quantity(
-            float(self._hp.query('VOLT:PROT?'.strip()[:-1])),
+            float(self.query('VOLT:PROT?'.strip()[:-1])),
             pq.volt
         )
 
@@ -162,42 +164,44 @@ class HP6652a(PowerSupply):
 
     @property
     def overcurrent(self):
-        '''
+        """
         Gets/sets the overcurrent protection setting for the specified channel.
 
         This is a toggle setting. It is either on or off.
 
         :type: `bool`
-        '''
-        return (True if self._hp.query('CURR:PROT:STAT?'.strip()[:-1])
+        """
+        return (True if self.query('CURR:PROT:STAT?'.strip()[:-1])
                 is '1' else False)
+
     @overcurrent.setter
     def overcurrent(self, newval):
         if newval is True:
             newval = 1
         else:
             newval = 0
-        self._hp.sendcmd('CURR:PROT:STAT {}'.format(newval))
+        self.sendcmd('CURR:PROT:STAT {}'.format(newval))
 
     @property
     def output(self):
-        '''
+        """
         Gets/sets the outputting status of the specified channel.
 
         This is a toggle setting. True will turn on the channel output
         while False will turn it off.
 
         :type: `bool`
-        '''
-        return (True if self._hp.query('OUTP?'.strip()[:-1])
+        """
+        return (True if self.query('OUTP?'.strip()[:-1])
                 is '1' else False)
+
     @output.setter
     def output(self, newval):
         if newval is True:
             newval = 1
         else:
             newval = 0
-        self._hp.sendcmd('OUTP {}'.format(newval))
+        self.sendcmd('OUTP {}'.format(newval))
 
     @property
     def channel(self):
@@ -205,7 +209,7 @@ class HP6652a(PowerSupply):
 
     @property
     def display_mode_text(self):
-        '''
+        """
         Gets/sets the display mode.
 
         This is a toggle setting. True will allow text to be sent to the
@@ -213,8 +217,8 @@ class HP6652a(PowerSupply):
         the normal display mode.
 
         :type: `bool`
-        '''
-        return (True if self._hp.query('DISP:MODE?'.strip()[:-1])
+        """
+        return (True if self.query('DISP:MODE?'.strip()[:-1])
                 is 'TEXT' else False)
 
     @display_mode_text.setter
@@ -223,18 +227,18 @@ class HP6652a(PowerSupply):
             newval = 'TEXT'
         else:
             newval = 'NORM'
-        self._hp.sendcmd('DISP:MODE {}'.format(newval))
+        self.sendcmd('DISP:MODE {}'.format(newval))
 
     ## METHODS ##
 
     def reset(self):
-        '''
+        """
         Reset overvoltage and overcurrent errors to resume operation.
-        '''
-        self._hp.sendcmd('OUTP:PROT:CLE')
+        """
+        self.sendcmd('OUTP:PROT:CLE')
 
     def display_text(self, text_to_display):
-        '''
+        """
         Sends up to 12 arbitrary (uppercase) alphanumerics to be sent to
         the front-panel LCD display.  Some punctuation is allowed, and
         can affect the number of characters allowed.  See the programming
@@ -254,30 +258,12 @@ class HP6652a(PowerSupply):
         method returns the actual string value sent.
 
         :type: 'str'
-        '''
-        if len(text_to_display)>15:
+        """
+
+        if len(text_to_display) > 15:
             text_to_display = text_to_display[:15]
         text_to_display = text_to_display.upper()
 
-        self._hp.sendcmd('DISP:TEXT {}'.format(text_to_display))
+        self.sendcmd('DISP:TEXT {}'.format(text_to_display))
 
         return text_to_display
-
-
-    def clear(self):
-        '''
-        Taken from the manual:
-
-        Return the power supply to its power-on state and all parameters are
-        returned to their initial power-on values except the following:
-
-        #) The store/recall registers are not cleared.
-        #) The power supply remains addressed to listen.
-        #) The PON bit in the serial poll register is cleared.
-        '''
-        self.sendcmd('CLR')
-
-
-        
-        
-        
