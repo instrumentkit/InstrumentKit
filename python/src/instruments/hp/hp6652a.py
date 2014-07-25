@@ -34,7 +34,7 @@ from __future__ import division
 import quantities as pq
 
 from instruments.abstract_instruments import (PowerSupply, PowerSupplyChannel)
-from instruments.util_fns import unitful_property, bool_property, string_property
+from instruments.util_fns import unitful_property, bool_property
 
 
 ## CLASSES #####################################################################
@@ -54,10 +54,24 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
     HOWEVER, it has only been tested by the author with an HP6652A power supply.
     
     Example usage:
-    
+
+    >>> import time
     >>> import instruments as ik
     >>> psu = ik.hp.HP6652a.open_serial('/dev/ttyUSB0', 57600)
-    >>> psu.voltage = 10 # Sets output voltage to 10V.
+    >>> psu.voltage = 3 # Sets output voltage to 3V.
+    >>> psu.output = True
+    >>> psu.voltage
+    array(3.0) * V
+    >>> psu.voltage_sense < 5
+    True
+    >>> psu.output = False
+    >>> psu.voltage_sense < 1
+    True
+    >>> psu.display_textmode=True
+    >>> psu.display_text("test GOOD")
+    'TEST GOOD'
+    >>> time.sleep(5)
+    >>> psu.display_textmode=False
     """
     
     def __init__(self, filelike):
