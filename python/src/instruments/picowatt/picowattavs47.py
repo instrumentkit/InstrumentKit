@@ -3,7 +3,7 @@
 ##
 # picowattavs47.py: Driver for the Picowatt AVS 47 resistance bridge.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -28,170 +28,137 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
-from instruments.abstract_instruments import Instrument
+import quantities as pq
+from flufl.enum import IntEnum
+
+from instruments.generic_scpi import SCPIInstrument
+from instruments.util_fns import (unitful_property, bool_property, int_property,
+                                 ProxyList)
 
 ## CLASSES #####################################################################
 
-class PicowattAVS47(Instrument):
+class _PicowattAVS47Sensor(object):
+    """
+    Class representing a sensor on the PicowattAVS47
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `PicowattAVS47` class.
+    """
+    
+    def __init__(self, parent, idx):
+        self._parent = parent
+        self._idx = idx # The AVS47 is actually zero-based indexing! Wow!
         
-    def remote(self, state=None):
-        '''
-        Enable or disable the remote mode state.
+    @property
+    def resistance(self):
+        """
+        Gets the resistance. It first ensures that the next measurement reading 
+        is up to date by first sending the "ADC" command.
+
+        :units: :math:`\\Omega` (ohms)
+        :rtype: `~quantities.Quantity`
+        """
+        # First make sure the mux is on the correct channel
+        if not self.parent.mux_channel == self.idx:
+            self.parent.input_source = self.parent.InputSource.ground
+            self.parent.mux_channel = self.idx
+            self.parent.input_source = self.parent.InputSource.actual
+        # Next, prep a measurement with the ADC command
+        self.sendcmd("ADC")
+        return float(self.query("RES?")) * pq.ohm 
+
+class PicowattAVS47(SCPIInstrument):
+    """
+    The Picowatt AVS 47 is a resistance bridge used to measure the resistance
+    of low-temperature sensors.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> bridge = ik.picowatt.PicowattAVS47.open_gpibusb('/dev/ttyUSB0', 1)
+    >>> print bridge.sensor[0].resistance
+    """
+
+    def __init__(self, filelike):
+        super(PicowattAVS47, self).__init__(filelike)
+        self.sendcmd("HDR 0") # Disables response headers from replies
+
+    ## ENUMS ##
+    
+    class InputSource(IntEnum):
+        ground = 0
+        actual = 1
+        reference = 2
+
+    ## PROPERTIES ##
+    
+    @property
+    def sensor(self):
+        """
+        Gets a specific sensor object. The desired sensor is specified like
+        one would access a list.
+        
+        :rtype: `_PicowattAVS47Sensor`
+        
+        .. seealso::
+            `PicowattAVS47` for an example using this property.
+        """
+        return ProxyList(self, _PicowattAVS47Sensor, xrange(8))
+        
+    remote = bool_property(
+        name="REM",
+        inst_true="1",
+        inst_false="0",
+        doc="""
+        Gets/sets the remote mode state.
         
         Enabling the remote mode allows all settings to be changed by computer 
         interface and locks-out the front panel.
         
-        If not state is specified, function queries instrument for the current 
-        remote mode state.
+        :type: `bool`
+        """)
         
-        Return type is a string.
+    input_source = enum_property(
+        name="INP",
+        enum=PicowattAVS47.InputSource,
+        doc="""
+        Gets/sets the input source.
         
-        :param state: Remote mode state. One of {OFF|DISABLE|ON|ENABLE|0|1}
-        :type: `int` or `str`
-        
-        :rtype: `str`
-        '''
-        if state == None:
-            return self.query('REM?')
-        
-        if isinstance(state, str):
-            state = state.lower()
-        
-        if state in ('off', '0', 0, 'disable'):
-            self.sendcmd('REM 0')
-        elif state in ('on', '1', 1, 'enable'):
-            self.sendcmd('REM 1')
-        else:
-            raise ValueError('Remote state must be "off", "on", "disable", '
-                               '"enable", "0" or "1".')
-        
-    def input_source(self, source=None):
-        '''
-        Set the input source.
-            1) "GROUND": Connects the bridge input to ground. Recommended 
-            before changing other bridge settings.
-            2) "ACTUAL": Connects to the actual measurement.
-            3) "REFerence": Connects to the internal precision 100ohm 
-            resistor. Used for calibrating the scale factor.
-            
-        If no source is specified, function queries instrument for current 
-        input source connection.
-        
-        :param source: Input source {GROund|ACTUAL|REFerence|100ohm|1|2|3}
-        :type: `int` or `str`
-        
-        :rtype: `str`
-        '''
-        if source == None:
-            return self.query('INP?')
-        
-        if isinstance(source,str):
-            source = source.lower()
-        
-        if source in ('ground', 'gro', '0', 0):
-            self.sendcmd('INP 0')
-        elif source in ('actual', '1', 1):
-            self.sendcmd('INP 1')
-        elif source in ('reference', 'ref', '100ohm', '2', 2):
-            self.sendcmd('INP 2')
-        else:
-            raise ValueError('Valid sources include "ground", "actual", '
-                               ' "reference",0,1,2,"100ohm", and "ref".')
-        
-    def mux_channel(self, channel=None):
-        '''
-        Set the multiplexer channel.
+        :type: `PicowattAVS47.InputSource`
+        """)
+    
+    mux_channel = int_property(
+        name="MUX",
+        doc="""
+        Gets/sets the multiplexer sensor number.
         It is recommended that you ground the input before switching the 
         multiplexer channel.
         
-        If no channel is specified, function queries instrument for the current 
-        multiplexer channel setting.
+        Valid mux channel values are 0 through 7 (inclusive).
         
-        :param int channel: Multiplexer channel. One of <0..7>.
+        :type: `int`
+        """,
+        valid_set=range(8))
         
-        :rtype: `str`
-        '''
-        if channel == None:
-            return self.query('MUX?')
+    excitation = int_property(
+        name="EXC",
+        doc="""
+        Gets/sets the excitation sensor number.
         
-        if not isinstance(channel, int):
-            raise TypeError('Multiplexer channel must be an integer.')
+        Valid excitation sensor values are 0 through 7 (inclusive).
         
-        if (channel < 0) or (channel > 7):
-            raise ValueError('Multiplexer channel must be between [0,7].')
+        :type: `int`
+        """,
+        valid_set=range(8))
         
-        self.sendcmd('MUX {}'.format(channel))
+    display = int_property(
+        name="DIS",
+        doc="""
+        Gets/sets the sensor that is displayed on the front panel.
         
-    def excitation(self, channel=None):
-        '''
-        Set the excitation channel.
+        Valid display sensor values are 0 through 7 (inclusive).
         
-        If no channel is specified, function queries instrument for the 
-        current excitation channel setting.
-        
-        :param int channel: Excitation channel. One of <0..7>.
-        
-        :rtype: `str`
-        '''
-        if channel == None:
-            return self.query('EXC?')
-        
-        if not isinstance(channel, int):
-            raise TypeError('Excitation channel must be an integer.')
-        
-        if (channel < 0) or (channel > 7):
-            raise ValueError('Excitation channel must be between [0,7].')
-        
-        self.sendcmd('EXC {}'.format(channel))
-        
-    def display(self, channel=None):
-        '''
-        Set the channel that is displayed on the front panel.
-        
-        If no channel is specified, function queries instrument for the 
-        current display channel setting.
-        
-        :param int channel: Display channel. One of <0..7>.
-        
-        :rtype: `str`
-        '''
-        if channel == None:
-            return self.query('EXC?')
-        
-        if not isinstance(channel, int):
-            raise TypeError('Display channel must be an integer.')
-        
-        if (channel < 0) or (channel > 7):
-            raise ValueError('Display channel must be between [0,7].')
-        
-        self.sendcmd('DIS {}'.format(channel))
-        
-    def adc(self):
-        '''
-        Enable the alarm flag, ensuring that the next measurement reading 
-        is up to date.
-        
-        Call this function before quering the resistance.
-        '''
-        self.write('ADC')
-        
-    def resistance(self):
-        '''
-        Perform a resistance query.
-        
-        This command requires you to first call the function 
-        `~Picowattavs47.adc`.
-        
-        :rtype: `float`        
-        '''
-        res = self.query('RES?')
-        return float( res[4:len(res)] ) # Remove leading "RES "
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        :type: `int`
+        """,
+        valid_set=range(8))
+
