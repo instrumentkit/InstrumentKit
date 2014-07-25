@@ -29,7 +29,6 @@ setup(
         'instruments.generic_scpi',
         'instruments.holzworth',
         'instruments.hp',
-        'instruments.generic_scpi',
         'instruments.keithley',
         'instruments.lakeshore',
         'instruments.newport',
