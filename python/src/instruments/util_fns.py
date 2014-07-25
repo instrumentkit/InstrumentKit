@@ -73,7 +73,7 @@ def bool_property(name, inst_true, inst_false, doc=None, readonly=False):
     :param str inst_false: String returned and accepted by the instrument for
         `False` values.
     :param str doc: Docstring to be associated with the new property.
-    :param bool readonly: If `False`, the returned property does not have a
+    :param bool readonly: If `True`, the returned property does not have a
         setter.
     """
     def getter(self):
@@ -100,7 +100,7 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     :param callable input_decoration: Function called on commands to the
         instrument.
     :param str doc: Docstring to be associated with the new property.
-    :param bool readonly: If `False`, the returned property does not have a
+    :param bool readonly: If `True`, the returned property does not have a
         setter.
     """
     def in_decor_fcn(val):
@@ -123,7 +123,7 @@ def unitless_property(name, format_code='{:e}', doc=None, readonly=False):
     :param str format_code: Argument to `str.format` used in sending values
         to the instrument.
     :param str doc: Docstring to be associated with the new property.
-    :param bool readonly: If `False`, the returned property does not have a
+    :param bool readonly: If `True`, the returned property does not have a
         setter.
     """
     def getter(self):
@@ -144,7 +144,7 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False, valid_set=N
     :param str format_code: Argument to `str.format` used in sending values
         to the instrument.
     :param str doc: Docstring to be associated with the new property.
-    :param bool readonly: If `False`, the returned property does not have a
+    :param bool readonly: If `True`, the returned property does not have a
         setter.
     :param valid_set: Set of valid values for the property, or `None` if all
         `int` values are valid.
@@ -183,7 +183,7 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False):
     :param str format_code: Argument to `str.format` used in sending the
         magnitude of values to the instrument.
     :param str doc: Docstring to be associated with the new property.
-    :param bool readonly: If `False`, the returned property does not have a
+    :param bool readonly: If `True`, the returned property does not have a
         setter.
     """
     def getter(self):
