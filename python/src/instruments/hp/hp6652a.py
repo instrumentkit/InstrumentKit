@@ -5,7 +5,7 @@
 ##
 # © 2014 Wil Langford (wil.langford+instrumentkit@gmail.com)
 #
-# adapted from hp6624a.py by:
+# portions adapted from hp6624a.py by:
 # © 2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
@@ -33,15 +33,19 @@ from __future__ import division
 
 import quantities as pq
 
-from instruments.abstract_instruments import (PowerSupply)
-from instruments.util_fns import assume_units
+from instruments.abstract_instruments import (PowerSupply, PowerSupplyChannel)
+from instruments.util_fns import unitful_property, bool_property, string_property
+
 
 ## CLASSES #####################################################################
 
 
-class HP6652a(PowerSupply):
+class HP6652a(PowerSupply, PowerSupplyChannel):
     """
     The HP6652a is a single output power supply.
+
+    Because it is a single channel output, this object inherits from both
+    PowerSupply and PowerSupplyChannel.
 
     According to the manual, this class MIGHT be usable for any HP power supply
     with a model number HP66XYA, where X is in {4,5,7,8,9} and Y is a digit(?).
@@ -66,169 +70,130 @@ class HP6652a(PowerSupply):
 
     ## PROPERTIES ##
 
-    @property
-    def voltage(self):
-        """
+    voltage = unitful_property(
+        "VOLT",
+        pq.volt,
+        doc="""
         Gets/sets the output voltage.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        """
-        return pq.Quantity(
-            float(self.query('VOLT?')),
-            pq.volt
-        )
+        """)
 
-    @voltage.setter
-    def voltage(self, newval):
-        self.sendcmd(
-            'VOLT {}'.format(
-                assume_units(newval, pq.volt).rescale(pq.volt).magnitude
-            )
-        )
-
-    @property
-    def current(self):
-        """
+    current = unitful_property(
+        "CURR",
+        pq.amp,
+        doc="""
         Gets/sets the output current.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        """
-        return pq.Quantity(
-            float(self.query('CURR?')),
-            pq.amp
-        )
+        """)
 
-    @current.setter
-    def current(self, newval):
-        self.sendcmd(
-            'CURR {}'.format(
-                assume_units(newval, pq.amp).rescale(pq.amp).magnitude
-            )
-        )
-
-    @property
-    def voltage_sense(self):
-        """
-        Gets the actual voltage as measured by the sense wires for the
-        specified channel.
+    voltage_sense = unitful_property(
+        "MEAS:VOLT",
+        pq.volt,
+        doc="""
+        Gets the actual output voltage as measured by the sense wires.
 
         :units: :math:`\\text{V}` (volts)
         :rtype: `~quantities.Quantity`
-        """
-        return pq.Quantity(
-            float(self.query('MEAS:VOLT?')),
-            pq.volt
-        )
+        """,
+        readonly=True
+    )
 
-    @property
-    def current_sense(self):
-        """
-        Gets the actual output current as measured by the instrument for
-        the specified channel.
+    current_sense = unitful_property(
+        "MEAS:CURR",
+        pq.amp,
+        doc="""
+        Gets the actual output current as measured by the sense wires.
 
         :units: :math:`\\text{A}` (amps)
         :rtype: `~quantities.Quantity`
-        """
-        return pq.Quantity(
-            float(self.query('MEAS:CURR?')),
-            pq.amp
-        )
+        """,
+        readonly=True
+    )
 
-    @property
-    def overvoltage(self):
-        """
-        Gets/sets the overvoltage protection setting for the specified channel.
+    overvoltage = unitful_property(
+        "VOLT:PROT",
+        pq.volt,
+        doc="""
+        Gets/sets the overvoltage protection setting in volts.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
         """
-        return pq.Quantity(
-            float(self.query('VOLT:PROT?')),
-            pq.volt
-        )
+    )
 
-    @overvoltage.setter
-    def overvoltage(self, newval):
-        self.sendcmd(
-            'VOLT:PROT {}'.format(
-                assume_units(newval, pq.volt).rescale(pq.volt).magnitude
-            )
-        )
-
-    @property
-    def overcurrent(self):
-        """
-        Gets/sets the overcurrent protection setting for the specified channel.
+    overcurrent = bool_property(
+        "CURR:PROT:STAT",
+        '1',
+        '0',
+        doc="""
+        Gets/sets the overcurrent protection setting.
 
         This is a toggle setting. It is either on or off.
 
         :type: `bool`
         """
-        return (True if self.query('CURR:PROT:STAT?')
-                is '1' else False)
+    )
 
-    @overcurrent.setter
-    def overcurrent(self, newval):
-        if newval is True:
-            newval = 1
-        else:
-            newval = 0
-        self.sendcmd('CURR:PROT:STAT {}'.format(newval))
+    output = bool_property(
+        "OUTP",
+        '1',
+        '0',
+        doc="""
+        Gets/sets the output status.
 
-    @property
-    def output(self):
-        """
-        Gets/sets the outputting status of the specified channel.
-
-        This is a toggle setting. True will turn on the channel output
+        This is a toggle setting. True will turn on the instrument output
         while False will turn it off.
 
         :type: `bool`
         """
-        return (True if self.query('OUTP?')
-                is '1' else False)
+    )
 
-    @output.setter
-    def output(self, newval):
-        if newval is True:
-            newval = 1
-        else:
-            newval = 0
-        self.sendcmd('OUTP {}'.format(newval))
-
-    @property
-    def channel(self):
-        return self
-
-    @property
-    def display_mode_text(self):
-        """
+    display_textmode = bool_property(
+        "DISP:MODE",
+        'TEXT',
+        'NORM',
+        doc="""
         Gets/sets the display mode.
 
         This is a toggle setting. True will allow text to be sent to the
         front-panel LCD with the display_text() method.  False returns to
         the normal display mode.
 
+        See also: display_text()
+
         :type: `bool`
         """
-        return (True if self.query('DISP:MODE?')
-                is 'TEXT' else False)
+    )
 
-    @display_mode_text.setter
-    def display_mode_text(self, newval):
-        if newval is True:
-            newval = 'TEXT'
-        else:
-            newval = 'NORM'
-        self.sendcmd('DISP:MODE {}'.format(newval))
+    @property
+    def name(self):
+        idn_string = self.query("*IDN?")
+        idn_list = idn_string.split(',')
+        return ' '.join(idn_list[:2])
+
+    @property
+    def mode(self):
+        """
+        Unimplemented.
+        """
+        raise NotImplementedError("Setting the mode is not implemented.")
+
+    @mode.setter
+    def mode(self, newval):
+        """
+        Unimplemented.
+        """
+        raise NotImplementedError("Setting the mode is not implemented.")
 
     ## METHODS ##
 
@@ -240,23 +205,24 @@ class HP6652a(PowerSupply):
 
     def display_text(self, text_to_display):
         """
-        Sends up to 12 arbitrary (uppercase) alphanumerics to be sent to
-        the front-panel LCD display.  Some punctuation is allowed, and
-        can affect the number of characters allowed.  See the programming
-        manual for the HP6652A for more details.
+        Sends up to 12 (uppercase) alphanumerics to be sent to the
+        front-panel LCD display.  Some punctuation is allowed, and
+        can affect the number of characters allowed.  See the
+        programming manual for the HP6652A for more details.
 
-        Because the maximum valid number of possible characters is 15 (counting
-        the possible use of punctuation), the text will be truncated to 15
-        characters before the command is sent to the instrument.
+        Because the maximum valid number of possible characters is
+        15 (counting the possible use of punctuation), the text will
+        be truncated to 15 characters before the command is sent to
+        the instrument.
 
-        If an invalid string is sent, the command will fail silently.  Any
-        lowercase letters in the text_to_display will be converted to
-        uppercase before the command is sent to the instrument.
+        If an invalid string is sent, the command will fail silently.
+        Any lowercase letters in the text_to_display will be converted
+        to uppercase before the command is sent to the instrument.
 
         No attempt to validate punctuation is currently made.
 
-        Because the string cannot be read back from the instrument, this
-        method returns the actual string value sent.
+        Because the string cannot be read back from the instrument,
+        this method returns the actual string value sent.
 
         :type: 'str'
         """
@@ -268,3 +234,9 @@ class HP6652a(PowerSupply):
         self.sendcmd('DISP:TEXT "{}"'.format(text_to_display))
 
         return text_to_display
+
+    def channel(self):
+        """
+        Return the channel (which in this case is the entire instrument.)
+        """
+        return self
