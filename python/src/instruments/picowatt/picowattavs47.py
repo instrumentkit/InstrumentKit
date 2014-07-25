@@ -120,7 +120,7 @@ class PicowattAVS47(SCPIInstrument):
         
     input_source = enum_property(
         name="INP",
-        enum=PicowattAVS47.InputSource,
+        enum=InputSource,
         doc="""
         Gets/sets the input source.
         
