@@ -64,6 +64,7 @@ import instruments.rigol
 import instruments.srs
 import instruments.tektronix
 import instruments.thorlabs
+import instruments.qubitekk
 import instruments.hp
 
 import instruments.units
