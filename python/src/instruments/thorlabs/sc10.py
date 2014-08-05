@@ -10,8 +10,8 @@ class SC10(Instrument):
     """
     def __init__(self, filelike):
         super(SC10, self).__init__(filelike)
-        self.terminator = "\n"
-        self.endTerminator = ">"
+        self.terminator = '\r'
+        self.endTerminator = '>'
 
     def checkCommand(self,command):
         """
@@ -21,6 +21,8 @@ class SC10(Instrument):
         checkCommand will also clear out the query string
         """
         response = self.query(command)
+        #This device will echo the commands sent, so another line must be read to catch the response.
+        response = self.read()
         cmdFind = response.find("CMD_NOT_DEFINED")
         if cmdFind ==-1:
             errorFind = response.find("CMD_ARG_INVALID")
@@ -34,7 +36,7 @@ class SC10(Instrument):
             outputStr = "CMD_NOT_DEFINED"
         return outputStr
 
-
+    @property
     def identity(self):
         """
         gets the name and version number of the device
@@ -59,6 +61,7 @@ class SC10(Instrument):
     def enable(self, newval):
         if newval == 0 or newval ==1:
             self.sendcmd("ens={}".format(newval))
+            self.read()
         else:
             raise ValueError("Invalid value for enable, must be 0 or 1")        
 
@@ -74,6 +77,7 @@ class SC10(Instrument):
     def repeat(self, newval):
         if newval >0 or newval <100:
             self.sendcmd("rep={}".format(newval))
+            self.read()
         else:
             raise ValueError("Invalid value for repeat count, must be between 1 and 99")        
 
@@ -94,6 +98,7 @@ class SC10(Instrument):
     def mode(self, newval):
         if newval >0  and newval < 6:
             self.sendcmd("mode={}".format(newval))
+            self.read()
         else:
             raise ValueError("Not a valid operation mode")
     
@@ -110,7 +115,7 @@ class SC10(Instrument):
         if newval != 0 and newval != 1:
             raise ValueError("Not a valid value for trigger mode")
         self.sendcmd("trig={}".format(newval))
-
+        self.read()
     
     @property
     def outtrigger(self):
@@ -125,6 +130,7 @@ class SC10(Instrument):
         if newval != 0 and newval != 1:
             raise ValueError("Not a valid value for output trigger mode")
         self.sendcmd("xto={}".format(newval))
+        self.read()
 
     ###I'm not sure how to handle checking for the number of digits yet.
     @property
@@ -133,7 +139,6 @@ class SC10(Instrument):
         The amount of time that the shutter is open, in ms
         """
         response = self.checkCommand("open?")
-        print(response)
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.ms
     @opentime.setter
@@ -143,6 +148,7 @@ class SC10(Instrument):
         if newval >999999:
             raise ValueError("Duration is too long")
         self.sendcmd("open={}".format(newval))
+        self.read()
     @property
     def shuttime(self):
         """
@@ -158,6 +164,7 @@ class SC10(Instrument):
         if newval >999999:
             raise ValueError("Duration is too long")
         self.sendcmd("shut={}".format(newval))
+        self.read()
     @property
     def baudrate(self):
         """
@@ -172,7 +179,7 @@ class SC10(Instrument):
             raise ValueError("invalid baud rate mode")
         else:
             self.sendcmd("baud={}".format(newval))
-    
+            self.read()   
     @property
     def closed(self):
         """

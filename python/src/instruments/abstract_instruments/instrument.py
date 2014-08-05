@@ -116,6 +116,19 @@ class Instrument(object):
         :rtype: `str`
         """
         return self._file.query(cmd, size)
+
+    def read(self, size=-1):
+        """
+        Read the last line.
+        
+        :param int size: Number of bytes to be read. Default is read until
+            termination character is found.
+        :return: The result of the read as returned by the
+            connected instrument.
+        :rtype: `str`
+        """
+        return self._file.read(size)
+
         
     ## PROPERTIES ##
     
