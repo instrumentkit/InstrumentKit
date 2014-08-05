@@ -90,8 +90,11 @@ class CC1(Instrument):
         """
         response = self.query("c1?")
         if not response is "Unknown command":
-            return response
-    
+            try:
+                float(response)
+                return response
+            except ValueError:
+                return self.coinccounts
     
     @property
     def chan2counts(self):
@@ -100,7 +103,11 @@ class CC1(Instrument):
         """
         response = self.query("c2?")
         if not response is "Unknown command":
-            return response
+            try:
+                float(response)
+                return response
+            except ValueError:
+                return self.coinccounts
     
     
     @property
@@ -110,7 +117,11 @@ class CC1(Instrument):
         """
         response = self.query("co?")
         if not response is "Unknown command":
-            return response
+            try:
+                float(response)
+                return response
+            except ValueError:
+                return self.coinccounts
     
     def getCounts(self):
         chan1counts = self.chan1counts
@@ -123,7 +134,4 @@ class CC1(Instrument):
         """
         Clears the current total counts on the counters
         """
-        response = self.query("clr")
-        if not response is "Unknown command":
-            return response
-    
+        self.query("clr")
