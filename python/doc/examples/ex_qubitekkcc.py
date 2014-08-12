@@ -19,17 +19,17 @@ cc = ik.qubitekk.CC1.open_serial('COM8', 19200,timeout=1)
 i = 0
 
 def clearcounts(*args):
-    cc.clearCounts()
+    cc.clear_counts()
     
 def getvalues(i):
     #set counts labels
-    chan1counts.set(cc.chan1counts)
-    chan2counts.set(cc.chan2counts)
-    coinccounts.set(cc.coinccounts)
+    chan1counts.set(cc.channel[0].count)
+    chan2counts.set(cc.channel[1].count)
+    coinccounts.set(cc.channel[2].count)
     #add count values to arrays for plotting
-    chan1vals.append(cc.chan1counts)
-    chan2vals.append(cc.chan2counts)
-    coincvals.append(cc.coinccounts)
+    chan1vals.append(cc.channel[0].count)
+    chan2vals.append(cc.channel[1].count)
+    coincvals.append(cc.channel[2].count)
     t.append(i*0.1)
     i = i+1
     #plot values
@@ -46,12 +46,12 @@ def getvalues(i):
 
 def gateenable():
     if(gateenabled.get()):
-        cc.gateenable = 1
+        cc.gate_enable = 1
     else:
-        cc.gateenable = 0
+        cc.gate_enable = 0
 
 def parse(*args):
-    cc.dwelltime = float(re.sub("[A-z]", "", dwelltime.get()))
+    cc.dwell_time = float(re.sub("[A-z]", "", dwell_time.get()))
     cc.window = float(re.sub("[A-z]", "", window.get()))
 
 root = tk.Tk()
@@ -66,17 +66,17 @@ mainframe.rowconfigure(0, weight=1)
 
 #set up the label text
 dwelltime = tk.StringVar()
-dwelltime.set(cc.dwelltime)
+dwelltime.set(cc.dwell_time)
 
 window = tk.StringVar()
 window.set(cc.window)
 
 chan1counts = tk.StringVar()
-chan1counts.set(cc.chan1counts)
+chan1counts.set(cc.channel[0].count)
 chan2counts = tk.StringVar()
-chan2counts.set(cc.chan2counts)
+chan2counts.set(cc.channel[1].count)
 coinccounts = tk.StringVar()
-coinccounts.set(cc.coinccounts)
+coinccounts.set(cc.channel[2].count)
 
 gateenabled = tk.IntVar()
 

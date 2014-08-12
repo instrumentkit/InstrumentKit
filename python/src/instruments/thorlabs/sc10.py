@@ -1,6 +1,39 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+##
+# file_communicator.py: Treats a file on the filesystem as a communicator
+#     (aka wrapper).
+##
+# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+#
+# This file is a part of the InstrumentKit project.
+# Licensed under the AGPL version 3.
+##
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
+# SC10 Class contributed by Catherine Holloway
+## IMPORTS #####################################################################
 from instruments.abstract_instruments import Instrument
 import quantities as pq
+from flufl.enum import IntEnum
 
+class SC10mode(IntEnum):
+    manual = 1
+    auto = 2
+    single = 3
+    repeat = 4
+    external = 5
 
 class SC10(Instrument):
     """
@@ -11,37 +44,37 @@ class SC10(Instrument):
     def __init__(self, filelike):
         super(SC10, self).__init__(filelike)
         self.terminator = '\r'
-        self.endTerminator = '>'
+        self.end_terminator = '>'
 
-    def checkCommand(self,command):
+    def check_command(self,command):
         """
         Checks for the \"Command error CMD_NOT_DEFINED\" error, which can sometimes occur if there were
         incorrect terminators on the previous command. If the command is successful, it returns the value,
         if not, it returns CMD_NOT_DEFINED
-        checkCommand will also clear out the query string
+        check_command will also clear out the query string
         """
         response = self.query(command)
         #This device will echo the commands sent, so another line must be read to catch the response.
         response = self.read()
-        cmdFind = response.find("CMD_NOT_DEFINED")
-        if cmdFind ==-1:
-            errorFind = response.find("CMD_ARG_INVALID")
-            if errorFind ==-1:
-                outputStr = response.replace(command,"")
-                outputStr = outputStr.replace(self.terminator,"")
-                outputStr = outputStr.replace(self.endTerminator,"")
+        cmd_find = response.find("CMD_NOT_DEFINED")
+        if cmd_find ==-1:
+            error_find = response.find("CMD_ARG_INVALID")
+            if error_find ==-1:
+                output_str = response.replace(command,"")
+                output_str = output_str.replace(self.terminator,"")
+                output_str = output_str.replace(self.end_terminator,"")
             else:
-                outputStr = "CMD_ARG_INVALID"
+                output_str = "CMD_ARG_INVALID"
         else:
-            outputStr = "CMD_NOT_DEFINED"
-        return outputStr
+            output_str = "CMD_NOT_DEFINED"
+        return output_str
 
     @property
     def identity(self):
         """
         gets the name and version number of the device
         """
-        response = self.checkCommand("id?")
+        response = self.check_command("id?")
         if response is "CMD_NOT_DEFINED":
             self.identity()          
         else:
@@ -54,7 +87,7 @@ class SC10(Instrument):
         """
         The shutter enable status, 0 for disabled, 1 if enabled
         """
-        response = self.checkCommand("ens?")
+        response = self.check_command("ens?")
         if not response is "CMD_NOT_DEFINED":
             return response
     @enable.setter
@@ -70,7 +103,7 @@ class SC10(Instrument):
         """
         The repeat count for repeat mode. 
         """
-        response = self.checkCommand("rep?")
+        response = self.check_command("rep?")
         if not response is "CMD_NOT_DEFINED":
             return response
     @repeat.setter
@@ -91,9 +124,10 @@ class SC10(Instrument):
         mode 4 Repeat Mode
         mode 5 External Gate Mode
         """
-        response = self.checkCommand("mode?")
+        response = self.check_command("mode?")
         if not response is "CMD_NOT_DEFINED":
-            return float(response)
+            _mode = int(response)
+            return (response)
     @mode.setter
     def mode(self, newval):
         if newval >0  and newval < 6:
@@ -107,7 +141,7 @@ class SC10(Instrument):
         """
         0 for internal trigger, 1 for external trigger
         """
-        response = self.checkCommand("trig?")
+        response = self.check_command("trig?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)
     @trigger.setter
@@ -118,15 +152,15 @@ class SC10(Instrument):
         self.read()
     
     @property
-    def outtrigger(self):
+    def out_trigger(self):
         """
         0 trigger out follows shutter output, 1 trigger out follows controller output
         """
-        response = self.checkCommand("xto?")
+        response = self.check_command("xto?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)
-    @outtrigger.setter
-    def outtrigger(self, newval):
+    @out_trigger.setter
+    def out_trigger(self, newval):
         if newval != 0 and newval != 1:
             raise ValueError("Not a valid value for output trigger mode")
         self.sendcmd("xto={}".format(newval))
@@ -134,15 +168,15 @@ class SC10(Instrument):
 
     ###I'm not sure how to handle checking for the number of digits yet.
     @property
-    def opentime(self):
+    def open_time(self):
         """
         The amount of time that the shutter is open, in ms
         """
-        response = self.checkCommand("open?")
+        response = self.check_command("open?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.ms
-    @opentime.setter
-    def opentime(self, newval):
+    @open_time.setter
+    def open_time(self, newval):
         if newval < 0:
             raise ValueError("Time cannot be negative")
         if newval >999999:
@@ -150,15 +184,15 @@ class SC10(Instrument):
         self.sendcmd("open={}".format(newval))
         self.read()
     @property
-    def shuttime(self):
+    def shut_time(self):
         """
         The amount of time that the shutter is closed, in ms
         """
-        response = self.checkCommand("shut?")
+        response = self.check_command("shut?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.ms
-    @shuttime.setter
-    def shuttime(self, newval):
+    @shut_time.setter
+    def shut_time(self, newval):
         if newval < 0:
             raise ValueError("Time cannot be negative")
         if newval >999999:
@@ -166,15 +200,15 @@ class SC10(Instrument):
         self.sendcmd("shut={}".format(newval))
         self.read()
     @property
-    def baudrate(self):
+    def baud_rate(self):
         """
         Gets the baud rate: 0 for 9600, 1 for 115200
         """
-        response = self.checkCommand("baud?")
+        response = self.check_command("baud?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.ms
-    @baudrate.setter
-    def baudrate(self, newval):
+    @baud_rate.setter
+    def baud_rate(self, newval):
         if newval != 0 and newval !=1:
             raise ValueError("invalid baud rate mode")
         else:
@@ -185,7 +219,7 @@ class SC10(Instrument):
         """
         1 if the shutter is closed, 0 if the shutter is open
         """
-        response = self.checkCommand("closed?")
+        response = self.check_command("closed?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)
     @property
@@ -193,7 +227,7 @@ class SC10(Instrument):
         """
         1 if the interlock is tripped, 0 otherwise
         """
-        response = self.checkCommand("interlock?")
+        response = self.check_command("interlock?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)
 
@@ -203,7 +237,7 @@ class SC10(Instrument):
         restores factory settings
         returns 1 if successful
         """
-        response = self.checkCommand("default")
+        response = self.check_command("default")
         if not response is "CMD_NOT_DEFINED":
             return 1
         else:
@@ -214,17 +248,17 @@ class SC10(Instrument):
         stores the parameters in static memory
         returns 1 if successful
         """
-        response = self.checkCommand("savp")
+        response = self.check_command("savp")
         if not response is "CMD_NOT_DEFINED":
             return 1
         else:
             return 0
 
-    def savemode(self):
+    def save_mode(self):
         """
         stores output trigger mode and baud rate in memory
         """
-        response = self.checkCommand("save")
+        response = self.check_command("save")
         if not response is "CMD_NOT_DEFINED":
             return 1
         else:
@@ -234,7 +268,7 @@ class SC10(Instrument):
         """
         loads the settings from memory
         """
-        response = self.checkCommand("resp")
+        response = self.check_command("resp")
         if not response is "CMD_NOT_DEFINED":
             return 1
         else:
