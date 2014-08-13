@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# file_communicator.py: Treats a file on the filesystem as a communicator
-#     (aka wrapper).
+# cc1.py: Class for the Qubitekk Coincidence Counter instrument
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
@@ -26,7 +25,7 @@
 ## IMPORTS #####################################################################
 from instruments.abstract_instruments import Instrument
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
-from instruments.util_fns import ProxyList
+from instruments.util_fns import ProxyList,assume_units
 import quantities as pq
 
 class _CC1Channel():
@@ -86,11 +85,12 @@ class CC1(SCPIInstrument):
             
     @window.setter
     def window(self, newval):
-        if newval < 0:
+        newval_mag = assume_units(newval,pq.ns).rescale(pq.ns).magnitude
+        if newval_mag < 0:
             raise ValueError("Window is too small.")
-        if newval >7:
+        if newval_mag >7:
             raise ValueError("Window is too big")
-        self.sendcmd(":WIND {}".format(newval))
+        self.sendcmd(":WIND {}".format(newval_mag))
     
     @property
     def dwell_time(self):
@@ -105,9 +105,10 @@ class CC1(SCPIInstrument):
 
     @dwell_time.setter
     def dwell_time(self, newval):
-        if newval < 0:
+        newval_mag = assume_units(newval,pq.s).rescale(pq.s).magnitude
+        if newval_mag < 0:
             raise ValueError("Dwell time cannot be negative.")
-        self.sendcmd(":DWEL {}".format(newval))
+        self.sendcmd(":DWEL {}".format(newval_mag))
             
     @property
     def gate_enable(self):
@@ -131,6 +132,29 @@ class CC1(SCPIInstrument):
             self.sendcmd(":GATE:OFF")
         if newval ==1:
             self.sendcmd(":GATE:ON")
+
+    @property
+    def count_enable(self):
+        """
+        The count mode of the CC
+        enabled means the dwell time passes before the counters are cleared
+        disabled means the counters are cleared every 0.1 seconds
+        """
+        response = self.query("COUN?")
+        if not response is "Unknown command":
+            return response
+
+    @count_enable.setter
+    def count_enable(self, newval):
+        """
+        Set the count either enabled (1) or disabled (0)
+        """
+        if newval != 0 and newval != 1:
+            raise ValueError("Not a valid output mode")
+        if newval ==0:
+            self.sendcmd(":COUN:OFF")
+        if newval ==1:
+            self.sendcmd(":COUN:ON")
 
     ### return values ###
     

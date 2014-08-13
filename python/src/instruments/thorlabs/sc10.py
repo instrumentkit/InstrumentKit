@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# file_communicator.py: Treats a file on the filesystem as a communicator
-#     (aka wrapper).
+# sc10.py: Class for the thorlabs sc10 Shutter Controller
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #

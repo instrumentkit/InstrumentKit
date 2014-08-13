@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# file_communicator.py: Treats a file on the filesystem as a communicator
-#     (aka wrapper).
+# lcc25.py: class for the Thorlabs LCC25 Liquid Crystal Controller
 ##
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #

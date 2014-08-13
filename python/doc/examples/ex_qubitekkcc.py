@@ -17,6 +17,7 @@ import re
 cc = ik.qubitekk.CC1.open_serial('COM8', 19200,timeout=1)
 #i is used to keep track of time
 i = 0
+timediff = 0.5
 
 def clearcounts(*args):
     cc.clear_counts()
@@ -27,10 +28,10 @@ def getvalues(i):
     chan2counts.set(cc.channel[1].count)
     coinccounts.set(cc.channel[2].count)
     #add count values to arrays for plotting
-    chan1vals.append(cc.channel[0].count)
-    chan2vals.append(cc.channel[1].count)
-    coincvals.append(cc.channel[2].count)
-    t.append(i*0.1)
+    chan1vals.append(chan1counts.get())
+    chan2vals.append(chan1counts.get())
+    coincvals.append(chan1counts.get())
+    t.append(i*timediff)
     i = i+1
     #plot values
     p1, = a.plot(t,coincvals,color="r",linewidth=2.0)
@@ -42,7 +43,7 @@ def getvalues(i):
 
     canvas.show()
     #get the values again in 100 milliseconds
-    root.after(100,getvalues,i)
+    root.after(int(timediff*1000),getvalues,i)
 
 def gateenable():
     if(gateenabled.get()):
@@ -50,9 +51,22 @@ def gateenable():
     else:
         cc.gate_enable = 0
 
+def countenable():
+    if(countenabled.get()):
+        cc.count_enable = 1
+    else:
+        cc.count_enable = 0
+
 def parse(*args):
-    cc.dwell_time = float(re.sub("[A-z]", "", dwell_time.get()))
+    cc.dwell_time = float(re.sub("[A-z]", "", dwelltime.get()))
     cc.window = float(re.sub("[A-z]", "", window.get()))
+
+def reset(*args):
+    cc.reset()
+    dwelltime.set(cc.dwell_time)
+    window.set(cc.window)
+    countenabled.set(cc.count_enable)
+    gateenabled.set(cc.gate_enable)
 
 root = tk.Tk()
 root.title("Qubitekk Coincidence Counter Control Software")
@@ -79,12 +93,20 @@ coinccounts = tk.StringVar()
 coinccounts.set(cc.channel[2].count)
 
 gateenabled = tk.IntVar()
+countenabled = tk.IntVar()
 
 #set up the initial checkbox value for the gate enable
-if(cc.gateenable=="enabled"):
+if(cc.gate_enable==1):
     gateenabled.set(1)
 else:
     gateenabled.set(0)
+
+#set up the initial checkbox value for the count enable
+if(cc.count_enable==1):
+    countenabled.set(1)
+else:
+    countenabled.set(0)
+
 
 #set up the plotting area
 
@@ -99,7 +121,7 @@ chan2vals = []
 
 # a tk.DrawingArea
 canvas = FigureCanvasTkAgg(f, mainframe)
-canvas.get_tk_widget().grid(column=3,row=1,rowspan=8,sticky=tk.W)
+canvas.get_tk_widget().grid(column=3,row=1,rowspan=9,sticky=tk.W)
 
 #label initialization
 dwelltime_entry = tk.Entry(mainframe, width=7, textvariable=dwelltime,font="Verdana 20")
@@ -116,23 +138,30 @@ tk.Label(mainframe, text="Window size:",font="Verdana 20").grid(column=1,row=3,s
 tk.Checkbutton(mainframe,font="Verdana 20",variable = gateenabled, command=gateenable).grid(column=2,row=4)
 tk.Label(mainframe,text="Gate Enable: ",font="Verdana 20").grid(column=1,row=4,sticky=tk.W)
 
-
-tk.Label(mainframe, text="Channel 1: ",font="Verdana 20").grid(column=1,row=5,sticky=tk.W)
-tk.Label(mainframe, text="Channel 2: ",font="Verdana 20").grid(column=1,row=6,sticky=tk.W)
-tk.Label(mainframe, text="Coincidences: ",font="Verdana 20").grid(column=1,row=7,sticky=tk.W)
+tk.Checkbutton(mainframe,font="Verdana 20",variable = countenabled, command=countenable).grid(column=2,row=5)
+tk.Label(mainframe,text="Count Enable: ",font="Verdana 20").grid(column=1,row=5,sticky=tk.W)
 
 
+tk.Label(mainframe, text="Channel 1: ",font="Verdana 20").grid(column=1,row=6,sticky=tk.W)
+tk.Label(mainframe, text="Channel 2: ",font="Verdana 20").grid(column=1,row=7,sticky=tk.W)
+tk.Label(mainframe, text="Coincidences: ",font="Verdana 20").grid(column=1,row=8,sticky=tk.W)
 
-tk.Label(mainframe, textvariable=chan1counts,font="Verdana 34",fg="white",bg="black").grid(column=2,row=5,sticky=tk.W)
-tk.Label(mainframe, textvariable=chan2counts,font="Verdana 34",fg="white",bg="black").grid(column=2,row=6,sticky=tk.W)
-tk.Label(mainframe, textvariable=coinccounts,font="Verdana 34",fg="white",bg="black").grid(column=2,row=7,sticky=tk.W)
 
-tk.Button(mainframe,text="Clear Counts",font="Verdana 24",command=clearcounts).grid(column=2,row=8,sticky = tk.W)
+
+tk.Label(mainframe, textvariable=chan1counts,font="Verdana 34",fg="white",bg="black").grid(column=2,row=6,sticky=tk.W)
+tk.Label(mainframe, textvariable=chan2counts,font="Verdana 34",fg="white",bg="black").grid(column=2,row=7,sticky=tk.W)
+tk.Label(mainframe, textvariable=coinccounts,font="Verdana 34",fg="white",bg="black").grid(column=2,row=8,sticky=tk.W)
+
+
+tk.Button(mainframe,text="Reset",font="Verdana 24",command=reset).grid(column=1,row=9,sticky = tk.W)
+
+
+tk.Button(mainframe,text="Clear Counts",font="Verdana 24",command=clearcounts).grid(column=2,row=9,sticky = tk.W)
 
 for child in mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
 #when the enter key is pressed, send the current values in the entries to the dwelltime and window to the coincidence counter
 root.bind('<Return>',parse)
 #in 100 milliseconds, get the counts values off of the coincidence counter
-root.after(100,getvalues,i)
+root.after(int(timediff*1000),getvalues,i)
 #start the GUI
 root.mainloop()
