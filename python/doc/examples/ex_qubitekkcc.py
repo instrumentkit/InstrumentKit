@@ -17,6 +17,7 @@ import re
 cc = ik.qubitekk.CC1.open_serial('COM8', 19200,timeout=1)
 #i is used to keep track of time
 i = 0
+#read counts every 0.5 seconds
 timediff = 0.5
 
 def clearcounts(*args):
@@ -31,6 +32,12 @@ def getvalues(i):
     chan1vals.append(chan1counts.get())
     chan2vals.append(chan1counts.get())
     coincvals.append(chan1counts.get())
+    if(cc.channel[0].count<0):
+        chan1counts.set("Overflow")
+    if(cc.channel[1].count<0):
+        chan2counts.set("Overflow")
+    if(cc.channel[2].count<0):
+        coinccounts.set("Overflow")
     t.append(i*timediff)
     i = i+1
     #plot values
@@ -42,7 +49,7 @@ def getvalues(i):
     a.set_ylabel('Counts (Hz)')
 
     canvas.show()
-    #get the values again in 100 milliseconds
+    #get the values again in the specified amount of time 
     root.after(int(timediff*1000),getvalues,i)
 
 def gateenable():
