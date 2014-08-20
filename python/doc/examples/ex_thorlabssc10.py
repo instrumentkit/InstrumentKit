@@ -6,7 +6,7 @@ import instruments as ik
 sc = ik.thorlabs.SC10.open_serial('COM9', 9600,timeout=1)
 
 
-print("It is a: ", sc.identity)
+print("It is a: ", sc.name)
 print("Setting shutter open time to 10 ms")
 sc.open_time = 10
 print("The shutter open time is: ",sc.open_time)
@@ -28,5 +28,5 @@ sc.repeat = 8
 print("The repeat count is: ",sc.repeat)
 
 print("setting mode to auto")
-sc.mode = int(ik.thorlabs.SC10mode.auto)
+sc.mode = sc.Mode.auto
 

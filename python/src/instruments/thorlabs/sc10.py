@@ -3,7 +3,7 @@
 ##
 # sc10.py: Class for the thorlabs sc10 Shutter Controller
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -22,17 +22,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 # SC10 Class contributed by Catherine Holloway
+#
 ## IMPORTS #####################################################################
+
 from instruments.abstract_instruments import Instrument
 import quantities as pq
 from flufl.enum import IntEnum
 
-class SC10mode(IntEnum):
-    manual = 1
-    auto = 2
-    single = 3
-    repeat = 4
-    external = 5
+## CLASSES #####################################################################
 
 class SC10(Instrument):
     """
@@ -44,7 +41,219 @@ class SC10(Instrument):
         super(SC10, self).__init__(filelike)
         self.terminator = '\r'
         self.end_terminator = '>'
+        
+    ## ENUMS ##
+    
+    class Mode(IntEnum):
+        manual = 1
+        auto = 2
+        single = 3
+        repeat = 4
+        external = 5
+        
+    ## PROPERTIES ##
 
+    @property
+    def name(self):
+        """
+        Gets the name and version number of the device.
+        """
+        response = self.check_command("id?")
+        if response is "CMD_NOT_DEFINED":
+            self.name()          
+        else:
+            return response
+
+    @property
+    def enable(self):
+        """
+        Gets/sets the shutter enable status, 0 for disabled, 1 if enabled
+        
+        :type: `int`
+        """
+        response = self.check_command("ens?")
+        if not response is "CMD_NOT_DEFINED":
+            return response
+    @enable.setter
+    def enable(self, newval):
+        if newval == 0 or newval ==1:
+            self.sendcmd("ens={}".format(newval))
+            self.read()
+        else:
+            raise ValueError("Invalid value for enable, must be 0 or 1")        
+
+    @property
+    def repeat(self):
+        """
+        Gets/sets the repeat count for repeat mode. Valid range is [1,99]
+        inclusive.
+        
+        :type: `int`
+        """
+        response = self.check_command("rep?")
+        if not response is "CMD_NOT_DEFINED":
+            return response
+    @repeat.setter
+    def repeat(self, newval):
+        if newval >0 or newval <100:
+            self.sendcmd("rep={}".format(newval))
+            self.read()
+        else:
+            raise ValueError("Invalid value for repeat count, must be "
+                             "between 1 and 99")        
+
+    @property
+    def mode(self):
+        """
+        Gets/sets the output mode of the SC10.
+
+        :type: `SC10.Mode`
+        """
+        response = self.check_command("mode?")
+        if not response is "CMD_NOT_DEFINED":
+            return SC10.Mode[int(response)]
+    @mode.setter
+    def mode(self, newval):
+        if (newval.enum is not SC10.Mode):
+            raise TypeError("Mode setting must be a `SC10.Mode` value, "
+                "got {} instead.".format(type(newval)))
+        
+        self.sendcmd("mode={}".format(newval.value))
+        self.read()        
+    
+    @property
+    def trigger(self):
+        """
+        Gets/sets the trigger source.
+        
+        0 for internal trigger, 1 for external trigger
+        
+        :type: `int`
+        """
+        response = self.check_command("trig?")
+        if not response is "CMD_NOT_DEFINED":
+            return float(response)
+    @trigger.setter
+    def trigger(self, newval):
+        if newval != 0 and newval != 1:
+            raise ValueError("Not a valid value for trigger mode")
+        self.sendcmd("trig={}".format(newval))
+        self.read()
+    
+    @property
+    def out_trigger(self):
+        """
+        Gets/sets the out trigger source.
+        
+        0 trigger out follows shutter output, 1 trigger out follows 
+        controller output
+        
+        :type: `int`
+        """
+        response = self.check_command("xto?")
+        if not response is "CMD_NOT_DEFINED":
+            return float(response)
+    @out_trigger.setter
+    def out_trigger(self, newval):
+        if newval != 0 and newval != 1:
+            raise ValueError("Not a valid value for output trigger mode")
+        self.sendcmd("xto={}".format(newval))
+        self.read()
+
+    ###I'm not sure how to handle checking for the number of digits yet.
+    @property
+    def open_time(self):
+        """
+        Gets/sets the amount of time that the shutter is open, in ms
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units milliseconds.
+        :type: `~quantities.Quantity`
+        """
+        response = self.check_command("open?")
+        if not response is "CMD_NOT_DEFINED":
+            return float(response)*pq.ms
+    @open_time.setter
+    def open_time(self, newval):
+        if newval < 0:
+            raise ValueError("Shutter open time cannot be negative")
+        if newval >999999:
+            raise ValueError("Shutter open duration is too long")
+        newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
+        self.sendcmd("open={}".format(newval))
+        self.read()
+    
+    @property
+    def shut_time(self):
+        """
+        Gets/sets the amount of time that the shutter is closed, in ms
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units milliseconds.
+        :type: `~quantities.Quantity`
+        """
+        response = self.check_command("shut?")
+        if not response is "CMD_NOT_DEFINED":
+            return float(response)*pq.ms
+    @shut_time.setter
+    def shut_time(self, newval):
+        if newval < 0:
+            raise ValueError("Time cannot be negative")
+        if newval >999999:
+            raise ValueError("Duration is too long")
+        newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
+        self.sendcmd("shut={}".format(newval))
+        self.read()
+    
+    @property
+    def baud_rate(self):
+        """
+        Gets/sets the instrument baud rate.
+        
+        Valid baud rates are 9600 and 115200.
+        
+        :type: `int`
+        """
+        response = self.check_command("baud?")
+        if not response is "CMD_NOT_DEFINED":
+            return 115200 if response else 9600 
+    @baud_rate.setter
+    def baud_rate(self, newval):
+        if newval != 9600 and newval !=115200:
+            raise ValueError("Invalid baud rate mode")
+        else:
+            self.sendcmd("baud={}".format(0 if newval == 9600 else 1))
+            self.read()
+    
+    @property
+    def closed(self):
+        """
+        Gets the shutter closed status.
+        
+        `True` represents the shutter is closed, and `False` for the shutter is
+        open.
+        
+        :rtype: `bool`
+        """
+        response = self.check_command("closed?")
+        if not response is "CMD_NOT_DEFINED":
+            return True if response is "1" else False
+    
+    @property
+    def interlock(self):
+        """
+        Gets the interlock tripped status.
+        
+        Returns `True` if the interlock is tripped, and `False` otherwise.
+        
+        :rtype: `bool`
+        """
+        response = self.check_command("interlock?")
+        if not response is "CMD_NOT_DEFINED":
+            return True if response is "1" else False
+
+    ## Methods ##
+    
     def check_command(self,command):
         """
         Checks for the \"Command error CMD_NOT_DEFINED\" error, which can sometimes occur if there were
@@ -67,174 +276,14 @@ class SC10(Instrument):
         else:
             output_str = "CMD_NOT_DEFINED"
         return output_str
-
-    @property
-    def identity(self):
-        """
-        gets the name and version number of the device
-        """
-        response = self.check_command("id?")
-        if response is "CMD_NOT_DEFINED":
-            self.identity()          
-        else:
-            return response
-
-    ### LCC SETTINGS ###
-
-    @property
-    def enable(self):
-        """
-        The shutter enable status, 0 for disabled, 1 if enabled
-        """
-        response = self.check_command("ens?")
-        if not response is "CMD_NOT_DEFINED":
-            return response
-    @enable.setter
-    def enable(self, newval):
-        if newval == 0 or newval ==1:
-            self.sendcmd("ens={}".format(newval))
-            self.read()
-        else:
-            raise ValueError("Invalid value for enable, must be 0 or 1")        
-
-    @property
-    def repeat(self):
-        """
-        The repeat count for repeat mode. 
-        """
-        response = self.check_command("rep?")
-        if not response is "CMD_NOT_DEFINED":
-            return response
-    @repeat.setter
-    def repeat(self, newval):
-        if newval >0 or newval <100:
-            self.sendcmd("rep={}".format(newval))
-            self.read()
-        else:
-            raise ValueError("Invalid value for repeat count, must be between 1 and 99")        
-
-    @property
-    def mode(self):
-        """
-        The output mode of the SC10
-        mode 1 Manual Mode
-        mode 2 Auto Mode
-        mode 3 Single Mode
-        mode 4 Repeat Mode
-        mode 5 External Gate Mode
-        """
-        response = self.check_command("mode?")
-        if not response is "CMD_NOT_DEFINED":
-            _mode = int(response)
-            return (response)
-    @mode.setter
-    def mode(self, newval):
-        if newval >0  and newval < 6:
-            self.sendcmd("mode={}".format(newval))
-            self.read()
-        else:
-            raise ValueError("Not a valid operation mode")
-    
-    @property
-    def trigger(self):
-        """
-        0 for internal trigger, 1 for external trigger
-        """
-        response = self.check_command("trig?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)
-    @trigger.setter
-    def trigger(self, newval):
-        if newval != 0 and newval != 1:
-            raise ValueError("Not a valid value for trigger mode")
-        self.sendcmd("trig={}".format(newval))
-        self.read()
-    
-    @property
-    def out_trigger(self):
-        """
-        0 trigger out follows shutter output, 1 trigger out follows controller output
-        """
-        response = self.check_command("xto?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)
-    @out_trigger.setter
-    def out_trigger(self, newval):
-        if newval != 0 and newval != 1:
-            raise ValueError("Not a valid value for output trigger mode")
-        self.sendcmd("xto={}".format(newval))
-        self.read()
-
-    ###I'm not sure how to handle checking for the number of digits yet.
-    @property
-    def open_time(self):
-        """
-        The amount of time that the shutter is open, in ms
-        """
-        response = self.check_command("open?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.ms
-    @open_time.setter
-    def open_time(self, newval):
-        if newval < 0:
-            raise ValueError("Time cannot be negative")
-        if newval >999999:
-            raise ValueError("Duration is too long")
-        self.sendcmd("open={}".format(newval))
-        self.read()
-    @property
-    def shut_time(self):
-        """
-        The amount of time that the shutter is closed, in ms
-        """
-        response = self.check_command("shut?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.ms
-    @shut_time.setter
-    def shut_time(self, newval):
-        if newval < 0:
-            raise ValueError("Time cannot be negative")
-        if newval >999999:
-            raise ValueError("Duration is too long")
-        self.sendcmd("shut={}".format(newval))
-        self.read()
-    @property
-    def baud_rate(self):
-        """
-        Gets the baud rate: 0 for 9600, 1 for 115200
-        """
-        response = self.check_command("baud?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.ms
-    @baud_rate.setter
-    def baud_rate(self, newval):
-        if newval != 0 and newval !=1:
-            raise ValueError("invalid baud rate mode")
-        else:
-            self.sendcmd("baud={}".format(newval))
-            self.read()   
-    @property
-    def closed(self):
-        """
-        1 if the shutter is closed, 0 if the shutter is open
-        """
-        response = self.check_command("closed?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)
-    @property
-    def interlock(self):
-        """
-        1 if the interlock is tripped, 0 otherwise
-        """
-        response = self.check_command("interlock?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)
-
-    ### SC10 Methods ###
+        
     def default(self):
         """
-        restores factory settings
-        returns 1 if successful
+        Restores instrument to factory settings.
+        
+        Returns 1 if successful, zero otherwise.
+        
+        :rtype: `int`
         """
         response = self.check_command("default")
         if not response is "CMD_NOT_DEFINED":
@@ -244,8 +293,11 @@ class SC10(Instrument):
 
     def save(self):
         """
-        stores the parameters in static memory
-        returns 1 if successful
+        Stores the parameters in static memory
+        
+        Returns 1 if successful, zero otherwise.
+        
+        :rtype: `int`
         """
         response = self.check_command("savp")
         if not response is "CMD_NOT_DEFINED":
@@ -255,7 +307,11 @@ class SC10(Instrument):
 
     def save_mode(self):
         """
-        stores output trigger mode and baud rate in memory
+        Stores output trigger mode and baud rate settings in memory.
+        
+        Returns 1 if successful, zero otherwise.
+        
+        :rtype: `int`
         """
         response = self.check_command("save")
         if not response is "CMD_NOT_DEFINED":
@@ -265,7 +321,11 @@ class SC10(Instrument):
 
     def restore(self):
         """
-        loads the settings from memory
+        Loads the settings from memory.
+        
+        Returns 1 if successful, zero otherwise.
+        
+        :rtype: `int`
         """
         response = self.check_command("resp")
         if not response is "CMD_NOT_DEFINED":
