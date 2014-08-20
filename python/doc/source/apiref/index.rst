@@ -23,6 +23,7 @@ Contents:
     oxford
     phasematrix
     picowatt
+    qubitekk
     rigol
     srs
     tektronix  
