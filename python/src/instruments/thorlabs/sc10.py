@@ -177,11 +177,11 @@ class SC10(Instrument):
             return float(response)*pq.ms
     @open_time.setter
     def open_time(self, newval):
+        newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
         if newval < 0:
             raise ValueError("Shutter open time cannot be negative")
         if newval >999999:
             raise ValueError("Shutter open duration is too long")
-        newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
         self.sendcmd("open={}".format(newval))
         self.read()
     
@@ -199,11 +199,11 @@ class SC10(Instrument):
             return float(response)*pq.ms
     @shut_time.setter
     def shut_time(self, newval):
+        newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
         if newval < 0:
             raise ValueError("Time cannot be negative")
         if newval >999999:
             raise ValueError("Duration is too long")
-        newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
         self.sendcmd("shut={}".format(newval))
         self.read()
     
