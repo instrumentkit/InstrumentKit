@@ -25,9 +25,11 @@
 #
 ## IMPORTS #####################################################################
 
-from instruments.abstract_instruments import Instrument
 import quantities as pq
 from flufl.enum import IntEnum
+
+from instruments.abstract_instruments import Instrument
+from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
 
