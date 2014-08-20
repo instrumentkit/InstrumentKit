@@ -33,3 +33,17 @@ ThorLabs-brand Instruments
     :members:
     :undoc-members:
 
+:class:`SC10`
+=============
+
+.. autoclass:: SC10
+    :members:
+    :undoc-members:
+
+:class:`LCC25`
+==============
+
+.. autoclass:: LCC25
+    :members:
+    :undoc-members:
+
