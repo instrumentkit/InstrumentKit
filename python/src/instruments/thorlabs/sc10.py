@@ -239,7 +239,7 @@ class SC10(Instrument):
         """
         response = self.check_command("closed?")
         if not response is "CMD_NOT_DEFINED":
-            return True if response is "1" else False
+            return True if int(response) is 1 else False
     
     @property
     def interlock(self):
@@ -252,7 +252,7 @@ class SC10(Instrument):
         """
         response = self.check_command("interlock?")
         if not response is "CMD_NOT_DEFINED":
-            return True if response is "1" else False
+            return True if int(response) is 1 else False
 
     ## Methods ##
     
