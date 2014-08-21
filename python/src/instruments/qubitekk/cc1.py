@@ -3,7 +3,7 @@
 ##
 # cc1.py: Class for the Qubitekk Coincidence Counter instrument
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -21,14 +21,27 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
+#
 # CC1 Class contributed by Catherine Holloway
+##
+
 ## IMPORTS #####################################################################
+
+import quantities as pq
+
 from instruments.abstract_instruments import Instrument
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.util_fns import ProxyList,assume_units
-import quantities as pq
 
-class _CC1Channel():
+## CLASSES #####################################################################
+
+class _CC1Channel(object):
+    """
+    Class representing a channel on the Qubitekk CC1.
+    
+    .. warning:: This class should NOT be manually created by the user. It is 
+        designed to be initialized by the `CC1` class.
+    """
     def __init__(self, cc1, idx):
         self._cc1 = cc1
         self._idx = idx + 1
@@ -46,9 +59,12 @@ class _CC1Channel():
     @property
     def count(self):
         """
-        Gets the counts.
+        Gets the counts of this channel.
+        
+        :rtype: `int`
         """
         count = self._cc1.query("COUN:"+self._chan+"?")
+        # FIXME: Does this property actually work? The try block seems wrong.
         if not count is "Unknown command":
             try:
                 count = int(count)
@@ -61,7 +77,13 @@ class _CC1Channel():
 class CC1(SCPIInstrument):
     """
     The CC1 is a hand-held coincidence counter.
-    It has two setting values, the dwell time and the coincidence window. The coincidence window determines the amount of time (in ns) that the two detections may be from each other and still be considered a coincidence. The dwell time is the amount of time that passes before the counter will send the clear signal.
+    
+    It has two setting values, the dwell time and the coincidence window. The 
+    coincidence window determines the amount of time (in ns) that the two 
+    detections may be from each other and still be considered a coincidence. 
+    The dwell time is the amount of time that passes before the counter will 
+    send the clear signal.
+    
     More information can be found at :
     http://www.qubitekk.com
     """
@@ -71,18 +93,21 @@ class CC1(SCPIInstrument):
         self.end_terminator = "\n"
         self.channel_count = 3
 
-    ### CC SETTINGS ###
+    ## PROPERTIES ##
 
     @property
     def window(self):
         """
-        The length of the coincidence window between the two signals
+        Gets/sets the length of the coincidence window between the two signals.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units nanoseconds.
+        :type: `~quantities.Quantity`
         """
         response = self.query("WIND?")
         if not response is "Unknown command":
             response = response[:-3]
             return float(response)*pq.ns
-            
     @window.setter
     def window(self, newval):
         newval_mag = assume_units(newval,pq.ns).rescale(pq.ns).magnitude
@@ -95,14 +120,17 @@ class CC1(SCPIInstrument):
     @property
     def dwell_time(self):
         """
-        The length of time before a clear signal is sent to the counters
+        Gets/sets the length of time before a clear signal is sent to the 
+        counters.
+        
+        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units seconds.
+        :type: `~quantities.Quantity`
         """
         response = self.query("DWEL?")
         if not response is "Unknown command":
             response = response[:-2]
             return float(response)*pq.s
-            
-
     @dwell_time.setter
     def dwell_time(self, newval):
         newval_mag = assume_units(newval,pq.s).rescale(pq.s).magnitude
@@ -113,50 +141,59 @@ class CC1(SCPIInstrument):
     @property
     def gate_enable(self):
         """
-        The Gate mode of the CC
-        enabled means the input signals are anded with the gate signal
-        disabled means the input signals are not anded with the gate signal
+        Gets/sets the Gate mode of the CC1.
+        
+        A setting of `True` means the input signals are anded with the gate 
+        signal and `False` means the input signals are not anded with the gate 
+        signal.
+        
+        :type: `bool`
         """
         response = self.query("GATE?")
         if not response is "Unknown command":
-            return response
-
+            response = int(response)
+            return True if response is 1 else False
     @gate_enable.setter
     def gate_enable(self, newval):
-        """
-        Set the gate either enabled (1) or disabled (0)
-        """
-        if newval != 0 and newval != 1:
-            raise ValueError("Not a valid output mode")
-        if newval ==0:
+        if isinstance(newval, int):
+            if newval != 0 and newval != 1:
+                raise ValueError("Not a valid gate_enable mode.")
+            newval = bool(newval)
+        elif not isinstance(newval, bool):
+            raise TypeError("CC1 gate_enable must be specified as a boolean.")
+        
+        if newval is False:
             self.sendcmd(":GATE:OFF")
-        if newval ==1:
+        else:
             self.sendcmd(":GATE:ON")
 
     @property
     def count_enable(self):
         """
-        The count mode of the CC
-        enabled means the dwell time passes before the counters are cleared
-        disabled means the counters are cleared every 0.1 seconds
+        The count mode of the CC1.
+        
+        A setting of `True` means the dwell time passes before the counters are 
+        cleared and `False` means the counters are cleared every 0.1 seconds.
+        
+        :type: `bool`
         """
         response = self.query("COUN?")
         if not response is "Unknown command":
-            return response
-
+            response = int(response)
+            return return True if response is 1 else False
     @count_enable.setter
     def count_enable(self, newval):
-        """
-        Set the count either enabled (1) or disabled (0)
-        """
-        if newval != 0 and newval != 1:
-            raise ValueError("Not a valid output mode")
-        if newval ==0:
+        if isinstance(newval, int):
+            if newval != 0 and newval != 1:
+                raise ValueError("Not a valid count_enable mode.")
+            newval = bool(newval)
+        elif not isinstance(newval, bool):
+            raise TypeError("CC1 count_enable must be specified as a boolean.")
+        
+        if newval is False:
             self.sendcmd(":COUN:OFF")
-        if newval ==1:
+        else:
             self.sendcmd(":COUN:ON")
-
-    ### return values ###
     
     @property
     def channel(self):
@@ -164,14 +201,21 @@ class CC1(SCPIInstrument):
         Gets a specific channel object. The desired channel is specified like 
         one would access a list.
         
+        For instance, this would print the counts of the first channel::
+        
+        >>> cc = ik.qubitekk.CC1.open_serial('COM8', 19200, timeout=1)
+        >>> print cc.channel[0].count
+        
         :rtype: `_CC1Channel`
         
         '''
         return ProxyList(self, _CC1Channel, xrange(self.channel_count))
     
-    ### functions ###
+    ## METHODS ##
+    
     def clear_counts(self):
         """
-        Clears the current total counts on the counters
+        Clears the current total counts on the counters.
         """
         self.query("CLEA")
+
