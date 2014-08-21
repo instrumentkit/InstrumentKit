@@ -54,15 +54,15 @@ def getvalues(i):
 
 def gateenable():
     if(gateenabled.get()):
-        cc.gate_enable = 1
+        cc.gate_enable = True
     else:
-        cc.gate_enable = 0
+        cc.gate_enable = False
 
 def countenable():
     if(countenabled.get()):
-        cc.count_enable = 1
+        cc.count_enable = True
     else:
-        cc.count_enable = 0
+        cc.count_enable = False
 
 def parse(*args):
     cc.dwell_time = float(re.sub("[A-z]", "", dwelltime.get()))
@@ -103,13 +103,13 @@ gateenabled = tk.IntVar()
 countenabled = tk.IntVar()
 
 #set up the initial checkbox value for the gate enable
-if(cc.gate_enable==1):
+if(cc.gate_enable is True):
     gateenabled.set(1)
 else:
     gateenabled.set(0)
 
 #set up the initial checkbox value for the count enable
-if(cc.count_enable==1):
+if(cc.count_enable is True):
     countenabled.set(1)
 else:
     countenabled.set(0)
