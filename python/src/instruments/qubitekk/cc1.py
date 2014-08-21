@@ -180,7 +180,7 @@ class CC1(SCPIInstrument):
         response = self.query("COUN?")
         if not response is "Unknown command":
             response = int(response)
-            return return True if response is 1 else False
+            return True if response is 1 else False
     @count_enable.setter
     def count_enable(self, newval):
         if isinstance(newval, int):
