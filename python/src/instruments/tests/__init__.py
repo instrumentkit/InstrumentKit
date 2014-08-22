@@ -69,7 +69,7 @@ def make_name_test(ins_class, name_cmd="*IDN?"):
     correctly reports its name in response to a standard command.
     """
     def test():
-        with expected_protocol(ins_class, name_cmd + "\n", "NAME") as ins:
+        with expected_protocol(ins_class, name_cmd + "\n", "NAME\n") as ins:
             assert ins.name == "NAME"
     return test
     
