@@ -87,7 +87,19 @@ class LoopbackWrapper(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         if self._stdin is not None:
-            input_var = self._stdin.read(size)
+            if (size >= 0):
+                input_var = self._stdin.read(size)
+                return input_var
+            elif (size == -1):
+                result = bytearray()
+                c = 0
+                while c != self._terminator:
+                    c = self._stdin.read(1)
+                    if c != self._terminator:
+                        result += c
+                return bytes(result)
+            else:
+                raise ValueError('Must read a positive value of characters.')
         else:
             input_var = raw_input("Desired Response: ")
         return input_var
