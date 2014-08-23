@@ -36,6 +36,7 @@ setup(
         'instruments.oxford',
         'instruments.phasematrix',
         'instruments.picowatt',
+        'instruments.qubitekk',
         'instruments.rigol',
         'instruments.srs',
         'instruments.tektronix',  
