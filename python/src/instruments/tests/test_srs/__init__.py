@@ -27,7 +27,7 @@
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
 
-import cStringIO as StringIO
+from six.moves import StringIO
 import quantities as pq
 
 ## TESTS ######################################################################
@@ -35,11 +35,24 @@ import quantities as pq
 test_srsdg645_name = make_name_test(ik.srs.SRSDG645)
     
 def test_srsdg645_output_level():
-    with expected_protocol(ik.srs.SRSDG645, "LAMP? 1\nLAMP 1,4.0\n", "3.2\n") as ddg:
+    """
+    SRSDG645: Checks getting/setting unitful ouput level.
+    """
+    with expected_protocol(ik.srs.SRSDG645,
+            [
+                "LAMP? 1",
+                "LAMP 1,4.0",
+            ], [
+                "3.2"
+            ]
+    ) as ddg:
         unit_eq(ddg.output['AB'].level_amplitude, pq.Quantity(3.2, "V"))
         ddg.output['AB'].level_amplitude = 4.0
         
 def test_srsdg645_output_polarity():
+    """
+    SRSDG645: Checks getting/setting 
+    """
     with expected_protocol(
         ik.srs.SRSDG645,
         "LPOL? 1\nLPOL 2,0\n",

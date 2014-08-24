@@ -17,6 +17,8 @@ To expose parts of an instrument or device in a Python-ic way, the
 initializer for some inner class. This is used to expose everything from
 channels to axes.
 
+.. _property_factories:
+
 Property Factories
 ==================
 
