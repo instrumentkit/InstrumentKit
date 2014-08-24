@@ -29,6 +29,7 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 import sys
+import re
 
 import quantities as pq
 from flufl.enum import Enum, IntEnum
@@ -53,7 +54,6 @@ def assume_units(value, units):
         value = pq.Quantity(value, units)
     return value
 
-# FIXME: add unit tests!
 def split_unit_str(s, default_units=pq.dimensionless, lookup=None):
     """
     Given a string of the form "12 C" or "14.7 GHz", returns a tuple of the

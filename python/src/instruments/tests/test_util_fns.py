@@ -31,7 +31,8 @@ from nose.tools import raises, eq_
 
 from instruments.util_fns import (
     ProxyList,
-    assume_units, bool_property, enum_property, int_property
+    assume_units, bool_property, enum_property, int_property,
+    split_unit_str
 )
 
 from flufl.enum import Enum
@@ -143,3 +144,31 @@ def test_int_property_valid_set():
     mock = IntMock()
     mock.mock = 3
 
+
+def test_split_unit_str():
+    """
+    util_fns: Tests that split_unit_str acts correctly.
+    """
+    # Check that unit strings go through OK.
+    mag, units = split_unit_str("42 foobars")
+    eq_(mag, 42)
+    eq_(units, "foobars")
+
+    # Check that default units work.
+    mag, units = split_unit_str("42", default_units="foobars")
+    eq_(mag, 42)
+    eq_(units, "foobars")
+
+    # Check that default units are ignored if there's actual units.
+    mag, units = split_unit_str("42 snafus")
+    eq_(mag, 42)
+    eq_(units, "snafus")
+
+    # Finally, check that lookups work.
+    unit_dict = {
+        "FOO": "foobars",
+        "SNA": "snafus"
+    }
+    mag, units = split_unit_str("42 FOO", lookup=unit_dict.__getitem__)
+    eq_(mag, 42)
+    eq_(units, "foobars")
