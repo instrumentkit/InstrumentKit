@@ -6,6 +6,7 @@ InstrumentKit Development Guide
     :maxdepth: 2
     
     design_philosophy
+    code_style
     testing
     util_fns
     
