@@ -21,8 +21,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
-#
-# CC1 Class contributed by Catherine Holloway
+# CC1 Class contributed by Catherine Holloway.
 ##
 
 ## IMPORTS #####################################################################
@@ -31,11 +30,9 @@ import quantities as pq
 
 from instruments.abstract_instruments import Instrument
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
-from instruments.util_fns import ProxyList,assume_units
+from instruments.util_fns import ProxyList, assume_units, split_unit_str
 
 ## CLASSES #####################################################################
-
-        
 
 class CC1(SCPIInstrument):
     """
@@ -58,7 +55,7 @@ class CC1(SCPIInstrument):
 
     ## INNER CLASSES ##
 
-    class _CC1Channel(object):
+    class Channel(object):
         """
         Class representing a channel on the Qubitekk CC1.
         """
@@ -88,13 +85,12 @@ class CC1(SCPIInstrument):
             """
             count = self._cc1.query("COUN:{0}?".format(self._chan))
             # FIXME: Does this property actually work? The try block seems wrong.
-            if not count == "Unknown command":
-                try:
-                    count = int(count)
-                    self.count = count
-                    return self.count
-                except ValueError:
-                    self.count = self.count
+            try:
+                count = int(count)
+                self.count = count
+                return self.count
+            except ValueError:
+                self.count = self.count
 
     ## METHOD OVERRIDES ##
 
@@ -141,10 +137,8 @@ class CC1(SCPIInstrument):
             of units nanoseconds.
         :type: `~quantities.Quantity`
         """
-        response = self.query("WIND?")
-        if not response is "Unknown command":
-            response = response[:-3]
-            return float(response)*pq.ns
+        return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
+
     @window.setter
     def window(self, newval):
         newval_mag = assume_units(newval,pq.ns).rescale(pq.ns).magnitude
@@ -164,10 +158,8 @@ class CC1(SCPIInstrument):
             of units seconds.
         :type: `~quantities.Quantity`
         """
-        response = self.query("DWEL?")
-        if not response is "Unknown command":
-            response = response[:-2]
-            return float(response)*pq.s
+        return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
+
     @dwell_time.setter
     def dwell_time(self, newval):
         newval_mag = assume_units(newval,pq.s).rescale(pq.s).magnitude
@@ -187,9 +179,8 @@ class CC1(SCPIInstrument):
         :type: `bool`
         """
         response = self.query("GATE?")
-        if not response is "Unknown command":
-            response = int(response)
-            return True if response is 1 else False
+        response = int(response)
+        return True if response is 1 else False
     @gate_enable.setter
     def gate_enable(self, newval):
         if isinstance(newval, int):
@@ -215,9 +206,8 @@ class CC1(SCPIInstrument):
         :type: `bool`
         """
         response = self.query("COUN?")
-        if not response is "Unknown command":
-            response = int(response)
-            return True if response is 1 else False
+        response = int(response)
+        return True if response is 1 else False
     @count_enable.setter
     def count_enable(self, newval):
         if isinstance(newval, int):
@@ -243,10 +233,10 @@ class CC1(SCPIInstrument):
         >>> cc = ik.qubitekk.CC1.open_serial('COM8', 19200, timeout=1)
         >>> print cc.channel[0].count
         
-        :rtype: `_CC1Channel`
+        :rtype: `CC1.Channel`
         
         '''
-        return ProxyList(self, _CC1Channel, xrange(self.channel_count))
+        return ProxyList(self, CC1.Channel, xrange(self.channel_count))
     
     ## METHODS ##
     
@@ -254,5 +244,5 @@ class CC1(SCPIInstrument):
         """
         Clears the current total counts on the counters.
         """
-        self.query("CLEA")
+        self.sendcmd("CLEA")
 
