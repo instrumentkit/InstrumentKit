@@ -24,7 +24,6 @@
 
 ## IMPORTS ####################################################################
 
-import six
 import contextlib
 from cStringIO import StringIO
 
