@@ -35,43 +35,6 @@ from instruments.util_fns import ProxyList,assume_units
 
 ## CLASSES #####################################################################
 
-class _CC1Channel(object):
-    """
-    Class representing a channel on the Qubitekk CC1.
-    
-    .. warning:: This class should NOT be manually created by the user. It is 
-        designed to be initialized by the `CC1` class.
-    """
-    def __init__(self, cc1, idx):
-        self._cc1 = cc1
-        self._idx = idx + 1
-        self._chan = "";
-        if(self._idx ==1):
-            self._chan = "C1"
-        if(self._idx ==2):
-            self._chan = "C2"
-        if(self._idx ==3):
-            self._chan = "CO"
-        self._count = 0
-        
-    ## PROPERTIES ##
-    
-    @property
-    def count(self):
-        """
-        Gets the counts of this channel.
-        
-        :rtype: `int`
-        """
-        count = self._cc1.query("COUN:"+self._chan+"?")
-        # FIXME: Does this property actually work? The try block seems wrong.
-        if not count is "Unknown command":
-            try:
-                count = int(count)
-                self.count = count
-                return self.count
-            except ValueError:
-                self.count = self.count
         
 
 class CC1(SCPIInstrument):
@@ -92,6 +55,80 @@ class CC1(SCPIInstrument):
         self.terminator = "\n"
         self.end_terminator = "\n"
         self.channel_count = 3
+
+    ## INNER CLASSES ##
+
+    class _CC1Channel(object):
+        """
+        Class representing a channel on the Qubitekk CC1.
+        """
+
+        __CHANNEL_NAMES = {
+            1: 'C1',
+            2: 'C2',
+            3: 'C0'
+        }
+
+        def __init__(self, cc1, idx):
+            self._cc1 = cc1
+            # Use zero-based indexing for the external API, but one-based
+            # for talking to the instrument.
+            self._idx = idx + 1
+            self._chan = self.__CHANNEL_NAMES[self._idx]
+            self._count = 0
+            
+        ## PROPERTIES ##
+        
+        @property
+        def count(self):
+            """
+            Gets the counts of this channel.
+            
+            :rtype: `int`
+            """
+            count = self._cc1.query("COUN:{0}?".format(self._chan))
+            # FIXME: Does this property actually work? The try block seems wrong.
+            if not count == "Unknown command":
+                try:
+                    count = int(count)
+                    self.count = count
+                    return self.count
+                except ValueError:
+                    self.count = self.count
+
+    ## METHOD OVERRIDES ##
+
+    def sendcmd(self, cmd):
+        # We override sendcmd here to check for the response
+        # "Unknown command", so that property factories not aware
+        # of this response can blindly call sendcmd() and rely on
+        # exception handling to get us the rest of the way there.
+        #
+        # Note that we call the superclass *query* and not *sendcmd*;
+        # this is so we can get the error message out!
+        resp = super(CC1, self).query(cmd)
+
+        if "Unknown command" == resp.strip():
+            raise IOError("CC1 reported that command {0} is unknown: {1}".format(
+                cmd, resp
+            ))
+
+
+    def query(self, cmd):
+        # We override query for the same reason as
+        # above.
+        resp = super(CC1, self).query(cmd)
+
+        if "Unknown command" == resp.strip():
+            raise IOError("CC1 reported that command {0} is unknown: {1}".format(
+                cmd, resp
+            ))
+
+        # If we survived, then the command was not marked as unknown.
+        # Something else may have gone wrong, but since we don't know that,
+        # we should return what we believe to be a successful response.
+        return resp
+            
 
     ## PROPERTIES ##
 
