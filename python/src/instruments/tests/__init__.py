@@ -24,9 +24,8 @@
 
 ## IMPORTS ####################################################################
 
-import six
 import contextlib
-from six.moves import StringIO
+from cStringIO import StringIO
 
 from nose.tools import nottest, eq_
 
