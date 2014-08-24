@@ -2,6 +2,10 @@
 Design Philosophy
 =================
 
+Here, we describe the design philosophy behind InstrumentKit at a high-level.
+Specific implications of this philosophy for coding style and practices
+are detailed in :ref:`code_style`.
+
 Pythonic
 ========
 
