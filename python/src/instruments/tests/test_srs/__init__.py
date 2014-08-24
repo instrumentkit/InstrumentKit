@@ -27,7 +27,7 @@
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
 
-from six.moves import StringIO
+from cStringIO import StringIO
 import quantities as pq
 
 ## TESTS ######################################################################
