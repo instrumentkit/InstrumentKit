@@ -14,7 +14,4 @@ Qubitekk-brand Instruments
     :members:
     :undoc-members:
     
-.. autoclass:: _CC1Channel
-    :members:
-    :undoc-members:
 

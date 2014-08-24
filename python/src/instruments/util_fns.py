@@ -53,6 +53,44 @@ def assume_units(value, units):
         value = pq.Quantity(value, units)
     return value
 
+# FIXME: add unit tests!
+def split_unit_str(s, default_units=pq.dimensionless, lookup=None):
+    """
+    Given a string of the form "12 C" or "14.7 GHz", returns a tuple of the
+    numeric part and the unit part, irrespective of how many (if any) whitespace
+    characters appear between.
+
+    By design, the tuple should be such that it can be unpacked into
+    :func:`pq.Quantity`::
+
+        >>> pq.Quantity(*split_unit_str("1 s"))
+        array(1) * s
+
+    For this reason, the second element of the tuple may be a unit or
+    a string, depending, since the quantity constructor takes either.
+
+    :param default_units: If no units are specified, this argument is given
+        as the units.
+    :param callable lookup: If specified, this function is called on the
+        units part of the input string. If `None`, no lookup is performed.
+        Lookups are never performed on the default units.
+    :rtype: `tuple` of a `float` and a `str` or `pq.Quantity`
+    """
+    if lookup is None:
+        lookup = lambda x: x
+
+    # Borrowed from:
+    # http://stackoverflow.com/questions/430079/how-to-split-strings-into-text-and-number
+    match = re.match(r"(-?[0-9\.]+)\s*([a-z]+)", s.strip(), re.I)
+    if match:
+        val, units = match.groups()
+        return float(val), lookup(units)
+    else:
+        try:
+            return float(s), default_units
+        except ValueError:
+            raise ValueError("Could not split '{}' into value and units.".format(repr(s)))
+
 def rproperty(fget=None, fset=None, doc=None, readonly=False):
     if readonly:
         return property(fget=fget, fset=None, doc=doc)

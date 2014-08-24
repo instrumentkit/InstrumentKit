@@ -20,12 +20,12 @@ of InstrumentKit will not, in general, have access to each instrument that
 is supported--- we rely on automated testing to ensure that future changes
 do not cause invalid or undesired operation.
 
-For InstrumentKit, we rely heavily on `nose `_, a mature and flexible
+For InstrumentKit, we rely heavily on `nose`_, a mature and flexible
 unit-testing framework for Python. When run from the command line via
 ``nosetests``, or when run by Travis CI, nose will automatically execute
 functions and methods whose names start with ``test`` in packages, modules
 and classes whose names start with ``test`` or ``Test``, depending. (Please
-see the ``nose`_ documentation for full details, as this is not intended
+see the `nose`_ documentation for full details, as this is not intended
 to be a guide to nose so much as a guide to how we use it in IK.)
 Because of this, we keep all test cases in the ``instruments.tests``
 package, under a subpackage named for the particular manufacturer,

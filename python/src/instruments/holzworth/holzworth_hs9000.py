@@ -36,33 +36,19 @@ from instruments.abstract_instruments.signal_generator import (
     SignalGenerator, 
     SGChannel
 )
-from instruments.util_fns import assume_units, ProxyList
+from instruments.util_fns import assume_units, ProxyList, split_unit_str
 from instruments.units import dBm
 
 import quantities as pq
 import re
 
 ## FUNCTIONS ###################################################################
-
-# TODO: promote the following to util_fns in case another module needs it.
-def split_unit_str(s, default_units=pq.dimensionless):
-    """
-    Given a string of the form "12 C" or "14.7 GHz", returns a tuple of the
-    numeric part and the unit part, irrespective of how many (if any) whitespace
-    characters appear between.
-    """
-    # Borrowed from:
-    # http://stackoverflow.com/questions/430079/how-to-split-strings-into-text-and-number
-    match = re.match(r"(-?[0-9\.]+)\s*([a-z]+)", s.strip(), re.I)
-    if match:
-        val, units = match.groups()
-        return float(val), units
-    else:
-        try:
-            return float(s), default_units
-        except ValueError:
-            raise ValueError("Could not split '{}' into value and units.".format(repr(s)))
             
+# TODO: elevate this to util_fns, generalize enough to capture fixed limits
+#       rather than just :MIN, :MAX style SCPI limits, so that it can be used
+#       for instruments like the Qubitekk CC1.
+#       While doing that, rename to bounded_unitful_property for parity
+#       with unitful_property, and write some bloody unit tests for it.
 def _bounded_property(base_name, allowed_units, default_units, doc=""):
     
     def getter(self):

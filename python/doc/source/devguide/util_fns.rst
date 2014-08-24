@@ -9,6 +9,8 @@ Unit Handling
 
 .. autofunction:: assume_units
 
+.. autofunction:: split_unit_str
+
 Enumerating Instrument Functionality
 ====================================
 

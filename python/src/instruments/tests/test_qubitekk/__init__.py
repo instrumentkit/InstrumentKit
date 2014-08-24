@@ -49,4 +49,5 @@ def test_cc1_unknown_command():
             ]
     ) as cc1:
         cc1.sendcmd("FTN")
+
         
