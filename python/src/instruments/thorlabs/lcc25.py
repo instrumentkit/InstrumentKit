@@ -103,8 +103,8 @@ class LCC25(Instrument):
         if (newval.enum is not LCC25.Mode):
             raise TypeError("Mode setting must be a `LCC25.Mode` value, "
                 "got {} instead.".format(type(newval)))
-        response = self.query("mode={}".format(newval.value))
-
+        response = self.sendcmd("mode={}".format(newval.value))
+        
     @property
     def enable(self):
         """
@@ -197,7 +197,7 @@ class LCC25(Instrument):
         response = self.check_command("volt2?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.V
-    @voltage1.setter
+    @voltage2.setter
     def voltage2(self, newval):
         newval = assume_units(newval, pq.V).rescale(pq.V).magnitude
         if newval < 0:

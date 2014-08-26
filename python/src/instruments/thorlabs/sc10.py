@@ -75,7 +75,7 @@ class SC10(Instrument):
         """
         response = self.check_command("ens?")
         if not response is "CMD_NOT_DEFINED":
-            return response
+            return int(response)
     @enable.setter
     def enable(self, newval):
         if newval == 0 or newval ==1:
@@ -94,7 +94,7 @@ class SC10(Instrument):
         """
         response = self.check_command("rep?")
         if not response is "CMD_NOT_DEFINED":
-            return response
+            return int(response)
     @repeat.setter
     def repeat(self, newval):
         if newval >0 or newval <100:
@@ -134,7 +134,7 @@ class SC10(Instrument):
         """
         response = self.check_command("trig?")
         if not response is "CMD_NOT_DEFINED":
-            return float(response)
+            return int(response)
     @trigger.setter
     def trigger(self, newval):
         if newval != 0 and newval != 1:
@@ -154,7 +154,7 @@ class SC10(Instrument):
         """
         response = self.check_command("xto?")
         if not response is "CMD_NOT_DEFINED":
-            return float(response)
+            return int(response)
     @out_trigger.setter
     def out_trigger(self, newval):
         if newval != 0 and newval != 1:
