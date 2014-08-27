@@ -38,8 +38,12 @@ test_tektds224_name = make_name_test(ik.tektronix.TekTDS224)
 def test_tektds224_data_width():
     with expected_protocol(
         ik.tektronix.TekTDS224,
-        "DATA:WIDTH?\nDATA:WIDTH 1\n",
-        "2\n"
+        [
+            "DATA:WIDTH?",
+            "DATA:WIDTH 1"
+        ] , [
+            "2"
+        ]
     ) as tek:
         assert tek.data_width == 2
         tek.data_width = 1
@@ -47,8 +51,12 @@ def test_tektds224_data_width():
 def test_tektds224_data_source():
     with expected_protocol(
         ik.tektronix.TekTDS224,
-        "DAT:SOU?\nDAT:SOU MATH\n",
-        "CH1\n"
+        [
+            "DAT:SOU?",
+            "DAT:SOU MATH"
+        ], [
+            "CH1"
+        ]
     ) as tek:
         assert tek.data_source == ik.tektronix.tektds224._TekTDS224Channel(tek,
                                                                            0
@@ -66,8 +74,12 @@ def test_tektds224_channel():
 def test_tektds224_channel_coupling():
     with expected_protocol(
         ik.tektronix.TekTDS224,
-        "CH1:COUPL?\nCH2:COUPL AC\n",
-        "DC\n"
+        [
+            "CH1:COUPL?",
+            "CH2:COUPL AC"
+        ], [
+            "DC"
+        ]
     ) as tek:
         assert tek.channel[0].coupling == tek.Coupling.dc
         tek.channel[1].coupling = tek.Coupling.ac
@@ -75,10 +87,29 @@ def test_tektds224_channel_coupling():
 def test_tektds224_data_source_read_waveform():
     with expected_protocol(
         ik.tektronix.TekTDS224,
-        ("DAT:SOU?\nDAT:SOU CH1\nDAT:ENC RIB\nDATA:WIDTH?\nCURVE?\n"
-        "WFMP:CH1:YOF?\nWFMP:CH1:YMU?\nWFMP:CH1:YZE?\nWFMP:XZE?\nWFMP:XIN?\n"
-        "WFMP:CH1:NR_P?\nDAT:SOU CH1\n"),
-        "CH1\n2\n#210"+"00000001000200030004".decode("hex")+"0\n1\n0\n0\n1\n5\n"
+        [
+            "DAT:SOU?",
+            "DAT:SOU CH1",
+            "DAT:ENC RIB",
+            "DATA:WIDTH?",
+            "CURVE?",
+            "WFMP:CH1:YOF?",
+            "WFMP:CH1:YMU?",
+            "WFMP:CH1:YZE?",
+            "WFMP:XZE?",
+            "WFMP:XIN?",
+            "WFMP:CH1:NR_P?",
+            "DAT:SOU CH1"
+        ], [
+            "CH1",
+            "2",
+            "#210"+"00000001000200030004".decode("hex")+"0", #CURVE + YOF
+            "1",
+            "0",
+            "0",
+            "1",
+            "5"
+        ]
     ) as tek:
         data = np.array([0,1,2,3,4])
         (x,y) = tek.channel[0].read_waveform()
