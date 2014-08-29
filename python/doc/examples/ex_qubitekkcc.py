@@ -103,13 +103,13 @@ gateenabled = tk.IntVar()
 countenabled = tk.IntVar()
 
 #set up the initial checkbox value for the gate enable
-if(cc.gate_enable is True):
+if cc.gate_enable:
     gateenabled.set(1)
 else:
     gateenabled.set(0)
 
 #set up the initial checkbox value for the count enable
-if(cc.count_enable is True):
+if cc.count_enable:
     countenabled.set(1)
 else:
     countenabled.set(0)
