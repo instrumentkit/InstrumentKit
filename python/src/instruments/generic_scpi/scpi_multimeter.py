@@ -29,12 +29,14 @@ from __future__ import division
 ## IMPORTS #####################################################################
 
 from flufl.enum import Enum
+from flufl.enum._enum import EnumValue
 
 import quantities as pq
 import numpy as np
 
 from instruments.abstract_instruments import Multimeter
 from instruments.generic_scpi import SCPIInstrument
+from instruments.util_fns import enum_property
 
 ## CONSTANTS ###################################################################
 
@@ -68,29 +70,108 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         voltage_ac = "VOLT:AC"
         voltage_dc = "VOLT:DC"
     
+    class TriggerSource(Enum):
+        """
+        Valid trigger sources for most SCPI Multimeters.
+        
+        "Immediate": This is a continuous trigger. This means the trigger 
+        signal is always present.
+        
+        "External": External TTL pulse on the back of the instrument. It 
+        is active low.
+        
+        "Bus": Causes the instrument to trigger when a ``*TRG`` command is 
+        sent by software. This means calling the trigger() function.
+        """
+        immediate = "IMM"
+        external = "EXT"
+        bus = "BUS"
+        
+    class DeviceRange(Enum):
+        """
+        Valid device range parameters outside of directly specifying the range.
+        """
+        minimum = "MIN"
+        maximum = "MAX"
+        default = "DEF"
+        automatic = "AUTO"
+        
+    class Resolution(Enum):
+        """
+        
+        """
+        minimum = "MIN"
+        maximum = "MAX"
+        default = "DEF"
+    
     ## PROPERTIES ##
     
-    @property
-    def mode(self):
-        '''
+    # FIXME: Look at everything wrong here
+    mode = enum_property(
+        name="CONF", # FIXME: Currently will send CONF MODE, requires CONF:MODE
+        enum=Mode,
+        doc="""
         Gets/sets the current measurement mode for the multimeter.
         
+        Example usage:
+        
+        >>> dmm.mode = dmm.Mode.voltage_dc
+        
         :type: `~SCPIMultimeter.Mode`
-        '''
-        return self.Mode[self.query('CONF?')]
-    @mode.setter
-    def mode(self, newval):
-        if newval.enum is not SCPIMultimeter.Mode:
-            raise TypeError("Mode must be specified as a SCPIMultimeter.Mode "
-                            "value, got {} instead.".format(type(newval)))
-        if isinstance(newval, str):
-            newval = self.Mode[newval]
-        self.sendcmd('CONF:' + newval._value)
+        """,
+        # input_decoration = SCPIMultimeter._mode_parse
+    )
+    
+    trigger_source = enum_property(
+        name="TRIG:SOUR",
+        enum=TriggerSource,
+        doc="""
+            Gets/sets the SCPI Multimeter trigger source.
+            
+            Example usage:
+            
+            >>> dmm.trigger_source = dmm.TriggerSource.external
+            
+            :type: `~SCPIMultimeter.Trigger`
+        """)
+        
+    @property
+    def device_range(self):
+        """
+        Gets/sets the device range for the device range for the currently
+        set multimeter mode.
+        
+        Example usages:
+        
+        >>> dmm.device_range = dmm.DeviceRange.automatic
+        >>> dmm.device_range = 1 * pq.millivolt
+        
+        :units: As appropriate for the current mode setting.
+        :type: `~quantities.Quantity`, or `~SCPIMultimeter.DeviceRange`
+        """
+        value = self.query('CONF?')
+        value = value.split(" ")[1].split(",")[0] # Extract device range
+        try:
+            return float(value) * UNITS[self.mode]
+        except:
+            return self.DeviceRange[value.strip()]
+    @device_range.setter
+    def device_range(self, newval):
+        mode = self.mode
+        units = UNITS[mode]
+        if isinstance(newval, EnumValue) and (newval.enum is self.DeviceRange):
+            newval = newval.value
+        else:
+            newval = assume_units(newval, units).rescale(units).magnitude
+        self.sendcmd("CONF {},{}".format(mode.value, newval))
+        self._configure(device_range=newval)
+        
+    # TODO: Resume here at resolution property
     
     ## METHODS ##
     
     def measure(self, mode=None):
-        '''
+        """
         Instruct the multimeter to perform a one time measurement. The 
         instrument will use default parameters for the requested measurement.
         The measurement will immediately take place, and the results are 
@@ -103,7 +184,7 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         :param mode: Desired measurement mode. If set to `None`, will default 
             to the current mode.
         :type mode: `~SCPIMultimeter.Mode`
-        '''
+        """
         
         # Default to the current mode.
         if mode is None:
@@ -125,6 +206,45 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         # Put the measurement into the correct units.
         return value * UNITS[mode]
         
+    ## INTERNAL FUNCTIONS ##
+
+    def _mode_parse(val):
+        """
+        When given a string of the form
+        
+        "VOLT +1.00000000E+01,+3.00000000E-06"
+        
+        this function will return just the first component representing the mode
+        the multimeter is currently in.
+        
+        :param str val: Input string to be parsed.
+        
+        :rtype: `str`
+        """
+        val = val.split(" ")[0]
+        if val == "VOLT":
+            val = "VOLT:DC"
+        return val
+        
+    def _configure(self, device_range=None, resolution=None):
+        """
+        Internally used by two properties to construct the string for setting the
+        device range or resolution.
+        
+        Assumes device_range and resolution are properly formatted if not an 
+        EnumValue.
+        """
+        #pass
+        if device_range is not None:
+            self.sendcmd("CONF:{} {}".format(self.mode.value, device_range))
+        elif resolution is not None:
+            device_rance = self.device_range
+            if isinstance(newval, EnumValue):
+                device_range = device_range.value
+            self.sendcmd("CONF:{} {},{}".format(self.mode.value, 
+                                                device_range,
+                                                resolution))
+                                                
 ## UNITS #######################################################################
 
 UNITS = {
