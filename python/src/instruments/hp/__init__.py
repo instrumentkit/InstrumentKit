@@ -3,4 +3,5 @@ from instruments.hp.hp6624a import (
     _HP6624aChannel
 )
 
+from instruments.hp.hp6632b import HP6632b
 from instruments.hp.hp6652a import HP6652a
