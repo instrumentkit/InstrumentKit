@@ -97,7 +97,7 @@ def rproperty(fget=None, fset=None, doc=None, readonly=False):
     else:
         return property(fget=fget, fset=fset, doc=doc)  
 
-def bool_property(name, inst_true, inst_false, doc=None, readonly=False):
+def bool_property(name, inst_true, inst_false, doc=None, readonly=False, set_fmt="{} {}"):
     """
     Called inside of SCPI classes to instantiate boolean properties 
     of the device cleanly.
@@ -113,15 +113,19 @@ def bool_property(name, inst_true, inst_false, doc=None, readonly=False):
     :param str doc: Docstring to be associated with the new property.
     :param bool readonly: If `True`, the returned property does not have a
         setter.
+    :param str set_fmt: Specify the string format to use when sending a 
+        non-query to the instrument. The default is "{} {}" which places a
+        space between the SCPI command the associated parameter. By switching
+        to "{}={}" an equals sign would instead be used as the separator.
     """
     def getter(self):
         return self.query(name + "?").strip() == inst_true
     def setter(self, newval):
-        self.sendcmd("{} {}".format(name, inst_true if newval else inst_false))
+        self.sendcmd(set_fmt.format(name, inst_true if newval else inst_false))
         
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
     
-def enum_property(name, enum, doc=None, input_decoration=None, output_decoration=None, readonly=False):
+def enum_property(name, enum, doc=None, input_decoration=None, output_decoration=None, readonly=False, set_fmt="{} {}"):
     """
     Called inside of SCPI classes to instantiate Enum properties 
     of the device cleanly.
@@ -140,6 +144,10 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     :param str doc: Docstring to be associated with the new property.
     :param bool readonly: If `True`, the returned property does not have a
         setter.
+    :param str set_fmt: Specify the string format to use when sending a 
+        non-query to the instrument. The default is "{} {}" which places a
+        space between the SCPI command the associated parameter. By switching
+        to "{}={}" an equals sign would instead be used as the separator.
     """
     def in_decor_fcn(val):
         return val if input_decoration is None else input_decoration(val)
@@ -148,11 +156,11 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     def getter(self):
         return enum[in_decor_fcn(self.query("{}?".format(name)).strip())]
     def setter(self, newval):
-        self.sendcmd("{} {}".format(name, out_decor_fcn(enum[newval].value)))
+        self.sendcmd(set_fmt.format(name, out_decor_fcn(enum[newval].value)))
     
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
-def unitless_property(name, format_code='{:e}', doc=None, readonly=False):
+def unitless_property(name, format_code='{:e}', doc=None, readonly=False, set_fmt="{} {}"):
     """
     Called inside of SCPI classes to instantiate properties with unitless 
     numeric values.
@@ -163,17 +171,21 @@ def unitless_property(name, format_code='{:e}', doc=None, readonly=False):
     :param str doc: Docstring to be associated with the new property.
     :param bool readonly: If `True`, the returned property does not have a
         setter.
+    :param str set_fmt: Specify the string format to use when sending a 
+        non-query to the instrument. The default is "{} {}" which places a
+        space between the SCPI command the associated parameter. By switching
+        to "{}={}" an equals sign would instead be used as the separator.
     """
     def getter(self):
         raw = self.query("{}?".format(name))
         return float(raw)
     def setter(self, newval):
         strval = format_code.format(newval)
-        self.sendcmd("{} {}".format(name, strval))
+        self.sendcmd(set_fmt.format(name, strval))
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
-def int_property(name, format_code='{:d}', doc=None, readonly=False, valid_set=None):
+def int_property(name, format_code='{:d}', doc=None, readonly=False, valid_set=None, set_fmt="{} {}"):
     """
     Called inside of SCPI classes to instantiate properties with unitless 
     numeric values.
@@ -186,6 +198,10 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False, valid_set=N
         setter.
     :param valid_set: Set of valid values for the property, or `None` if all
         `int` values are valid.
+    :param str set_fmt: Specify the string format to use when sending a 
+        non-query to the instrument. The default is "{} {}" which places a
+        space between the SCPI command the associated parameter. By switching
+        to "{}={}" an equals sign would instead be used as the separator.
     """
     def getter(self):
         raw = self.query("{}?".format(name))
@@ -193,7 +209,7 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False, valid_set=N
     if valid_set is None:
         def setter(self, newval):
             strval = format_code.format(newval)
-            self.sendcmd("{} {}".format(name, strval))
+            self.sendcmd(set_fmt.format(name, strval))
     else:
         def setter(self, newval):
             if newval not in valid_set:
@@ -202,11 +218,11 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False, valid_set=N
                     "must be one of {}.".format(newval, valid_set)
                 )
             strval = format_code.format(newval)
-            self.sendcmd("{} {}".format(name, strval))
+            self.sendcmd(set_fmt.format(name, strval))
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
-def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False):
+def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, set_fmt="{} {}"):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
     values. This function assumes that the instrument only accepts
@@ -223,6 +239,10 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False):
     :param str doc: Docstring to be associated with the new property.
     :param bool readonly: If `True`, the returned property does not have a
         setter.
+    :param str set_fmt: Specify the string format to use when sending a 
+        non-query to the instrument. The default is "{} {}" which places a
+        space between the SCPI command the associated parameter. By switching
+        to "{}={}" an equals sign would instead be used as the separator.
     """
     def getter(self):
         raw = self.query("{}?".format(name))
@@ -230,11 +250,11 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False):
     def setter(self, newval):
         # Rescale to the correct unit before printing. This will also catch bad units.
         strval = format_code.format(assume_units(newval, units).rescale(units).item())
-        self.sendcmd("{} {}".format(name, strval))
+        self.sendcmd(set_fmt.format(name, strval))
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly)
 
-def string_property(name, bookmark_symbol='"', doc=None, readonly=False):
+def string_property(name, bookmark_symbol='"', doc=None, readonly=False, set_fmt="{} {}"):
     """
     Called inside of SCPI classes to instantiate properties with a string value.
     """
