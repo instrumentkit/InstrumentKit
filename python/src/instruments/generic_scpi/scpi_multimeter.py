@@ -36,7 +36,7 @@ import numpy as np
 
 from instruments.abstract_instruments import Multimeter
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import enum_property, unitful_property
+from instruments.util_fns import assume_units, enum_property, unitful_property
 
 ## CONSTANTS ###################################################################
 
@@ -130,10 +130,25 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
     
     ## PROPERTIES ##
     
-    mode = enum_property(
-        name="CONF",
-        enum=Mode,
-        doc="""
+    #mode = enum_property(
+    #    name="CONF",
+    #    enum=Mode,
+    #    doc="""
+    #    Gets/sets the current measurement mode for the multimeter.
+    #    
+    #    Example usage:
+    #    
+    #    >>> dmm.mode = dmm.Mode.voltage_dc
+    #    
+    #    :type: `~SCPIMultimeter.Mode`
+    #    """,
+    #    #input_decoration = _mode_parse, # FIXME: Can't get this line to work
+    #    set_fmt="{}:{}"
+    #)
+    
+    @property
+    def mode(self):
+        """
         Gets/sets the current measurement mode for the multimeter.
         
         Example usage:
@@ -141,10 +156,17 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         >>> dmm.mode = dmm.Mode.voltage_dc
         
         :type: `~SCPIMultimeter.Mode`
-        """,
-        #input_decoration = _mode_parse, # FIXME: Can't get this line to work
-        set_fmt="{}:{}"
-    )
+        """
+        value = self.query("CONF?")
+        return self.Mode[self._mode_parse(value)]
+    @mode.setter
+    def mode(self, newval):
+        if isinstance(newval, EnumValue) and (newval.enum is self.Mode):
+            newval = newval.value
+            self.sendcmd("CONF:{}".format(newval))
+        else:
+            raise TypeError("Mode must be specified as an "
+                            "SCPIMultimeter.Mode value.")
     
     trigger_mode = enum_property(
         name="TRIG:SOUR",
@@ -167,28 +189,29 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         
         Example usages:
         
-        >>> dmm.input_range = dmm.DeviceRange.automatic
+        >>> dmm.input_range = dmm.InputRange.automatic
         >>> dmm.input_range = 1 * pq.millivolt
         
         :units: As appropriate for the current mode setting.
         :type: `~quantities.Quantity`, or `~SCPIMultimeter.InputRange`
         """
         value = self.query('CONF?')
+        mode = self.Mode[self._mode_parse(value)]
         value = value.split(" ")[1].split(",")[0] # Extract device range
         try:
-            return float(value) * UNITS[self.mode]
+            return float(value) * UNITS[mode]
         except:
-            return self.DeviceRange[value.strip()]
+            return self.InputRange[value.strip()]
     @input_range.setter
-    def dinput_range(self, newval):
-        mode = self.mode
+    def input_range(self, newval):
+        current = self.query("CONF?")
+        mode = self.Mode[self._mode_parse(current)]
         units = UNITS[mode]
-        if isinstance(newval, EnumValue) and (newval.enum is self.DeviceRange):
+        if isinstance(newval, EnumValue) and (newval.enum is self.InputRange):
             newval = newval.value
         else:
             newval = assume_units(newval, units).rescale(units).magnitude
-        #self.sendcmd("CONF {},{}".format(mode.value, newval))
-        self._configure(device_range=newval)
+        self.sendcmd("CONF:{} {}".format(mode.value, newval))
     
     @property
     def resolution(self):
@@ -199,25 +222,28 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         
         Example usage:
         
-        >>> dmm.resolution = 4.5
+        >>> dmm.resolution = 3e-06
         >>> dmm.resolution = dmm.Resolution.maximum
         
         :type: `int`, `float` or `~SCPIMultimeter.Resolution`
         """
         value = self.query('CONF?')
-        value = value.split(" ")[1].split(",")[1] # Extract device range
+        value = value.split(" ")[1].split(",")[1] # Extract resolution
         try:
             return float(value)
         except:
             return self.Resolution[value.strip()]
     @resolution.setter
     def resolution(self, newval):
+        current = self.query("CONF?")
+        mode = self.Mode[self._mode_parse(current)]
+        input_range = current.split(" ")[1].split(",")[0]
         if isinstance(newval, EnumValue) and (newval.enum is self.Resolution):
             newval = newval.value
         elif not isinstance(newval, float) and not isinstance(newval, int):
             raise TypeError("Resolution must be specified as an int, float, "
                             "or SCPIMultimeter.Resolution value.")
-        self._configure(resolution=newval)
+        self.sendcmd("CONF:{} {},{}".format(mode.value, input_range, newval))
         
     @property
     def trigger_count(self):
@@ -406,25 +432,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         if val == "VOLT":
             val = "VOLT:DC"
         return val
-        
-    def _configure(self, device_range=None, resolution=None):
-        """
-        Internally used by two properties to construct the string for setting the
-        device range or resolution.
-        
-        Assumes device_range and resolution are properly formatted if not an 
-        EnumValue.
-        """
-        if device_range is not None:
-            self.sendcmd("CONF:{} {}".format(self.mode.value, device_range))
-        elif resolution is not None:
-            mode = self.mode
-            device_range = self.device_range
-            if isinstance(newval, EnumValue):
-                device_range = device_range.value
-            self.sendcmd("CONF:{} {},{}".format(mode.value, 
-                                                device_range,
-                                                resolution))
                                                 
 ## UNITS #######################################################################
 
