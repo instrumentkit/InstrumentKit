@@ -130,25 +130,10 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
     
     ## PROPERTIES ##
     
-    #mode = enum_property(
-    #    name="CONF",
-    #    enum=Mode,
-    #    doc="""
-    #    Gets/sets the current measurement mode for the multimeter.
-    #    
-    #    Example usage:
-    #    
-    #    >>> dmm.mode = dmm.Mode.voltage_dc
-    #    
-    #    :type: `~SCPIMultimeter.Mode`
-    #    """,
-    #    #input_decoration = _mode_parse, # FIXME: Can't get this line to work
-    #    set_fmt="{}:{}"
-    #)
-    
-    @property
-    def mode(self):
-        """
+    mode = enum_property(
+        name="CONF",
+        enum=Mode,
+        doc="""
         Gets/sets the current measurement mode for the multimeter.
         
         Example usage:
@@ -156,17 +141,10 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         >>> dmm.mode = dmm.Mode.voltage_dc
         
         :type: `~SCPIMultimeter.Mode`
-        """
-        value = self.query("CONF?")
-        return self.Mode[self._mode_parse(value)]
-    @mode.setter
-    def mode(self, newval):
-        if isinstance(newval, EnumValue) and (newval.enum is self.Mode):
-            newval = newval.value
-            self.sendcmd("CONF:{}".format(newval))
-        else:
-            raise TypeError("Mode must be specified as an "
-                            "SCPIMultimeter.Mode value.")
+        """,
+        input_decoration = lambda *args: SCPIMultimeter._mode_parse(*args),
+        set_fmt="{}:{}"
+    )
     
     trigger_mode = enum_property(
         name="TRIG:SOUR",
@@ -414,8 +392,9 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         return value * UNITS[mode]
         
     ## INTERNAL FUNCTIONS ##
-
-    def _mode_parse(self, val):
+    
+    @staticmethod
+    def _mode_parse(val):
         """
         When given a string of the form
         
