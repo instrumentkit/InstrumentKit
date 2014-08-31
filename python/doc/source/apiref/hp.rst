@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.hp
-    
+
 ====================
 HP-brand Instruments
 ====================
@@ -17,11 +17,17 @@ HP-brand Instruments
 .. autoclass:: _HP6624aChannel
     :members:
     :undoc-members:
-    
+
+:class:`HP6632b`
+================
+
+.. autoclass:: HP6632b
+    :members:
+    :undoc-members:
+
 :class:`HP6652a`
 ================
 
 .. autoclass:: HP6652a
     :members:
     :undoc-members:
-

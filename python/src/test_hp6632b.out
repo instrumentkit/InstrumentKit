@@ -1,25 +1,28 @@
-HEWLETT-PACKARD 6632B
+HEWLETT-PACKARD,6632B,0,A.01.04
 10.0 V
-0.00517169 V
+0.00605367 V
 22.0 V
-0.51188 A
--1.18902e-05 A
+0.2 A
+0.000405083 A
 False
 False
-10.0 V
-9.99829 V
-22.0 V
-0.51188 A
--0.000568147 A
-False
-True
 5.1188 A
-DFISource.operation
-DFISource.operation
-RemoteInhibit.latching
+DFISource.off
+RemoteInhibit.off
 DigitalFunction.remote_inhibit
 0
 2048.0
 1.56e-05 s
 SenseWindow.hanning
 0.08 s
+ALCBandwidth.fast
+1.0 V
+0.1 A
+True
+[]
+True
+1.0 V
+True
+True
+3.0 V
+2.0 V
