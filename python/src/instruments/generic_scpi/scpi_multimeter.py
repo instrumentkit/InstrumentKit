@@ -106,9 +106,8 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
     
     ## PROPERTIES ##
     
-    # FIXME: Look at everything wrong here
     mode = enum_property(
-        name="CONF", # FIXME: Currently will send CONF MODE, requires CONF:MODE
+        name="CONF",
         enum=Mode,
         doc="""
         Gets/sets the current measurement mode for the multimeter.
@@ -119,7 +118,8 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         
         :type: `~SCPIMultimeter.Mode`
         """,
-        # input_decoration = SCPIMultimeter._mode_parse
+        #input_decoration = _mode_parse, # FIXME: Can't get this line to work
+        set_fmt="{}:{}"
     )
     
     trigger_source = enum_property(
@@ -163,10 +163,37 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
             newval = newval.value
         else:
             newval = assume_units(newval, units).rescale(units).magnitude
-        self.sendcmd("CONF {},{}".format(mode.value, newval))
+        #self.sendcmd("CONF {},{}".format(mode.value, newval))
         self._configure(device_range=newval)
+    
+    @property
+    def resolution(self):
+        """
+        Gets/sets the measurement resolution for the multimeter. When 
+        specified as a float it is assumed that the user is providing an
+        appropriate value.
         
-    # TODO: Resume here at resolution property
+        Example usage:
+        
+        >>> dmm.resolution = 4.5
+        >>> dmm.resolution = dmm.Resolution.maximum
+        
+        :type: `int`, `float` or `~SCPIMultimeter.Resolution`
+        """
+        value = self.query('CONF?')
+        value = value.split(" ")[1].split(",")[1] # Extract device range
+        try:
+            return float(value)
+        except:
+            return self.Resolution[value.strip()]
+    @resolution.setter
+    def resolution(self, newval):
+        if isinstance(newval, EnumValue) and (newval.enum is self.Resolution):
+            newval = newval.value
+        elif not isinstance(newval, float) and not isinstance(newval, int):
+            raise TypeError("Resolution must be specified as an int, float, "
+                            "or SCPIMultimeter.Resolution value.")
+        self._configure(resolution=newval)
     
     ## METHODS ##
     
@@ -208,7 +235,7 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         
     ## INTERNAL FUNCTIONS ##
 
-    def _mode_parse(val):
+    def _mode_parse(self, val):
         """
         When given a string of the form
         
@@ -238,10 +265,11 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         if device_range is not None:
             self.sendcmd("CONF:{} {}".format(self.mode.value, device_range))
         elif resolution is not None:
-            device_rance = self.device_range
+            mode = self.mode
+            device_range = self.device_range
             if isinstance(newval, EnumValue):
                 device_range = device_range.value
-            self.sendcmd("CONF:{} {},{}".format(self.mode.value, 
+            self.sendcmd("CONF:{} {},{}".format(mode.value, 
                                                 device_range,
                                                 resolution))
                                                 
