@@ -3,7 +3,7 @@
 ##
 # scpimultimeter.py: Python class for SCPI complient multimeters
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -36,7 +36,7 @@ import numpy as np
 
 from instruments.abstract_instruments import Multimeter
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import enum_property
+from instruments.util_fns import enum_property, unitful_property
 
 ## CONSTANTS ###################################################################
 
@@ -113,6 +113,20 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         maximum = "MAX"
         default = "DEF"
         infinity = "INF"
+        
+    class SampleSource(Enum):
+        """
+        Valid sample source parameters.
+        
+        #. "immediate": The trigger delay time is inserted between successive 
+            samples. After the first measurement is completed, the instrument  
+            waits the time specified by the trigger delay and then performs the  
+            next sample.
+        #. "timer": Successive samples start one sample interval after the 
+            START of the previous sample.
+        """
+        immediate = "IMM"
+        timer = "TIM"
     
     ## PROPERTIES ##
     
@@ -283,6 +297,51 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
             raise TypeError("Sample count must be specified as an int "
                             "or SCPIMultimeter.SampleCount value.")
         self.sendcmd("SAMP:COUN {}".format(newval))
+        
+    trigger_delay = unitful_property(
+        name="TRIG:DEL",
+        units=pq.second,
+        doc="""
+        Gets/sets the time delay which the multimeter will use following
+        receiving a trigger event before starting the measurement.
+        
+        :units: As specified, or assumed to be of units seconds otherwise.
+        :type: `~quantities.Quantity`
+        """
+    )
+    
+    sample_source = enum_property(
+        name="SAMP:SOUR",
+        enum=SampleSource,
+        doc="""
+        Gets/sets the multimeter sample source. This determines whether the 
+        trigger delay or the sample timer is used to dtermine sample timing when
+        the sample count is greater than 1.
+        
+        In both cases, the first sample is taken one trigger delay time period 
+        after the trigger event. After that, it depends on which mode is used.
+        
+        :type: `SCPIMultimeter.SampleSource`
+        """
+    )
+    
+    sample_timer = unitful_property(
+        name="SAMP:TIM",
+        units=pq.second,
+        doc="""
+        Gets/sets the sample interval when the sample counter is greater than
+        one and when the sample source is set to timer (see 
+        `SCPIMultimeter.sample_source`).
+        
+        This command does not effect the delay between the trigger occuring and 
+        the start of the first sample. This trigger delay is set with the 
+        `~SCPIMultimeter.trigger_delay` property.
+        
+        :units: As specified, or assumed to be of units seconds otherwise.
+        :type: `~quantities.Quantity`
+        """
+    )
+        
     
     ## METHODS ##
     
@@ -350,7 +409,6 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         Assumes device_range and resolution are properly formatted if not an 
         EnumValue.
         """
-        #pass
         if device_range is not None:
             self.sendcmd("CONF:{} {}".format(self.mode.value, device_range))
         elif resolution is not None:

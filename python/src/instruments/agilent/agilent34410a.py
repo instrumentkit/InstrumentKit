@@ -149,7 +149,7 @@ class Agilent34410a(SCPIMultimeter):
             sampleCount = self.data_point_count
         
         self.sendcmd('FORM:DATA ASC')
-        return map( float, self.query('DATA:REM? ' + str(sampleCount)).split(',') )
+        return map(float, self.query('DATA:REM? '+str(sampleCount)).split(','))
     
     def read_data_NVMEM(self):
         '''
@@ -157,10 +157,10 @@ class Agilent34410a(SCPIMultimeter):
         
         :rtype: `list` of `float` elements
         '''
-        return map( float, self.query('DATA:DATA? NVMEM').split(',') )
+        return map(float, self.query('DATA:DATA? NVMEM').split(','))
     
     # Read the Last Data Point
-    def readLastData(self):
+    def read_last_data(self):
         '''
         Retrieve the last measurement taken. This can be executed at any time, 
         including when the instrument is currently taking measurements.
@@ -189,128 +189,5 @@ class Agilent34410a(SCPIMultimeter):
         
         :rtype: `float`
         '''
-        return float( self.query('READ?') )
-        
-    # Trigger delay
-    def triggerDelay(self,period=None):
-        '''
-        This command sets the time delay which the instrument will use 
-        following receiving a trigger event before starting the measurement.
-        
-        Note that this function does not contain proper screening for "period" 
-        being a malformed string. This allows you to include the units of your 
-        specified value in the string.
-        If no units are specified, the number will be read by the instrument as 
-        having units of seconds.
-        
-        If no period is specified, function queries the instrument for the 
-        current trigger delay and returns a float.
-        
-        :param period: Time between receiving a trigger event and the 
-            instrument taking the reading. Values range from ``0s`` to 
-            ``~3600s``, in ``~20us`` increments. One of ``{<seconds>|MINimum|
-            MAXimum|DEF}``
-        :type period: `int` or `str`
-        
-        :rtype: `int`
-        '''
-        if period == None: # If no period is specified, perform query.
-            return float( self.query('TRIG:DEL?') )
-        
-        if isinstance(period,str):
-            period = period.lower()
-            valid = ['minimum','maximum','def']
-            valid2 = ['min','max','def']
-            if period in valid:
-                period = valid2[valid.index(period)]
-            #elif period not in valid2:
-            #    raise Exception('Valid trigger delay values are "minimum", "maximum", and "def" when specified as a string.')
-        elif isinstance(period,int) or isinstance(period,float):
-            if period < 0 or period > 3600:
-                raise Exception('The trigger delay needs to be between 0 and 3600 seconds.')
-        
-        self.sendcmd( 'TRIG:DEL ' + str(period) )
-    
-    # Sample Timer
-    def sampleTimer(self, period=None):
-        '''
-        This command sets the sample interval when the sample counter is 
-        greater than one and when the sample source is set to timer 
-        (timed sampling).
-        
-        This command does not effect the delay between the trigger occuring and 
-        the start of the first sample. This trigger delay is set with the 
-        triggerDelay function.
-        
-        Note that this function does not contain proper screening for "period" 
-        being a malformed string. This allows you to include the units of your 
-        specified value in the string.
-        If no units are specified, the number will be read by the instrument as 
-        having units of seconds.
-        
-        If period is not specified, function queries the instrument for the 
-        current sample interval and returns it as a float.
-        
-        :param period: Time period between samples. An example including units 
-            is ``500 ms``. One of period = ``{<period>|MINimum|MAXimum}``.
-        :type period: `float` or `str`
-        
-        :rtype: `float`
-        '''
-        if period == None: # If period is not specified, perform query.
-            return float( self.query('SAMP:TIM?') )
-        
-        if isinstance(period,str):
-            period = period.lower()
-            valid = ['minimum','maximum']
-            valid2 = ['min','max']
-            if period in valid:
-                period = valid2[valid.index(period)]
-            #elif period not in valid2:
-            #    raise Exception('Valid sample timer values are "minimum" and "maximum" when specified as a string.')
-        elif isinstance(period,int) or isinstance(period,float):
-            if period < 0:
-                raise Exception('Trigger count must be a positive integer.')
-        
-        self.sendcmd( 'SAMP:TIM ' + str(period) )
-        
-    # Sample Source
-    def sampleSource(self,source = None):
-        '''
-        This command determines whether the trigger delay or the sample timer 
-        is used to determine sample timing when the sample count is greater 
-        than one.
-        In both cases, the first sample is taken one trigger delay time after 
-        the trigger. After that, it depends on which mode is used:
-        
-        #. "IMMediate": The trigger delay time is inserted between successive 
-            samples. After the first measurement is completed, the instrument waits 
-            the time specified by the trigger delay and then performs the next 
-            sample.
-        #. "TIMer": Successive samples start one sample interval after the 
-            START of the previous sample.
-        
-        If source is not specified, function queries the instrument for the 
-        currently set sample source and returns its as a string. An example 
-        is "TIM" without quotes.
-        
-        :param str source: Desired successive sample timing mode. One of
-            ``{IMMediate|TIMer}``
-        '''
-        if source == None:
-            return self.query('SAMP:SOUR?')
-        
-        if not isinstance(source,str):
-            raise Exception('Sample source must be specified as a string')
-        
-        valid = ['immediate','timer']
-        valid2 = ['imm','tim']
-        source = source.lower()
-        if source in valid:
-            source = valid2[valid.index(source)]
-        elif source not in valid2:
-            raise Exception('Valid sample sources are "immediate" and "timer".')
-        
-        self.sendcmd( 'SAMP:SOUR ' + str(source) )
-    
-        
+        return float(self.query('READ?'))
+
