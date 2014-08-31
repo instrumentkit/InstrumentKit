@@ -52,7 +52,7 @@ UNITS_TEMPERATURE = ['temp']
     
 ## CLASSES #####################################################################
 
-class SCPIMultimeter(Multimeter, SCPIInstrument):
+class SCPIMultimeter(SCPIInstrument, Multimeter):
 
     ## ENUMS ##
     
@@ -70,7 +70,7 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         voltage_ac = "VOLT:AC"
         voltage_dc = "VOLT:DC"
     
-    class TriggerSource(Enum):
+    class TriggerMode(Enum):
         """
         Valid trigger sources for most SCPI Multimeters.
         
@@ -87,7 +87,7 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         external = "EXT"
         bus = "BUS"
         
-    class DeviceRange(Enum):
+    class InputRange(Enum):
         """
         Valid device range parameters outside of directly specifying the range.
         """
@@ -146,32 +146,32 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         set_fmt="{}:{}"
     )
     
-    trigger_source = enum_property(
+    trigger_mode = enum_property(
         name="TRIG:SOUR",
-        enum=TriggerSource,
+        enum=TriggerMode,
         doc="""
-            Gets/sets the SCPI Multimeter trigger source.
+            Gets/sets the SCPI Multimeter trigger mode.
             
             Example usage:
             
-            >>> dmm.trigger_source = dmm.TriggerSource.external
+            >>> dmm.trigger_mode = dmm.TriggerMode.external
             
-            :type: `~SCPIMultimeter.Trigger`
+            :type: `~SCPIMultimeter.TriggerMode`
         """)
         
     @property
-    def device_range(self):
+    def input_range(self):
         """
-        Gets/sets the device range for the device range for the currently
+        Gets/sets the device input range for the device range for the currently
         set multimeter mode.
         
         Example usages:
         
-        >>> dmm.device_range = dmm.DeviceRange.automatic
-        >>> dmm.device_range = 1 * pq.millivolt
+        >>> dmm.input_range = dmm.DeviceRange.automatic
+        >>> dmm.input_range = 1 * pq.millivolt
         
         :units: As appropriate for the current mode setting.
-        :type: `~quantities.Quantity`, or `~SCPIMultimeter.DeviceRange`
+        :type: `~quantities.Quantity`, or `~SCPIMultimeter.InputRange`
         """
         value = self.query('CONF?')
         value = value.split(" ")[1].split(",")[0] # Extract device range
@@ -179,8 +179,8 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
             return float(value) * UNITS[self.mode]
         except:
             return self.DeviceRange[value.strip()]
-    @device_range.setter
-    def device_range(self, newval):
+    @input_range.setter
+    def dinput_range(self, newval):
         mode = self.mode
         units = UNITS[mode]
         if isinstance(newval, EnumValue) and (newval.enum is self.DeviceRange):
@@ -341,7 +341,13 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         :type: `~quantities.Quantity`
         """
     )
-        
+    
+    @property
+    def relative(self):
+        raise NotImplementedError
+    @relative.setter
+    def relative(self, newval):
+        raise NotImplementedError
     
     ## METHODS ##
     
