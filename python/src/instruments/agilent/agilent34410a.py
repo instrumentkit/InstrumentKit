@@ -3,7 +3,7 @@
 ##
 # agilent34410a.py: Implementation of Agilent 34410A-specific functionality.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -24,13 +24,31 @@
 
 ## IMPORTS #####################################################################
 
+from flufl.enum import Enum
+
 from instruments.generic_scpi import SCPIMultimeter
 
 ## CLASSES #####################################################################
 
 class Agilent34410a(SCPIMultimeter):
+    """
+    The Agilent 34410a is a very popular 6.5 digit DMM. This class should also
+    cover the Agilent 34401a, 34411a, as well as the backwards compatability
+    mode in the newer Agilent/Keysight 34460a/34461a. You can find the full 
+    specifications for these instruments on the `Keysight website`_.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> import quantities as pq
+    >>> dmm = ik.agilent.Agilent34410a.open_gpib('/dev/ttyUSB0', 1)
+    >>> print dmm.measure(dmm.Mode.resistance)
+    
+    .. _Keysight website: http://www.keysight.com/
+    """
 
-    # NOTE: No __init__ needed, as it can just inherit.
+    def __init__(self, filelike):
+        super(Agilent34410a, self).__init__(filelike)
 
     ## PROPERTIES ##
     
@@ -40,7 +58,7 @@ class Agilent34410a(SCPIMultimeter):
         Gets the total number of readings that are located in reading memory 
         (RGD_STORE).
         
-        :type: `int`
+        :rtype: `int`
         '''
         return int(self.query('DATA:POIN?'))
     
@@ -92,72 +110,6 @@ class Agilent34410a(SCPIMultimeter):
         self.sendcmd('FORM:DATA REAL,32')
         self.sendcmd(msg)
         return self.binblockread(4)
-     
-    def configure(self, mode=None, device_range=None, resolution=None):
-        '''
-        Change the measurement mode of the multimeter.
-        No actual measurement will take place, but the instrument is then able 
-        to do so using the INITiate or READ? command.
-        
-        All arguments are optional. Passing no arguments will query the device 
-        for the current configuration settings. This returns a string such as 
-        ``VOLT +1.000000E+01,+3.000000E-06``.
-        
-        :param str mode: Desired measurement mode, one of ``{CAPacitance|
-            CONTinuity|CURRent:AC|CURRent:DC|DIODe|FREQuency|FRESistance|PERiod|
-            RESistance|TEMPerature|VOLTage:AC|VOLTage:DC}``.
-        :param device_range: It is recommended this is user specified, but is 
-            optional. Sets the range of the instrument. No value checking when 
-            passed as a number.
-        :type device_range: `str` (one of ``MINimum, MAXimum, DEFault, 
-            AUTOmatic``) or range
-        :param float resolution: Measurement that the instrument will use. 
-            This is ignored for most modes. It is assumed that the user has 
-            entered a valid number.
-        '''
-        if mode == None: # If no arguments were passed, perform query and return
-            return self.query('CONF?')
-        
-        if not isinstance(mode, str):
-            raise TypeError('Measurement mode must be a string.')
-        mode = mode.lower()
-        
-        valid = ['cap','cont','curr:ac','curr:dc','diod','freq','fres',
-                'per','res','temp','volt:ac','volt:dc']
-        valid2 = ['capacitance','continuity','current:ac','current:dc',
-                'diode','frequency','fresistance','period','resistance',
-                'temperature','voltage:ac','voltage:dc']
-        
-        if mode in ['4res','4 res','four res','f res']:
-            mode = 'fres'
-        
-        if mode in valid2:
-            mode = valid[valid2.index(mode)]
-        elif mode not in valid:
-            raise ValueError('Valid measurement modes are: ' + str(valid2))
-        
-        if device_range == None: # If device_range default
-            self.sendcmd('CONF:{}'.format(mode))
-        else: # User specified range
-            if isinstance(device_range, int) or isinstance(device_range, float):
-                pass # Assume the input is correct...
-            elif isinstance(device_range,str): # If it is a string
-                device_range = device_range.lower()
-                valid = ['minimum','maximum','default','automatic']
-                valid2 = ['min','max','def','auto']
-                if device_range in valid:
-                    device_range = valid2[valid.index(device_range)]
-                elif device_range not in valid2:
-                    raise ValueError('When specified as a string, device_range '
-                                    'must be {}'.format(valid))
-            else:
-                raise TypeError('Argument device_range must be a string '
-                                'or a number.')
-            
-            if resolution == None: # If resolution is default
-                self.sendcmd('CONF:{0} {1}'.format(mode, device_range))
-            else: # User specified resolution
-                self.sendcmd( 'CONF:%s %s,%s' %(mode,device_range,resolution) )
         
     ## DATA READING METHODS ##
     
@@ -238,45 +190,6 @@ class Agilent34410a(SCPIMultimeter):
         :rtype: `float`
         '''
         return float( self.query('READ?') )
-    
-    # Set Trigger Source
-    def triggerSource(self, source=None):
-        '''
-        This function sets the trigger source for measurements.
-        The 34410a accepts the following trigger sources:
-        
-        #. "Immediate": This is a continuous trigger. This means the trigger 
-        signal is always present.
-        #. "External": External TTL pulse on the back of the instrument. It 
-        is active low. 
-        #. "Bus": Causes the instrument to trigger when a ``*TRG`` command is 
-        sent by software. This means calling the trigger() function.
-        
-        If no source is specified, function queries the instrument for the 
-        current setting. This is returned as a string. An example value is 
-        "EXT", without quotes.
-            
-        :param str source: Desired trigger source, one of 
-            ``{IMMediate|EXTernal|BUS}``.
-            
-        :rtype: `str`
-        '''
-        if source == None: # If source was not specified, perform query.
-            return self.query('TRIG:SOUR?')
-        
-        if not isinstance(source,str):
-            raise Exception('Parameter "source" must be a string.')
-        source = source.lower()
-        
-        valid = ['immediate','external','bus']
-        valid2 = ['imm','ext','bus']
-        
-        if source in valid:
-            source = valid2[valid.index(source)]
-        elif source not in valid2:
-            raise Exception('Trigger source must be "immediate", "external", or "bus".')
-        
-        self.sendcmd('TRIG:SOUR ' + source)
         
     # Trigger Count
     def triggerCount(self,count = None):
