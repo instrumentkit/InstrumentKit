@@ -191,56 +191,6 @@ class Agilent34410a(SCPIMultimeter):
         '''
         return float( self.query('READ?') )
         
-    # Trigger Count
-    def triggerCount(self,count = None):
-        '''
-        This function sets the number of triggers that the multimeter will 
-        accept before returning to an "idle" trigger state.
-        
-        Note that if the sample count parameter has been changed, the number 
-        of readings taken will be a multiplication of sample count and trigger 
-        count (see function sampleCount).
-        If specified as a string, the following options apply:
-        
-        #. "MINimum": 1 trigger
-        #. "MAXimum": 50 000 triggers
-        #. "DEF": Default
-        #. "INFinity": Continuous. When the buffer is filled, the oldest data 
-            points are overwritten.
-        
-        If count is not specified, function queries the instrument for the 
-        current trigger count setting. This is returned as an integer.
-            
-        Note that when using triggered measurements, it is recommended that you 
-        disable autorange by either explicitly disabling it or specifying your 
-        desired range.
-        
-        :param count: Number of triggers before returning to an "idle" trigger 
-            state. One of ``{<count>|MINimum|MAXimum|DEF|INFinity}``
-        :type count: `int` or `str`
-        
-        :rtype: `int`
-        '''
-        if count == None: # If count not specified, perform query.
-            return int( self.query('TRIG:COUN?') )
-        
-        if isinstance(count,str):
-            count = count.lower()
-            valid = ['minimum','maximum','def','infinity']
-            valid2 = ['min','max','def','inf']
-            if count in valid:
-                count = valid2[valid.index(count)]
-            elif count not in valid2:
-                raise Exception('Valid trigger count values are "minimum", "maximum", "def", and "infinity" when specified as a string.')
-        elif isinstance(count,int):
-            if count < 1:
-                raise Exception('Trigger count must be a positive integer.')
-            count = str(count)
-        else:
-            raise Exception('Trigger count must be a string or an integer.')
-        
-        self.sendcmd( 'TRIG:COUN ' + str(count) )
-        
     # Trigger delay
     def triggerDelay(self,period=None):
         '''
@@ -280,56 +230,6 @@ class Agilent34410a(SCPIMultimeter):
                 raise Exception('The trigger delay needs to be between 0 and 3600 seconds.')
         
         self.sendcmd( 'TRIG:DEL ' + str(period) )
-    
-    # Sample Count
-    def sampleCount(self, count=None):
-        '''
-        This command sets the number of readings (samples) that the multimeter 
-        will take per trigger.
-        The time between each measurement is defined with the sampleTimer 
-        function.
-        
-        Note that if the sample count parameter has been changed, the number of 
-        readings taken will be a multiplication of sample count and trigger 
-        count (see function sampleCount).
-        If specified as a string, the following options apply:
-        
-        #. "MINimum": 1 sample per trigger
-        #. "MAXimum": 50 000 samples per trigger
-        #. "DEF": Default, 1 sample
-            
-        If count is not specified, function queries the instrument for the 
-        current smaple count and returns an integer.
-            
-        Note that when using triggered measurements, it is recommended that you 
-        disable autorange by either explicitly disabling it or specifying your 
-        desired range.
-        
-        :param count: Number of triggers before returning to an "idle" trigger 
-            state. One of ``{<count>|MINimum|MAXimum|DEF|INFinity}``
-        :type count: `int` or `str`
-        
-        :rtype: `int`
-        '''
-        if count == None: # If count is not specified, perform query.
-            return int( self.query('SAMP:COUN?') )
-        
-        if isinstance(count,str):
-            count = count.lower()
-            valid = ['minimum','maximum','def']
-            valid2 = ['min','max','def']
-            if count in valid:
-                count = valid2[valid.index(count)]
-            elif count not in valid2:
-                raise Exception('Valid sample count values are "minimum", "maximum", and "def" when specified as a string.')
-        elif isinstance(count,int):
-            if count < 1:
-                raise Exception('Trigger count must be a positive integer.')
-            count = str(count)
-        else:
-            raise Exception('Trigger count must be a string or an integer.')
-        
-        self.sendcmd( 'SAMP:COUN ' + str(count) )
     
     # Sample Timer
     def sampleTimer(self, period=None):

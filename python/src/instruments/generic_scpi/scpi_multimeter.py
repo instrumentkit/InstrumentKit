@@ -98,11 +98,21 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
         
     class Resolution(Enum):
         """
-        
+        Valid measurement resolution parameters outside of directly the 
+        resolution.
         """
         minimum = "MIN"
         maximum = "MAX"
         default = "DEF"
+        
+    class TriggerCount(Enum):
+        """
+        Valid trigger count parameters outside of directly the value.
+        """
+        minimum = "MIN"
+        maximum = "MAX"
+        default = "DEF"
+        infinity = "INF"
     
     ## PROPERTIES ##
     
@@ -194,6 +204,85 @@ class SCPIMultimeter(Multimeter, SCPIInstrument):
             raise TypeError("Resolution must be specified as an int, float, "
                             "or SCPIMultimeter.Resolution value.")
         self._configure(resolution=newval)
+        
+    @property
+    def trigger_count(self):
+        """
+        Gets/sets the number of triggers that the multimeter will accept before
+        returning to an "idle" trigger state.
+        
+        Note that if the sample_count propery has been changed, the number
+        of readings taken total will be a multiplication of sample count and  
+        trigger count (see property `SCPIMulimeter.sample_count`).
+        
+        If specified as a `~SCPIMultimeter.TriggerCount` value, the following
+        options apply:
+        
+        #. "minimum": 1 trigger
+        #. "maximum": Maximum value as per instrument manual
+        #. "default": Instrument default as per instrument manual
+        #. "infinity": Continuous. Typically when the buffer is filled in this
+            case, the older data points are overwritten.
+            
+        Note that when using triggered measurements, it is recommended that you 
+        disable autorange by either explicitly disabling it or specifying your 
+        desired range.
+        
+        :type: `int` or `~SCPIMultimeter.TriggerCount`
+        """
+        value = self.query('TRIG:COUN?')
+        try:
+            return int(value)
+        except:
+            return self.TriggerCount[value.strip()]
+    @trigger_count.setter
+    def trigger_count(self, newval):
+        if isinstance(newval, EnumValue) and (newval.enum is self.TriggerCount):
+            newval = newval.value
+        elif not isinstance(newval, int):
+            raise TypeError("Trigger count must be specified as an int "
+                            "or SCPIMultimeter.TriggerCount value.")
+        self.sendcmd("TRIG:COUN {}".format(newval))
+        
+    @property
+    def sample_count(self):
+        """
+        Gets/sets the number of readings (samples) that the multimeter will
+        take per trigger event.
+        
+        The time between each measurement is defined with the sample_timer 
+        property.
+        
+        Note that if the trigger_count propery has been changed, the number
+        of readings taken total will be a multiplication of sample count and  
+        trigger count (see property `SCPIMulimeter.trigger_count`).
+        
+        If specified as a `~SCPIMultimeter.SampleCount` value, the following
+        options apply:
+        
+        #. "minimum": 1 sample per trigger
+        #. "maximum": Maximum value as per instrument manual
+        #. "default": Instrument default as per instrument manual
+            
+        Note that when using triggered measurements, it is recommended that you 
+        disable autorange by either explicitly disabling it or specifying your 
+        desired range.
+        
+        :type: `int` or `~SCPIMultimeter.SampleCount`
+        """
+        value = self.query('SAMP:COUN?')
+        try:
+            return int(value)
+        except:
+            return self.SampleCount[value.strip()]
+    @sample_count.setter
+    def sample_count(self, newval):
+        if isinstance(newval, EnumValue) and (newval.enum is self.SampleCount):
+            newval = newval.value
+        elif not isinstance(newval, int):
+            raise TypeError("Sample count must be specified as an int "
+                            "or SCPIMultimeter.SampleCount value.")
+        self.sendcmd("SAMP:COUN {}".format(newval))
     
     ## METHODS ##
     
