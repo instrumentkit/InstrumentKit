@@ -87,15 +87,15 @@ def test_scpi_multimeter_resolution():
     with expected_protocol(
         ik.generic_scpi.SCPIMultimeter,
         [
-            "CONF?", #1
-            "CONF?", #2
-            "CONF?", #3.1
-            "CONF:FRES +1.000000E+01,MIN", #3.2
-            "CONF?", #4.1
-            "CONF:CURR:DC +1.000000E+01,3e-06" #4.2
+            "CONF?",                                #1
+            "CONF?",                                #2
+            "CONF?",                                #3.1
+            "CONF:FRES +1.000000E+01,MIN",          #3.2
+            "CONF?",                                #4.1
+            "CONF:CURR:DC +1.000000E+01,3e-06"      #4.2
         ] , [
             "VOLT +1.000000E+01,+3.000000E-06",     #1
-            "VOLT +1.000000E+01,MAX",           #2
+            "VOLT +1.000000E+01,MAX",               #2
             "FRES +1.000000E+01,+3.000000E-06",     #3
             "CURR:DC +1.000000E+01,+3.000000E-06"   #4
         ]
@@ -104,4 +104,89 @@ def test_scpi_multimeter_resolution():
         assert dmm.resolution == dmm.Resolution.maximum
         dmm.resolution = dmm.Resolution.minimum
         dmm.resolution = 3e-06
+        
+def test_scpi_multimeter_trigger_count():
+    with expected_protocol(
+        ik.generic_scpi.SCPIMultimeter,
+        [
+            "TRIG:COUN?",
+            "TRIG:COUN?",
+            "TRIG:COUN MIN",
+            "TRIG:COUN 10"
+        ] , [
+            "+10",
+            "INF",
+        ]
+    ) as dmm:
+        assert dmm.trigger_count == 10
+        assert dmm.trigger_count == dmm.TriggerCount.infinity
+        dmm.trigger_count = dmm.TriggerCount.minimum
+        dmm.trigger_count = 10
 
+def test_scpi_multimeter_sample_count():
+    with expected_protocol(
+        ik.generic_scpi.SCPIMultimeter,
+        [
+            "SAMP:COUN?",
+            "SAMP:COUN?",
+            "SAMP:COUN MIN",
+            "SAMP:COUN 10"
+        ] , [
+            "+10",
+            "MAX",
+        ]
+    ) as dmm:
+        assert dmm.sample_count == 10
+        assert dmm.sample_count == dmm.SampleCount.maximum
+        dmm.sample_count = dmm.SampleCount.minimum
+        dmm.sample_count = 10
+        
+def test_scpi_multimeter_trigger_delay():
+    with expected_protocol(
+        ik.generic_scpi.SCPIMultimeter,
+        [
+            "TRIG:DEL?",
+            "TRIG:DEL {:e}".format(1),
+        ] , [
+            "+1",
+        ]
+    ) as dmm:
+        assert dmm.trigger_delay == 1 * pq.second
+        dmm.trigger_delay = 1000 * pq.millisecond
+        
+def test_scpi_multimeter_sample_source():
+    with expected_protocol(
+        ik.generic_scpi.SCPIMultimeter,
+        [
+            "SAMP:SOUR?",
+            "SAMP:SOUR TIM",
+        ] , [
+            "IMM",
+        ]
+    ) as dmm:
+        assert dmm.sample_source == dmm.SampleSource.immediate
+        dmm.sample_source = dmm.SampleSource.timer
+        
+def test_scpi_multimeter_sample_timer():
+    with expected_protocol(
+        ik.generic_scpi.SCPIMultimeter,
+        [
+            "SAMP:TIM?",
+            "SAMP:TIM {:e}".format(1),
+        ] , [
+            "+1",
+        ]
+    ) as dmm:
+        assert dmm.sample_timer == 1 * pq.second
+        dmm.sample_timer = 1000 * pq.millisecond
+        
+def test_scpi_multimeter_measure():
+    with expected_protocol(
+        ik.generic_scpi.SCPIMultimeter,
+        [
+            "MEAS:VOLT:DC?",
+        ] , [
+            "+4.23450000E-03",
+        ]
+    ) as dmm:
+        assert dmm.measure(dmm.Mode.voltage_dc) == 4.2345e-03 * pq.volt

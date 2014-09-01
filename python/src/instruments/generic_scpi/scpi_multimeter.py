@@ -114,6 +114,14 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         default = "DEF"
         infinity = "INF"
         
+    class SampleCount(Enum):
+        """
+        Valid sample count parameters outside of directly the value.
+        """
+        minimum = "MIN"
+        maximum = "MAX"
+        default = "DEF"
+        
     class SampleSource(Enum):
         """
         Valid sample source parameters.
@@ -370,25 +378,12 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
             to the current mode.
         :type mode: `~SCPIMultimeter.Mode`
         """
-        
-        # Default to the current mode.
         if mode is None:
             mode = self.mode
-            
-        # Throw an error if the mode isn't an enum.
         if mode.enum is not SCPIMultimeter.Mode:
             raise TypeError("Mode must be specified as a SCPIMultimeter.Mode "
                             "value, got {} instead.".format(type(newval)))
-        
-        # Unpack the value from the enumeration.
-        mode = mode._value.lower()
-        # mode = VALID_MODES_SHORT[VALID_MODES.index(mode)]
-        
-        # Apply the mode and obtain the measurement.
-        self.mode = mode
-        value = float(self.query('MEAS:{}?'.format(mode)))
-        
-        # Put the measurement into the correct units.
+        value = float(self.query('MEAS:{}?'.format(mode.value)))
         return value * UNITS[mode]
         
     ## INTERNAL FUNCTIONS ##
