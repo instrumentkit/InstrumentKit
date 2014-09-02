@@ -78,7 +78,7 @@ def test_scpi_multimeter_input_range():
             "CURR:DC +1.000000E+01,+3.000000E-06"   #4
         ]
     ) as dmm:
-        assert dmm.input_range == 1e1 * pq.amp
+        unit_eq(dmm.input_range, 1e1 * pq.amp)
         assert dmm.input_range == dmm.InputRange.automatic
         dmm.input_range = dmm.InputRange.minimum
         dmm.input_range = 1 * pq.amp
@@ -151,7 +151,7 @@ def test_scpi_multimeter_trigger_delay():
             "+1",
         ]
     ) as dmm:
-        assert dmm.trigger_delay == 1 * pq.second
+        unit_eq(dmm.trigger_delay, 1 * pq.second)
         dmm.trigger_delay = 1000 * pq.millisecond
         
 def test_scpi_multimeter_sample_source():
@@ -177,7 +177,7 @@ def test_scpi_multimeter_sample_timer():
             "+1",
         ]
     ) as dmm:
-        assert dmm.sample_timer == 1 * pq.second
+        unit_eq(dmm.sample_timer, 1 * pq.second)
         dmm.sample_timer = 1000 * pq.millisecond
         
 def test_scpi_multimeter_measure():
@@ -189,4 +189,4 @@ def test_scpi_multimeter_measure():
             "+4.23450000E-03",
         ]
     ) as dmm:
-        assert dmm.measure(dmm.Mode.voltage_dc) == 4.2345e-03 * pq.volt
+        unit_eq(dmm.measure(dmm.Mode.voltage_dc), 4.2345e-03 * pq.volt)
