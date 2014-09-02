@@ -83,6 +83,7 @@ def unit_eq(a, b, msg=None, thresh=1e-5):
         a, b, a - b,
         "\n" + msg if msg is not None else ""
     )
+    assert a.units == b.units, "{} and {} have different units".format(a,b)
     
 @nottest  
 def make_name_test(ins_class, name_cmd="*IDN?"):
