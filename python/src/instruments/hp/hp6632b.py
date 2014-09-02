@@ -4,13 +4,35 @@
 # hp6632b.py: Python class for the HP6632b power supply
 ##
 # © 2014 Willem Dijkstra (wpd@xs4all.nl).
+#
+# This file is a part of the InstrumentKit project.
+# Licensed under the AGPL version 3.
+##
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+##
+
+## IMPORTS #####################################################################
 
 from flufl.enum import Enum, IntEnum
 import quantities as pq
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.hp.hp6652a import HP6652a
-from instruments.util_fns import unitful_property, unitless_property, bool_property, enum_property, int_property
+from instruments.util_fns import (unitful_property, unitless_property, 
+                                  bool_property, enum_property, int_property)
+
+## CLASSES #####################################################################
 
 class HP6632b(SCPIInstrument, HP6652a):
     """
@@ -43,6 +65,8 @@ class HP6632b(SCPIInstrument, HP6652a):
 
     def __init__(self, filelike):
         super(HP6632b, self).__init__(filelike)
+        
+    ## ENUMS ##
 
     class ALCBandwidth(IntEnum):
         normal = 1.5e4
@@ -126,6 +150,8 @@ class HP6632b(SCPIInstrument, HP6652a):
     class SenseWindow(Enum):
         hanning = 'HANN'
         rectangular = 'RECT'
+        
+    ## PROPERTIES ##
 
     voltage_alc_bandwidth = enum_property(
         "VOLT:ALC:BAND",
@@ -164,13 +190,6 @@ class HP6632b(SCPIInstrument, HP6652a):
         :type: `float` or `~quantities.Quantity`
         """)
 
-    def init_output_trigger(self):
-        """
-        Set the output trigger system to the initiated state. In this state, the power
-        supply will respond to the next output trigger command.
-        """
-        self.sendcmd('INIT:NAME TRAN')
-
     init_output_continuous = bool_property(
         "INIT:CONT:SEQ1",
         "1",
@@ -183,12 +202,6 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :type: `bool`
         """)
-
-    def abort_output_trigger(self):
-        """
-        Set the output trigger system to the idle state.
-        """
-        self.sendcmd('ABORT')
 
     current_sense_range = unitful_property(
         'SENS:CURR:RANGE',
@@ -295,6 +308,21 @@ class HP6632b(SCPIInstrument, HP6652a):
         :units: As specified, or assumed to be :math:`\\text{s}` otherwise.
         :type: `float` or `~quantities.Quantity`
         """)
+    
+    ## FUNCTIONS ##
+        
+    def init_output_trigger(self):
+        """
+        Set the output trigger system to the initiated state. In this state, 
+        the power supply will respond to the next output trigger command.
+        """
+        self.sendcmd('INIT:NAME TRAN')
+
+    def abort_output_trigger(self):
+        """
+        Set the output trigger system to the idle state.
+        """
+        self.sendcmd('ABORT')
 
     # SCPIInstrument commands that need local overrides
 
@@ -324,10 +352,10 @@ class HP6632b(SCPIInstrument, HP6652a):
 
     def check_error_queue(self):
         """
-	Checks and clears the error queue for this device, returning a list of
-	:class:`~SCPIInstrument.ErrorCodes` or `int` elements for each error
-	reported by the connected instrument.
-	"""
+	    Checks and clears the error queue for this device, returning a list of
+	    :class:`~SCPIInstrument.ErrorCodes` or `int` elements for each error
+	    reported by the connected instrument.
+	    """
         err = False
         result = []
         while (err != self.ErrorCodes.no_error):
