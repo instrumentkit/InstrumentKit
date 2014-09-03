@@ -58,7 +58,11 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n"):
         ins_to_host = sep.join(ins_to_host) + (sep if ins_to_host else "")
     if isinstance(host_to_ins, list):
         host_to_ins = sep.join(host_to_ins) + (sep if host_to_ins else "")
+<<<<<<< HEAD
+    
+=======
 
+>>>>>>> upstream/dev
     stdin = StringIO(ins_to_host)
     stdout = StringIO()
     
