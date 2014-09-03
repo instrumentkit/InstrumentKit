@@ -197,7 +197,7 @@ class LCC25(Instrument):
         response = self.check_command("volt2?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.V
-    @voltage1.setter
+    @voltage2.setter
     def voltage2(self, newval):
         newval = assume_units(newval, pq.V).rescale(pq.V).magnitude
         if newval < 0:
