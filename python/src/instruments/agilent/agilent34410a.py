@@ -25,8 +25,11 @@
 ## IMPORTS #####################################################################
 
 from flufl.enum import Enum
+import quantities as pq
+import numpy as np
 
 from instruments.generic_scpi import SCPIMultimeter
+from instruments.util_fns import split_unit_str
 
 ## CLASSES #####################################################################
 
@@ -54,67 +57,69 @@ class Agilent34410a(SCPIMultimeter):
     
     @property
     def data_point_count(self):
-        '''
+        """
         Gets the total number of readings that are located in reading memory 
         (RGD_STORE).
         
         :rtype: `int`
-        '''
+        """
         return int(self.query('DATA:POIN?'))
-    
     
     ## STATE MANAGEMENT METHODS ##
 
     def init(self):
-        '''
+        """
         Switch device from "idle" state to "wait-for-trigger state".
         Measurements will begin when specified triggering conditions are met, 
         following the receipt of the INIT command.
         
         Note that this command will also clear the previous set of readings 
         from memory.
-        '''
+        """
         self.sendcmd('INIT')
     
     def abort(self):
-        '''
+        """
         Abort all measurements currently in progress.
-        '''
+        """
         self.sendcmd('ABOR')
     
     ## MEMORY MANAGEMENT METHODS ##
 
     def clear_memory(self):
-        '''
+        """
         Clears the non-volatile memory of the Agilent 34410a.
-        '''
+        """
         self.sendcmd('DATA:DEL NVMEM')
     
     def r(self, count):
-        '''
+        """
         Have the multimeter perform a specified number of measurements and then 
         transfer them using a binary transfer method. Data will be cleared from 
-        instrument memory after transfer is complete.
+        instrument memory after transfer is complete. Data is transfered
+        from the instrument in 64-bit double floating point precision format.
         
         :param int count: Number of samples to take.
         
-        :rtype: numpy.array
-        '''
+        :rtype: `~quantities.quantity.Quantity` with `numpy.array` 
+        """
+        mode = self.mode
+        units = UNITS[mode]
         if not isinstance(count, int):
             raise TypeError('Parameter "count" must be an integer')
         if count == 0:
             msg = 'R?'
         else:
             msg = 'R? ' + str(count)
-        
-        self.sendcmd('FORM:DATA REAL,32')
+        self.sendcmd('FORM:DATA REAL,64')
         self.sendcmd(msg)
-        return self.binblockread(4)
+        data = self.binblockread(8, fmt=">d")
+        return data * units
         
     ## DATA READING METHODS ##
     
     def fetch(self):
-        '''
+        """
         Transfer readings from instrument memory to the output buffer, and 
         thus to the computer.
         If currently taking a reading, the instrument will wait until it is 
@@ -125,12 +130,13 @@ class Agilent34410a(SCPIMultimeter):
         recommended to transfer a large number of
         data points using this method.
         
-        :rtype: `list` of `float` elements
-        '''
-        return map(float, self.query( 'FETC?' ).split(',') )
+        :rtype: `list` of `~quantities.quantity.Quantity` elements
+        """
+        units = UNITS[self.mode]
+        return map(float, self.query('FETC?').split(',')) * units
     
     def read_data(self, sample_count):
-        '''
+        """
         Transfer specified number of data points from reading memory 
         (RGD_STORE) to output buffer.
         First data point sent to output buffer is the oldest.
@@ -140,46 +146,55 @@ class Agilent34410a(SCPIMultimeter):
             output buffer. If set to -1, all points in memory will be 
             transfered.
         
-        :rtype: `list` of `float` elements
-        '''
-        if not isinstance(sampleCount,int):
-            raise TypeError('Parameter "sampleCount" must be an integer.')
+        :rtype: `list` of `~quantities.quantity.Quantity` elements
+        """
+        if not isinstance(sample_count,int):
+            raise TypeError('Parameter "sample_count" must be an integer.')
         
-        if sampleCount == -1:
-            sampleCount = self.data_point_count
-        
+        if sample_count == -1:
+            sample_count = self.data_point_count
+        units = UNITS[self.mode]
         self.sendcmd('FORM:DATA ASC')
-        return map(float, self.query('DATA:REM? '+str(sampleCount)).split(','))
+        data = self.query('DATA:REM? {}'.format(sample_count)).split(',')
+        return map(float, data) * units
     
     def read_data_NVMEM(self):
-        '''
+        """
         Returns all readings in non-volatile memory (NVMEM).
         
-        :rtype: `list` of `float` elements
-        '''
-        return map(float, self.query('DATA:DATA? NVMEM').split(','))
+        :rtype: `list` of `~quantities.quantity.Quantity` elements
+        """
+        units = UNITS[self.mode]
+        data = map(float, self.query('DATA:DATA? NVMEM').split(','))
+        return data * units
     
-    # Read the Last Data Point
     def read_last_data(self):
-        '''
+        """
         Retrieve the last measurement taken. This can be executed at any time, 
         including when the instrument is currently taking measurements.
         If there are no data points available, the value ``9.91000000E+37`` is 
         returned.
         
-        :rtype: `float` or `int` (if an error occurs)
-        '''
+        :units: As specified by the data returned by the instrument.
+        :rtype: `~quantities.quantity.Quantity`
+        """
         data = self.query('DATA:LAST?')
+        unit_map = {
+            "VDC":"V",
+            "VAC":"V",
+        }
         
         if data == '9.91000000E+37':
             return int(data)
         else:
-            data = data[0:data.index(' ')] # Remove units
-            return float(data)
+            data = data.split(" ")
+            data[0] = float(data[0])
+            if data[1] in unit_map:
+                data[1] = unit_map[data[1]]
+            return pq.Quantity(*data)
     
-    # Read: Set to "Wait-for-trigger" state, and immediately send result to output
     def read(self):
-        '''
+        """
         Switch device from "idle" state to "wait-for-trigger" state. 
         Immediately after the trigger conditions are met, the data will be sent 
         to the output buffer of the instrument.
@@ -187,7 +202,26 @@ class Agilent34410a(SCPIMultimeter):
         This is similar to calling `~Agilent34410a.init` and then immediately 
         following `~Agilent34410a.fetch`.
         
-        :rtype: `float`
-        '''
-        return float(self.query('READ?'))
+        :rtype: `~quantities.Quantity`
+        """
+        mode = self.mode
+        units = UNITS[mode]
+        return float(self.query('READ?')) * units
+        
+## UNITS #######################################################################
+
+UNITS = {
+    SCPIMultimeter.Mode.capacitance: pq.farad,
+    SCPIMultimeter.Mode.voltage_dc:  pq.volt,
+    SCPIMultimeter.Mode.voltage_ac:  pq.volt,
+    SCPIMultimeter.Mode.diode:       pq.volt,
+    SCPIMultimeter.Mode.current_ac:  pq.amp,
+    SCPIMultimeter.Mode.current_dc:  pq.amp,
+    SCPIMultimeter.Mode.resistance:  pq.ohm,
+    SCPIMultimeter.Mode.fourpt_resistance: pq.ohm,
+    SCPIMultimeter.Mode.frequency:   pq.hertz,
+    SCPIMultimeter.Mode.period:      pq.second,
+    SCPIMultimeter.Mode.temperature: pq.kelvin,
+    SCPIMultimeter.Mode.continuity:  1,
+}
 
