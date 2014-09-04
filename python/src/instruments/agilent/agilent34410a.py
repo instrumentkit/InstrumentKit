@@ -211,17 +211,17 @@ class Agilent34410a(SCPIMultimeter):
 ## UNITS #######################################################################
 
 UNITS = {
-    SCPIMultimeter.Mode.capacitance: pq.farad,
-    SCPIMultimeter.Mode.voltage_dc:  pq.volt,
-    SCPIMultimeter.Mode.voltage_ac:  pq.volt,
-    SCPIMultimeter.Mode.diode:       pq.volt,
-    SCPIMultimeter.Mode.current_ac:  pq.amp,
-    SCPIMultimeter.Mode.current_dc:  pq.amp,
-    SCPIMultimeter.Mode.resistance:  pq.ohm,
-    SCPIMultimeter.Mode.fourpt_resistance: pq.ohm,
-    SCPIMultimeter.Mode.frequency:   pq.hertz,
-    SCPIMultimeter.Mode.period:      pq.second,
-    SCPIMultimeter.Mode.temperature: pq.kelvin,
-    SCPIMultimeter.Mode.continuity:  1,
+    Agilent34410a.Mode.capacitance: pq.farad,
+    Agilent34410a.Mode.voltage_dc:  pq.volt,
+    Agilent34410a.Mode.voltage_ac:  pq.volt,
+    Agilent34410a.Mode.diode:       pq.volt,
+    Agilent34410a.Mode.current_ac:  pq.amp,
+    Agilent34410a.Mode.current_dc:  pq.amp,
+    Agilent34410a.Mode.resistance:  pq.ohm,
+    Agilent34410a.Mode.fourpt_resistance: pq.ohm,
+    Agilent34410a.Mode.frequency:   pq.hertz,
+    Agilent34410a.Mode.period:      pq.second,
+    Agilent34410a.Mode.temperature: pq.kelvin,
+    Agilent34410a.Mode.continuity:  1,
 }
 
