@@ -35,7 +35,7 @@ import numpy as np
 
 from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units
+from instruments.util_fns import assume_units, enum_property, unitful_property
 
 from instruments.units import dBm
 
@@ -76,52 +76,40 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     
     ## PROPERTIES ##
     
-    @property
-    def frequency(self):
-        '''
+    frequency = unitful_property(
+        name="FREQ",
+        units=pq.Hz,
+        doc="""
         Gets/sets the output frequency.
         
         :units: As specified, or assumed to be :math:`\\text{Hz}` otherwise.
-        :type: `float` or `~quantities.Quantity`
-        '''
-        return pq.Quantity(float(self.query('FREQ?')), pq.Hz)
-    @frequency.setter
-    def frequency(self, newval):
-        self.sendcmd("FREQ {}".format(
-            assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude)
-        )
+        :type: `float` or `~quantities.quantity.Quantity`
+        """
+    )
     
-    @property
-    def function(self):
-        '''
+    function = enum_property(
+        name="FUNC",
+        enum = lambda: self.Function,
+        doc="""
         Gets/sets the output function of the function generator
         
         :type: `SCPIFunctionGenerator.Function`
-        '''
-        return SCPIFunctionGenerator.Function[self.query('FUNC?').strip()]
-    @function.setter
-    def function(self, newval):
-        if not isinstance(newval, SCPIFunctionGenerator.Function):
-            raise TypeError('Value must be specified as a '
-                                '`SCPIFunctionGenerator.Function` type.')
-        self.sendcmd('FUNC:{}'.format(newval.value))
+        """
+    )
     
-    @property
-    def offset(self):
-        '''
+    offset = unitful_property(
+        name="VOLT:OFFS",
+        units=pq.volt,
+        doc="""
         Gets/sets the offset voltage of the function generator.
         
         Set value should be within correct bounds of instrument.
         
-        :units: As specified  (if a `~quntities.Quantity`) or assumed to be
-            of units volts.
-        :type: `~quantities.Quantity` with units volts.
-        '''
-        return pq.Quantity(float(self.query('VOLT:OFFS?')), pq.volt)
-    @offset.setter
-    def offset(self, newval):
-        newval = float(assume_units(newval, pq.volt).rescale(pq.volt).magnitude)
-        self.sendcmd('VOLT:OFFS {}'.format(newval))
+        :units: As specified  (if a `~quntities.quantity.Quantity`) or assumed 
+            to be of units volts.
+        :type: `~quantities.quantity.Quantity` with units volts.
+        """
+    )
     
     @property
     def phase(self):
