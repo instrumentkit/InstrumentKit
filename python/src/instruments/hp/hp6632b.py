@@ -350,17 +350,19 @@ class HP6632b(SCPIInstrument, HP6652a):
     def display_brightness(self, newval):
         raise NotImplementedError
 
-    #def check_error_queue(self):
-    #    """
-	#    Checks and clears the error queue for this device, returning a list of
-	#    :class:`~SCPIInstrument.ErrorCodes` or `int` elements for each error
-	#    reported by the connected instrument.
-	#    """
-    #    err = False
-    #    result = []
-    #    while (err != self.ErrorCodes.no_error):
-    #        print err
-    #        err = int(self.query('SYST:ERR?').split(',')[0])
-    #        result.append(self.ErrorCodes[err] if err in self.ErrorCodes else err)
+    def check_error_queue(self):
+        """
+        Checks and clears the error queue for this device, returning a list of
+        :class:`~SCPIInstrument.ErrorCodes` or `int` elements for each error
+        reported by the connected instrument.
+        """
+        done = False
+        result = []
+        while (not done):
+            err = int(self.query('SYST:ERR?').split(',')[0])
+            if err == self.ErrorCodes.no_error:
+                done = True
+            else:
+                result.append(self.ErrorCodes[err] if err in self.ErrorCodes else err)
 
-    #    return result
+        return result
