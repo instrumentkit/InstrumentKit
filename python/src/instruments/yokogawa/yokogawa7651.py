@@ -49,14 +49,14 @@ class Yokogawa7651(PowerSupply, Instrument):
     ## INNER CLASSES ##
     
     class Channel(PowerSupplyChannel):
-        '''
+        """
         Class representing the only channel on the Yokogawa 7651.
         
         This class inherits from `PowerSupplyChannel`.
         
         .. warning:: This class should NOT be manually created by the user. It  
             is designed to be initialized by the `Yokogawa7651` class.
-        '''
+        """
         
         def __init__(self, parent, name):
             self._parent = parent
@@ -209,11 +209,11 @@ class Yokogawa7651(PowerSupply, Instrument):
     ## METHODS ##
         
     def trigger(self):
-        '''
+        """
         Triggering function for the Yokogawa 7651.
         
         After changing any parameters of the instrument (for example, output 
         voltage), the device needs to be triggered before it will update.
-        '''
+        """
         self.sendcmd('E;')
         
