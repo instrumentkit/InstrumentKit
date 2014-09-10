@@ -37,36 +37,6 @@ from instruments.util_fns import (enum_property, bool_property, int_property,
 
 ## CLASSES #####################################################################
 
-class _PicowattAVS47Sensor(object):
-    """
-    Class representing a sensor on the PicowattAVS47
-    
-    .. warning:: This class should NOT be manually created by the user. It is 
-        designed to be initialized by the `PicowattAVS47` class.
-    """
-    
-    def __init__(self, parent, idx):
-        self._parent = parent
-        self._idx = idx # The AVS47 is actually zero-based indexing! Wow!
-        
-    @property
-    def resistance(self):
-        """
-        Gets the resistance. It first ensures that the next measurement reading 
-        is up to date by first sending the "ADC" command.
-
-        :units: :math:`\\Omega` (ohms)
-        :rtype: `~quantities.Quantity`
-        """
-        # First make sure the mux is on the correct channel
-        if not self._parent.mux_channel == self._idx:
-            self._parent.input_source = self._parent.InputSource.ground
-            self._parent.mux_channel = self._idx
-            self_.parent.input_source = self._parent.InputSource.actual
-        # Next, prep a measurement with the ADC command
-        self._parent.sendcmd("ADC")
-        return float(self._parent.query("RES?")) * pq.ohm 
-
 class PicowattAVS47(SCPIInstrument):
     """
     The Picowatt AVS 47 is a resistance bridge used to measure the resistance
@@ -82,6 +52,38 @@ class PicowattAVS47(SCPIInstrument):
     def __init__(self, filelike):
         super(PicowattAVS47, self).__init__(filelike)
         self.sendcmd("HDR 0") # Disables response headers from replies
+        
+    ## INNER CLASSES ##
+    
+    class Sensor(object):
+        """
+        Class representing a sensor on the PicowattAVS47
+        
+        .. warning:: This class should NOT be manually created by the user. It is 
+            designed to be initialized by the `PicowattAVS47` class.
+        """
+        
+        def __init__(self, parent, idx):
+            self._parent = parent
+            self._idx = idx # The AVS47 is actually zero-based indexing! Wow!
+            
+        @property
+        def resistance(self):
+            """
+            Gets the resistance. It first ensures that the next measurement reading 
+            is up to date by first sending the "ADC" command.
+
+            :units: :math:`\\Omega` (ohms)
+            :rtype: `~quantities.Quantity`
+            """
+            # First make sure the mux is on the correct channel
+            if not self._parent.mux_channel == self._idx:
+                self._parent.input_source = self._parent.InputSource.ground
+                self._parent.mux_channel = self._idx
+                self_.parent.input_source = self._parent.InputSource.actual
+            # Next, prep a measurement with the ADC command
+            self._parent.sendcmd("ADC")
+            return float(self._parent.query("RES?")) * pq.ohm 
 
     ## ENUMS ##
     
@@ -98,12 +100,12 @@ class PicowattAVS47(SCPIInstrument):
         Gets a specific sensor object. The desired sensor is specified like
         one would access a list.
         
-        :rtype: `_PicowattAVS47Sensor`
+        :rtype: `~PicowattAVS47.Sensor`
         
         .. seealso::
             `PicowattAVS47` for an example using this property.
         """
-        return ProxyList(self, _PicowattAVS47Sensor, xrange(8))
+        return ProxyList(self, PicowattAVS47.Sensor, xrange(8))
         
     remote = bool_property(
         name="REM",
