@@ -13,8 +13,4 @@ Yokogawa-brand Instruments
 .. autoclass:: Yokogawa7651
     :members:
     :undoc-members:
-    
-.. autoclass:: _Yokogawa7651Channel
-    :members:
-    :undoc-members:
 
