@@ -59,13 +59,13 @@ class _PicowattAVS47Sensor(object):
         :rtype: `~quantities.Quantity`
         """
         # First make sure the mux is on the correct channel
-        if not self.parent.mux_channel == self.idx:
-            self.parent.input_source = self.parent.InputSource.ground
-            self.parent.mux_channel = self.idx
-            self.parent.input_source = self.parent.InputSource.actual
+        if not self._parent.mux_channel == self._idx:
+            self._parent.input_source = self._parent.InputSource.ground
+            self._parent.mux_channel = self._idx
+            self_.parent.input_source = self._parent.InputSource.actual
         # Next, prep a measurement with the ADC command
-        self.sendcmd("ADC")
-        return float(self.query("RES?")) * pq.ohm 
+        self._parent.sendcmd("ADC")
+        return float(self._parent.query("RES?")) * pq.ohm 
 
 class PicowattAVS47(SCPIInstrument):
     """
