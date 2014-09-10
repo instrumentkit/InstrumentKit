@@ -28,32 +28,32 @@ from __future__ import division
 
 ## IMPORTS #####################################################################
 
-from flufl.enum import Enum
+from flufl.enum import IntEnum
 from flufl.enum._enum import EnumValue
 
 import quantities as pq
 
 from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units
+from instruments.util_fns import assume_units, enum_property, unitful_property
 
-from instruments.units import dBm
+from instruments.units import dBm 
 
-## ENUMS #######################################################################
-
-class SRS345Function(Enum):
-    sinusoid = 0
-    square = 1
-    triangle = 2
-    ramp = 3
-    noise = 4
-    arbitrary = 5
-    
-
-## FUNCTIONS ###################################################################
+## CLASSES #####################################################################
 
 class SRS345(SCPIInstrument, FunctionGenerator):
-    # TODO: docstring
+    """
+    The SRS DS345 is a 30MHz function generator.
+    
+    Example usage:
+    
+    >>> import instruments as ik
+    >>> import quantities as pq
+    >>> srs = ik.srs.SRS345.open_gpib('/dev/ttyUSB0', 1)
+    >>> srs.frequency = 1 * pq.MHz
+    >>> print srs.offset
+    >>> srs.function = srs.Function.triangle
+    """
     # FIXME: need to add OUTX 1 here, but doing so seems to cause a syntax
     #        error on the instrument.
         
@@ -70,9 +70,6 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     ## FunctionGenerator CONTRACT ##
     
     def _get_amplitude_(self):
-        """
-        
-        """
         resp = self.query("AMPL?").strip()
         
         return (
@@ -81,69 +78,61 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         )
         
     def _set_amplitude_(self, magnitude, units):
-        """
-        
-        """
         self.sendcmd("AMPL {}{}".format(magnitude, self._UNIT_MNEMONICS[units]))
         
+    ## ENUMS ##
+    
+    class Function(IntEnum):
+        sinusoid = 0
+        square = 1
+        triangle = 2
+        ramp = 3
+        noise = 4
+        arbitrary = 5
+    
     ## PROPERTIES ##
-        
-    @property
-    def frequency(self):
-        '''
+    
+    frequency = unitful_property(
+        name="FREQ",
+        units=pq.Hz,
+        doc="""
         Gets/sets the output frequency.
         
         :units: As specified, or assumed to be :math:`\\text{Hz}` otherwise.
-        :type: `float` or `~quantities.Quantity`
-        '''
-        return pq.Quantity(float(self.query('FREQ?')), pq.Hz)
-    @frequency.setter
-    def frequency(self, newval):
-        self.sendcmd("FREQ {}".format(
-            assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude)
-        )
-        
-    @property
-    def function(self):
+        :type: `float` or `~quantities.quantity.Quantity`
         """
+    )
+    
+    function = enum_property(
+        name="FUNC",
+        enum=Function,
+        doc="""
         Gets/sets the output function of the function generator.
         
-        :type: `SRS345Function`
+        :type: `~SRS345.Function`
         """
-        return SRS345Function[int(self.query("FUNC?"))]
-    @function.setter
-    def function(self, newval):
-        # TODO: add type checking here.
-        self.sendcmd("FUNC {}".format(newval.value))
-        
-    @property
-    def offset(self):
-        '''
+    )
+    
+    offset = unitful_property(
+        name="OFFS",
+        units=pq.volt,
+        doc="""
         Gets/sets the offset voltage for the output waveform.
         
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
-        '''
-        return pq.Quantity(float(self.query("OFFS?")), pq.V)
-    @offset.setter
-    def offset(self, newval):
-        self.sendcmd("OFFS {}".format(
-            assume_units(newval, pq.V).rescale(pq.V).magnitude
-        ))
-        
-    @property
-    def phase(self):
-        '''
+        :type: `float` or `~quantities.quantity.Quantity`
+        """
+    )
+    
+    phase = unitful_property(
+        name="PHSE",
+        units=pq.degree,
+        doc="""
         Gets/sets the phase for the output waveform.
         
         :units: As specified, or assumed to be degrees (:math:`{}^{\\circ}`)
             otherwise.
-        :type: `float` or `~quantities.Quantity`
-        '''
-        return pq.Quantity(float(self.query("PHSE?")), "degrees")
-    @phase.setter
-    def phase(self, newval):
-        self.sendcmd("PHSE {}".format(
-            assume_units(newval, "degrees").rescale("degrees").magnitude
-        ))
-        
+        :type: `float` or `~quantities.quantity.Quantity`
+        """
+    )
+

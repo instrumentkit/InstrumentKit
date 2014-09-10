@@ -14,13 +14,6 @@ Stanford Research Systems Instruments
     :members:
     :undoc-members:
     
-Constants and Enumerations
---------------------------
-    
-.. autoclass:: SRS345Function
-    :members:
-    :undoc-members:
-    
 :class:`SRS830`
 ===============
 
