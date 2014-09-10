@@ -35,30 +35,6 @@ from instruments.util_fns import ProxyList, assume_units
 
 ## CLASSES #####################################################################
 
-class _OxfordITC503Sensor(object):
-    """
-    Class representing a probe sensor on the Oxford ITC 503.
-    
-    .. warning:: This class should NOT be manually created by the user. It is 
-        designed to be initialized by the `OxfordITC503` class.
-    """
-    def __init__(self, parent, idx):
-        self._parent = parent
-        self._idx = idx + 1
-        
-    ## PROPERTIES ##
-    
-    @property
-    def temperature(self):
-        """
-        Read the temperature of the attached probe to the specified channel.
-        
-        :units: Kelvin
-        :rtype: `~quantities.Quantity`
-        """
-        value = float(self._parent.query('R{}'.format(self._idx))[1:])
-        return pq.Quantity(value, pq.Kelvin)
-
 class OxfordITC503(Instrument):
     """
     The Oxford ITC503 is a multi-sensor temperature controller.
@@ -66,7 +42,7 @@ class OxfordITC503(Instrument):
     Example usage::
     
     >>> import instruments as ik
-    >>> itc = ik.other.OxfordITC503.open_gpibusb('/dev/ttyUSB0', 1)
+    >>> itc = ik.oxford.OxfordITC503.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print itc.sensor[0].temperature
     >>> print itc.sensor[1].temperature
     """
@@ -75,6 +51,32 @@ class OxfordITC503(Instrument):
         super(OxfordITC503, self).__init__(filelike)
         self.terminator = 13 # Set EOS char to CR
         self.sendcmd('C3') # Enable remote commands
+        
+    ## INNER CLASSES ##
+    
+    class Sensor(object):
+        """
+        Class representing a probe sensor on the Oxford ITC 503.
+        
+        .. warning:: This class should NOT be manually created by the user. It is 
+            designed to be initialized by the `OxfordITC503` class.
+        """
+        def __init__(self, parent, idx):
+            self._parent = parent
+            self._idx = idx + 1
+            
+        ## PROPERTIES ##
+        
+        @property
+        def temperature(self):
+            """
+            Read the temperature of the attached probe to the specified channel.
+            
+            :units: Kelvin
+            :rtype: `~quantities.quantity.Quantity`
+            """
+            value = float(self._parent.query('R{}'.format(self._idx))[1:])
+            return pq.Quantity(value, pq.Kelvin)
        
     ## PROPERTIES ##
     
@@ -89,4 +91,4 @@ class OxfordITC503(Instrument):
         >>> itc = ik.other.OxfordITC503.open_gpibusb('/dev/ttyUSB0', 1)
         >>> print itc.sensor[0].temperature
         """
-        return ProxyList(self, _OxfordITC503Sensor, xrange(3))
+        return ProxyList(self, OxfordITC503.Sensor, xrange(3))
