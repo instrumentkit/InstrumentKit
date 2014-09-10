@@ -33,7 +33,7 @@ import quantities as pq
 from flufl.enum import IntEnum
 
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units
+from instruments.util_fns import assume_units, bool_property
 
 ## CONSTANTS ###################################################################
 
@@ -57,7 +57,7 @@ LAKESHORE_TEMP_UNITS_INV = dict((v,k) for k,v in
 ## CLASSES #####################################################################
 
 class Lakeshore475(SCPIInstrument):
-    '''
+    """
     The Lakeshore475 is a DSP Gaussmeter with field ranges from 35mG to 350kG.
     
     Example usage:
@@ -68,7 +68,7 @@ class Lakeshore475(SCPIInstrument):
     >>> print gm.field
     >>> gm.field_units = pq.tesla
     >>> gm.field_setpoint = 0.05 * pq.tesla
-    '''
+    """
 
     ## ENUMS ##
     
@@ -95,22 +95,22 @@ class Lakeshore475(SCPIInstrument):
 
     @property
     def field(self):
-        '''
+        """
         Read field from connected probe.
         
-        :type: `~quantities.Quantity`
-        '''
+        :type: `~quantities.quantity.Quantity`
+        """
         return float(self.query('RDGFIELD?')) * self.field_units
         
     @property
     def field_units(self):
-        '''
+        """
         Gets/sets the units of the Gaussmeter.
         
         Acceptable units are Gauss, Tesla, Oersted, and Amp/meter.
         
-        :type: `~quantities.UnitQuantity`
-        '''
+        :type: `~quantities.unitquantity.UnitQuantity`
+        """
         value = int(self.query('UNIT?'))
         return LAKESHORE_FIELD_UNITS[value]
     @field_units.setter
@@ -125,13 +125,13 @@ class Lakeshore475(SCPIInstrument):
         
     @property
     def temp_units(self):
-        '''
+        """
         Gets/sets the temperature units of the Gaussmeter.
         
         Acceptable units are celcius and kelvin.
         
-        :type: `~quantities.UnitQuantity`
-        '''
+        :type: `~quantities.unitquantity.UnitQuantity`
+        """
         value = int(self.query('TUNIT?'))
         return LAKESHORE_TEMP_UNITS[value]
     @temp_units.setter
@@ -146,13 +146,13 @@ class Lakeshore475(SCPIInstrument):
 
     @property
     def field_setpoint(self):
-        '''
+        """
         Gets/sets the final setpoint of the field control ramp.
 
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Gauss.
-        :type: `~quantities.Quantity` with units Gauss
-        '''
+        :type: `~quantities.quantity.Quantity` with units Gauss
+        """
         value = self.query('CSETP?').strip()
         units = self.field_units
         return float(value) * units
@@ -160,22 +160,20 @@ class Lakeshore475(SCPIInstrument):
     def field_setpoint(self, newval):
         units = self.field_units
         newval = float(assume_units(newval, pq.gauss).rescale(units).magnitude)
-
         self.sendcmd('CSETP {}'.format(newval))
         
     @property
     def field_control_params(self):
-        '''
+        """
         Gets/sets the parameters associated with the field control ramp.
-        These are the P, I, ramp rate, and control slope limit.
+        These are (in this order) the P, I, ramp rate, and control slope limit.
         
-        :type: `tuple` of 2 `float` and 2 `~quantities.Quantity`
-        '''
+        :type: `tuple` of 2 `float` and 2 `~quantities.quantity.Quantity`
+        """
         params = self.query('CPARAM?').strip().split(',')
         params = [float(x) for x in params]
         params[2] = params[2] * self.field_units / pq.minute
         params[3] = params[3] * pq.volt / pq.minute
-        
         return tuple(params)
     @field_control_params.setter
     def field_control_params(self, newval):
@@ -199,11 +197,11 @@ class Lakeshore475(SCPIInstrument):
     
     @property
     def p_value(self):
-        '''
+        """
         Gets/sets the P value for the field control ramp.
         
         :type: `float`
-        '''
+        """
         return self.field_control_params[0]
     @p_value.setter
     def p_value(self, newval):
@@ -214,11 +212,11 @@ class Lakeshore475(SCPIInstrument):
     
     @property
     def i_value(self):
-        '''
+        """
         Gets/sets the I value for the field control ramp.
         
         :type: `float`
-        '''
+        """
         return self.field_control_params[1]
     @i_value.setter
     def i_value(self, newval):
@@ -229,13 +227,13 @@ class Lakeshore475(SCPIInstrument):
     
     @property
     def ramp_rate(self):
-        '''
+        """
         Gets/sets the ramp rate value for the field control ramp.
 
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of current field units / minute.
-        :type: `~quantities.Quantity`
-        '''
+        :type: `~quantities.quantity.Quantity`
+        """
         return self.field_control_params[2]
     @ramp_rate.setter
     def ramp_rate(self, newval):
@@ -247,13 +245,13 @@ class Lakeshore475(SCPIInstrument):
         
     @property
     def control_slope_limit(self):
-        '''
+        """
         Gets/sets the I value for the field control ramp.
 
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units volt / minute.
-        :type: `~quantities.Quantity`
-        '''
+        :type: `~quantities.quantity.Quantity`
+        """
         return self.field_control_params[3]
     @control_slope_limit.setter
     def control_slope_limit(self, newval):
@@ -262,25 +260,19 @@ class Lakeshore475(SCPIInstrument):
         values = list(self.field_control_params)
         values[3] = newval
         self.field_control_params = tuple(values)
-        
-    @property
-    def control_mode(self):
-        '''
+    
+    control_mode = bool_property(
+        name="CMODE",
+        inst_true="1",
+        inst_false="0",
+        doc="""
         Gets/sets the control mode setting. False corresponds to the field
         control ramp being disables, while True enables the closed loop PI
         field control.
         
         :type: `bool`
-        '''
-        return (self.query('CMODE?').strip() is '1')
-    @control_mode.setter
-    def control_mode(self, newval):
-        if not isinstance(newval, bool):
-            raise TypeError('Control mode property must be specified as a bool')
-        if (newval):
-            self.sendcmd('CMODE 1')
-        else:
-            self.sendcmd('CMODE 0')
+        """
+    )
         
     ## METHODS ##
 
@@ -288,7 +280,7 @@ class Lakeshore475(SCPIInstrument):
                                 filter_type, peak_mode, peak_disp):
         # TODO: almost all of this method is checking types
         #       and validity; absorb this into an enum, perhaps?
-        '''
+        """
         Change the measurement mode of the Gaussmeter.
         
         :param mode: The desired measurement mode.
@@ -309,7 +301,7 @@ class Lakeshore475(SCPIInstrument):
         :param peak_disp: Peak display mode to be 
             used.
         :type peak_disp: `Lakeshore475.PeakDisplay`
-        '''
+        """
         if not isinstance(mode, EnumValue) or \
                 (mode.enum is not Lakeshore475.Mode):
             raise TypeError("Mode setting must be a "

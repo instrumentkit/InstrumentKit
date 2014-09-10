@@ -3,7 +3,7 @@
 ##
 # lakeshore370.py: Driver for the Lakeshore 370 AC resistance bridge.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -35,33 +35,8 @@ from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
 
-class _Lakeshore370Channel(object):
-    '''
-    Class representing a sensor attached to the Lakeshore 370.
-    
-    .. warning:: This class should NOT be manually created by the user. It is 
-        designed to be initialized by the `Lakeshore370` class.
-    '''
-    
-    def __init__(self, parent, idx):
-        self._parent = parent
-        self._idx = idx + 1
-        
-    ## PROPERTIES ##
-    
-    @property
-    def resistance(self):
-        '''
-        Gets the resistance of the specified sensor.
-        
-        :units: Ohm
-        :type: `~quantities.Quantity`
-        '''
-        value = self._parent.query('RDGR? {}'.format(self._idx))
-        return pq.Quantity(float(value), pq.ohm)
-
 class Lakeshore370(SCPIInstrument):
-    '''
+    """
     The Lakeshore 370 is a multichannel AC resistance bridge for use in low 
     temperature dilution refridgerator setups.
     
@@ -70,17 +45,44 @@ class Lakeshore370(SCPIInstrument):
     >>> import instruments as ik
     >>> bridge = ik.lakeshore.Lakeshore370.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print inst.channel[0].resistance
-    '''
+    """
 
     def __init__(self, filelike):
         super(Lakeshore370, self).__init__(filelike)
         self.sendcmd('IEEE 3,0') # Disable termination characters and enable EOI
     
+    ## INNER CLASSES ##
+    
+    class Channel(object):
+        """
+        Class representing a sensor attached to the Lakeshore 370.
+        
+        .. warning:: This class should NOT be manually created by the user. It is 
+            designed to be initialized by the `Lakeshore370` class.
+        """
+        
+        def __init__(self, parent, idx):
+            self._parent = parent
+            self._idx = idx + 1
+            
+        ## PROPERTIES ##
+        
+        @property
+        def resistance(self):
+            """
+            Gets the resistance of the specified sensor.
+            
+            :units: Ohm
+            :rtype: `~quantities.quantity.Quantity`
+            """
+            value = self._parent.query('RDGR? {}'.format(self._idx))
+            return pq.Quantity(float(value), pq.ohm)
+    
     ## PROPERTIES ##
     
     @property
     def channel(self):
-        '''
+        """
         Gets a specific channel object. The desired channel is specified like 
         one would access a list. 
         
@@ -91,6 +93,8 @@ class Lakeshore370(SCPIInstrument):
         >>> print bridge.channel[0].resistance
         
         The Lakeshore 370 supports up to 16 channels (index 0-15).
-        '''
-        return ProxyList(self, _Lakeshore370Channel, xrange(16))
+        
+        :rtype: `~Lakeshore370.Channel`
+        """
+        return ProxyList(self, Lakeshore370.Channel, xrange(16))
         

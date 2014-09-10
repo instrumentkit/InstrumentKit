@@ -14,18 +14,10 @@ Lakeshore-brand Instruments
     :members:
     :undoc-members:
     
-.. autoclass:: _Lakeshore340Sensor
-    :members:
-    :undoc-members:
-    
 :class:`Lakeshore370`
 =====================
 
 .. autoclass:: Lakeshore370
-    :members:
-    :undoc-members:
-    
-.. autoclass:: _Lakeshore370Channel
     :members:
     :undoc-members:
 
