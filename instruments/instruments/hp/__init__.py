@@ -1,3 +1,5 @@
+from instruments.hp.hp3456a import HP3456a
+
 from instruments.hp.hp6624a import (
     HP6624a,
     _HP6624aChannel
