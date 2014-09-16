@@ -23,6 +23,12 @@ setup(
     packages=[
         'instruments'
     ],
+    install_requires = [
+        "numpy",
+        "pyserial",
+        "quantities",
+        "flufl.enum"
+    ],
     extras_require = {
         'USBTMC' : ["python-usbtmc"],
         'VISA' : ["pyvisa"],
