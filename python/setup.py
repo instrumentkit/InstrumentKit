@@ -19,7 +19,7 @@ setup(
     url='https://github.com/Galvant/InstrumentKit/',
     author='Steven Casagrande and Chris Granade',
     author_email='scasagrande@galvant.ca',
-    package_dir={'': 'src'},
+    package_dir={'': ''},
     packages=[
         'instruments',
         'instruments.abstract_instruments',
