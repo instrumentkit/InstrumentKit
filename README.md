@@ -45,6 +45,7 @@ send, one can use the following functions to do so:
 
 Documentation
 -------------
+[![Documentation Status](https://readthedocs.org/projects/instrumentkit/badge/?version=latest)](https://readthedocs.org/projects/instrumentkit/?badge=latest)
 
 You can find the project documentation at our ReadTheDocs pages located at
 http://instrumentkit.readthedocs.org/en/latest/index.html
