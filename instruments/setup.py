@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(__main__.__file__))
     if hasattr(__main__, '__file__') else
     os.getcwd(), 
-    'src'
+    'instruments'
 ))
 import instruments as ik
 
