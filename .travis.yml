@@ -6,5 +6,5 @@ python:
 # command to install dependencies
 install: "pip install -r instruments/requirements.txt"
 # command to run tests
-script: nosetests -w python/src
+script: nosetests -w instruments
 
