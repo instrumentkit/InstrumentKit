@@ -14,10 +14,14 @@ n = 10
 dmm.number_of_readings = n
 dmm.nplc = 1
 dmm.mode = dmm.Mode.resistance_2wire
+dmm.math_mode = dmm.MathMode.statistic
 dmm.trigger()
 time.sleep(n * 0.04)
 v = dmm.fetch(dmm.Mode.resistance_2wire)
 print len(v)
+print dmm.variance
+print dmm.count
+print dmm.mean
 
 # Read registers
 dmm.nplc = 10
@@ -39,13 +43,13 @@ dmm.nplc = 100
 print dmm.count
 print dmm.measure(dmm.Mode.ratio_dcv_dcv)
 print dmm.measure(dmm.Mode.resistance_2wire)
+dmm.nplc = 1
 for i in range(-1, 4):
     value = (10 ** i) * pq.volt
     dmm.input_range = value
     print dmm.measure(dmm.Mode.dcv)
 
 # Walk through relative / null mode
-print dmm.relative
 dmm.relative = False
 print dmm.measure(dmm.Mode.resistance_2wire)
 dmm.relative = True
