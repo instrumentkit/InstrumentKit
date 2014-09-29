@@ -29,8 +29,10 @@ import io
 import time
 
 import numpy as np
+import quantities as pq
 
 from instruments.abstract_instruments.comm import serialManager, AbstractCommunicator
+from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
 
@@ -48,9 +50,10 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         self._file = filelike
         self._gpib_address = gpib_address
         self._terminator = 10
-        self._eoi = 1
+        self._eoi = True
         self._file.terminator = '\r'
-        self._strip = 0
+        self._timeout = 1000 * pq.millisecond
+        self._version = int(self._file.query("+ver"))
         
     ## PROPERTIES ##
     
@@ -85,12 +88,17 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
             
     @property
     def timeout(self):
-        return self._file.timeout
+        return self._timeout
     @timeout.setter
     def timeout(self, newval):
-        newval = int(newval)
-        self._file.sendcmd('+t:{}'.format(newval))
-        self._file.timeout = newval
+        newval = assume_units(newval, pq.second)
+        if self._version <= 4:
+            newval = newval.rescale(pq.second)
+            self._file.sendcmd('+t:{}'.format(newval.magnitude))
+        elif self._version >= 5:
+            newval = newval.rescale(pq.millisecond)
+            self._file.sendcmd("++read_tmo_ms {}".format(newval.magnitude))
+        self._file.timeout = newval.rescale(pq.second).magnitude
     
     @property
     def terminator(self):
@@ -102,38 +110,73 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
     def terminator(self, newval):
         if isinstance(newval, str):
             newval = newval.lower()
-        if newval == 'eoi':
-            self._eoi = 1
-        elif not isinstance(newval, int):
-            raise TypeError('GPIB termination must be integer 0-255 '
-                                'represending decimal value of ASCII '
-                                'termination character or a string containing' 
-                                ' "eoi".')
-        elif (newval < 0) or (newval > 255):
-            raise ValueError('GPIB termination must be integer 0-255 '
-                                'represending decimal value of ASCII '
-                                'termination character.')
-        else:
-            self._eoi = 0
-            self._terminator = str(newval)
-
-
-    @property
-    def strip(self):
-        """
-        Gets/sets the number of characters to strip from the end of
-        responses from the instrument.
-
-        :type: `int`
-        """
-        return self._strip
-    @strip.setter
-    def strip(self, newval):
-        newval = int(newval)
-        if newval < 0:
-            raise ValueError("Cannot strip negative numbers of characters.")
-        self._strip = newval
+        
+        if self._version <= 4:
+            if newval == 'eoi':
+                self._eoi = True
+            elif not isinstance(newval, int):
+                raise TypeError('GPIB termination must be integer 0-255 '
+                                    'represending decimal value of ASCII '
+                                    'termination character or a string' 
+                                    'containing "eoi".')
+            elif (newval < 0) or (newval > 255):
+                raise ValueError('GPIB termination must be integer 0-255 '
+                                    'represending decimal value of ASCII '
+                                    'termination character.')
+            else:
+                self._eoi = False
+                self._terminator = str(newval)
+        elif self._version >= 5:
+            if newval != "eoi":
+                self.eos = newval
+                self.eoi = False
+                self._terminator = self.eos
+            elif newval == "eoi":
+                self.eos = None
+                self._terminator = 'eoi'
+                self.eoi = True
     
+    @property
+    def eoi(self):
+        return self._eoi
+    @eoi.setter
+    def eoi(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError("EOI status must be specified as a boolean")
+        self._eoi = newval
+        if self._version >= 5:
+            self._file.sendcmd("++eoi {}".format('1' if newval else '0'))
+        else:
+            self._file.sendcmd("+eoi:{}".format('1' if newval else '0'))
+            
+    @property
+    def eos(self):
+        return self._eos
+    @eos.setter
+    def eos(self, newval):
+        if self._version <= 4:
+            if isinstance(newval, str):
+                newval = ord(newval)
+            self._file.sendcmd("+eos:{}".format(newval))
+            self._eos = newval
+        elif self._version >= 5:
+            if isinstance(newval, int):
+                newval = str(unichr(newval))
+            if newval == "\r\n":
+                self._eos = newval
+                newval = 0
+            elif newval == "\r":
+                self._eos = newval
+                newval = 1
+            elif newval == "\n":
+                self._eos = newval
+                newval = 2
+            elif newval == None:
+                self._eos = newval
+                newval = 3
+            else:
+                raise ValueError("EOS must be CRLF, CR, LF, or None")
+            self._file.sendcmd("++eos {}".format(newval))
     
     ## FILE-LIKE METHODS ##
     
@@ -183,13 +226,12 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
             return
         self._file.sendcmd('+a:' + str(self._gpib_address))
         time.sleep(0.01)
-        self._file.sendcmd('+eoi:{}'.format(self._eoi))
+        self.eoi = self.eoi
         time.sleep(0.01)
-        self._file.sendcmd('+strip:{}'.format(self._strip))
+        self.timeout = self.timeout
         time.sleep(0.01)
-        if self._eoi is 0:
-            self._file.sendcmd('+eos:{}'.format(self._terminator))
-            time.sleep(0.01)
+        self.eos = self.eos
+        time.sleep(0.01)
         self._file.sendcmd(msg)
         time.sleep(0.01)
         
