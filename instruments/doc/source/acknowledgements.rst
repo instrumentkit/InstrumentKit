@@ -12,7 +12,7 @@ had nothing to do with.
 
 - ihincks for the fantastic property factories (used throughout all classes) and for the Tektronix DPO70000 series class. 
 - dijkstrw for contributing several classes (HP6632b, HP3456a, Keithley 580) as well as plenty of general IK testing.
-- CatherineH for the Qubitekk CC1, Thorlabs LCC25, and Thorlabs SC10 classes, and for convincing her employers at Qubitekk to use IK as the driver base for the CC1.
+- CatherineH for the Qubitekk CC1, Thorlabs LCC25, and Thorlabs SC10 classes
 - silverchris for the TekTDS5xx class
 - wil-langford for the HP6652a class
 - whitewhim2718 for the Newport ESP 301
