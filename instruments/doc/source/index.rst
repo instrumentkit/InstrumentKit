@@ -12,6 +12,7 @@ Contents:
     intro
     apiref/index
     devguide/index
+    acknowledgements
 
 
 
