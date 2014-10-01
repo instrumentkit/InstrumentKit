@@ -42,3 +42,11 @@ Tektronix
 .. autoclass:: TekTDS5xx
     :members:
     :undoc-members:
+    
+:class:`TekDPO70000`
+==========================
+
+.. autoclass:: TekDPO70000Series
+    :members:
+    :undoc-members:
+
