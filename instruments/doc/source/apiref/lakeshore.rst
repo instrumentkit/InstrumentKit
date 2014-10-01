@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.lakeshore
     
-===========================
-Lakeshore-brand Instruments
-===========================
+=========
+Lakeshore
+=========
 
 :class:`Lakeshore340`
 =====================

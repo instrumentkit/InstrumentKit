@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.thorlabs
     
-==========================
-ThorLabs-brand Instruments
-==========================
+========
+ThorLabs
+========
 
 :class:`PM100USB` - USB Power Meter
 ===================================

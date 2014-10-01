@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.srs
     
-=====================================
-Stanford Research Systems Instruments
-=====================================
+=========================
+Stanford Research Systems
+=========================
 
 :class:`SRS345`
 ===============

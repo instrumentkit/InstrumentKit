@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.qubitekk
     
-==========================
-Qubitekk-brand Instruments
-==========================
+========
+Qubitekk
+========
 
 :class:`CC1`
 =====================

@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.tektronix
     
-===========================
-Tektronix-brand Instruments
-===========================
+=========
+Tektronix
+=========
 
 :class:`TekAWG2000`
 ===================
