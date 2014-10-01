@@ -3,7 +3,7 @@
 ##
 # socketwrapper.py: Wraps sockets into a filelike object.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -28,8 +28,10 @@ import io
 import serial
 
 import numpy as np
+import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
+from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
 
@@ -77,10 +79,10 @@ class SerialWrapper(io.IOBase, AbstractCommunicator):
         
     @property
     def timeout(self):
-        return self._conn.timeout
+        return self._conn.timeout * pq.second
     @timeout.setter
     def timeout(self, newval):
-        newval = int(newval)
+        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
         self._conn.timeout = newval
 
     @property

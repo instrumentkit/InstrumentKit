@@ -3,7 +3,7 @@
 ##
 # gi_gpib.py: Wrapper for Galvant Industries GPIB adapters.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -98,7 +98,8 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         elif self._version >= 5:
             newval = newval.rescale(pq.millisecond)
             self._file.sendcmd("++read_tmo_ms {}".format(newval.magnitude))
-        self._file.timeout = newval.rescale(pq.second).magnitude
+        self._file.timeout = newval.rescale(pq.second)
+        self._timeout = newval.rescale(pq.second)
     
     @property
     def terminator(self):
