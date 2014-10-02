@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.keithley
     
-==========================
-Keithley-brand Instruments
-==========================
+========
+Keithley
+========
 
 :class:`Keithley195`
 ====================

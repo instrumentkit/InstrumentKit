@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.yokogawa
     
-==========================
-Yokogawa-brand Instruments
-==========================
+========
+Yokogawa
+========
 
 :class:`Yokogawa7651`
 =====================

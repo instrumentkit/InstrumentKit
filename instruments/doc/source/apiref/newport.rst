@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.newport
     
-=========================
-Newport-brand Instruments
-=========================
+=======
+Newport
+=======
 
 :class:`NewportESP301`
 ======================

@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.oxford
     
-========================
-Oxford-brand Instruments
-========================
+======
+Oxford
+======
     
 :class:`OxfordITC503`
 =====================

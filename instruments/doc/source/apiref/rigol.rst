@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.rigol
     
-=======================
-Rigol-brand Instruments
-=======================
+=====
+Rigol
+=====
     
 :class:`RigolDS1000Series`
 ==========================

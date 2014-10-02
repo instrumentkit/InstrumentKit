@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.picowatt
     
-==========================
-Picowatt-brand Instruments
-==========================
+========
+Picowatt
+========
 
 :class:`PicowattAVS47`
 ======================

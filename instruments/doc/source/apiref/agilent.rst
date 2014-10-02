@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.agilent
     
-=========================
-Agilent-brand Instruments
-=========================
+=======
+Agilent
+=======
 
 :class:`Agilent33220a`
 ======================

@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.holzworth
 
-=================================
-Holzworth Instrumentation Devices
-=================================
+=========
+Holzworth
+=========
 
 .. autoclass:: HolzworthHS9000
     :members:

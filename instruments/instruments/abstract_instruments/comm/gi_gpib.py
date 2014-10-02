@@ -3,7 +3,7 @@
 ##
 # gi_gpib.py: Wrapper for Galvant Industries GPIB adapters.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -40,13 +40,13 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
     '''
     Wraps a SocketWrapper or PySerial.Serial connection for use with
     Galvant Industries GPIBUSB or GPIBETHERNET adapters.
-
+    
     This wrapper is designed to wrap the SocketWrapper and SerialWrapper
     classes.
     '''
     def __init__(self, filelike, gpib_address):
         AbstractCommunicator.__init__(self)
-
+        
         self._file = filelike
         self._gpib_address = gpib_address
         self._terminator = 10
@@ -54,24 +54,24 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         self._file.terminator = '\r'
         self._timeout = 1000 * pq.millisecond
         self._version = int(self._file.query("+ver"))
-
+        
     ## PROPERTIES ##
-
+    
     @property
     def address(self):
         return (self._gpib_address, self._file.address)
     @address.setter
     def address(self, newval):
         '''
-        Change GPIB address and downstream address associated with
+        Change GPIB address and downstream address associated with 
         the instrument.
-
+        
         If specified as an integer, only changes the GPIB address. If specified
         as a list, the first element changes the GPIB address, while the second
         is passed downstream.
-
+        
         Example: [<int>gpib_address, downstream_address]
-
+        
         Where downstream_address needs to be formatted as appropriate for the
         connection (eg SerialWrapper, SocketWrapper, etc).
         '''
@@ -84,8 +84,8 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
             self._file.address = newval[1] # Send downstream address
         else:
             raise TypeError("Not a valid input type for Instrument address.")
-
-
+        
+            
     @property
     def timeout(self):
         return self._timeout
@@ -98,8 +98,9 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         elif self._version >= 5:
             newval = newval.rescale(pq.millisecond)
             self._file.sendcmd("++read_tmo_ms {}".format(newval.magnitude))
-        self._timeout = newval.rescale(pq.second).magnitude
-
+        self._file.timeout = newval.rescale(pq.second)
+        self._timeout = newval.rescale(pq.second)
+    
     @property
     def terminator(self):
         if not self._eoi:
@@ -110,14 +111,14 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
     def terminator(self, newval):
         if isinstance(newval, str):
             newval = newval.lower()
-
+        
         if self._version <= 4:
             if newval == 'eoi':
                 self._eoi = True
             elif not isinstance(newval, int):
                 raise TypeError('GPIB termination must be integer 0-255 '
                                     'represending decimal value of ASCII '
-                                    'termination character or a string'
+                                    'termination character or a string' 
                                     'containing "eoi".')
             elif (newval < 0) or (newval > 255):
                 raise ValueError('GPIB termination must be integer 0-255 '
@@ -135,7 +136,7 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
                 self.eos = None
                 self._terminator = 'eoi'
                 self.eoi = True
-
+    
     @property
     def eoi(self):
         return self._eoi
@@ -148,7 +149,7 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
             self._file.sendcmd("++eoi {}".format('1' if newval else '0'))
         else:
             self._file.sendcmd("+eoi:{}".format('1' if newval else '0'))
-
+            
     @property
     def eos(self):
         return self._eos
@@ -177,20 +178,20 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
             else:
                 raise ValueError("EOS must be CRLF, CR, LF, or None")
             self._file.sendcmd("++eos {}".format(newval))
-
+    
     ## FILE-LIKE METHODS ##
-
+    
     def close(self):
         self._file.close()
-
+        
     def read(self, size):
         '''
-        Read characters from wrapped class (ie SocketWrapper or
+        Read characters from wrapped class (ie SocketWrapper or 
         PySerial.Serial).
-
+        
         If size = -1, characters will be read until termination character
         is found.
-
+        
         GI GPIB adapters always terminate serial connections with a CR.
         Function will read until a CR is found.
         '''
@@ -201,24 +202,24 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         #    msg = msg[:-1]
 
         return msg
-
+    
     def write(self, msg):
         '''
         Write data string to GPIB connected instrument.
         This function sends all the necessary GI-GPIB adapter internal commands
-        that are required for the specified instrument.
+        that are required for the specified instrument.  
         '''
         self._file.write(msg)
-
+        
     def flush_input(self):
         '''
         Instruct the wrapper to flush the input buffer, discarding the entirety
         of its contents.
         '''
         self._file.flush_input()
-
+        
     ## METHODS ##
-
+    
     def _sendcmd(self, msg):
         '''
         '''
@@ -234,7 +235,7 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         time.sleep(0.01)
         self._file.sendcmd(msg)
         time.sleep(0.01)
-
+        
     def _query(self, msg, size=-1):
         '''
         '''
@@ -242,3 +243,4 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         if '?' not in msg:
             self._file.sendcmd('+read')
         return self._file.read(size).strip()
+    

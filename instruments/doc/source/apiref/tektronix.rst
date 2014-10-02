@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.tektronix
     
-===========================
-Tektronix-brand Instruments
-===========================
+=========
+Tektronix
+=========
 
 :class:`TekAWG2000`
 ===================
@@ -42,3 +42,11 @@ Tektronix-brand Instruments
 .. autoclass:: TekTDS5xx
     :members:
     :undoc-members:
+    
+:class:`TekDPO70000`
+==========================
+
+.. autoclass:: TekDPO70000Series
+    :members:
+    :undoc-members:
+

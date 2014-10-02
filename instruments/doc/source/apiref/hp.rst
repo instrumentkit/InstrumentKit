@@ -3,9 +3,9 @@
 
 .. currentmodule:: instruments.hp
 
-====================
-HP-brand Instruments
-====================
+===============
+Hewlett-Packard
+===============
 
 :class:`HP3456a`
 ================
