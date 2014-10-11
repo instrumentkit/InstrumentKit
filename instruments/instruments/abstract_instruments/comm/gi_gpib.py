@@ -49,7 +49,7 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         
         self._file = filelike
         self._gpib_address = gpib_address
-        self._terminator = 10
+        self.terminator = 10
         self._eoi = True
         self._file.terminator = '\r'
         self._timeout = 1000 * pq.millisecond
