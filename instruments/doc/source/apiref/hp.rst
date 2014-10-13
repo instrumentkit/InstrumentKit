@@ -7,6 +7,13 @@
 Hewlett-Packard
 ===============
 
+:class:`HP3456a`
+================
+
+.. autoclass:: HP3456a
+    :members:
+    :undoc-members:
+
 :class:`HP6624a`
 ================
 
