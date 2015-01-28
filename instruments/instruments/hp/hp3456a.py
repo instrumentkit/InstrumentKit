@@ -57,7 +57,7 @@ class HP3456a(Multimeter):
         """
         super(HP3456a, self).__init__(filelike)
         self.timeout = 15 * pq.second
-        self.terminator = 13
+        self.terminator = '\r'
         self.sendcmd('HO0T4SO1')
 
     ## ENUMS ##
