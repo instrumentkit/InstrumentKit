@@ -116,7 +116,10 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
             if newval == 'eoi':
                 self._eoi = True
             elif not isinstance(newval, int):
-                raise TypeError('GPIB termination must be integer 0-255 '
+                if len(newval) == 1:
+                    newval = ord(newval)
+                else:
+                    raise TypeError('GPIB termination must be integer 0-255 '
                                     'represending decimal value of ASCII '
                                     'termination character or a string' 
                                     'containing "eoi".')
