@@ -130,8 +130,9 @@ class LoopbackWrapper(io.IOBase, AbstractCommunicator):
         
         :param str msg: The command to be received
         '''
-        msg = msg + self._terminator
-        self.write(msg)
+        if msg is not '':
+            msg = msg + self._terminator
+            self.write(msg)
         
     def query(self, msg, size=-1):
         '''
