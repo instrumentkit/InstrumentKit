@@ -56,7 +56,7 @@ class VisaWrapper(io.IOBase, AbstractCommunicator):
         if visa is None:
             raise ImportError("PyVISA required for accessing VISA instruments.")
             
-        if int(visa.__version__.replace('.',''))< 160 and isinstance(conn, visa.instrument) or isinstance(conn, visa.Resource):
+        if int(visa.__version__.replace('.',''))< 160 and isinstance(conn, visa.Instrument) or int(visa.__version__.replace('.',''))>= 160 and isinstance(conn, visa.Resource):
             self._conn = conn
             self._terminator = '\n'
         else:
