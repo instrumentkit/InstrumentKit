@@ -439,7 +439,7 @@ class Instrument(object):
         if int(visa.__version__.replace('.',''))>= 160:
             ins = visa.ResourceManager().open_resource(resource_name)
         else:
-            ins = visa.resource.open_resource(resource_name)
+            ins = visa.instrument(resource_name)
         return cls(VisaWrapper(ins))
 
     @classmethod
