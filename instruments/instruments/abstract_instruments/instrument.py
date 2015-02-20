@@ -436,7 +436,10 @@ class Instrument(object):
         if visa is None:
             raise ImportError("PyVISA is required for loading VISA "
                                 "instruments.")
-        ins = visa.ResourceManager().open_resource(resource_name)
+        if int(visa.__version__.replace('.',''))>= 160:
+            ins = visa.ResourceManager().open_resource(resource_name)
+        else:
+            ins = visa.resource.open_resource(resource_name)
         return cls(VisaWrapper(ins))
 
     @classmethod
