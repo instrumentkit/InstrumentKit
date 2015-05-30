@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# socketwrapper.py: Wraps sockets into a filelike object.
+# socket_communicator.py: Encapsulates a socket into a filelike object.
 ##
-# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #        Chris Granade (cgranade@cgranade.com).
 #
 # This file is a part of the InstrumentKit project.
@@ -36,12 +36,12 @@ from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
 
-class SocketWrapper(io.IOBase, AbstractCommunicator):
+class SocketCommunicator(io.IOBase, AbstractCommunicator):
     """
-    Wraps a socket to make it look like a `file`. Note that this is used instead
-    of `socket.makefile`, as that method does not support timeouts. We do not
-    support all features of `file`-like objects here, but enough to make
-    `~instrument.Instrument` happy.
+    Communicates with a socket and makes it look like a `file`. Note that this 
+    is used instead of `socket.makefile`, as that method does not support 
+    timeouts. We do not support all features of `file`-like objects here, but 
+    enough to make `~instrument.Instrument` happy.
     """
     
     def __init__(self, conn):
@@ -50,7 +50,7 @@ class SocketWrapper(io.IOBase, AbstractCommunicator):
             self._conn = conn
             self._terminator = '\n'
         else:
-            raise TypeError('SocketWrapper must wrap a socket.socket object.')
+            raise TypeError('SocketCommunicator must wrap a socket.socket object.')
         
     ## PROPERTIES ##
     
@@ -70,10 +70,10 @@ class SocketWrapper(io.IOBase, AbstractCommunicator):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for SocketWrapper must be specified '
-                              'as a single character string.')
+            raise TypeError('Terminator for SocketCommunicator must be '
+                              'specified as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for SocketWrapper must only be 1 '
+            raise ValueError('Terminator for SocketCommunicator must only be 1 '
                                 'character long.')
         self._terminator = newval
         
@@ -117,8 +117,8 @@ class SocketWrapper(io.IOBase, AbstractCommunicator):
         
     def flush_input(self):
         '''
-        Instruct the wrapper to flush the input buffer, discarding the entirety
-        of its contents.
+        Instruct the communicator to flush the input buffer, discarding the 
+        entirety of its contents.
         '''
         _ = self.read(-1) # Read in everything in the buffer and trash it
         

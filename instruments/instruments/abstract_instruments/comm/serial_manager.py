@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# serialManager.py: Manages open serial connections.
+# serial_manager.py: Manages open serial connections.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -36,7 +36,7 @@ pyserial connections can be open at the same time to the same serial port.
 
 import serial
 
-from instruments.abstract_instruments.comm import SerialWrapper
+from instruments.abstract_instruments.comm import SerialCommunicator
 
 # We want to only *weakly* hold references to serial ports, to allow for them
 # to be deleted and reopened as need be.
@@ -53,12 +53,12 @@ serialObjDict = weakref.WeakValueDictionary()
 
 ## METHODS #####################################################################
 
-def newSerialConnection(port, baud=460800, timeout=3, writeTimeout=3):
+def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3):
     if not isinstance(port,str):
         raise TypeError('Serial port must be specified as a string.')
     
     if port not in serialObjDict or serialObjDict[port] is None:
-        conn = SerialWrapper(serial.Serial(
+        conn = SerialCommunicator(serial.Serial(
                                          port,
                                          baudrate=baud,
                                          timeout=timeout,

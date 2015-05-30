@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# usbwrapper.py: Wraps USB connections into a filelike object.
+# usb_communicator.py: Wraps USB connections into a filelike object.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -32,7 +32,7 @@ from instruments.abstract_instruments.comm import AbstractCommunicator
 
 ## CLASSES #####################################################################
 
-class USBWrapper(io.IOBase, AbstractCommunicator):
+class USBCommunicator(io.IOBase, AbstractCommunicator):
     '''
     
     '''
@@ -60,10 +60,10 @@ class USBWrapper(io.IOBase, AbstractCommunicator):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for USBWrapper must be specified '
+            raise TypeError('Terminator for USBCommunicator must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for USBWrapper must only be 1 '
+            raise ValueError('Terminator for USBCommunicator must only be 1 '
                                 'character long.')
         self._terminator = newval
         
@@ -96,8 +96,8 @@ class USBWrapper(io.IOBase, AbstractCommunicator):
         
     def flush_input(self):
         '''
-        Instruct the wrapper to flush the input buffer, discarding the entirety
-        of its contents.
+        Instruct the communicator to flush the input buffer, discarding the 
+        entirety of its contents.
         '''
         raise NotImplementedError
     

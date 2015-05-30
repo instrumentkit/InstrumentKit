@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# socketwrapper.py: Wraps sockets into a filelike object.
+# visa_communicator.py: Communicates with a VISA channel, turning it into a 
+#       filelike object.
 ##
-# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -45,9 +46,10 @@ from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
 
-class VisaWrapper(io.IOBase, AbstractCommunicator):
+class VisaCommunicator(io.IOBase, AbstractCommunicator):
     """
-    Wraps a connection exposed by the VISA library.
+    Communicates a connection exposed by the VISA library and exposes it as a 
+    file-like object.
     """
     
     def __init__(self, conn):
@@ -60,7 +62,7 @@ class VisaWrapper(io.IOBase, AbstractCommunicator):
             self._conn = conn
             self._terminator = '\n'
         else:
-            raise TypeError('VisaWrapper must wrap a VISA Instrument.')
+            raise TypeError('VisaCommunicator must wrap a VISA Instrument.')
 
         # Make a bytearray for holding data read in from the device
         # so that we can buffer for two-argument read.
@@ -82,10 +84,10 @@ class VisaWrapper(io.IOBase, AbstractCommunicator):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for VisaWrapper must be specified '
+            raise TypeError('Terminator for VisaCommunicator must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for VisaWrapper must only be 1 '
+            raise ValueError('Terminator for VisaCommunicator must only be 1 '
                                 'character long.')
         self._terminator = newval
         
@@ -133,8 +135,8 @@ class VisaWrapper(io.IOBase, AbstractCommunicator):
         
     def flush_input(self):
         '''
-        Instruct the wrapper to flush the input buffer, discarding the entirety
-        of its contents.
+        Instruct the communicator to flush the input buffer, discarding the 
+        entirety of its contents.
         '''
         #TODO: Find out how to flush with pyvisa
         pass

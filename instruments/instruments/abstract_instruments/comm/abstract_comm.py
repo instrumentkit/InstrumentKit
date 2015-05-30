@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# wrapperabc.py: Python ABC for file-like wrappers
+# abstract_comm.py: Python ABC for file-like communicators
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -139,7 +139,7 @@ class AbstractCommunicator(object):
         but appends any other commands or termination characters required
         by the communication.
         
-        This differs from the wrapper .write method which directly exposes
+        This differs from the communicator .write method which directly exposes
         the communication channel without appending other data.
         '''
         if self.debug:
@@ -167,8 +167,8 @@ class AbstractCommunicator(object):
     @abc.abstractmethod
     def flush_input(self):
         '''
-        Instruct the wrapper to flush the input buffer, discarding the entirety
-        of its contents.
+        Instruct the communicator to flush the input buffer, discarding the
+        entirety of its contents.
         '''
         raise NotImplementedError
 
