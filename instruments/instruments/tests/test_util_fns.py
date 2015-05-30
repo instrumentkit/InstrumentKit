@@ -144,26 +144,52 @@ def test_int_property_valid_set():
     mock = IntMock()
     mock.mock = 3
 
-
-def test_split_unit_str():
+def test_split_unit_str_magnitude_and_units():
     """
-    util_fns: Tests that split_unit_str acts correctly.
+    split_unit_str: Given the input "42 foobars" I expect the output
+    to be (42, "foobars").
+    
+    This checks that "[val] [units]" works where val is a non-scientific number
     """
     # Check that unit strings go through OK.
     mag, units = split_unit_str("42 foobars")
     eq_(mag, 42)
     eq_(units, "foobars")
-
+    
+def test_split_unit_str_magnitude_and_default_units():
+    """
+    split_unit_str: Given the input "42" and default_units="foobars"
+    I expect output to be (42, "foobars").
+    
+    This checks that when given a string without units, the function returns
+    default_units as the units.
+    """
     # Check that default units work.
     mag, units = split_unit_str("42", default_units="foobars")
     eq_(mag, 42)
     eq_(units, "foobars")
-
+    
+def test_split_unit_str_ignore_default_units():
+    """
+    split_unit_str: Given the input "42 snafus" and default_units="foobars"
+    I expect the output to be (42, "snafus").
+    
+    This verifies that if the input has units, then any specified default_units
+    are ignored.
+    """
     # Check that default units are ignored if there's actual units.
-    mag, units = split_unit_str("42 snafus")
+    mag, units = split_unit_str("42 snafus", default_units="foobars")
     eq_(mag, 42)
     eq_(units, "snafus")
-
+    
+def test_split_unit_str_lookups():
+    """
+    split_unit_str: Given the input "42 FOO" and a dictionary for our units
+    lookup, I expect the output to be (42, "foobars").
+    
+    This checks that the unit lookup parameter is correctly called, which can be
+    used to map between units as string and their pyquantities equivalent.
+    """
     # Finally, check that lookups work.
     unit_dict = {
         "FOO": "foobars",
