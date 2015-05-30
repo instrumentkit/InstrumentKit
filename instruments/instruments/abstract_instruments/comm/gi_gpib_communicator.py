@@ -31,7 +31,7 @@ import time
 import numpy as np
 import quantities as pq
 
-from instruments.abstract_instruments.comm import serialManager, AbstractCommunicator
+from instruments.abstract_instruments.comm import serial_manager, AbstractCommunicator
 from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
