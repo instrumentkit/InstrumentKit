@@ -1,7 +1,7 @@
 InstrumentKit
 =============
 
-[![Build Status](https://travis-ci.org/Galvant/InstrumentKit.svg?branch=dev)](https://travis-ci.org/Galvant/InstrumentKit)
+[![Build Status](https://travis-ci.org/Galvant/InstrumentKit.svg?branch=dev)](https://travis-ci.org/Galvant/InstrumentKit) [![Coverage Status](https://coveralls.io/repos/Galvant/InstrumentKit/badge.svg?branch=dev)](https://coveralls.io/r/Galvant/InstrumentKit?branch=dev)
 
 This project contains code to easily interact with laboratory equipment using
 various communication buses.
