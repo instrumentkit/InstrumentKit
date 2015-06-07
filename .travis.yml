@@ -11,8 +11,6 @@ install:
   - pip install nose
 # command to run tests
 script:
-  #- nosetests -w instruments
-  #- python instruments/setup.py install
   - nosetests --with-coverage -w instruments
 after_success:
   - coveralls
