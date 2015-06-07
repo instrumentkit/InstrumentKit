@@ -4,7 +4,13 @@ python:
 #  - "2.6"
   - "2.7"
 # command to install dependencies
-install: "pip install -r instruments/requirements.txt"
+install:
+  - "pip install -r instruments/requirements.txt"
+  - pip install python-coveralls
+  - pip install coverage
+  - pip install nose
 # command to run tests
-script: nosetests -w instruments
-
+script:
+  - nosetests --with-coverage -w instruments
+after_success:
+  - coveralls
