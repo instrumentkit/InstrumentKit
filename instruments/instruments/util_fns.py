@@ -3,7 +3,7 @@
 ##
 # util_fns.py: Random utility functions.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -81,15 +81,28 @@ def split_unit_str(s, default_units=pq.dimensionless, lookup=None):
 
     # Borrowed from:
     # http://stackoverflow.com/questions/430079/how-to-split-strings-into-text-and-number
-    match = re.match(r"(-?[0-9\.]+)\s*([a-z]+)", s.strip(), re.I)
+    # Reg exp tweaked on May 30, 2015 by scasagrande to match on input with
+    # scientific notation. General flow borrowed from:
+    # http://www.regular-expressions.info/floatingpoint.html
+    regex = r"([-+]?[0-9]*\.?[0-9]+)([eE][-+]?[0-9]+)?\s*([a-z]+)?"
+    match = re.match(regex, s.strip(), re.I)
     if match:
-        val, units = match.groups()
-        return float(val), lookup(units)
+        if match.groups()[1] is None:
+            val, _, units = match.groups()
+        else:
+            val = float(match.groups()[0]) * 10**float(match.groups()[1][1:])
+            units = match.groups()[2]
+            
+        if units is None:
+            return float(val), default_units
+        else:
+            return float(val), lookup(units)
     else:
         try:
             return float(s), default_units
         except ValueError:
-            raise ValueError("Could not split '{}' into value and units.".format(repr(s)))
+            raise ValueError("Could not split '{}' into value "
+                             "and units.".format(repr(s)))
 
 def rproperty(fget=None, fset=None, doc=None, readonly=False, writeonly=False):
     if readonly and writeonly:
