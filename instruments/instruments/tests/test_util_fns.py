@@ -107,9 +107,6 @@ def test_bool_property_basics():
         
     mock = BoolMock({'MOCK1?': 'OFF', 'MOCK2?': 'YES'})
     
-    assert hasattr(mock, 'mock1')
-    assert hasattr(mock, 'mock2')
-    
     assert not mock.mock1
     assert mock.mock2
     
