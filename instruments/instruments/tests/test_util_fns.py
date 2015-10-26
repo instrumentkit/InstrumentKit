@@ -135,7 +135,7 @@ def test_bool_property_read_only():
     
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
     
-    assert mock_instrument.mock1 = False # Can read
+    assert mock_instrument.mock1 == False # Can read
     mock_instrument.mock1 = "Foo" # Should raise AttributeError
 
 @raises(AttributeError)
