@@ -123,7 +123,7 @@ def test_bool_property_set_fmt():
     
     mock_instrument.mock1 = True
     
-    eq_(mock_instrument.value, 'MOCK1=ON')
+    eq_(mock_instrument.value, 'MOCK1=ON\n')
 
 @raises(AttributeError)    
 def test_bool_property_read_only():
