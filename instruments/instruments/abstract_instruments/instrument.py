@@ -3,7 +3,7 @@
 ##
 # instrument.py: Provides base class for all instruments.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -32,16 +32,16 @@ import socket
 import urlparse
 
 from instruments.abstract_instruments.comm import (
-    SocketWrapper,
-    USBWrapper,
-    VisaWrapper,
+    SocketCommunicator,
+    USBCommunicator,
+    VisaCommunicator,
     FileCommunicator,
-    LoopbackWrapper,
-    GPIBWrapper,
+    LoopbackCommunicator,
+    GPIBCommunicator,
     AbstractCommunicator,
     USBTMCCommunicator,
-    SerialWrapper,
-    serialManager
+    SerialCommunicator,
+    serial_manager
 )
 
 import os
@@ -347,7 +347,7 @@ class Instrument(object):
         """
         conn = socket.socket()
         conn.connect((host, port))
-        return cls(SocketWrapper(conn))
+        return cls(SocketCommunicator(conn))
         
     @classmethod
     def open_serial(cls, port, baud, timeout=3, writeTimeout=3):
@@ -372,7 +372,7 @@ class Instrument(object):
         .. seealso::
             `~serial.Serial` for description of `port`, baud rates and timeouts.
         """
-        ser = serialManager.newSerialConnection(port, 
+        ser = serial_manager.new_serial_connection(port, 
                                      baud,
                                      timeout, 
                                      writeTimeout)
@@ -406,13 +406,13 @@ class Instrument(object):
         ser = serialManager.newSerialConnection(port,
                 timeout=timeout,
                  writeTimeout=writeTimeout)
-        return cls(GPIBWrapper(ser, gpib_address))
+        return cls(GPIBCommunicator(ser, gpib_address))
         
     @classmethod
     def open_gpibethernet(cls, host, port, gpib_address):
         conn = socket.socket()
         conn.connect((host, port))
-        return cls(GPIBWrapper(conn, gpib_address))
+        return cls(GPIBCommunicator(conn, gpib_address))
 
     @classmethod
     def open_visa(cls, resource_name):
@@ -440,11 +440,11 @@ class Instrument(object):
             ins = visa.ResourceManager().open_resource(resource_name)
         else:
             ins = visa.instrument(resource_name)
-        return cls(VisaWrapper(ins))
+        return cls(VisaCommunicator(ins))
 
     @classmethod
     def open_test(cls, stdin=None, stdout=None):
-        return cls(LoopbackWrapper(stdin, stdout))
+        return cls(LoopbackCommunicator(stdin, stdout))
 
     @classmethod
     def open_usbtmc(cls, *args, **kwargs):
@@ -504,7 +504,7 @@ class Instrument(object):
         if ep is None:
             raise IOError("USB descriptor not found.")
 
-        return cls(USBWrapper(ep))
+        return cls(USBCommunicator(ep))
         
     @classmethod
     def open_file(cls, filename):

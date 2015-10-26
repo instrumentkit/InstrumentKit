@@ -1,10 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# loopback_wrappper.py: Loopback wrapper, just prints what it receives or 
-#                       queries return empty string
+# loopback_communicator.py: Loopback communicator, just prints what it receives  
+#                           or queries return empty string
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -32,7 +32,7 @@ import sys
 
 ## CLASSES #####################################################################
 
-class LoopbackWrapper(io.IOBase, AbstractCommunicator):
+class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
     """
     Used for testing various controllers
     """
@@ -61,7 +61,7 @@ class LoopbackWrapper(io.IOBase, AbstractCommunicator):
             raise TypeError('Terminator must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for LoopbackWrapper must only be 1 '
+            raise ValueError('Terminator for LoopbackCommunicator must only be 1 '
                                 'character long.')
         self._terminator = newval
         

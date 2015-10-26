@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# socketwrapper.py: Wraps sockets into a filelike object.
+# socket_communicator.py: Encapsulates a socket into a filelike object.
 ##
-# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
+#        Chris Granade (cgranade@cgranade.com).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -25,17 +26,7 @@
 ## IMPORTS #####################################################################
 
 import io
-
-# Trick to conditionally ignore the NameError caused by catching WindowsError.
-# Needed as PyVISA causes a WindowsError on Windows when VISA is not installed.
-try:
-    WindowsError
-except NameError:
-    WindowsError = None
-try:
-    import visa
-except (ImportError, WindowsError, OSError):
-    visa = None
+import socket
 
 import numpy as np
 import quantities as pq
@@ -45,36 +36,33 @@ from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
 
-class VisaWrapper(io.IOBase, AbstractCommunicator):
+class SocketCommunicator(io.IOBase, AbstractCommunicator):
     """
-    Wraps a connection exposed by the VISA library.
+    Communicates with a socket and makes it look like a `file`. Note that this 
+    is used instead of `socket.makefile`, as that method does not support 
+    timeouts. We do not support all features of `file`-like objects here, but 
+    enough to make `~instrument.Instrument` happy.
     """
     
     def __init__(self, conn):
         AbstractCommunicator.__init__(self)
-    
-        if visa is None:
-            raise ImportError("PyVISA required for accessing VISA instruments.")
-            
-        if int(visa.__version__.replace('.',''))< 160 and isinstance(conn, visa.Instrument) or int(visa.__version__.replace('.',''))>= 160 and isinstance(conn, visa.Resource):
+        if isinstance(conn, socket.socket):
             self._conn = conn
             self._terminator = '\n'
         else:
-            raise TypeError('VisaWrapper must wrap a VISA Instrument.')
-
-        # Make a bytearray for holding data read in from the device
-        # so that we can buffer for two-argument read.
-        self._buf = bytearray()
+            raise TypeError('SocketCommunicator must wrap a socket.socket object.')
         
     ## PROPERTIES ##
     
     @property
     def address(self):
-        return self._conn.resource_name
+        '''
+        Returns the socket peer address information as a tuple.
+        '''
+        return self._conn.getpeername()
     @address.setter
     def address(self, newval):
-        raise NotImplementedError("Changing addresses of a VISA Instrument "
-                                     "is not supported.")
+        raise NotImplementedError('Unable to change address of sockets.')
         
     @property
     def terminator(self):
@@ -82,48 +70,44 @@ class VisaWrapper(io.IOBase, AbstractCommunicator):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for VisaWrapper must be specified '
-                              'as a single character string.')
+            raise TypeError('Terminator for SocketCommunicator must be '
+                              'specified as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for VisaWrapper must only be 1 '
+            raise ValueError('Terminator for SocketCommunicator must only be 1 '
                                 'character long.')
         self._terminator = newval
         
     @property
     def timeout(self):
-        return self._conn.timeout * pq.second
+        return self._conn.gettimeout() * pq.second
     @timeout.setter
     def timeout(self, newval):
         newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
-        self._conn.timeout = newval
-
+        self._conn.settimeout(newval)
+        
     ## FILE-LIKE METHODS ##
     
     def close(self):
         try:
+            self._conn.shutdown()
+        finally:
             self._conn.close()
-        except:
-            pass
         
     def read(self, size):
         if (size >= 0):
-            while len(self._buf) < size:
-                self._buf += self._conn.read()
-            msg = self._buf[:size]
-            # Remove the front of the buffer.
-            del self._buf[:size]
+            return self._conn.recv(size)
         elif (size == -1):
-            # Read the whole contents, appending the buffer we've already read.
-            msg = self._buf + self._conn.read()
-            # Reset the contents of the buffer.
-            self._buf = bytearray()
+            result = bytearray()
+            c = 0
+            while c != self._terminator:
+                c = self._conn.recv(1)
+                result += c
+            return bytes(result)
         else:
-            raise ValueError('Must read a positive value of characters, or -1 for all characters.')
-
-        return msg
+            raise ValueError('Must read a positive value of characters.')
         
-    def write(self, msg):
-        self._conn.write(msg)
+    def write(self, string):
+        self._conn.sendall(string)
         
     def seek(self, offset):
         return NotImplemented
@@ -133,11 +117,10 @@ class VisaWrapper(io.IOBase, AbstractCommunicator):
         
     def flush_input(self):
         '''
-        Instruct the wrapper to flush the input buffer, discarding the entirety
-        of its contents.
+        Instruct the communicator to flush the input buffer, discarding the 
+        entirety of its contents.
         '''
-        #TODO: Find out how to flush with pyvisa
-        pass
+        _ = self.read(-1) # Read in everything in the buffer and trash it
         
     ## METHODS ##
     
@@ -145,11 +128,12 @@ class VisaWrapper(io.IOBase, AbstractCommunicator):
         '''
         '''
         msg = msg + self._terminator
-        self.write(msg)
+        self._conn.sendall(msg)
         
     def _query(self, msg, size=-1):
         '''
         '''
-        msg += self._terminator
-        return self._conn.ask(msg)
-        
+        self.sendcmd(msg)
+        resp = self.read(size)
+        return resp
+    

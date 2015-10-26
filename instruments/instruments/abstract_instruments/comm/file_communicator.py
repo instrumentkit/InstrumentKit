@@ -4,7 +4,7 @@
 # file_communicator.py: Treats a file on the filesystem as a communicator
 #     (aka wrapper).
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.

@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# socketwrapper.py: Wraps sockets into a filelike object.
+# usb_communicator.py: Wraps USB connections into a filelike object.
 ##
-# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
-#        Chris Granade (cgranade@cgranade.com).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -26,65 +25,55 @@
 ## IMPORTS #####################################################################
 
 import io
-import socket
 
 import numpy as np
-import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
-from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
 
-class SocketWrapper(io.IOBase, AbstractCommunicator):
-    """
-    Wraps a socket to make it look like a `file`. Note that this is used instead
-    of `socket.makefile`, as that method does not support timeouts. We do not
-    support all features of `file`-like objects here, but enough to make
-    `~instrument.Instrument` happy.
-    """
+class USBCommunicator(io.IOBase, AbstractCommunicator):
+    '''
     
+    '''
     def __init__(self, conn):
         AbstractCommunicator.__init__(self)
-        if isinstance(conn, socket.socket):
-            self._conn = conn
-            self._terminator = '\n'
-        else:
-            raise TypeError('SocketWrapper must wrap a socket.socket object.')
-        
+        # TODO: Check to make sure this is a USB connection
+        self._conn = conn
+        self._terminator = '\n'
+    
     ## PROPERTIES ##
     
     @property
     def address(self):
         '''
-        Returns the socket peer address information as a tuple.
+        
         '''
-        return self._conn.getpeername()
+        raise NotImplementedError
     @address.setter
     def address(self, newval):
-        raise NotImplementedError('Unable to change address of sockets.')
-        
+        raise ValueError('Unable to change USB target address.')
+    
     @property
     def terminator(self):
         return self._terminator
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for SocketWrapper must be specified '
+            raise TypeError('Terminator for USBCommunicator must be specified '
                               'as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for SocketWrapper must only be 1 '
+            raise ValueError('Terminator for USBCommunicator must only be 1 '
                                 'character long.')
         self._terminator = newval
         
     @property
     def timeout(self):
-        return self._conn.gettimeout() * pq.second
+        raise NotImplementedError
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
-        self._conn.settimeout(newval)
-        
+        raise NotImplementedError
+    
     ## FILE-LIKE METHODS ##
     
     def close(self):
@@ -92,22 +81,12 @@ class SocketWrapper(io.IOBase, AbstractCommunicator):
             self._conn.shutdown()
         finally:
             self._conn.close()
-        
+            
     def read(self, size):
-        if (size >= 0):
-            return self._conn.recv(size)
-        elif (size == -1):
-            result = bytearray()
-            c = 0
-            while c != self._terminator:
-                c = self._conn.recv(1)
-                result += c
-            return bytes(result)
-        else:
-            raise ValueError('Must read a positive value of characters.')
-        
+        raise NotImplementedError
+    
     def write(self, string):
-        self._conn.sendall(string)
+        self._conn.write(string)
         
     def seek(self, offset):
         return NotImplemented
@@ -117,11 +96,11 @@ class SocketWrapper(io.IOBase, AbstractCommunicator):
         
     def flush_input(self):
         '''
-        Instruct the wrapper to flush the input buffer, discarding the entirety
-        of its contents.
+        Instruct the communicator to flush the input buffer, discarding the 
+        entirety of its contents.
         '''
-        _ = self.read(-1) # Read in everything in the buffer and trash it
-        
+        raise NotImplementedError
+    
     ## METHODS ##
     
     def _sendcmd(self, msg):
@@ -134,6 +113,5 @@ class SocketWrapper(io.IOBase, AbstractCommunicator):
         '''
         '''
         self.sendcmd(msg)
-        resp = self.read(size)
-        return resp
+        return self.read(size)
     

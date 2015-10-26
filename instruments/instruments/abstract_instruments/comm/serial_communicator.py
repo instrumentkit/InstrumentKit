@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# socketwrapper.py: Wraps sockets into a filelike object.
+# serial_communicator.py: Wraps PySerial.Serial objects into a filelike object.
 ##
-# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -35,7 +35,7 @@ from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
 
-class SerialWrapper(io.IOBase, AbstractCommunicator):
+class SerialCommunicator(io.IOBase, AbstractCommunicator):
     """
     Wraps a pyserial Serial object to add a few properties as well as
     handling of termination characters.
@@ -50,7 +50,7 @@ class SerialWrapper(io.IOBase, AbstractCommunicator):
             self._debug = False
             self._capture = False
         else:
-            raise TypeError('SerialWrapper must wrap a serial.Serial object.')
+            raise TypeError('SerialCommunicator must wrap a serial.Serial object.')
     
     ## PROPERTIES ##
     
@@ -70,10 +70,10 @@ class SerialWrapper(io.IOBase, AbstractCommunicator):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for SerialWrapper must be specified '
-                              'as a single character string.')
+            raise TypeError('Terminator for SerialCommunicator must be '
+                              'specified as a single character string.')
         if len(newval) > 1:
-            raise ValueError('Terminator for SerialWrapper must only be 1 '
+            raise ValueError('Terminator for SerialCommunicator must only be 1 '
                                 'character long.')
         self._terminator = newval
         
@@ -131,7 +131,7 @@ class SerialWrapper(io.IOBase, AbstractCommunicator):
         
     def flush_input(self):
         '''
-        Instruct the wrapper to flush the input buffer, discarding the entirety
+        Instruct the communicator to flush the input buffer, discarding the entirety
         of its contents.
         
         Calls the pyserial flushInput() method.

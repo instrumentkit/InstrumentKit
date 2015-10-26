@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# gi_gpib.py: Wrapper for Galvant Industries GPIB adapters.
+# gi_gpib_communicator.py: Communication layer for Galvant Industries GPIB adapters.
 ##
-# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -31,18 +31,18 @@ import time
 import numpy as np
 import quantities as pq
 
-from instruments.abstract_instruments.comm import serialManager, AbstractCommunicator
+from instruments.abstract_instruments.comm import serial_manager, AbstractCommunicator
 from instruments.util_fns import assume_units
 
 ## CLASSES #####################################################################
 
-class GPIBWrapper(io.IOBase, AbstractCommunicator):
+class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     '''
-    Wraps a SocketWrapper or PySerial.Serial connection for use with
-    Galvant Industries GPIBUSB or GPIBETHERNET adapters.
+    Communicates with a SocketCommunicator or SerialCommunicator object for 
+    use with Galvant Industries GPIBUSB or GPIBETHERNET adapters.
     
-    This wrapper is designed to wrap the SocketWrapper and SerialWrapper
-    classes.
+    It essentially wraps those physical communication layers with the extra
+    overhead required by the Galvant GPIB adapters. 
     '''
     def __init__(self, filelike, gpib_address):
         AbstractCommunicator.__init__(self)
@@ -73,7 +73,7 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         Example: [<int>gpib_address, downstream_address]
         
         Where downstream_address needs to be formatted as appropriate for the
-        connection (eg SerialWrapper, SocketWrapper, etc).
+        connection (eg SerialCommunicator, SocketCommunicator, etc).
         '''
         if isinstance(newval, int):
             if (newval < 1) or (newval > 30):
@@ -189,8 +189,8 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         
     def read(self, size):
         '''
-        Read characters from wrapped class (ie SocketWrapper or 
-        PySerial.Serial).
+        Read characters from wrapped class (ie SocketCommunicator or 
+        SerialCommunicator).
         
         If size = -1, characters will be read until termination character
         is found.
@@ -216,8 +216,8 @@ class GPIBWrapper(io.IOBase, AbstractCommunicator):
         
     def flush_input(self):
         '''
-        Instruct the wrapper to flush the input buffer, discarding the entirety
-        of its contents.
+        Instruct the communicator to flush the input buffer, discarding the 
+        entirety of its contents.
         '''
         self._file.flush_input()
         

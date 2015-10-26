@@ -3,7 +3,7 @@
 ##
 # srs830.py: Driver for the SRS830 lock-in amplifier.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -39,7 +39,10 @@ from flufl.enum._enum import EnumValue
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
-from instruments.abstract_instruments.comm import GPIBWrapper, SerialWrapper
+from instruments.abstract_instruments.comm import (
+        GPIBCommunicator,
+        SerialCommunicator
+        )
 from instruments.util_fns import assume_units
 
 ## CONSTANTS ###################################################################
@@ -67,7 +70,7 @@ class SRS830(SCPIInstrument):
         :param int outx_mode: Manually over-ride which ``OUTX`` command to send
             at startup. This is a command that needs to be sent as specified
             by the SRS830 manual. If left default, the correct ``OUTX`` command
-            will be sent depending on what type of wrapper self._file is.
+            will be sent depending on what type of communicator self._file is.
         '''
         super(SRS830, self).__init__(filelike)
         if outx_mode is 1:
@@ -75,9 +78,9 @@ class SRS830(SCPIInstrument):
         elif outx_mode is 2:
             self.sendcmd('OUTX 2')
         else:
-            if isinstance(self._file, GPIBWrapper):
+            if isinstance(self._file, GPIBCommunicator):
                 self.sendcmd('OUTX 1')
-            elif isinstance(self._file, SerialWrapper):
+            elif isinstance(self._file, SerialCommunicator):
                 self.sendcmd('OUTX 2')
             else:
                 print 'OUTX command has not been set. Instrument behavour is '\
