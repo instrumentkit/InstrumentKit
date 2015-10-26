@@ -98,12 +98,17 @@ def test_assume_units_correct():
 def test_assume_units_failures():
     assume_units(1, 'm').rescale('s')
     
-def test_bool_property():
+## Test Property Factories ##
+    
+def test_bool_property_basics():
     class BoolMock(MockInstrument):
         mock1 = bool_property('MOCK1', 'ON', 'OFF')
         mock2 = bool_property('MOCK2', 'YES', 'NO')
         
     mock = BoolMock({'MOCK1?': 'OFF', 'MOCK2?': 'YES'})
+    
+    assert hasattr(mock, 'mock1')
+    assert hasattr(mock, 'mock2')
     
     assert not mock.mock1
     assert mock.mock2
@@ -112,6 +117,36 @@ def test_bool_property():
     mock.mock2 = False
     
     eq_(mock.value, 'MOCK1?\nMOCK2?\nMOCK1 ON\nMOCK2 NO\n')
+    
+def test_bool_property_set_fmt():
+    class BoolMock(MockInstrument):
+        mock1 = bool_property('MOCK1', 'ON', 'OFF', set_fmt="{}={}")
+    
+    mock_instrument = BoolMock({'MOCK1?': 'OFF'})
+    
+    mock_instrument.mock1 = True
+    
+    eq_(mock_instrument.value, 'MOCK1=ON')
+
+@raises(AttributeError)    
+def test_bool_property_read_only():
+    class BoolMock(MockInstrument):
+        mock1 = bool_property('MOCK1', 'ON', 'OFF', readonly=True)
+    
+    mock_instrument = BoolMock({'MOCK1?': 'OFF'})
+    
+    assert mock_instrument.mock1 = False # Can read
+    mock_instrument.mock1 = "Foo" # Should raise AttributeError
+
+@raises(AttributeError)
+def test_bool_property_write_only():
+    class BoolMock(MockInstrument):
+        mock1 = bool_property('MOCK1', 'ON', 'OFF', writeonly=True)
+    
+    mock_instrument = BoolMock({'MOCK1?': 'OFF'})
+    
+    mock_instrument.mock1 = "OFF" # Can write
+    mock_instrument.mock1 # Should raise AttributeError
     
 def test_enum_property():
     class SillyEnum(Enum):
