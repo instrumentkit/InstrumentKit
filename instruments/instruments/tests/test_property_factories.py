@@ -30,9 +30,8 @@ from cStringIO import StringIO
 from nose.tools import raises, eq_
 
 from instruments.util_fns import (
-    ProxyList,
-    assume_units, bool_property, enum_property, int_property,
-    split_unit_str
+    ProxyList, assume_units,
+    rproperty, bool_property, enum_property, int_property
 )
 
 from flufl.enum import Enum
@@ -62,6 +61,56 @@ class MockInstrument(object):
         
 ## TEST CASES #################################################################
 
+## rproperty ##
+
+def test_rproperty_basic():
+    class Mock(MockInstrument):
+        def __init__(self):
+            self._value = 0
+        def mockget(self):
+            return self._value
+        def mockset(self, newval):
+            self._value = newval
+        mockproperty = rproperty(fget=mockget, fset=mockset)
+    
+    mock_inst = Mock()
+    mock_inst.mockproperty = 1
+    eq_(mock_inst.mockproperty, 1)
+ 
+@raises(AttributeError)
+def test_rproperty_readonly():
+    class Mock(MockInstrument):
+        def __init__(self):
+            self._value = 0
+        def mockget(self):
+            return self._value
+        def mockset(self, newval):
+            self._value = newval
+        mockproperty = rproperty(fget=mockget, fset=mockset, readonly=True)
+    
+    mock_inst = Mock()
+    eq_(mock_inst.mockproperty, 0)
+    mock_inst.mockproperty = 1 # Should raise attr error
+    
+@raises(AttributeError)
+def test_rproperty_writeonly():
+    class Mock(MockInstrument):
+        def __init__(self):
+            self._value = 0
+        def mockget(self):
+            return self._value
+        def mockset(self, newval):
+            self._value = newval
+        mockproperty = rproperty(fget=mockget, fset=mockset, readonly=True)
+    
+    mock_inst = Mock()
+    eq_(mock_inst.mockproperty, 0) # Should raise attr error
+    mock_inst.mockproperty = 1 
+    
+@raises(ValueError)
+def test_rproperty_readonly_and_writeonly():
+    mockproperty = rproperty(readonly=True, writeonly=True)
+    
 ## Bool Property Factories ##
     
 def test_bool_property_basics():
@@ -131,13 +180,51 @@ def test_enum_property():
     mock.b = 'bb'
     
     eq_(mock.value, 'MOCK:A?\nMOCK:B?\nMOCK:A bb\nMOCK:B aa\nMOCK:B bb\n')
+    
+def test_enum_property_set_fmt():
+    class SillyEnum(Enum):
+        a = 'aa'
+        
+    class EnumMock(MockInstrument):
+        a = enum_property('MOCK:A', SillyEnum, set_fmt="{}={}")
+    
+    mock_instrument = EnumMock()
+    
+    mock_instrument.a = 'aa'
+    
+    eq_(mock_instrument.value, 'MOCK:A=aa\n')
+
+def test_enum_property_input_decoration():
+    class SillyEnum(Enum):
+        a = 'aa'
+        
+    class EnumMock(MockInstrument):
+        def input_decorator(input):
+            return 'aa'
+        a = enum_property('MOCK:A', SillyEnum, input_decoration=input_decorator)
+    
+    mock_instrument = EnumMock({'MOCK:A?': 'garbage'})
+    
+    assert mock_instrument.a is SillyEnum.a
 
 ## Int Property Factories ##
 
 @raises(ValueError)
-def test_int_property_valid_set():
+def test_int_property_invalid_set():
     class IntMock(MockInstrument):
         mock = int_property('MOCK', valid_set=set([1, 2]))
         
     mock = IntMock()
     mock.mock = 3
+
+def test_int_property_valid_set():
+    class IntMock(MockInstrument):
+        int_property = int_property('MOCK', valid_set=set([1, 2]))
+        
+    mock_inst = IntMock({'MOCK?': '1'})
+    
+    assert mock_inst.int_property is 1
+    
+    mock_inst.int_property = 2
+    
+    eq_(mock_inst.value, 'MOCK?\nMOCK 2\n')
