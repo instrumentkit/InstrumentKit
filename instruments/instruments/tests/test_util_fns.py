@@ -38,15 +38,11 @@ from flufl.enum import Enum
 
 ## TEST CASES #################################################################
 
-def test_ProxyList():
+def test_ProxyList_basics():
     class ProxyChild(object):
         def __init__(self, parent, name):
             self._parent = parent
             self._name = name
-            
-    class MockEnum(Enum):
-        a = "aa"
-        b = "bb"
             
     parent = object()
     
@@ -56,10 +52,49 @@ def test_ProxyList():
     assert child._parent is parent
     assert child._name == 0
     
+def test_ProxyList_valid_range_is_enum():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+    class MockEnum(Enum):
+        a = "aa"
+        b = "bb"
+        
+    parent = object()
+    
     proxy_list = ProxyList(parent, ProxyChild, MockEnum)
     assert proxy_list['aa']._name == MockEnum.a
     assert proxy_list['b']._name  == MockEnum.b
     assert proxy_list[MockEnum.a]._name == MockEnum.a
+    
+def test_ProxyList_length():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+    parent = object()
+    
+    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    
+    eq_(len(proxy_list), 10)
+    
+def test_ProxyList_iterator():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+    parent = object()
+    
+    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    
+    i = 0
+    for item in proxy_list:
+        eq_(item._name, i)
+        i = i + 1
 
 def test_assume_units_correct():
     m = pq.Quantity(1, 'm')
