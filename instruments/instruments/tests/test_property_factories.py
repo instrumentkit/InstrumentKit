@@ -31,7 +31,7 @@ from nose.tools import raises, eq_
 
 from instruments.util_fns import (
     ProxyList, assume_units,
-    rproperty, bool_property, enum_property, int_property
+    rproperty, bool_property, enum_property, int_property, string_property
 )
 
 from flufl.enum import Enum
@@ -89,8 +89,8 @@ def test_rproperty_readonly():
         mockproperty = rproperty(fget=mockget, fset=mockset, readonly=True)
     
     mock_inst = Mock()
-    eq_(mock_inst.mockproperty, 0)
-    mock_inst.mockproperty = 1 # Should raise attr error
+    eq_(mock_inst.mockproperty, 0) # Reading should pass
+    mock_inst.mockproperty = 1 # Writing should raise attr error
     
 @raises(AttributeError)
 def test_rproperty_writeonly():
@@ -104,8 +104,8 @@ def test_rproperty_writeonly():
         mockproperty = rproperty(fget=mockget, fset=mockset, readonly=True)
     
     mock_inst = Mock()
+    mock_inst.mockproperty = 1
     eq_(mock_inst.mockproperty, 0) # Should raise attr error
-    mock_inst.mockproperty = 1 
     
 @raises(ValueError)
 def test_rproperty_readonly_and_writeonly():
@@ -206,11 +206,26 @@ def test_enum_property_input_decoration():
     mock_instrument = EnumMock({'MOCK:A?': 'garbage'})
     
     assert mock_instrument.a is SillyEnum.a
+    
+def test_enum_property_output_decoration():
+    class SillyEnum(Enum):
+        a = 'aa'
+        
+    class EnumMock(MockInstrument):
+        def output_decorator(input):
+            return 'foobar'
+        a = enum_property('MOCK:A', SillyEnum, output_decoration=output_decorator)
+        
+    mock_instrument = EnumMock()
+    
+    mock_instrument.a = SillyEnum.a
+    
+    eq_(mock_instrument.value, 'MOCK:A foobar\n')
 
 ## Int Property Factories ##
 
 @raises(ValueError)
-def test_int_property_invalid_set():
+def test_int_property_outside_valid_set():
     class IntMock(MockInstrument):
         mock = int_property('MOCK', valid_set=set([1, 2]))
         
@@ -228,3 +243,48 @@ def test_int_property_valid_set():
     mock_inst.int_property = 2
     
     eq_(mock_inst.value, 'MOCK?\nMOCK 2\n')
+
+def test_int_property_no_set():
+    class IntMock(MockInstrument):
+        int_property = int_property('MOCK')
+        
+    mock_inst = IntMock()
+    
+    mock_inst.int_property = 1
+    
+    eq_(mock_inst.value, 'MOCK 1\n')
+
+## String Property ##
+
+def test_string_property_basics():
+    class StringMock(MockInstrument):
+        string_property = string_property('MOCK')
+        
+    mock_inst = StringMock({'MOCK?': '"foobar"'})
+    
+    eq_(mock_inst.string_property, 'foobar')
+    
+    mock_inst.string_property = 'foo'    
+    eq_(mock_inst.value, 'MOCK?\nMOCK "foo"\n')
+    
+def test_string_property_different_bookmark_symbol():
+    class StringMock(MockInstrument):
+        string_property = string_property('MOCK', bookmark_symbol='%^')
+        
+    mock_inst = StringMock({'MOCK?': '%^foobar%^'})
+    
+    eq_(mock_inst.string_property, 'foobar')
+    
+    mock_inst.string_property = 'foo'    
+    eq_(mock_inst.value, 'MOCK?\nMOCK %^foo%^\n')
+    
+def test_string_property_no_bookmark_symbol():
+    class StringMock(MockInstrument):
+        string_property = string_property('MOCK', bookmark_symbol='')
+        
+    mock_inst = StringMock({'MOCK?': 'foobar'})
+    
+    eq_(mock_inst.string_property, 'foobar')
+    
+    mock_inst.string_property = 'foo'    
+    eq_(mock_inst.value, 'MOCK?\nMOCK foo\n')
