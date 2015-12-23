@@ -96,6 +96,36 @@ def test_ProxyList_iterator():
         eq_(item._name, i)
         i = i + 1
 
+@raises(IndexError)
+def test_ProxyList_invalid_idx_enum():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+    class MockEnum(Enum):
+        a = "aa"
+        b = "bb"
+        
+    parent = object()
+    
+    proxy_list = ProxyList(parent, ProxyChild, MockEnum)
+    
+    proxy_list['c'] # Should raise IndexError
+    
+@raises(IndexError)
+def test_ProxyList_invalid_idx():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+        
+    parent = object()
+    
+    proxy_list = ProxyList(parent, ProxyChild, xrange(5))
+    
+    proxy_list[10] # Should raise IndexError
+
 def test_assume_units_correct():
     m = pq.Quantity(1, 'm')
     
