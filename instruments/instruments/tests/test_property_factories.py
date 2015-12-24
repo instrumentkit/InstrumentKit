@@ -121,8 +121,8 @@ def test_bool_property_basics():
         
     mock = BoolMock({'MOCK1?': 'OFF', 'MOCK2?': 'YES'})
     
-    assert not mock.mock1
-    assert mock.mock2
+    eq_(mock.mock1, False)
+    eq_(mock.mock2, True)
     
     mock.mock1 = True
     mock.mock2 = False
@@ -146,7 +146,7 @@ def test_bool_property_read_only():
     
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
     
-    assert mock_instrument.mock1 == False # Can read
+    eq_(mock_instrument.mock1, False) # Can read
     mock_instrument.mock1 = "Foo" # Should raise AttributeError
 
 @raises(AttributeError)
@@ -172,8 +172,8 @@ def test_enum_property():
         
     mock = EnumMock({'MOCK:A?': 'aa', 'MOCK:B?': 'bb'})
     
-    assert mock.a is SillyEnum.a
-    assert mock.b is SillyEnum.b
+    eq_(mock.a, SillyEnum.a)
+    eq_(mock.b, SillyEnum.b)
     
     # Test EnumValues, string values and string names.
     mock.a = SillyEnum.b
@@ -192,7 +192,6 @@ def test_enum_property_set_fmt():
     mock_instrument = EnumMock()
     
     mock_instrument.a = 'aa'
-    
     eq_(mock_instrument.value, 'MOCK:A=aa\n')
 
 def test_enum_property_input_decoration():
@@ -206,7 +205,7 @@ def test_enum_property_input_decoration():
     
     mock_instrument = EnumMock({'MOCK:A?': 'garbage'})
     
-    assert mock_instrument.a is SillyEnum.a
+    eq_(mock_instrument.a, SillyEnum.a)
     
 def test_enum_property_output_decoration():
     class SillyEnum(Enum):
@@ -330,10 +329,9 @@ def test_int_property_valid_set():
         
     mock_inst = IntMock({'MOCK?': '1'})
     
-    assert mock_inst.int_property is 1
+    eq_(mock_inst.int_property, 1)
     
-    mock_inst.int_property = 2
-    
+    mock_inst.int_property = 2  
     eq_(mock_inst.value, 'MOCK?\nMOCK 2\n')
 
 def test_int_property_no_set():
