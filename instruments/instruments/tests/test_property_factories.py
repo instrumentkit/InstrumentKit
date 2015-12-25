@@ -83,11 +83,9 @@ def test_rproperty_readonly_writing_fails():
     class Mock(MockInstrument):
         def __init__(self):
             self._value = 0
-        def mockget(self):
-            return self._value
-        def mockset(self, newval):
+        def mockset(self, newval): # pragma: no cover
             self._value = newval
-        mockproperty = rproperty(fget=mockget, fset=mockset, readonly=True)
+        mockproperty = rproperty(fget=None, fset=mockset, readonly=True)
     
     mock_inst = Mock()
     mock_inst.mockproperty = 1 # Writing should raise attr error
@@ -98,9 +96,7 @@ def test_rproperty_readonly_reading_passes():
             self._value = 0
         def mockget(self):
             return self._value
-        def mockset(self, newval):
-            self._value = newval
-        mockproperty = rproperty(fget=mockget, fset=mockset, readonly=True)
+        mockproperty = rproperty(fget=mockget, fset=None, readonly=True)
     
     mock_inst = Mock()
     eq_(mock_inst.mockproperty, 0) # Reading should pass
@@ -110,11 +106,9 @@ def test_rproperty_writeonly_reading_fails():
     class Mock(MockInstrument):
         def __init__(self):
             self._value = 0
-        def mockget(self):
+        def mockget(self): # pragma: no cover
             return self._value
-        def mockset(self, newval):
-            self._value = newval
-        mockproperty = rproperty(fget=mockget, fset=mockset, writeonly=True)
+        mockproperty = rproperty(fget=mockget, fset=None, writeonly=True)
     
     mock_inst = Mock()
     eq_(mock_inst.mockproperty, 0) # Should raise attr error
@@ -123,11 +117,9 @@ def test_rproperty_writeonly_writing_passes():
     class Mock(MockInstrument):
         def __init__(self):
             self._value = 0
-        def mockget(self):
-            return self._value
         def mockset(self, newval):
             self._value = newval
-        mockproperty = rproperty(fget=mockget, fset=mockset, writeonly=True)
+        mockproperty = rproperty(fget=None, fset=mockset, writeonly=True)
     
     mock_inst = Mock()
     mock_inst.mockproperty = 1
