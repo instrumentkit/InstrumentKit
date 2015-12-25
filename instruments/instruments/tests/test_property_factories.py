@@ -140,24 +140,38 @@ def test_bool_property_set_fmt():
     eq_(mock_instrument.value, 'MOCK1=ON\n')
 
 @raises(AttributeError)    
-def test_bool_property_read_only():
+def test_bool_property_readonly_writing_fails():
     class BoolMock(MockInstrument):
         mock1 = bool_property('MOCK1', 'ON', 'OFF', readonly=True)
     
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
     
-    eq_(mock_instrument.mock1, False) # Can read
-    mock_instrument.mock1 = "Foo" # Should raise AttributeError
+    mock_instrument.mock1 = True
+    
+def test_bool_property_readonly_reading_passes():
+    class BoolMock(MockInstrument):
+        mock1 = bool_property('MOCK1', 'ON', 'OFF', readonly=True)
+    
+    mock_instrument = BoolMock({'MOCK1?': 'OFF'})
+    
+    eq_(mock_instrument.mock1, False)
 
 @raises(AttributeError)
-def test_bool_property_write_only():
+def test_bool_property_writeonly_reading_fails():
     class BoolMock(MockInstrument):
         mock1 = bool_property('MOCK1', 'ON', 'OFF', writeonly=True)
     
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
     
-    mock_instrument.mock1 = "OFF" # Can write
-    mock_instrument.mock1 # Should raise AttributeError
+    mock_instrument.mock1
+
+def test_bool_property_writeonly_writing_passes():
+    class BoolMock(MockInstrument):
+        mock1 = bool_property('MOCK1', 'ON', 'OFF', writeonly=True)
+    
+    mock_instrument = BoolMock({'MOCK1?': 'OFF'})
+    
+    mock_instrument.mock1 = "OFF"
 
 ## Enum Property Factories ##
     
@@ -181,7 +195,7 @@ def test_enum_property():
     mock.b = 'bb'
     
     eq_(mock.value, 'MOCK:A?\nMOCK:B?\nMOCK:A bb\nMOCK:B aa\nMOCK:B bb\n')
-    
+
 def test_enum_property_set_fmt():
     class SillyEnum(Enum):
         a = 'aa'
@@ -223,7 +237,19 @@ def test_enum_property_output_decoration():
     eq_(mock_instrument.value, 'MOCK:A foobar\n')
 
 @raises(AttributeError)
-def test_enum_property_write_only():
+def test_enum_property_writeonly_reading_fails():
+    class SillyEnum(Enum):
+        a = 'aa'
+        
+    class EnumMock(MockInstrument):
+        a = enum_property('MOCK:A', SillyEnum, writeonly=True)
+    
+    mock_instrument = EnumMock()
+    
+    # Reading should fail
+    mock_instrument.a
+
+def test_enum_property_writeonly_writing_passes():
     class SillyEnum(Enum):
         a = 'aa'
         
@@ -236,11 +262,20 @@ def test_enum_property_write_only():
     mock_instrument.a = SillyEnum.a
     eq_(mock_instrument.value, 'MOCK:A aa\n')
     
-    # Reading should fail
-    mock_instrument.a
-    
 @raises(AttributeError)
-def test_enum_property_read_only():
+def test_enum_property_readonly_writing_fails():
+    class SillyEnum(Enum):
+        a = 'aa'
+        
+    class EnumMock(MockInstrument):
+        a = enum_property('MOCK:A', SillyEnum, readonly=True)
+    
+    mock_instrument = EnumMock({'MOCK:A?':'aa'})
+    
+    # Writing should fail
+    mock_instrument.a = SillyEnum.a
+
+def test_enum_property_readonly_reading_passes():
     class SillyEnum(Enum):
         a = 'aa'
         
@@ -251,9 +286,7 @@ def test_enum_property_read_only():
     
     # Reading should pass
     eq_(mock_instrument.a, SillyEnum.a)
-    
-    # Writing should fail
-    mock_instrument.a = SillyEnum.a
+    eq_(mock_instrument.value, 'MOCK:A?\n')
     
 ## Unitless Property ##
 
@@ -287,7 +320,16 @@ def test_unitless_property_format_code():
     eq_(mock_inst.value, 'MOCK {:f}\n'.format(1))
     
 @raises(AttributeError)
-def test_unitless_property_write_only():
+def test_unitless_property_writeonly_reading_fails():
+    class UnitlessMock(MockInstrument):
+        unitless_property = unitless_property('MOCK', writeonly=True)
+    
+    mock_inst = UnitlessMock()
+    
+    # Reading should fail
+    mock_inst.unitless_property
+    
+def test_unitless_property_writeonly_writing_passes():
     class UnitlessMock(MockInstrument):
         unitless_property = unitless_property('MOCK', writeonly=True)
     
@@ -297,11 +339,17 @@ def test_unitless_property_write_only():
     mock_inst.unitless_property = 1
     eq_(mock_inst.value, 'MOCK {:e}\n'.format(1))
     
-    # Reading should fail
-    mock_inst.unitless_property
-    
 @raises(AttributeError)
-def test_unitless_property_read_only():
+def test_unitless_property_readonly_writing_fails():
+    class UnitlessMock(MockInstrument):
+        unitless_property = unitless_property('MOCK', readonly=True)
+    
+    mock_inst = UnitlessMock({'MOCK?':'1'})
+    
+    # Writing should fail
+    mock_inst.unitless_property = 1
+    
+def test_unitless_property_readonly_reading_passes():
     class UnitlessMock(MockInstrument):
         unitless_property = unitless_property('MOCK', readonly=True)
     
@@ -309,9 +357,6 @@ def test_unitless_property_read_only():
     
     # Reading should pass
     eq_(mock_inst.unitless_property, 1)
-    
-    # Writing should fail
-    mock_inst.unitless_property = 1
 
 ## Int Property Factories ##
 
@@ -343,6 +388,45 @@ def test_int_property_no_set():
     mock_inst.int_property = 1
     
     eq_(mock_inst.value, 'MOCK 1\n')
+    
+@raises(AttributeError)
+def test_int_property_writeonly_reading_fails():
+    class IntMock(MockInstrument):
+        int_property = int_property('MOCK', writeonly=True)
+    
+    mock_inst = IntMock()
+    
+    # Reading should fail
+    mock_inst.int_property
+    
+def test_int_property_writeonly_writing_passes():
+    class IntMock(MockInstrument):
+        int_property = int_property('MOCK', writeonly=True)
+    
+    mock_inst = IntMock()
+    
+    # Writing should pass
+    mock_inst.int_property = 1
+    eq_(mock_inst.value, 'MOCK {:d}\n'.format(1))
+    
+@raises(AttributeError)
+def test_int_property_readonly_writing_fails():
+    class IntMock(MockInstrument):
+        int_property = int_property('MOCK', readonly=True)
+    
+    mock_inst = IntMock({'MOCK?':'1'})
+    
+    # Writing should fail
+    mock_inst.int_property = 1
+    
+def test_int_property_readonly_reading_passes():
+    class IntMock(MockInstrument):
+        int_property = int_property('MOCK', readonly=True)
+    
+    mock_inst = IntMock({'MOCK?':'1'})
+    
+    # Reading should pass
+    eq_(mock_inst.int_property, 1)
 
 ## Unitful Property ##
 
@@ -394,7 +478,16 @@ def test_unitful_property_wrong_units():
     mock_inst.unitful_property = 1 * pq.volt
     
 @raises(AttributeError)
-def test_unitful_property_write_only():
+def test_unitful_property_writeonly_reading_fails():
+    class UnitfulMock(MockInstrument):
+        unitful_property = unitful_property('MOCK', pq.hertz, writeonly=True)
+    
+    mock_inst = UnitfulMock()
+    
+    # Reading should fail
+    mock_inst.unitful_property
+    
+def test_unitful_property_writeonly_writing_passes():
     class UnitfulMock(MockInstrument):
         unitful_property = unitful_property('MOCK', pq.hertz, writeonly=True)
     
@@ -404,11 +497,17 @@ def test_unitful_property_write_only():
     mock_inst.unitful_property = 1 * pq.hertz
     eq_(mock_inst.value, 'MOCK {:e}\n'.format(1))
     
-    # Reading should fail
-    mock_inst.unitful_property
-    
 @raises(AttributeError)
-def test_unitful_property_read_only():
+def test_unitful_property_readonly_writing_fails():
+    class UnitfulMock(MockInstrument):
+        unitful_property = unitful_property('MOCK', pq.hertz, readonly=True)
+    
+    mock_inst = UnitfulMock({'MOCK?':'1'})
+    
+    # Writing should fail
+    mock_inst.unitful_property = 1 * pq.hertz
+    
+def test_unitful_property_readonly_reading_passes():
     class UnitfulMock(MockInstrument):
         unitful_property = unitful_property('MOCK', pq.hertz, readonly=True)
     
@@ -416,10 +515,6 @@ def test_unitful_property_read_only():
     
     # Reading should pass
     eq_(mock_inst.unitful_property, 1 * pq.hertz)
-    
-    # Writing should fail
-    mock_inst.unitful_property = 1 * pq.hertz
-
 
 ## String Property ##
 
