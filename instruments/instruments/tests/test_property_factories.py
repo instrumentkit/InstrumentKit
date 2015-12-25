@@ -79,7 +79,20 @@ def test_rproperty_basic():
     eq_(mock_inst.mockproperty, 1)
  
 @raises(AttributeError)
-def test_rproperty_readonly():
+def test_rproperty_readonly_writing_fails():
+    class Mock(MockInstrument):
+        def __init__(self):
+            self._value = 0
+        def mockget(self):
+            return self._value
+        def mockset(self, newval):
+            self._value = newval
+        mockproperty = rproperty(fget=mockget, fset=mockset, readonly=True)
+    
+    mock_inst = Mock()
+    mock_inst.mockproperty = 1 # Writing should raise attr error
+
+def test_rproperty_readonly_reading_passes():
     class Mock(MockInstrument):
         def __init__(self):
             self._value = 0
@@ -91,10 +104,9 @@ def test_rproperty_readonly():
     
     mock_inst = Mock()
     eq_(mock_inst.mockproperty, 0) # Reading should pass
-    mock_inst.mockproperty = 1 # Writing should raise attr error
     
 @raises(AttributeError)
-def test_rproperty_writeonly():
+def test_rproperty_writeonly_reading_fails():
     class Mock(MockInstrument):
         def __init__(self):
             self._value = 0
@@ -102,11 +114,23 @@ def test_rproperty_writeonly():
             return self._value
         def mockset(self, newval):
             self._value = newval
-        mockproperty = rproperty(fget=mockget, fset=mockset, readonly=True)
+        mockproperty = rproperty(fget=mockget, fset=mockset, writeonly=True)
+    
+    mock_inst = Mock()
+    eq_(mock_inst.mockproperty, 0) # Should raise attr error
+
+def test_rproperty_writeonly_writing_passes():
+    class Mock(MockInstrument):
+        def __init__(self):
+            self._value = 0
+        def mockget(self):
+            return self._value
+        def mockset(self, newval):
+            self._value = newval
+        mockproperty = rproperty(fget=mockget, fset=mockset, writeonly=True)
     
     mock_inst = Mock()
     mock_inst.mockproperty = 1
-    eq_(mock_inst.mockproperty, 0) # Should raise attr error
     
 @raises(ValueError)
 def test_rproperty_readonly_and_writeonly():
