@@ -88,7 +88,7 @@ def test_rproperty_readonly_writing_fails():
         mockproperty = rproperty(fget=None, fset=mockset, readonly=True)
     
     mock_inst = Mock()
-    mock_inst.mockproperty = 1 # Writing should raise attr error
+    mock_inst.mockproperty = 1
 
 def test_rproperty_readonly_reading_passes():
     class Mock(MockInstrument):
@@ -99,7 +99,7 @@ def test_rproperty_readonly_reading_passes():
         mockproperty = rproperty(fget=mockget, fset=None, readonly=True)
     
     mock_inst = Mock()
-    eq_(mock_inst.mockproperty, 0) # Reading should pass
+    eq_(mock_inst.mockproperty, 0)
     
 @raises(AttributeError)
 def test_rproperty_writeonly_reading_fails():
@@ -111,7 +111,7 @@ def test_rproperty_writeonly_reading_fails():
         mockproperty = rproperty(fget=mockget, fset=None, writeonly=True)
     
     mock_inst = Mock()
-    eq_(mock_inst.mockproperty, 0) # Should raise attr error
+    eq_(mock_inst.mockproperty, 0)
 
 def test_rproperty_writeonly_writing_passes():
     class Mock(MockInstrument):
@@ -262,7 +262,6 @@ def test_enum_property_writeonly_reading_fails():
     
     mock_instrument = EnumMock()
     
-    # Reading should fail
     mock_instrument.a
 
 def test_enum_property_writeonly_writing_passes():
@@ -274,7 +273,6 @@ def test_enum_property_writeonly_writing_passes():
     
     mock_instrument = EnumMock()
     
-    # Writing should pass
     mock_instrument.a = SillyEnum.a
     eq_(mock_instrument.value, 'MOCK:A aa\n')
     
@@ -288,7 +286,6 @@ def test_enum_property_readonly_writing_fails():
     
     mock_instrument = EnumMock({'MOCK:A?':'aa'})
     
-    # Writing should fail
     mock_instrument.a = SillyEnum.a
 
 def test_enum_property_readonly_reading_passes():
@@ -300,7 +297,6 @@ def test_enum_property_readonly_reading_passes():
     
     mock_instrument = EnumMock({'MOCK:A?':'aa'})
     
-    # Reading should pass
     eq_(mock_instrument.a, SillyEnum.a)
     eq_(mock_instrument.value, 'MOCK:A?\n')
     
@@ -342,7 +338,6 @@ def test_unitless_property_writeonly_reading_fails():
     
     mock_inst = UnitlessMock()
     
-    # Reading should fail
     mock_inst.unitless_property
     
 def test_unitless_property_writeonly_writing_passes():
@@ -351,7 +346,6 @@ def test_unitless_property_writeonly_writing_passes():
     
     mock_inst = UnitlessMock()
     
-    # Writing should pass
     mock_inst.unitless_property = 1
     eq_(mock_inst.value, 'MOCK {:e}\n'.format(1))
     
@@ -362,7 +356,6 @@ def test_unitless_property_readonly_writing_fails():
     
     mock_inst = UnitlessMock({'MOCK?':'1'})
     
-    # Writing should fail
     mock_inst.unitless_property = 1
     
 def test_unitless_property_readonly_reading_passes():
@@ -371,7 +364,6 @@ def test_unitless_property_readonly_reading_passes():
     
     mock_inst = UnitlessMock({'MOCK?':'1'})
     
-    # Reading should pass
     eq_(mock_inst.unitless_property, 1)
 
 ## Int Property Factories ##
@@ -412,7 +404,6 @@ def test_int_property_writeonly_reading_fails():
     
     mock_inst = IntMock()
     
-    # Reading should fail
     mock_inst.int_property
     
 def test_int_property_writeonly_writing_passes():
@@ -421,7 +412,6 @@ def test_int_property_writeonly_writing_passes():
     
     mock_inst = IntMock()
     
-    # Writing should pass
     mock_inst.int_property = 1
     eq_(mock_inst.value, 'MOCK {:d}\n'.format(1))
     
@@ -432,7 +422,6 @@ def test_int_property_readonly_writing_fails():
     
     mock_inst = IntMock({'MOCK?':'1'})
     
-    # Writing should fail
     mock_inst.int_property = 1
     
 def test_int_property_readonly_reading_passes():
@@ -441,7 +430,6 @@ def test_int_property_readonly_reading_passes():
     
     mock_inst = IntMock({'MOCK?':'1'})
     
-    # Reading should pass
     eq_(mock_inst.int_property, 1)
 
 ## Unitful Property ##
@@ -500,7 +488,6 @@ def test_unitful_property_writeonly_reading_fails():
     
     mock_inst = UnitfulMock()
     
-    # Reading should fail
     mock_inst.unitful_property
     
 def test_unitful_property_writeonly_writing_passes():
@@ -509,7 +496,6 @@ def test_unitful_property_writeonly_writing_passes():
     
     mock_inst = UnitfulMock()
     
-    # Writing should pass
     mock_inst.unitful_property = 1 * pq.hertz
     eq_(mock_inst.value, 'MOCK {:e}\n'.format(1))
     
@@ -520,7 +506,6 @@ def test_unitful_property_readonly_writing_fails():
     
     mock_inst = UnitfulMock({'MOCK?':'1'})
     
-    # Writing should fail
     mock_inst.unitful_property = 1 * pq.hertz
     
 def test_unitful_property_readonly_reading_passes():
@@ -529,7 +514,6 @@ def test_unitful_property_readonly_reading_passes():
     
     mock_inst = UnitfulMock({'MOCK?':'1'})
     
-    # Reading should pass
     eq_(mock_inst.unitful_property, 1 * pq.hertz)
 
 ## String Property ##
