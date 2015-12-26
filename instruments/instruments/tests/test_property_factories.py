@@ -431,6 +431,15 @@ def test_int_property_readonly_reading_passes():
     mock_inst = IntMock({'MOCK?':'1'})
     
     eq_(mock_inst.int_property, 1)
+    
+def test_int_property_format_code():
+    class IntMock(MockInstrument):
+        int_property = int_property('MOCK', format_code='{:e}')
+        
+    mock_inst = IntMock()
+    
+    mock_inst.int_property = 1
+    eq_(mock_inst.value, 'MOCK {:e}\n'.format(1))
 
 ## Unitful Property ##
 
