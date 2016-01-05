@@ -8,3 +8,4 @@ from instruments.abstract_instruments.comm.loopback_communicator import Loopback
 from instruments.abstract_instruments.comm.gi_gpib_communicator import GPIBCommunicator
 from instruments.abstract_instruments.comm.file_communicator import FileCommunicator
 from instruments.abstract_instruments.comm.usbtmc_communicator import USBTMCCommunicator
+from instruments.abstract_instruments.comm.vxi11_communicator import VXI11Communicator
