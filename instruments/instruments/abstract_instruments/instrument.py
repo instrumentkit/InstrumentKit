@@ -41,6 +41,7 @@ from instruments.abstract_instruments.comm import (
     AbstractCommunicator,
     USBTMCCommunicator,
     SerialCommunicator,
+    VXI11Communicator,
     serial_manager
 )
 
@@ -451,6 +452,21 @@ class Instrument(object):
         # TODO: docstring
         usbtmc_comm = USBTMCCommunicator(*args, **kwargs)
         return cls(usbtmc_comm)
+        
+    @classmethod
+    def open_vxi11(cls, *args, **kwargs):
+        """
+        Opens a vxi11 enabled instrument, connecting using the python
+        library `python-vxi11`_. This package must be present and installed
+        for this method to function.
+        
+        :rtype: `Instrument`
+        :return: Object representing the connected instrument.
+        
+        .. _python-vxi11: https://github.com/python-ivi/python-vxi11
+        """
+        vxi11_comm = VXI11Communicator(*args, **kwargs)
+        return cls(vxi11_comm)
 
     @classmethod
     def open_usb(cls, vid, pid):

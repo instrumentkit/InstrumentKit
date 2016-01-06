@@ -36,7 +36,7 @@ except ImportError:
 
 ## CLASSES #####################################################################
 
-class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
+class VXI11Communicator(io.IOBase, AbstractCommunicator):
     """
     Wraps a VXI11 device. Arguments are passed to `vxi11.Instrument`.
     """
