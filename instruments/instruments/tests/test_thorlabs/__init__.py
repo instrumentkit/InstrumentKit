@@ -282,4 +282,3 @@ def test_sc10_restore():
         "\r1\r"
     ) as sc:
         assert sc.restore()
-

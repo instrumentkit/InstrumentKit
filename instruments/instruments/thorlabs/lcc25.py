@@ -98,18 +98,14 @@ class LCC25(Instrument):
         response = self.check_command("mode?")
         if not response is "CMD_NOT_DEFINED":
             return LCC25.Mode[int(response)]
+
     @mode.setter
     def mode(self, newval):
         if (newval.enum is not LCC25.Mode):
             raise TypeError("Mode setting must be a `LCC25.Mode` value, "
                 "got {} instead.".format(type(newval)))
-<<<<<<< HEAD
-        response = self.sendcmd("mode={}".format(newval.value))
-        
-=======
         response = self.query("mode={}".format(newval.value))
 
->>>>>>> upstream/dev
     @property
     def enable(self):
         """
