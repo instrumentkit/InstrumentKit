@@ -1,7 +1,7 @@
 InstrumentKit
 =============
 
-[![Build Status](https://travis-ci.org/Galvant/InstrumentKit.svg?branch=dev)](https://travis-ci.org/Galvant/InstrumentKit)
+[![Build Status](https://travis-ci.org/Galvant/InstrumentKit.svg?branch=dev)](https://travis-ci.org/Galvant/InstrumentKit) [![Coverage Status](https://coveralls.io/repos/Galvant/InstrumentKit/badge.svg?branch=dev)](https://coveralls.io/r/Galvant/InstrumentKit?branch=dev)
 
 This project contains code to easily interact with laboratory equipment using
 various communication buses.
@@ -45,6 +45,7 @@ send, one can use the following functions to do so:
 
 Documentation
 -------------
+[![Documentation Status](https://readthedocs.org/projects/instrumentkit/badge/?version=latest)](https://readthedocs.org/projects/instrumentkit/?badge=latest)
 
 You can find the project documentation at our ReadTheDocs pages located at
 http://instrumentkit.readthedocs.org/en/latest/index.html

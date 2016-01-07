@@ -1,10 +1,17 @@
+sudo: false
 language: python
 python:
 # FIXME: reenable once 2.6 support is added.
 #  - "2.6"
   - "2.7"
 # command to install dependencies
-install: "pip install -r python/requirements.txt"
+install:
+  - "pip install -r instruments/requirements.txt"
+  - pip install python-coveralls
+  - pip install coverage
+  - pip install nose
 # command to run tests
-script: nosetests -w python/src
-
+script:
+  - nosetests --with-coverage -w instruments
+after_success:
+  - coveralls
