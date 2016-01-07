@@ -62,7 +62,7 @@ def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3):
                                          port,
                                          baudrate=baud,
                                          timeout=timeout,
-                                         writeTimeout=writeTimeout
+                                         writeTimeout=write_timeout
                                          ))
         serialObjDict[port] = conn
            # raise  'Serial connection error. Connection not added to serial \

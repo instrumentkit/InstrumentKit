@@ -69,28 +69,6 @@ class TC200(Instrument):
             return response
 
     @property
-    def frequency(self):
-        """
-        Gets/sets the frequency at which the LCC oscillates between the
-        two voltages.
-
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units Hertz.
-        :type: `~quantities.Quantity`
-        """
-        response = self.check_command("freq?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.Hz
-    @frequency.setter
-    def frequency(self, newval):
-        newval = assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude
-        if newval < 5:
-            raise ValueError("Frequency is too low.")
-        if newval >150:
-            raise ValueError("Frequency is too high")
-        self.sendcmd("freq={}".format(newval))
-
-    @property
     def mode(self):
         """
         Gets/sets the output mode of the TC200
@@ -133,6 +111,28 @@ class TC200(Instrument):
             self.sendcmd("ens")
         elif not newval and self.enable:
             self.sendcmd("ens")
+
+    @property
+    def temperature(self):
+        """
+        Gets/sets the temperature
+
+        :return: the temperature (in degrees C)
+        :rtype: float
+        """
+        response = self.check_command("tact?")
+        if not response is "CMD_NOT_DEFINED":
+            return float(response)*pq.degC
+
+    @temperature.setter
+    def temperature(self, newval):
+        newval = assume_units(newval, pq.degC).rescale(pq.degC).magnitude
+        if newval < 20.0:
+            raise ValueError("Temperature is too low.")
+        if newval > self.max_temperature:
+            raise ValueError("Temperature is too high")
+        self.sendcmd("tset={}".format(newval))
+
 
     @property
     def p(self):
