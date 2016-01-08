@@ -231,7 +231,7 @@ class Instrument(object):
             
     ## CLASS METHODS ##
 
-    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa', 'file', 'usbtmc']
+    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb', 'gpib+serial', 'visa', 'file', 'usbtmc', 'vxi11']
     
     @classmethod
     def open_from_uri(cls, uri):
@@ -327,6 +327,11 @@ class Instrument(object):
         elif parsed_uri.scheme == 'file':
             return cls.open_file(os.path.join(parsed_uri.netloc, 
                                                parsed_uri.path), **kwargs)
+        elif parsed_uri.scheme == 'vxi11':
+            # Examples: 
+            #   vxi11://192.168.1.104
+            #   vxi11://TCPIP::192.168.1.105::gpib,5::INSTR
+            return cls.open_vxi11(parsed_uri.netloc, **kwargs)
         else:
             raise NotImplementedError("Invalid scheme or not yet "
                                           "implemented.")
