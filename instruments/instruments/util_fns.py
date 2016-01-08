@@ -54,6 +54,40 @@ def assume_units(value, units):
         value = pq.Quantity(value, units)
     return value
 
+def convert_temperature(temperature, base):
+    """
+    convert the new temperature to the current temperature of the unit
+    :param temperature: a quantity with units of Kelvin, Celsius, or Fahrenheit
+    :type temperature: `quantities.Quantity`
+    :param base: a temperature unit to convert to
+    :type base: `unitquantity.UnitTemperature`
+    :return: the converted temperature
+    :rtype: `quantities.Quantity`
+    """
+    # quantities reports equivalence between degC and degK, so a string comparison is needed
+    newval = assume_units(temperature, pq.degC)
+    if newval.units == pq.degF and str(base).split(" ")[1] == 'degC':
+        return ((newval.magnitude-32.0)*5.0/9.0)*base
+    elif str(newval.units).split(" ")[1] == 'K' and str(base).split(" ")[1] == 'degC':
+        return (newval.magnitude-273.15)*base
+    elif str(newval.units).split(" ")[1] == 'K' and base == pq.degF:
+        return (newval.magnitude/1.8-459/57)*base
+    elif str(newval.units).split(" ")[1] == 'degC' and base == pq.degF:
+        return (newval.magnitude*9.0/5.0+32.0)*base
+    elif newval.units == pq.degF and str(base).split(" ")[1] == 'K':
+        return ((newval.magnitude+459.57)*5.0/9.0)*base
+    elif str(newval.units).split(" ")[1] == 'degC' and str(base).split(" ")[1] == 'K':
+        return (newval.magnitude+273.15)*base
+    elif str(newval.units).split(" ")[1] == 'degC' and str(base).split(" ")[1] == 'degC':
+        return newval
+    elif newval.units == pq.degF and base == pq.degF:
+        return newval
+    elif str(newval.units).split(" ")[1] == 'K' and str(base).split(" ")[1] == 'K':
+        return newval
+    else:
+        raise ValueError("Unable to convert "+str(newval.units)+" to "+str(base))
+
+
 def split_unit_str(s, default_units=pq.dimensionless, lookup=None):
     """
     Given a string of the form "12 C" or "14.7 GHz", returns a tuple of the

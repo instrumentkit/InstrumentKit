@@ -50,7 +50,7 @@ class LCC25(Instrument):
         
     ## ENUMS ##
     
-    class Mode(object):
+    class Mode(IntEnum):
         normal = 0
         voltage1 = 1
         voltage2 = 2

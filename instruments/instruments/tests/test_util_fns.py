@@ -32,7 +32,7 @@ from nose.tools import raises, eq_
 from instruments.util_fns import (
     ProxyList,
     assume_units, bool_property, enum_property, int_property,
-    split_unit_str
+    split_unit_str, convert_temperature
 )
 
 from flufl.enum import Enum
@@ -266,3 +266,14 @@ def test_split_unit_str_only_units():
     """
     mag, units = split_unit_str("foobars")
 
+
+def test_temperature_conversion():
+    blo = 70.0*pq.degF
+    out = convert_temperature(blo, pq.degC)
+    eq_(out.magnitude, 21.11111111111111)
+    blo = 20.0*pq.degC
+    out = convert_temperature(blo, pq.degF)
+    eq_(out.magnitude, 68)
+    blo = 270*pq.degK
+    out = convert_temperature(blo, pq.degC)
+    eq_(out.magnitude, -3.1499999999999773)

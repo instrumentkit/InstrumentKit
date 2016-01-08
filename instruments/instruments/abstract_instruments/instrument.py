@@ -128,7 +128,7 @@ class Instrument(object):
             return self._file.query(cmd, size).replace(self.prompt, "")
         else:
             response = self._file.query(cmd, size)
-            response = self.readline().replace(self.prompt, "")
+            response = self.readline().replace(self.prompt, "").replace(cmd, "")
             return response
 
     def read(self, size=-1):
@@ -163,6 +163,7 @@ class Instrument(object):
         :type: `int`
         '''
         return self._file.timeout
+
     @timeout.setter
     def timeout(self, newval):
         self._file.timeout = newval
@@ -180,6 +181,7 @@ class Instrument(object):
         :type: `int` for GPIB address, `str` for other
         '''
         return self._file.address
+
     @address.setter
     def address(self, newval):
         self._file.address = newval
@@ -196,6 +198,7 @@ class Instrument(object):
         :type: `int`, or `str` for GPIB adapters. 
         '''
         return self._file.terminator
+
     @terminator.setter
     def terminator(self, newval):
         self._file.terminator = newval
@@ -210,6 +213,8 @@ class Instrument(object):
 
         :type: `int`, or `str` for GPIB adapters.
         '''
+        if not hasattr(self._file, 'prompt'):
+            self._file.prompt = self._prompt
         return self._file.prompt
 
     @prompt.setter

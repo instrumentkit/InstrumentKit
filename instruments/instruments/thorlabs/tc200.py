@@ -29,9 +29,10 @@ import quantities as pq
 from flufl.enum import IntEnum
 
 from instruments.abstract_instruments import Instrument
-from instruments.util_fns import assume_units
+from instruments.util_fns import assume_units, convert_temperature
 
 ## CLASSES #####################################################################
+
 
 class TC200(Instrument):
     """
@@ -53,9 +54,10 @@ class TC200(Instrument):
         cycle = 1
 
     class Sensor(IntEnum):
-        PTC100 = 0
-        PTC1000 = 1
-        TH10K = 2
+        ptc100 = 0
+        ptc1000 = 1
+        th10k = 2
+        ntc10k = 3
 
     ## PROPERTIES ##
 
@@ -86,8 +88,8 @@ class TC200(Instrument):
         if newval.enum is not TC200.Mode:
             raise TypeError("Mode setting must be a `TC200.Mode` value, "
                 "got {} instead.".format(type(newval)))
-        response = self.query("mode={}".format(newval.name))
-        print response
+        out_query = "mode={}".format(newval.name)
+        response = self.query(out_query)
 
     @property
     def enable(self):
@@ -122,20 +124,21 @@ class TC200(Instrument):
         :return: the temperature (in degrees C)
         :rtype: float
         """
-        response = self.query("tact?").replace(" C","")
+        response = self.query("tact?").replace(" C", "").replace(" F", "").replace(" K", "")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.degC
 
     @temperature.setter
     def temperature(self, newval):
-        newval = assume_units(newval, pq.degC).rescale(self.degrees).magnitude
-        print "new temperature: "+str(newval)
+        # the set temperature is always in celsius
+        newval = convert_temperature(newval, pq.degC).magnitude
 
         if newval < 20.0:
             raise ValueError("Temperature is too low.")
         if newval > self.max_temperature:
             raise ValueError("Temperature is too high")
-        self.query("tset={}".format(newval))
+        out_query = "tset={}".format(newval)
+        self.query(out_query)
 
 
     @property
@@ -186,7 +189,7 @@ class TC200(Instrument):
         :return: the gain (in nnn)
         :rtype: int
         """
-        response = self.query("pid?")#.replace(self.end_terminator, "")
+        response = self.query("pid?")
         if not response is "CMD_NOT_DEFINED":
             return int(response.split(" ")[2])
 
@@ -205,15 +208,15 @@ class TC200(Instrument):
 
         :type: `~quantities.unitquantity.UnitTemperature`
         """
-        response = self.query("stat?")#.replace(self.end_terminator, "")
+        response = self.query("stat?")
         response = int(response)
         if not response is "CMD_NOT_DEFINED":
-            if (response >> 4 ) % 2:
+            if (response >> 4 ) % 2 and (response >> 5 ) % 2:
                 return pq.degC
             elif (response >> 5) % 2:
-                return pq.degF
-            else:
                 return pq.degK
+            else:
+                return pq.degF
 
     @degrees.setter
     def degrees(self, newval):
@@ -234,10 +237,10 @@ class TC200(Instrument):
         :rtype: TC200.Sensor
 
         """
-        response = self.query("sns?")#.replace(self.end_terminator, "")
-        response = response.replace("Sensor = ", '').replace(self.terminator, "").replace(" ", "")
+        response = self.query("sns?")
+        response = response.split(",")[0].replace("Sensor = ", '').replace(self.terminator, "").replace(" ", "")
         if not response is "CMD_NOT_DEFINED":
-            return TC200.Sensor(response)
+            return TC200.Sensor(response.lower())
 
     @sensor.setter
     def sensor(self, newval):
@@ -254,7 +257,7 @@ class TC200(Instrument):
         :return: the gain (in nnn)
         :rtype: int
         """
-        response = self.query("beta?")#.replace(self.end_terminator, "")
+        response = self.query("beta?")
         if not response is "CMD_NOT_DEFINED":
             return int(response)
 
@@ -274,7 +277,7 @@ class TC200(Instrument):
         :return: the maximum power (in Watts)
         :rtype: `~quantities.Quantity`
         """
-        response = self.query("pmax?")#.replace(self.end_terminator, "")
+        response = self.query("pmax?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.W
 
@@ -301,7 +304,7 @@ class TC200(Instrument):
 
     @max_temperature.setter
     def max_temperature(self, newval):
-        newval = assume_units(newval, pq.degC).rescale(pq.degC).magnitude
+        newval = convert_temperature(newval, pq.degC).magnitude
         if newval < 20:
             raise ValueError("Temperature is too low.")
         if newval > 205.0:
@@ -310,3 +313,4 @@ class TC200(Instrument):
 
     # The Cycles functionality of the TC200 is currently unimplemented, as it is complex, and its functionality is
     # redundant given a python interface to TC200
+
