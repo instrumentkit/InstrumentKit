@@ -42,7 +42,7 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
     """
     
     def __init__(self, *args, **kwargs):
-        if usbtmc is None:
+        if vxi11 is None:
             raise ImportError("Packge python-vxi11 is required for XVI11 "
                               "connected instruments.")
         AbstractCommunicator.__init__(self)
