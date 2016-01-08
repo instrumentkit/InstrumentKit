@@ -45,7 +45,8 @@ class LCC25(Instrument):
     def __init__(self, filelike):
         super(LCC25, self).__init__(filelike)
         self.terminator = "\r"
-        self.end_terminator = ">"
+        self.prompt = ">"
+        self.echo = True
         
     ## ENUMS ##
     
@@ -60,7 +61,7 @@ class LCC25(Instrument):
         """
         gets the name and version number of the device
         """
-        response = self.check_command("*idn?")
+        response = self.query("*idn?")
         if response is "CMD_NOT_DEFINED":
             self.name()          
         else:
@@ -76,7 +77,7 @@ class LCC25(Instrument):
             of units Hertz.
         :type: `~quantities.Quantity`
         """
-        response = self.check_command("freq?")
+        response = self.query("freq?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.Hz
     @frequency.setter
@@ -95,7 +96,7 @@ class LCC25(Instrument):
         
         :type: `LCC25.Mode`
         """
-        response = self.check_command("mode?")
+        response = self.query("mode?")
         if not response is "CMD_NOT_DEFINED":
             return LCC25.Mode[int(response)]
     @mode.setter
@@ -114,7 +115,7 @@ class LCC25(Instrument):
         
         :type: `bool`
         """
-        response = self.check_command("enable?")
+        response = self.query("enable?")
         if not response is "CMD_NOT_DEFINED":
             return True if int(response) is 1 else False
     @enable.setter
@@ -134,7 +135,7 @@ class LCC25(Instrument):
         
         :type: `bool`
         """
-        response = self.check_command("extern?")
+        response = self.query("extern?")
         if not response is "CMD_NOT_DEFINED":
             return True if int(response) is 1 else False
     @extern.setter
@@ -154,7 +155,7 @@ class LCC25(Instrument):
         
         :type: `bool`
         """
-        response = self.check_command("remote?")
+        response = self.query("remote?")
         if not response is "CMD_NOT_DEFINED":
             return True if int(response) is 1 else False
     @remote.setter
@@ -173,7 +174,7 @@ class LCC25(Instrument):
             of units Volts.
         :type: `~quantities.Quantity`
         """
-        response = self.check_command("volt1?")
+        response = self.query("volt1?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.V
     @voltage1.setter
@@ -194,7 +195,7 @@ class LCC25(Instrument):
             of units Volts.
         :type: `~quantities.Quantity`
         """
-        response = self.check_command("volt2?")
+        response = self.query("volt2?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.V
     @voltage2.setter
@@ -215,7 +216,7 @@ class LCC25(Instrument):
             of units Volts.
         :type: `~quantities.Quantity`
         """
-        response = self.check_command("min?")
+        response = self.query("min?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.V
     @min_voltage.setter
@@ -238,7 +239,7 @@ class LCC25(Instrument):
         :type: `~quantities.Quantity`
         
         """
-        response = self.check_command("max?")
+        response = self.query("max?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.V
     @max_voltage.setter
@@ -259,7 +260,7 @@ class LCC25(Instrument):
             of units milliseconds.
         :type: `~quantities.Quantity`
         """
-        response = self.check_command("dwell?")
+        response = self.query("dwell?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.ms
     @dwell.setter
@@ -278,7 +279,7 @@ class LCC25(Instrument):
             of units Volts.
         :type: `~quantities.Quantity`
         """
-        response = self.check_command("increment?")
+        response = self.query("increment?")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.V
     @increment.setter
@@ -289,31 +290,6 @@ class LCC25(Instrument):
         self.sendcmd("increment={}".format(newval))
 
     ## METHODS ##
-    
-    def check_command(self,command):
-        """
-        Checks for the \"Command error CMD_NOT_DEFINED\" error, which can 
-        sometimes occur if there were incorrect terminators on the previous 
-        command. If the command is successful, it returns the value, if not, 
-        it returns CMD_NOT_DEFINED
-        
-        check_command will also clear out the query string
-        """
-        response = self.query(command)
-        response = self.read()
-        cmd_find = response.find("CMD_NOT_DEFINED")
-        if cmd_find ==-1:
-            error_find = response.find("CMD_ARG_INVALID")
-            if error_find ==-1:
-                output_str = response.replace(command,"")
-                output_str = output_str.replace(self.terminator,"")
-                output_str = output_str.replace(self.end_terminator,"")
-            else:
-                output_str = "CMD_ARG_INVALID"
-        else:
-            output_str = "CMD_NOT_DEFINED"
-        return output_str
-    
     def default(self):
         """
         Restores instrument to factory settings.
@@ -322,7 +298,7 @@ class LCC25(Instrument):
         
         :rtype: `int`
         """
-        response = self.check_command("default")
+        response = self.query("default")
         if not response is "CMD_NOT_DEFINED":
             return 1
         else:
@@ -336,7 +312,7 @@ class LCC25(Instrument):
         
         :rtype: `int`
         """
-        response = self.check_command("save")
+        response = self.query("save")
         if not response is "CMD_NOT_DEFINED":
             return 1
         else:
@@ -357,7 +333,7 @@ class LCC25(Instrument):
             raise ValueError("Slot number is less than 0")
         if slot > 4:
             raise ValueError("Slot number is greater than 4")
-        response = self.check_command("set={}".format(slot))
+        response = self.query("set={}".format(slot))
         if response != "CMD_NOT_DEFINED" and response != "CMD_ARG_INVALID":
             return 1
         else:
@@ -378,7 +354,7 @@ class LCC25(Instrument):
             raise ValueError("Slot number is less than 0")
         if slot > 4:
             raise ValueError("Slot number is greater than 4")
-        response = self.check_command("get={}".format(slot))
+        response = self.query("get={}".format(slot))
         if response != "CMD_NOT_DEFINED" and response != "CMD_ARG_INVALID":
             return 1
         else:
@@ -394,7 +370,7 @@ class LCC25(Instrument):
         
         :rtype: `int`
         """
-        response = self.check_command("test")
+        response = self.query("test")
         if not response is "CMD_NOT_DEFINED":
             return 1
         else:

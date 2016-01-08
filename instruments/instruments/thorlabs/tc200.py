@@ -43,7 +43,8 @@ class TC200(Instrument):
     def __init__(self, filelike):
         super(TC200, self).__init__(filelike)
         self.terminator = "\r"
-        self.end_terminator = ">"
+        self.prompt = ">"
+        self.echo = True
 
     ## ENUMS ##
 
@@ -52,9 +53,9 @@ class TC200(Instrument):
         cycle = 1
 
     class Sensor(IntEnum):
-        ptc100 = 0
-        ptc1000 = 1
-        th10k = 2
+        PTC100 = 0
+        PTC1000 = 1
+        TH10K = 2
 
     ## PROPERTIES ##
 
@@ -62,7 +63,7 @@ class TC200(Instrument):
         """
         gets the name and version number of the device
         """
-        response = self.check_command("*idn?")
+        response = self.query("*idn?")
         if response is "CMD_NOT_DEFINED":
             self.name()
         else:
@@ -75,7 +76,7 @@ class TC200(Instrument):
 
         :type: `TC200.Mode`
         """
-        response = self.check_command("stat?")
+        response = self.query("stat?")
         if not response is "CMD_NOT_DEFINED":
             response_code = (int(response) << 1) % 2
             return TC200.Mode[response_code]
@@ -86,6 +87,7 @@ class TC200(Instrument):
             raise TypeError("Mode setting must be a `TC200.Mode` value, "
                 "got {} instead.".format(type(newval)))
         response = self.query("mode={}".format(newval.name))
+        print response
 
     @property
     def enable(self):
@@ -96,7 +98,7 @@ class TC200(Instrument):
 
         :rtype: `bool`
         """
-        response = self.check_command("stat?")
+        response = self.query("stat?")
         if not response is "CMD_NOT_DEFINED":
             return True if int(response) % 2 is 1 else False
 
@@ -108,9 +110,9 @@ class TC200(Instrument):
         # the "ens" command is a toggle, we need to track two different cases, when it should be on and it is off,
         # and when it is off and should be on
         if newval and not self.enable:
-            self.sendcmd("ens")
+            self.query("ens")
         elif not newval and self.enable:
-            self.sendcmd("ens")
+            self.query("ens")
 
     @property
     def temperature(self):
@@ -120,18 +122,20 @@ class TC200(Instrument):
         :return: the temperature (in degrees C)
         :rtype: float
         """
-        response = self.check_command("tact?")
+        response = self.query("tact?").replace(" C","")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.degC
 
     @temperature.setter
     def temperature(self, newval):
-        newval = assume_units(newval, pq.degC).rescale(pq.degC).magnitude
+        newval = assume_units(newval, pq.degC).rescale(self.degrees).magnitude
+        print "new temperature: "+str(newval)
+
         if newval < 20.0:
             raise ValueError("Temperature is too low.")
         if newval > self.max_temperature:
             raise ValueError("Temperature is too high")
-        self.sendcmd("tset={}".format(newval))
+        self.query("tset={}".format(newval))
 
 
     @property
@@ -142,9 +146,9 @@ class TC200(Instrument):
         :return: the gain (in nnn)
         :rtype: int
         """
-        response = self.check_command("pid?")
+        response = self.query("pid?")
         if not response is "CMD_NOT_DEFINED":
-            return int(response.split(",")[0])
+            return int(response.split(" ")[0])
 
     @p.setter
     def p(self, newval):
@@ -152,7 +156,7 @@ class TC200(Instrument):
             raise ValueError("P-Value is too low.")
         if newval > 250:
             raise ValueError("P-Value is too high")
-        self.sendcmd("pvalue={}".format(newval))
+        self.query("pgain={}".format(newval))
 
     @property
     def i(self):
@@ -162,9 +166,9 @@ class TC200(Instrument):
         :return: the gain (in nnn)
         :rtype: int
         """
-        response = self.check_command("pid?")
+        response = self.query("pid?")
         if not response is "CMD_NOT_DEFINED":
-            return int(response.split(",")[1])
+            return int(response.split(" ")[1])
 
     @i.setter
     def i(self, newval):
@@ -172,7 +176,7 @@ class TC200(Instrument):
             raise ValueError("I-Value is too low.")
         if newval > 250:
             raise ValueError("I-Value is too high")
-        self.sendcmd("ivalue={}".format(newval))
+        self.query("igain={}".format(newval))
 
     @property
     def d(self):
@@ -182,9 +186,9 @@ class TC200(Instrument):
         :return: the gain (in nnn)
         :rtype: int
         """
-        response = self.check_command("pid?")
+        response = self.query("pid?")#.replace(self.end_terminator, "")
         if not response is "CMD_NOT_DEFINED":
-            return int(response.split(",")[2])
+            return int(response.split(" ")[2])
 
     @d.setter
     def d(self, newval):
@@ -192,7 +196,7 @@ class TC200(Instrument):
             raise ValueError("D-Value is too low.")
         if newval > 250:
             raise ValueError("D-Value is too high")
-        self.sendcmd("dvalue={}".format(newval))
+        self.query("dgain={}".format(newval))
 
     @property
     def degrees(self):
@@ -201,11 +205,12 @@ class TC200(Instrument):
 
         :type: `~quantities.unitquantity.UnitTemperature`
         """
-        response = self.check_command("stat?")
+        response = self.query("stat?")#.replace(self.end_terminator, "")
+        response = int(response)
         if not response is "CMD_NOT_DEFINED":
-            if (response << 4 ) % 2:
+            if (response >> 4 ) % 2:
                 return pq.degC
-            elif (response << 5) % 2:
+            elif (response >> 5) % 2:
                 return pq.degF
             else:
                 return pq.degK
@@ -213,11 +218,11 @@ class TC200(Instrument):
     @degrees.setter
     def degrees(self, newval):
         if newval is pq.degC:
-            self.sendcmd("unit=c")
+            self.query("unit=c")
         elif newval is pq.degF:
-            self.sendcmd("unit=f")
+            self.query("unit=f")
         elif newval is pq.degK:
-            self.sendcmd("unit=k")
+            self.query("unit=k")
         else:
             raise TypeError("Invalid temperature type")
 
@@ -229,7 +234,8 @@ class TC200(Instrument):
         :rtype: TC200.Sensor
 
         """
-        response = self.check_command("sns?")
+        response = self.query("sns?")#.replace(self.end_terminator, "")
+        response = response.replace("Sensor = ", '').replace(self.terminator, "").replace(" ", "")
         if not response is "CMD_NOT_DEFINED":
             return TC200.Sensor(response)
 
@@ -238,7 +244,7 @@ class TC200(Instrument):
         if newval.enum is not TC200.Sensor:
             raise TypeError("Sensor setting must be a `TC200.Sensor` value, "
                 "got {} instead.".format(type(newval)))
-        self.sendcmd("sns={}".format(newval.name))
+        self.query("sns={}".format(newval.name))
 
     @property
     def beta(self):
@@ -248,7 +254,7 @@ class TC200(Instrument):
         :return: the gain (in nnn)
         :rtype: int
         """
-        response = self.check_command("beta?")
+        response = self.query("beta?")#.replace(self.end_terminator, "")
         if not response is "CMD_NOT_DEFINED":
             return int(response)
 
@@ -258,7 +264,7 @@ class TC200(Instrument):
             raise ValueError("Beta Value is too low.")
         if newval > 6000:
             raise ValueError("Beta Value is too high")
-        self.sendcmd("beta={}".format(newval))
+        self.query("beta={}".format(newval))
 
     @property
     def max_power(self):
@@ -268,7 +274,7 @@ class TC200(Instrument):
         :return: the maximum power (in Watts)
         :rtype: `~quantities.Quantity`
         """
-        response = self.check_command("PMAX?")
+        response = self.query("pmax?")#.replace(self.end_terminator, "")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.W
 
@@ -279,7 +285,7 @@ class TC200(Instrument):
             raise ValueError("Power is too low.")
         if newval > 18.0:
             raise ValueError("Power is too high")
-        self.sendcmd("PMAX={}".format(newval))
+        self.query("PMAX={}".format(newval))
 
     @property
     def max_temperature(self):
@@ -289,45 +295,18 @@ class TC200(Instrument):
         :return: the maximum temperature (in deg C)
         :rtype: `~quantities.Quantity`
         """
-        response = self.check_command("TMAX?")
+        response = self.query("tmax?").replace(" C","")
         if not response is "CMD_NOT_DEFINED":
             return float(response)*pq.degC
 
     @max_temperature.setter
-    def max_power(self, newval):
+    def max_temperature(self, newval):
         newval = assume_units(newval, pq.degC).rescale(pq.degC).magnitude
         if newval < 20:
             raise ValueError("Temperature is too low.")
         if newval > 205.0:
             raise ValueError("Temperature is too high")
-        self.sendcmd("TMAX={}".format(newval))
+        self.query("TMAX={}".format(newval))
 
     # The Cycles functionality of the TC200 is currently unimplemented, as it is complex, and its functionality is
     # redundant given a python interface to TC200
-
-    ## METHODS ##
-
-    def check_command(self, command):
-        """
-        Checks for the \"Command error CMD_NOT_DEFINED\" error, which can
-        sometimes occur if there were incorrect terminators on the previous
-        command. If the command is successful, it returns the value, if not,
-        it returns CMD_NOT_DEFINED
-
-        check_command will also clear out the query string
-        """
-        response = self.query(command)
-        response = self.read()
-        cmd_find = response.find("CMD_NOT_DEFINED")
-        if cmd_find ==-1:
-            error_find = response.find("CMD_ARG_INVALID")
-            if error_find ==-1:
-                output_str = response.replace(command,"")
-                output_str = output_str.replace(self.terminator,"")
-                output_str = output_str.replace(self.end_terminator,"")
-            else:
-                output_str = "CMD_ARG_INVALID"
-        else:
-            output_str = "CMD_NOT_DEFINED"
-        return output_str
-

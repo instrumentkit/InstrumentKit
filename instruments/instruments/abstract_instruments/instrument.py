@@ -83,7 +83,15 @@ class Instrument(object):
     # This can and should be overriden in subclasses for instruments
     # that use different terminators.
     _terminator = "\n"
-    
+
+    # some instruments issue prompt characters to indicate that it is ready for input. This must be eliminated from
+    # the response
+    _prompt = ""
+
+    # Certain instruments (such as those produced by Thorlabs) echo the command back before producing the response.
+    # this boolean handles that change.
+    _echo = False
+
     def __init__(self, filelike):
         # Check to make sure filelike is a subclass of AbstractCommunicator
         if isinstance(filelike, AbstractCommunicator):
@@ -115,7 +123,13 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        return self._file.query(cmd, size)
+        self._file.flush_input()
+        if not self._echo:
+            return self._file.query(cmd, size).replace(self.prompt, "")
+        else:
+            response = self._file.query(cmd, size)
+            response = self.readline().replace(self.prompt, "")
+            return response
 
     def read(self, size=-1):
         """
@@ -129,6 +143,13 @@ class Instrument(object):
         """
         return self._file.read(size)
 
+    def readline(self):
+        """
+        Read a full line
+        :return: the read line
+        :rtype: `str`
+        """
+        return self._file.readline()
         
     ## PROPERTIES ##
     
@@ -178,7 +199,36 @@ class Instrument(object):
     @terminator.setter
     def terminator(self, newval):
         self._file.terminator = newval
-        
+
+    @property
+    def prompt(self):
+        '''
+        Gets/sets the prompt used for communication.
+
+        For communication options where this is applicable, the value
+        corresponds to the character used for prompt
+
+        :type: `int`, or `str` for GPIB adapters.
+        '''
+        return self._file.prompt
+
+    @prompt.setter
+    def prompt(self, newval):
+        self._file.prompt = newval
+
+    @property
+    def echo(self):
+        '''
+        Gets/sets the echo setting
+        :type: `bool`
+        '''
+
+        return self._echo
+
+    @echo.setter
+    def echo(self, newval):
+        self._echo = newval
+
     ## BASIC I/O METHODS ##
     
     def write(self, msg):
