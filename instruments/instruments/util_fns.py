@@ -54,9 +54,10 @@ def assume_units(value, units):
         value = pq.Quantity(value, units)
     return value
 
+
 def convert_temperature(temperature, base):
     """
-    convert the new temperature to the current temperature of the unit
+    convert the temperature to the specified base
     :param temperature: a quantity with units of Kelvin, Celsius, or Fahrenheit
     :type temperature: `quantities.Quantity`
     :param base: a temperature unit to convert to
