@@ -73,7 +73,7 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
     
     def close(self):
         try:
-            self._filelike.close()
+            self._inst.close()
         except:
             pass
         
