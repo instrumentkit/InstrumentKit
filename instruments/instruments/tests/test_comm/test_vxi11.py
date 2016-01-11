@@ -101,6 +101,15 @@ def test_vxi11comm_close(mock_vxi11):
 
 
 @mock.patch(import_base)
+def test_vxi11comm_close_fail(mock_vxi11):
+    comm = VXI11Communicator()
+
+    comm._inst.close.return_value = Exception
+    comm.close()
+    comm._inst.close.assert_called_once_with()
+
+
+@mock.patch(import_base)
 def test_vxi11comm_read(mock_vxi11):
     comm = VXI11Communicator()
     comm._inst.read.return_value = "mock"
