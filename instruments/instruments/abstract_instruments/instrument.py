@@ -123,7 +123,6 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        self._file.flush_input()
         if not self._echo:
             return self._file.query(cmd, size).replace(self.prompt, "")
         else:
