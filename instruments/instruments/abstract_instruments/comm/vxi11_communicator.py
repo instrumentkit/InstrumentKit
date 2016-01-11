@@ -38,7 +38,19 @@ except ImportError:
 
 class VXI11Communicator(io.IOBase, AbstractCommunicator):
     """
-    Wraps a VXI11 device. Arguments are passed to `vxi11.Instrument`.
+    Wraps a VXI-11 device. Arguments are all essentially just passed
+    to `vxi11.Instrument`.
+    
+    VXI-11 is an RPC-based communication protocol over ethernet primarily used 
+    for connecting test and measurement equipment to controller hardware.
+    VXI-11 allows for improved communication speeds and reduced latency over 
+    that of communicating using TCP over a socket connection.
+    
+    VXI-11 is developed and maintained by the IVI Foundation. More information
+    can be found on their website, as well as that of the LXI standard website.
+    
+    VXI-11 has since been superseeded by HiSLIP, which features fixes, improved
+    performance, and new features such as IPv6 support.
     """
     
     def __init__(self, *args, **kwargs):
