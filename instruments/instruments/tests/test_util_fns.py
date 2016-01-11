@@ -139,12 +139,26 @@ def test_temperature_conversion():
     blo = 70.0*pq.degF
     out = convert_temperature(blo, pq.degC)
     eq_(out.magnitude, 21.11111111111111)
+    out = convert_temperature(blo, pq.degK)
+    eq_(out.magnitude, 294.2055555555555)
+    out = convert_temperature(blo, pq.degF)
+    eq_(out.magnitude, 70.0)
+
     blo = 20.0*pq.degC
     out = convert_temperature(blo, pq.degF)
     eq_(out.magnitude, 68)
+    out = convert_temperature(blo, pq.degC)
+    eq_(out.magnitude, 20.0)
+    out = convert_temperature(blo, pq.degK)
+    eq_(out.magnitude, 293.15)
+
     blo = 270*pq.degK
     out = convert_temperature(blo, pq.degC)
     eq_(out.magnitude, -3.1499999999999773)
+    out = convert_temperature(blo, pq.degF)
+    eq_(out.magnitude, 141.94736842105263)
+    out = convert_temperature(blo, pq.K)
+    eq_(out.magnitude, 270)
 
 
 @raises(ValueError)
