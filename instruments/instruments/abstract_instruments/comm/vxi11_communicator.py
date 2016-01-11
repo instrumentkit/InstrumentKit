@@ -77,7 +77,7 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
         except:
             pass
         
-    def read(self, size):
+    def read(self, size=-1):
         msg = self._inst.read(num=size)
         return msg
         
@@ -96,7 +96,7 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
     ## METHODS ##
     
     def _sendcmd(self, msg):
-        self._inst.write(msg)
+        self.write(msg)
         
     def _query(self, msg, size=-1):
         return self._inst.ask(msg, num=size)
