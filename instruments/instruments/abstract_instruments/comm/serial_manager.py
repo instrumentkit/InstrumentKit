@@ -53,6 +53,7 @@ serialObjDict = weakref.WeakValueDictionary()
 
 ## METHODS #####################################################################
 
+
 def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3):
     if not isinstance(port,str):
         raise TypeError('Serial port must be specified as a string.')

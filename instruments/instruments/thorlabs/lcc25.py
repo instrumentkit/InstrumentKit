@@ -99,6 +99,7 @@ class LCC25(Instrument):
         response = self.query("mode?")
         if not response is "CMD_NOT_DEFINED":
             return LCC25.Mode[int(response)]
+
     @mode.setter
     def mode(self, newval):
         if (newval.enum is not LCC25.Mode):

@@ -48,5 +48,6 @@ nosetests.xml
 #Mr Developer
 .mr.developer.cfg
 
-#pycharm generated files
+#pycharm generated
+>>>>>>> origin
 .idea
