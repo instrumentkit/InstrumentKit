@@ -2,4 +2,3 @@ numpy
 pyserial
 quantities
 flufl.enum
-
