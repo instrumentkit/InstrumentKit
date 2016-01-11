@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# test_util_fns.py: Tests various utility functions.
+# test_vxi11.py: Tests VXI11Communicator
 #
 # © 2016 Steven Casagrande (scasagrande@galvant.ca).
 #

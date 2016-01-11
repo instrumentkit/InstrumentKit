@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# usbtmc_communicator.py: Communicator that uses Python-USBTMC to interface 
-#     with TMC devices.
+# vxi11_communicator.py: Communicator that uses python-vxi11 to interface 
+#     with VXI11 devices.
 ##
 # © 2016 Steven Casagrande (scasagrande@galvant.ca).
 #
