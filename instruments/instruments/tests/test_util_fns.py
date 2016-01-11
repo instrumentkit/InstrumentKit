@@ -160,6 +160,10 @@ def test_temperature_conversion():
     out = convert_temperature(blo, pq.K)
     eq_(out.magnitude, 270)
 
+@raises(ValueError)
+def test_temperater_conversion_failure():
+    blo = 70.0*pq.degF
+    convert_temperature(blo, pq.V)
 
 @raises(ValueError)
 def test_assume_units_failures():
