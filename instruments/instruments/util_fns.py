@@ -362,7 +362,7 @@ class ProxyList(object):
     def __len__(self):
         return len(self._valid_set)
 
-if sys.version_info[0] == 2 and sys.version_info[1] == 6:
+if sys.version_info[0] == 2 and sys.version_info[1] == 6: # pragma: no cover
 
     import logging
 

@@ -31,46 +31,18 @@ from nose.tools import raises, eq_
 
 from instruments.util_fns import (
     ProxyList,
-    assume_units, bool_property, enum_property, int_property,
-    split_unit_str, convert_temperature
+    assume_units, convert_temperature
 )
 
 from flufl.enum import Enum
 
-## CLASSES ####################################################################
-
-class MockInstrument(object):
-    """
-    Mock class that admits sendcmd/query but little else such that property
-    factories can be tested by deriving from the class.
-    """
-    
-    def __init__(self, responses=None):
-        self._buf = StringIO()
-        self._responses = responses if responses is not None else {}
-        
-    @property
-    def value(self):
-        return self._buf.getvalue()
-        
-    def sendcmd(self, cmd):
-        self._buf.write("{}\n".format(cmd))
-        
-    def query(self, cmd):
-        self.sendcmd(cmd)
-        return self._responses[cmd.strip()]
-
 ## TEST CASES #################################################################
 
-def test_ProxyList():
+def test_ProxyList_basics():
     class ProxyChild(object):
         def __init__(self, parent, name):
             self._parent = parent
             self._name = name
-            
-    class MockEnum(Enum):
-        a = "aa"
-        b = "bb"
             
     parent = object()
     
@@ -80,10 +52,79 @@ def test_ProxyList():
     assert child._parent is parent
     assert child._name == 0
     
+def test_ProxyList_valid_range_is_enum():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+    class MockEnum(Enum):
+        a = "aa"
+        b = "bb"
+        
+    parent = object()
+    
     proxy_list = ProxyList(parent, ProxyChild, MockEnum)
     assert proxy_list['aa']._name == MockEnum.a
     assert proxy_list['b']._name  == MockEnum.b
     assert proxy_list[MockEnum.a]._name == MockEnum.a
+    
+def test_ProxyList_length():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+    parent = object()
+    
+    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    
+    eq_(len(proxy_list), 10)
+    
+def test_ProxyList_iterator():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+    parent = object()
+    
+    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    
+    i = 0
+    for item in proxy_list:
+        eq_(item._name, i)
+        i = i + 1
+
+@raises(IndexError)
+def test_ProxyList_invalid_idx_enum():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            
+    class MockEnum(Enum):
+        a = "aa"
+        b = "bb"
+        
+    parent = object()
+    
+    proxy_list = ProxyList(parent, ProxyChild, MockEnum)
+    
+    proxy_list['c'] # Should raise IndexError
+    
+@raises(IndexError)
+def test_ProxyList_invalid_idx():
+    class ProxyChild(object):
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+        
+    parent = object()
+    
+    proxy_list = ProxyList(parent, ProxyChild, xrange(5))
+    
+    proxy_list[10] # Should raise IndexError
 
 def test_assume_units_correct():
     m = pq.Quantity(1, 'm')
@@ -93,179 +134,6 @@ def test_assume_units_correct():
     
     # Check that raw scalars are made unitful.
     eq_(assume_units(1, 'm').rescale('mm').magnitude, 1000)
-    
-@raises(ValueError)
-def test_assume_units_failures():
-    assume_units(1, 'm').rescale('s')
-    
-def test_bool_property():
-    class BoolMock(MockInstrument):
-        mock1 = bool_property('MOCK1', 'ON', 'OFF')
-        mock2 = bool_property('MOCK2', 'YES', 'NO')
-        
-    mock = BoolMock({'MOCK1?': 'OFF', 'MOCK2?': 'YES'})
-    
-    assert not mock.mock1
-    assert mock.mock2
-    
-    mock.mock1 = True
-    mock.mock2 = False
-    
-    eq_(mock.value, 'MOCK1?\nMOCK2?\nMOCK1 ON\nMOCK2 NO\n')
-    
-def test_enum_property():
-    class SillyEnum(Enum):
-        a = 'aa'
-        b = 'bb'
-        
-    class EnumMock(MockInstrument):
-        a = enum_property('MOCK:A', SillyEnum)
-        b = enum_property('MOCK:B', SillyEnum)
-        
-    mock = EnumMock({'MOCK:A?': 'aa', 'MOCK:B?': 'bb'})
-    
-    assert mock.a is SillyEnum.a
-    assert mock.b is SillyEnum.b
-    
-    # Test EnumValues, string values and string names.
-    mock.a = SillyEnum.b
-    mock.b = 'a'
-    mock.b = 'bb'
-    
-    eq_(mock.value, 'MOCK:A?\nMOCK:B?\nMOCK:A bb\nMOCK:B aa\nMOCK:B bb\n')
-
-# TODO: test other property factories!
-
-@raises(ValueError)
-def test_int_property_valid_set():
-    class IntMock(MockInstrument):
-        mock = int_property('MOCK', valid_set=set([1, 2]))
-        
-    mock = IntMock()
-    mock.mock = 3
-
-def test_split_unit_str_magnitude_and_units():
-    """
-    split_unit_str: Given the input "42 foobars" I expect the output
-    to be (42, "foobars").
-    
-    This checks that "[val] [units]" works where val is a non-scientific number
-    """
-    mag, units = split_unit_str("42 foobars")
-    eq_(mag, 42)
-    eq_(units, "foobars")
-    
-def test_split_unit_str_magnitude_and_default_units():
-    """
-    split_unit_str: Given the input "42" and default_units="foobars"
-    I expect output to be (42, "foobars").
-    
-    This checks that when given a string without units, the function returns
-    default_units as the units.
-    """
-    mag, units = split_unit_str("42", default_units="foobars")
-    eq_(mag, 42)
-    eq_(units, "foobars")
-    
-def test_split_unit_str_ignore_default_units():
-    """
-    split_unit_str: Given the input "42 snafus" and default_units="foobars"
-    I expect the output to be (42, "snafus").
-    
-    This verifies that if the input has units, then any specified default_units
-    are ignored.
-    """
-    mag, units = split_unit_str("42 snafus", default_units="foobars")
-    eq_(mag, 42)
-    eq_(units, "snafus")
-    
-def test_split_unit_str_lookups():
-    """
-    split_unit_str: Given the input "42 FOO" and a dictionary for our units
-    lookup, I expect the output to be (42, "foobars").
-    
-    This checks that the unit lookup parameter is correctly called, which can be
-    used to map between units as string and their pyquantities equivalent.
-    """
-    unit_dict = {
-        "FOO": "foobars",
-        "SNA": "snafus"
-    }
-    mag, units = split_unit_str("42 FOO", lookup=unit_dict.__getitem__)
-    eq_(mag, 42)
-    eq_(units, "foobars")
-    
-def test_split_unit_str_scientific_notation():
-    """
-    split_unit_str: Given inputs of scientific notation, I expect the output
-    to correctly represent the inputted magnitude.
-    
-    This checks that inputs with scientific notation are correctly converted
-    to floats.
-    """
-    # No signs, no units
-    mag, units = split_unit_str("123E1")
-    eq_(mag, 1230)
-    eq_(units, pq.dimensionless)
-    # Negative exponential, no units
-    mag, units = split_unit_str("123E-1")
-    eq_(mag, 12.3)
-    eq_(units, pq.dimensionless)
-    # Negative magnitude, no units
-    mag, units = split_unit_str("-123E1")
-    eq_(mag, -1230)
-    eq_(units, pq.dimensionless)
-    # No signs, with units
-    mag, units = split_unit_str("123E1 foobars")
-    eq_(mag, 1230)
-    eq_(units, "foobars")
-    # Signs everywhere, with units
-    mag, units = split_unit_str("-123E-1 foobars")
-    eq_(mag, -12.3)
-    eq_(units, "foobars")
-    # Lower case e
-    mag, units = split_unit_str("123e1")
-    eq_(mag, 1230)
-    eq_(units, pq.dimensionless)
-    
-@raises(ValueError)
-def test_split_unit_str_empty_string():
-    """
-    split_unit_str: Given an empty string, I expect the function to raise
-    a ValueError.
-    """
-    mag, units = split_unit_str("")
-    
-@raises(ValueError)
-def test_split_unit_str_only_exponential():
-    """
-    split_unit_str: Given a string with only an exponential, I expect the 
-    function to raise a ValueError.
-    """
-    mag, units = split_unit_str("E3")
-    
-def test_split_unit_str_magnitude_with_decimal():
-    """
-    split_unit_str: Given a string with magnitude containing a decimal, I
-    expect the function to correctly parse the magnitude.
-    """
-    # Decimal and units
-    mag, units = split_unit_str("123.4 foobars")
-    eq_(mag, 123.4)
-    eq_(units, "foobars")
-    # Decimal, units, and exponential
-    mag, units = split_unit_str("123.4E1 foobars")
-    eq_(mag, 1234)
-    eq_(units, "foobars")
-    
-@raises(ValueError)
-def test_split_unit_str_only_units():
-    """
-    split_unit_str: Given a bad string containing only units (ie, no numbers),
-    I expect the function to raise a ValueError.
-    """
-    mag, units = split_unit_str("foobars")
-
 
 def test_temperature_conversion():
     blo = 70.0*pq.degF
@@ -277,3 +145,8 @@ def test_temperature_conversion():
     blo = 270*pq.degK
     out = convert_temperature(blo, pq.degC)
     eq_(out.magnitude, -3.1499999999999773)
+
+
+@raises(ValueError)
+def test_assume_units_failures():
+    assume_units(1, 'm').rescale('s')
