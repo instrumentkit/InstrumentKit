@@ -52,7 +52,7 @@ def check_time(newval):
     :return:
     """
     if newval < 0:
-        raise ValueError("Time cannot be negative")
+        raise ValueError("Duration cannot be negative")
     if newval > 999999:
         raise ValueError("Duration is too long")
 
@@ -79,7 +79,6 @@ class SC10(Instrument):
         
     ## PROPERTIES ##
 
-    @property
     def name(self):
         """
         Gets the name and version number of the device.

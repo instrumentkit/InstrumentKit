@@ -57,7 +57,6 @@ def slot_latch(slot):
         raise ValueError("Slot number is greater than 4")
 
 
-
 def check_cmd(response):
     """
     Checks the for the two common Thorlabs error messages; CMD_NOT_DEFINED and CMD_ARG_INVALID
@@ -101,11 +100,7 @@ class LCC25(Instrument):
         """
         gets the name and version number of the device
         """
-        response = self.query("*idn?")
-        if response is "CMD_NOT_DEFINED":
-            self.name()          
-        else:
-            return response
+        return self.query("*idn?")
 
     @property
     def frequency(self):
@@ -125,7 +120,7 @@ class LCC25(Instrument):
         newval = assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude
         if newval < 5:
             raise ValueError("Frequency is too low.")
-        if newval >150:
+        if newval > 150:
             raise ValueError("Frequency is too high")
         self.sendcmd("freq={}".format(newval))
 
@@ -141,6 +136,9 @@ class LCC25(Instrument):
 
     @mode.setter
     def mode(self, newval):
+        if not hasattr(newval, 'enum'):
+            raise TypeError("Mode setting must be a `LCC25.Mode` value, "
+                "got {} instead.".format(type(newval)))
         if newval.enum is not LCC25.Mode:
             raise TypeError("Mode setting must be a `LCC25.Mode` value, "
                 "got {} instead.".format(type(newval)))

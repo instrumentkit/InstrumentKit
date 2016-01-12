@@ -28,7 +28,6 @@ import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
 from nose.tools import raises
 from flufl.enum import IntEnum
-import cStringIO as StringIO
 import quantities as pq
 
 ## TESTS ######################################################################
@@ -53,6 +52,14 @@ def test_slot_latch_min():
 def test_slot_latch_max():
     ik.thorlabs.slot_latch(9999)
 
+
+def test_lcc25_name():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "*idn?\r",
+        "\r>bloopbloop\r>\r"
+    ) as lcc:
+        assert lcc.name() == "bloopbloop"
 
 
 def test_lcc25_frequency():
@@ -93,6 +100,27 @@ def test_lcc25_mode():
     ) as lcc:
         assert lcc.mode == ik.thorlabs.LCC25.Mode.voltage2
         lcc.mode = ik.thorlabs.LCC25.Mode.voltage1
+
+
+@raises(TypeError)
+def test_lcc25_mode_invalid():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "mode=10\r",
+        "\r>0\r>\r"
+    ) as lcc:
+        lcc.mode = "blo"
+
+
+@raises(TypeError)
+def test_lcc25_mode_invalid2():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "mode=10\r",
+        "\r>0\r>\r"
+    ) as lcc:
+        blo = IntEnum("blo", "beep boop bop")
+        lcc.mode = blo.beep
 
 
 def test_lcc25_enable():
@@ -163,8 +191,6 @@ def test_lcc25_voltage1():
     ) as lcc:
         unit_eq(lcc.voltage1, pq.Quantity(20, "V"))
         lcc.voltage1 = 10.0
-
-
 
 
 def test_check_cmd():
@@ -260,6 +286,7 @@ def test_lcc25_save():
     ) as lcc:
         lcc.save()
 
+
 def test_lcc25_save_settings():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -267,6 +294,7 @@ def test_lcc25_save_settings():
         "\r>\r"
     ) as lcc:
         lcc.set_settings(2)
+
 
 def test_lcc25_get_settings():
     with expected_protocol(
@@ -276,6 +304,7 @@ def test_lcc25_get_settings():
     ) as lcc:
         lcc.get_settings(2)
 
+
 def test_lcc25_test_mode():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -284,6 +313,14 @@ def test_lcc25_test_mode():
     ) as lcc:
         lcc.test_mode()
 
+
+def test_sc10_name():
+    with expected_protocol(
+        ik.thorlabs.SC10,
+        "id?\r",
+        "\r>bloopbloop\r>\r"
+    ) as sc:
+        assert sc.name() == "bloopbloop"
 
 
 def test_sc10_enable():
@@ -373,8 +410,12 @@ def test_trigger_check():
 
 
 @raises(ValueError)
-def test_time_check():
+def test_time_check_min():
     ik.thorlabs.check_time(-1)
+
+
+@raises(ValueError)
+def test_time_check_max():
     ik.thorlabs.check_time(9999999)
 
 
@@ -407,15 +448,12 @@ def test_sc10_shut_time():
         unit_eq(sc.shut_time, pq.Quantity(20, "ms"))
         sc.shut_time = 10.0
 
-'''
-unit test for baud rate should be done very carefully, testing to change the 
-baud rate to something other then the current baud rate will cause the 
-connection to be unreadable.
+
 def test_sc10_baud_rate():
     with expected_protocol(ik.thorlabs.SC10, "baud?\rbaud=1\r", "\r>0\r>\r") as sc:
-        assert sc.baud_rate ==0
-        sc.baud_rate = 1
-'''
+        assert sc.baud_rate == 9600
+        sc.baud_rate = 115200
+
 
 def test_sc10_closed():
     with expected_protocol(
@@ -425,6 +463,7 @@ def test_sc10_closed():
     ) as sc:
         assert sc.closed
 
+
 def test_sc10_interlock():
     with expected_protocol(
         ik.thorlabs.SC10,
@@ -432,6 +471,7 @@ def test_sc10_interlock():
         "\r>1\r>"
     ) as sc:
         assert sc.interlock
+
 
 def test_sc10_default():
     with expected_protocol(
@@ -441,6 +481,7 @@ def test_sc10_default():
     ) as sc:
         assert sc.default()
 
+
 def test_sc10_save():
     with expected_protocol(
         ik.thorlabs.SC10,
@@ -448,6 +489,7 @@ def test_sc10_save():
         "\r>1\r>"
     ) as sc:
         assert sc.save()
+
 
 def test_sc10_save_mode():
     with expected_protocol(
