@@ -64,6 +64,8 @@ class TC200(Instrument):
     def name(self):
         """
         gets the name and version number of the device
+        :return: the name string of the device
+        :rtype: str
         """
         response = self.query("*idn?")
         return response
