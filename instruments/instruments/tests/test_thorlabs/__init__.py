@@ -512,12 +512,13 @@ def test_tc200_mode_error2():
 def test_tc200_enable():
     with expected_protocol(
         ik.thorlabs.TC200,
-        ["stat?\r", "stat?\r", "ens", "stat?\r", "ens"],
-        ["\r54\r>\r", "\r54\r>\r", "\r>\r", "\r55\r>\r", "\r>\r"]
+        ["stat?", "stat?", "ens", "stat?", "ens"],
+        ["\r54\r>\n", "\r54\r>\n", "\r>\n", "\r55\r>\n", "\r>\n"],
+        sep="\r"
     ) as tc:
         assert tc.enable == 0
-        tc.enable = 1
-        tc.enable = 0
+        tc.enable = True
+        tc.enable = False
 
 
 @raises(TypeError)
@@ -528,15 +529,6 @@ def test_tc200_enable_type():
         "\rblo\r>\r"
     ) as tc:
         tc.enable = "blo"
-
-
-def test_tc200_enable():
-    with expected_protocol(
-        ik.thorlabs.TC200,
-        "stat?\r",
-        "\r54\r>\r"
-    ) as tc:
-        assert tc.enable == 0
 
 
 def test_tc200_temperature():
@@ -765,6 +757,7 @@ def test_tc200_max_temperature():
     ) as tc:
         assert tc.max_temperature == 200.0*pq.degC
         tc.max_temperature = 180*pq.degC
+
 
 @raises(ValueError)
 def test_tc200_temp_min():
