@@ -49,5 +49,4 @@ nosetests.xml
 .mr.developer.cfg
 
 #pycharm generated
->>>>>>> origin
 .idea

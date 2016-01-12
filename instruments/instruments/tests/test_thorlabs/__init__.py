@@ -455,6 +455,18 @@ def test_sc10_baud_rate():
         sc.baud_rate = 115200
 
 
+def test_echo():
+    with expected_protocol(ik.thorlabs.SC10, "baud?\r", "\r>0\r>\r") as sc:
+        assert sc.baud_rate == 9600
+        assert sc.echo == True
+
+
+@raises(ValueError)
+def test_sc10_baud_rate_error():
+    with expected_protocol(ik.thorlabs.SC10, "\rbaud=1\r", "\r>\r") as sc:
+        sc.baud_rate = 115201
+
+
 def test_sc10_closed():
     with expected_protocol(
         ik.thorlabs.SC10,
