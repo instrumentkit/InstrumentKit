@@ -127,7 +127,7 @@ class Instrument(object):
             return self._file.query(cmd, size).replace(self.prompt, "")
         else:
             response = self._file.query(cmd, size)
-            response = self.readline().replace(self.prompt, "").replace(cmd, "")
+            response = self.readline().replace(self.prompt, "").replace(cmd, "").replace(self.terminator, "")
             return response
 
     def read(self, size=-1):

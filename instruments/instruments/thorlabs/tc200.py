@@ -129,14 +129,10 @@ class TC200(Instrument):
     def temperature(self, newval):
         # the set temperature is always in celsius
         newval = convert_temperature(newval, pq.degC).magnitude
-
-        if newval < 20.0:
-            raise ValueError("Temperature is too low.")
-        if newval > self.max_temperature:
-            raise ValueError("Temperature is too high")
+        if newval < 20.0 or newval > self.max_temperature:
+            raise ValueError("Temperature is out of range.")
         out_query = "tset={}".format(newval)
         self.query(out_query)
-
 
     @property
     def p(self):
@@ -162,7 +158,7 @@ class TC200(Instrument):
         """
         Gets/sets the igain
 
-        :return: the gain 
+        :return: the gain
         :rtype: int
         """
         response = self.query("pid?")
@@ -204,7 +200,7 @@ class TC200(Instrument):
         """
         response = self.query("stat?")
         response = int(response)
-        if (response >> 4 ) % 2 and (response >> 5 ) % 2:
+        if (response >> 4) % 2 and (response >> 5) % 2:
             return pq.degC
         elif (response >> 5) % 2:
             return pq.degK
@@ -236,6 +232,10 @@ class TC200(Instrument):
 
     @sensor.setter
     def sensor(self, newval):
+        if not hasattr(newval, 'enum'):
+            raise TypeError("Sensor setting must be a `TC200.Sensor` value, "
+                "got {} instead.".format(type(newval)))
+
         if newval.enum is not TC200.Sensor:
             raise TypeError("Sensor setting must be a `TC200.Sensor` value, "
                 "got {} instead.".format(type(newval)))

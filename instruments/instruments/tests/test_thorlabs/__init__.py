@@ -467,6 +467,25 @@ def test_sc10_restore():
         assert sc.restore()
 
 
+def test_tc200_name():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "*idn?\r",
+        "\r>bloopbloop\r>\r"
+    ) as tc:
+        assert tc.name() == "bloopbloop"
+
+
+def test_tc200_mode():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "stat?\rmode=cycle\r",
+        "\r>54\r>\r"
+    ) as tc:
+        assert tc.mode == ik.thorlabs.TC200.Mode.normal
+        tc.mode = ik.thorlabs.TC200.Mode.cycle
+
+
 def test_tc200_mode():
     with expected_protocol(
         ik.thorlabs.TC200,
@@ -493,10 +512,12 @@ def test_tc200_mode_error2():
 def test_tc200_enable():
     with expected_protocol(
         ik.thorlabs.TC200,
-        "stat?\r",
-        "\r54\r>\r"
+        ["stat?\r", "stat?\r", "ens", "stat?\r", "ens"],
+        ["\r54\r>\r", "\r54\r>\r", "\r>\r", "\r55\r>\r", "\r>\r"]
     ) as tc:
         assert tc.enable == 0
+        tc.enable = 1
+        tc.enable = 0
 
 
 @raises(TypeError)
@@ -518,14 +539,26 @@ def test_tc200_enable():
         assert tc.enable == 0
 
 
-
 def test_tc200_temperature():
     with expected_protocol(
         ik.thorlabs.TC200,
-        "tact?\r",
-        "\r>30 C\r>\r"
+        ["tact?", "tmax?", "tset=40.0"],
+        ["\r>30 C\r>\n", "\r>250\r>", "\r>\r"],
+        sep="\r"
     ) as tc:
         assert tc.temperature == 30.0*pq.degC
+        tc.temperature = 40*pq.degC
+
+
+@raises(ValueError)
+def test_tc200_temperature_range():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        ["tmax?", "tset=50.0"],
+        ["\r>40\r>", "\r>\r"],
+        sep="\r"
+    ) as tc:
+        tc.temperature = 50*pq.degC
 
 
 def test_tc200_pid():
@@ -554,14 +587,91 @@ def test_tc200_pid():
         tc.d = 220
 
 
+@raises(ValueError)
+def test_tc200_pmin():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "pgain=-1\r",
+        "\r>\r"
+    ) as tc:
+        tc.p = -1
+
+
+@raises(ValueError)
+def test_tc200_pmax():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "pgain=260\r",
+        "\r>\r"
+    ) as tc:
+        tc.p = 260
+
+
+@raises(ValueError)
+def test_tc200_imin():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "igain=-1\r",
+        "\r>\r"
+    ) as tc:
+        tc.i = -1
+
+
+@raises(ValueError)
+def test_tc200_imax():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "igain=260\r",
+        "\r>\r"
+    ) as tc:
+        tc.i = 260
+
+
+@raises(ValueError)
+def test_tc200_dmin():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "dgain=-1\r",
+        "\r>\r"
+    ) as tc:
+        tc.d = -1
+
+
+@raises(ValueError)
+def test_tc200_dmax():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "dgain=260\r",
+        "\r>\r"
+    ) as tc:
+        tc.d = 260
+
+
 def test_tc200_degrees():
     with expected_protocol(
         ik.thorlabs.TC200,
-        "stat?\runit=c\r",
-        "\r>44\r>\r"
+        ["stat?", "stat?", "stat?", "unit=c", "unit=f", "unit=k"],
+        ["\r>44\n", "\r>54\n", "\r>0\n", ">\r", ">\r", ">\r"],
+        sep="\r"
     ) as tc:
         assert str(tc.degrees).split(" ")[1] == "K"
+        assert str(tc.degrees).split(" ")[1] == "degC"
+        assert tc.degrees == pq.degF
+
         tc.degrees = pq.degC
+        tc.degrees = pq.degF
+        tc.degrees = pq.degK
+
+
+@raises(TypeError)
+def test_tc200_degrees_invalid():
+
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "unit=blo",
+        ">\r"
+    ) as tc:
+        tc.degrees = "blo"
 
 
 def test_tc200_sensor():
@@ -574,6 +684,19 @@ def test_tc200_sensor():
         tc.sensor = tc.Sensor.ptc100
 
 
+@raises(TypeError)
+def test_tc200_sensor_error():
+    with expected_protocol(ik.thorlabs.TC200, 'blo', 'blo') as tc:
+        tc.sensor = "blo"
+
+
+@raises(TypeError)
+def test_tc200_sensor_error2():
+    with expected_protocol(ik.thorlabs.TC200, 'blo', 'blo') as tc:
+        blo = IntEnum("blo", "beep boop bop")
+        tc.sensor = blo.beep
+
+
 def test_tc200_beta():
     with expected_protocol(
         ik.thorlabs.TC200,
@@ -584,17 +707,57 @@ def test_tc200_beta():
         tc.beta = 2000
 
 
+@raises(ValueError)
+def test_tc200_beta_min():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "beta=200\r",
+        "\r>\r"
+    ) as tc:
+        tc.beta = 200
+
+
+@raises(ValueError)
+def test_tc200_beta_max():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "beta=20000\r",
+        "\r>\r"
+    ) as tc:
+        tc.beta = 20000
+
+
 def test_tc200_max_power():
     with expected_protocol(
         ik.thorlabs.TC200,
-        "pmax?\r15.0\r",
-        "\r>pmax=12\r>\r"
+        "pmax?\rPMAX=12.0\r",
+        "\r>15.0\r>\r"
     ) as tc:
         assert tc.max_power == 15.0*pq.W
         tc.max_power = 12*pq.W
 
 
-def test_tc200_max_power():
+@raises(ValueError)
+def test_tc200_power_min():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "PMAX=-2\r",
+        "\r>\r"
+    ) as tc:
+        tc.max_power = -1
+
+
+@raises(ValueError)
+def test_tc200_power_max():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "PMAX=20000\r",
+        "\r>\r"
+    ) as tc:
+        tc.max_power = 20000
+
+
+def test_tc200_max_temperature():
     with expected_protocol(
         ik.thorlabs.TC200,
         "tmax?\rTMAX=180.0\r",
@@ -602,3 +765,22 @@ def test_tc200_max_power():
     ) as tc:
         assert tc.max_temperature == 200.0*pq.degC
         tc.max_temperature = 180*pq.degC
+
+@raises(ValueError)
+def test_tc200_temp_min():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "TMAX=-2\r",
+        "\r>\r"
+    ) as tc:
+        tc.max_temperature = -1
+
+
+@raises(ValueError)
+def test_tc200_temp_max():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "TMAX=20000\r",
+        "\r>\r"
+    ) as tc:
+        tc.max_temperature = 20000
