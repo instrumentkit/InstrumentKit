@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 ##
-# lcc25.py: class for the Thorlabs LCC25 Liquid Crystal Controller
+# tc200.py: class for the Thorlabs TC200 Temperature Controller
 ##
 # © 2014 Steven Casagrande (scasagrande@galvant.ca).
 #
@@ -66,10 +66,7 @@ class TC200(Instrument):
         gets the name and version number of the device
         """
         response = self.query("*idn?")
-        if response is "CMD_NOT_DEFINED":
-            self.name()
-        else:
-            return response
+        return response
 
     @property
     def mode(self):
@@ -79,17 +76,19 @@ class TC200(Instrument):
         :type: `TC200.Mode`
         """
         response = self.query("stat?")
-        if not response is "CMD_NOT_DEFINED":
-            response_code = (int(response) << 1) % 2
-            return TC200.Mode[response_code]
+        response_code = (int(response) << 1) % 2
+        return TC200.Mode[response_code]
 
     @mode.setter
     def mode(self, newval):
+        if not hasattr(newval, 'enum'):
+            raise TypeError("Mode setting must be a `TC200.Mode` value, "
+                "got {} instead.".format(type(newval)))
         if newval.enum is not TC200.Mode:
             raise TypeError("Mode setting must be a `TC200.Mode` value, "
                 "got {} instead.".format(type(newval)))
         out_query = "mode={}".format(newval.name)
-        response = self.query(out_query)
+        self.query(out_query)
 
     @property
     def enable(self):
@@ -101,8 +100,7 @@ class TC200(Instrument):
         :rtype: `bool`
         """
         response = self.query("stat?")
-        if not response is "CMD_NOT_DEFINED":
-            return True if int(response) % 2 is 1 else False
+        return True if int(response) % 2 is 1 else False
 
     @enable.setter
     def enable(self, newval):
@@ -125,8 +123,7 @@ class TC200(Instrument):
         :rtype: float
         """
         response = self.query("tact?").replace(" C", "").replace(" F", "").replace(" K", "")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.degC
+        return float(response)*pq.degC
 
     @temperature.setter
     def temperature(self, newval):
@@ -150,8 +147,7 @@ class TC200(Instrument):
         :rtype: int
         """
         response = self.query("pid?")
-        if not response is "CMD_NOT_DEFINED":
-            return int(response.split(" ")[0])
+        return int(response.split(" ")[0])
 
     @p.setter
     def p(self, newval):
@@ -166,12 +162,11 @@ class TC200(Instrument):
         """
         Gets/sets the igain
 
-        :return: the gain (in nnn)
+        :return: the gain 
         :rtype: int
         """
         response = self.query("pid?")
-        if not response is "CMD_NOT_DEFINED":
-            return int(response.split(" ")[1])
+        return int(response.split(" ")[1])
 
     @i.setter
     def i(self, newval):
@@ -190,8 +185,7 @@ class TC200(Instrument):
         :rtype: int
         """
         response = self.query("pid?")
-        if not response is "CMD_NOT_DEFINED":
-            return int(response.split(" ")[2])
+        return int(response.split(" ")[2])
 
     @d.setter
     def d(self, newval):
@@ -210,13 +204,12 @@ class TC200(Instrument):
         """
         response = self.query("stat?")
         response = int(response)
-        if not response is "CMD_NOT_DEFINED":
-            if (response >> 4 ) % 2 and (response >> 5 ) % 2:
-                return pq.degC
-            elif (response >> 5) % 2:
-                return pq.degK
-            else:
-                return pq.degF
+        if (response >> 4 ) % 2 and (response >> 5 ) % 2:
+            return pq.degC
+        elif (response >> 5) % 2:
+            return pq.degK
+        else:
+            return pq.degF
 
     @degrees.setter
     def degrees(self, newval):
@@ -239,8 +232,7 @@ class TC200(Instrument):
         """
         response = self.query("sns?")
         response = response.split(",")[0].replace("Sensor = ", '').replace(self.terminator, "").replace(" ", "")
-        if not response is "CMD_NOT_DEFINED":
-            return TC200.Sensor(response.lower())
+        return TC200.Sensor(response.lower())
 
     @sensor.setter
     def sensor(self, newval):
@@ -258,8 +250,7 @@ class TC200(Instrument):
         :rtype: int
         """
         response = self.query("beta?")
-        if not response is "CMD_NOT_DEFINED":
-            return int(response)
+        return int(response)
 
     @beta.setter
     def beta(self, newval):
@@ -278,8 +269,7 @@ class TC200(Instrument):
         :rtype: `~quantities.Quantity`
         """
         response = self.query("pmax?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.W
+        return float(response)*pq.W
 
     @max_power.setter
     def max_power(self, newval):
@@ -299,8 +289,7 @@ class TC200(Instrument):
         :rtype: `~quantities.Quantity`
         """
         response = self.query("tmax?").replace(" C","")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.degC
+        return float(response)*pq.degC
 
     @max_temperature.setter
     def max_temperature(self, newval):

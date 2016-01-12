@@ -26,11 +26,34 @@
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
-
+from nose.tools import raises
+from flufl.enum import IntEnum
 import cStringIO as StringIO
 import quantities as pq
 
 ## TESTS ######################################################################
+
+
+@raises(ValueError)
+def test_voltage_latch_min():
+    ik.thorlabs.voltage_latch(-2)
+
+
+@raises(ValueError)
+def test_voltage_latch_max():
+    ik.thorlabs.voltage_latch(9999)
+
+
+@raises(ValueError)
+def test_slot_latch_min():
+    ik.thorlabs.slot_latch(-2)
+
+
+@raises(ValueError)
+def test_slot_latch_max():
+    ik.thorlabs.slot_latch(9999)
+
+
 
 def test_lcc25_frequency():
     with expected_protocol(
@@ -41,6 +64,27 @@ def test_lcc25_frequency():
         unit_eq(lcc.frequency, pq.Quantity(20, "Hz"))
         lcc.frequency = 10.0
 
+
+@raises(ValueError)
+def test_lcc25_frequency_lowlimit():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "freq=0.0\r",
+        "\r>\r"
+    ) as lcc:
+        lcc.frequency = 0.0
+
+
+@raises(ValueError)
+def test_lcc25_frequency_highlimit():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "freq=160.0\r",
+        "\r>\r"
+    ) as lcc:
+        lcc.frequency = 160.0
+
+
 def test_lcc25_mode():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -49,6 +93,7 @@ def test_lcc25_mode():
     ) as lcc:
         assert lcc.mode == ik.thorlabs.LCC25.Mode.voltage2
         lcc.mode = ik.thorlabs.LCC25.Mode.voltage1
+
 
 def test_lcc25_enable():
     with expected_protocol(
@@ -59,6 +104,17 @@ def test_lcc25_enable():
         assert lcc.enable == False
         lcc.enable = True
 
+
+@raises(TypeError)
+def test_lcc25_enable_type():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "blo\r",
+        "\rblo\r>\r"
+    ) as lcc:
+        lcc.enable = "blo"
+
+
 def test_lcc25_extern():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -67,6 +123,17 @@ def test_lcc25_extern():
     ) as lcc:
         assert lcc.extern == False
         lcc.extern = True
+
+
+@raises(TypeError)
+def test_tc200_extern_type():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "blo\r",
+        "\rblo\r>\r"
+    ) as tc:
+        tc.extern = "blo"
+
 
 def test_lcc25_remote():
     with expected_protocol(
@@ -77,21 +144,40 @@ def test_lcc25_remote():
         assert lcc.remote == False
         lcc.remote = True
 
+
+@raises(TypeError)
+def test_tc200_remote_type():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "blo\r",
+        "\rblo\r>\r"
+    ) as tc:
+        tc.remote = "blo"
+
+
 def test_lcc25_voltage1():
     with expected_protocol(
         ik.thorlabs.LCC25,
         "volt1?\rvolt1=10.0\r",
-        "\r20\r"
+        "\r>20\r"
     ) as lcc:
         unit_eq(lcc.voltage1, pq.Quantity(20, "V"))
         lcc.voltage1 = 10.0
+
+
+
+
+def test_check_cmd():
+    assert ik.thorlabs.check_cmd("blo") == 1
+    assert ik.thorlabs.check_cmd("CMD_NOT_DEFINED") == 0
+    assert ik.thorlabs.check_cmd("CMD_ARG_INVALID") == 0
 
 
 def test_lcc25_voltage2():
     with expected_protocol(
         ik.thorlabs.LCC25,
         "volt2?\rvolt2=10.0\r",
-        "\r20\r"
+        "\r>20\r"
     ) as lcc:
         unit_eq(lcc.voltage2, pq.Quantity(20, "V"))
         lcc.voltage2 = 10.0
@@ -107,6 +193,16 @@ def test_lcc25_minvoltage():
         lcc.min_voltage = 10.0
 
 
+def test_lcc25_maxvoltage():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "max?\rmax=10.0\r",
+        "\r>20\r"
+    ) as lcc:
+        unit_eq(lcc.max_voltage, pq.Quantity(20, "V"))
+        lcc.max_voltage = 10.0
+
+
 def test_lcc25_dwell():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -117,6 +213,16 @@ def test_lcc25_dwell():
         lcc.dwell = 10
 
 
+@raises(ValueError)
+def test_lcc25_dwell_positive():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "dwell=-10\r",
+        "\r>\r"
+    ) as lcc:
+        lcc.dwell = -10
+
+
 def test_lcc25_increment():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -125,6 +231,18 @@ def test_lcc25_increment():
     ) as lcc:
         unit_eq(lcc.increment, pq.Quantity(20, "V"))
         lcc.increment = 10.0
+
+
+@raises(ValueError)
+def test_lcc25_increment_positive():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        "increment=-10\r",
+        "\r>\r"
+    ) as lcc:
+        lcc.increment = -10
+
+
 
 def test_lcc25_default():
     with expected_protocol(
@@ -166,6 +284,8 @@ def test_lcc25_test_mode():
     ) as lcc:
         lcc.test_mode()
 
+
+
 def test_sc10_enable():
     with expected_protocol(
         ik.thorlabs.SC10,
@@ -174,6 +294,17 @@ def test_sc10_enable():
     ) as sc:
         assert sc.enable == 0
         sc.enable = 1
+
+
+@raises(ValueError)
+def test_sc10_enable_invalid():
+    with expected_protocol(
+        ik.thorlabs.SC10,
+        "ens=10\r",
+        "\r>0\r>\r"
+    ) as sc:
+        sc.enable = 10
+
 
 def test_sc10_repeat():
     with expected_protocol(
@@ -184,6 +315,17 @@ def test_sc10_repeat():
         assert sc.repeat == 20
         sc.repeat = 10
 
+
+@raises(ValueError)
+def test_sc10_repeat_invalid():
+    with expected_protocol(
+        ik.thorlabs.SC10,
+        "rep=-1\r",
+        "\r>0\r>\r"
+    ) as sc:
+        sc.repeat = -1
+
+
 def test_sc10_mode():
     with expected_protocol(
         ik.thorlabs.SC10,
@@ -192,6 +334,28 @@ def test_sc10_mode():
     ) as sc:
         assert sc.mode == ik.thorlabs.SC10.Mode.manual
         sc.mode = ik.thorlabs.SC10.Mode.auto
+
+
+@raises(TypeError)
+def test_sc10_mode_invalid():
+    with expected_protocol(
+        ik.thorlabs.SC10,
+        "mode=10\r",
+        "\r>0\r>\r"
+    ) as sc:
+        sc.mode = "blo"
+
+
+@raises(TypeError)
+def test_sc10_mode_invalid2():
+    with expected_protocol(
+        ik.thorlabs.SC10,
+        "mode=10\r",
+        "\r>0\r>\r"
+    ) as sc:
+        blo = IntEnum("blo", "beep boop bop")
+        sc.mode = blo.beep
+
 
 def test_sc10_trigger():
     with expected_protocol(
@@ -202,6 +366,18 @@ def test_sc10_trigger():
         assert sc.trigger == 0
         sc.trigger = 1
 
+
+@raises(ValueError)
+def test_trigger_check():
+    ik.thorlabs.trigger_check(2)
+
+
+@raises(ValueError)
+def test_time_check():
+    ik.thorlabs.check_time(-1)
+    ik.thorlabs.check_time(9999999)
+
+
 def test_sc10_out_trigger():
     with expected_protocol(
         ik.thorlabs.SC10,
@@ -211,20 +387,22 @@ def test_sc10_out_trigger():
         assert sc.out_trigger == 0
         sc.out_trigger = 1
 
+
 def test_sc10_open_time():
     with expected_protocol(
         ik.thorlabs.SC10,
         "open?\ropen=10\r",
-        "\r20\r>\r"
+        "\r>20\r>\r"
     ) as sc:
         unit_eq(sc.open_time, pq.Quantity(20, "ms"))
         sc.open_time = 10.0
+
 
 def test_sc10_shut_time():
     with expected_protocol(
         ik.thorlabs.SC10,
         "shut?\rshut=10\r",
-        "\r20\r>\r"
+        "\r>20\r>\r"
     ) as sc:
         unit_eq(sc.shut_time, pq.Quantity(20, "ms"))
         sc.shut_time = 10.0
@@ -243,7 +421,7 @@ def test_sc10_closed():
     with expected_protocol(
         ik.thorlabs.SC10,
         "closed?\r",
-        "\r1\r"
+        "\r>1\r>"
     ) as sc:
         assert sc.closed
 
@@ -251,7 +429,7 @@ def test_sc10_interlock():
     with expected_protocol(
         ik.thorlabs.SC10,
         "interlock?\r",
-        "\r1\r"
+        "\r>1\r>"
     ) as sc:
         assert sc.interlock
 
@@ -259,7 +437,7 @@ def test_sc10_default():
     with expected_protocol(
         ik.thorlabs.SC10,
         "default\r",
-        "\r1\r"
+        "\r>1\r>"
     ) as sc:
         assert sc.default()
 
@@ -267,7 +445,7 @@ def test_sc10_save():
     with expected_protocol(
         ik.thorlabs.SC10,
         "savp\r",
-        "\r1\r"
+        "\r>1\r>"
     ) as sc:
         assert sc.save()
 
@@ -275,15 +453,16 @@ def test_sc10_save_mode():
     with expected_protocol(
         ik.thorlabs.SC10,
         "save\r",
-        "\r1\r"
+        "\r>1\r>"
     ) as sc:
         assert sc.save_mode()
+
 
 def test_sc10_restore():
     with expected_protocol(
         ik.thorlabs.SC10,
         "resp\r",
-        "\r1\r"
+        "\r>1\r>"
     ) as sc:
         assert sc.restore()
 
@@ -298,6 +477,19 @@ def test_tc200_mode():
         tc.mode = ik.thorlabs.TC200.Mode.cycle
 
 
+@raises(TypeError)
+def test_tc200_mode_error():
+    with expected_protocol(ik.thorlabs.TC200, 'blo', 'blo') as tc:
+        tc.mode = "blo"
+
+
+@raises(TypeError)
+def test_tc200_mode_error2():
+    with expected_protocol(ik.thorlabs.TC200, 'blo', 'blo') as tc:
+        blo = IntEnum("blo", "beep boop bop")
+        tc.mode = blo.beep
+
+
 def test_tc200_enable():
     with expected_protocol(
         ik.thorlabs.TC200,
@@ -305,6 +497,26 @@ def test_tc200_enable():
         "\r54\r>\r"
     ) as tc:
         assert tc.enable == 0
+
+
+@raises(TypeError)
+def test_tc200_enable_type():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "blo\r",
+        "\rblo\r>\r"
+    ) as tc:
+        tc.enable = "blo"
+
+
+def test_tc200_enable():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        "stat?\r",
+        "\r54\r>\r"
+    ) as tc:
+        assert tc.enable == 0
+
 
 
 def test_tc200_temperature():
@@ -380,6 +592,7 @@ def test_tc200_max_power():
     ) as tc:
         assert tc.max_power == 15.0*pq.W
         tc.max_power = 12*pq.W
+
 
 def test_tc200_max_power():
     with expected_protocol(

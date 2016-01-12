@@ -31,6 +31,46 @@ from flufl.enum import IntEnum
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units
 
+
+def voltage_latch(newval):
+    """
+    The voltage limits for the LCC25 are between 0 and 25 V
+    :param newval: the voltage to check
+    :type newval: float
+    :return:
+    """
+    if newval < 0:
+        raise ValueError("Voltage is too low.")
+    if newval > 25:
+        raise ValueError("Voltage is too high")
+
+
+def slot_latch(slot):
+    """
+    Makes sure that the slot is within the number of defined values
+    :param slot: the slot number
+    :type slot: int
+    """
+    if slot < 0:
+        raise ValueError("Slot number is less than 0")
+    if slot > 4:
+        raise ValueError("Slot number is greater than 4")
+
+
+
+def check_cmd(response):
+    """
+    Checks the for the two common Thorlabs error messages; CMD_NOT_DEFINED and CMD_ARG_INVALID
+    :param response: the response from the device
+    :return: 1 if not found, 0 otherwise
+    :rtype: int
+    """
+    if response != "CMD_NOT_DEFINED" and response != "CMD_ARG_INVALID":
+        return 1
+    else:
+        return 0
+
+
 ## CLASSES #####################################################################
 
 class LCC25(Instrument):
@@ -75,11 +115,11 @@ class LCC25(Instrument):
         
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Hertz.
-        :type: `~quantities.Quantity`
+        :rtype: `~quantities.Quantity`
         """
         response = self.query("freq?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.Hz
+        return float(response)*pq.Hz
+
     @frequency.setter
     def frequency(self, newval):
         newval = assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude
@@ -94,18 +134,17 @@ class LCC25(Instrument):
         """
         Gets/sets the output mode of the LCC25
         
-        :type: `LCC25.Mode`
+        :rtype: `LCC25.Mode`
         """
         response = self.query("mode?")
-        if not response is "CMD_NOT_DEFINED":
-            return LCC25.Mode[int(response)]
+        return LCC25.Mode[int(response)]
 
     @mode.setter
     def mode(self, newval):
-        if (newval.enum is not LCC25.Mode):
+        if newval.enum is not LCC25.Mode:
             raise TypeError("Mode setting must be a `LCC25.Mode` value, "
                 "got {} instead.".format(type(newval)))
-        response = self.query("mode={}".format(newval.value))
+        self.sendcmd("mode={}".format(newval.value))
 
     @property
     def enable(self):
@@ -114,11 +153,11 @@ class LCC25(Instrument):
         
         If output enable is on (`True`), there is a voltage on the output.
         
-        :type: `bool`
+        :rtype: `bool`
         """
         response = self.query("enable?")
-        if not response is "CMD_NOT_DEFINED":
-            return True if int(response) is 1 else False
+        return True if int(response) is 1 else False
+
     @enable.setter
     def enable(self, newval):
         if not isinstance(newval, bool):
@@ -134,11 +173,12 @@ class LCC25(Instrument):
         Value is `True` for external TTL modulation and `False` for internal
         modulation.
         
-        :type: `bool`
+        :rtype: `bool`
         """
         response = self.query("extern?")
         if not response is "CMD_NOT_DEFINED":
             return True if int(response) is 1 else False
+
     @extern.setter
     def extern(self, newval):
         if not isinstance(newval, bool):
@@ -154,11 +194,11 @@ class LCC25(Instrument):
         Value is `False` for normal operation and `True` to lock out the front
         panel buttons.
         
-        :type: `bool`
+        :rtype: `bool`
         """
         response = self.query("remote?")
-        if not response is "CMD_NOT_DEFINED":
-            return True if int(response) is 1 else False
+        return True if int(response) is 1 else False
+
     @remote.setter
     def remote(self, newval):
         if not isinstance(newval, bool):
@@ -173,18 +213,15 @@ class LCC25(Instrument):
         
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
-        :type: `~quantities.Quantity`
+        :rtype: `~quantities.Quantity`
         """
         response = self.query("volt1?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.V
+        return float(response)*pq.V
+
     @voltage1.setter
     def voltage1(self, newval):
         newval = assume_units(newval, pq.V).rescale(pq.V).magnitude
-        if newval < 0:
-            raise ValueError("Voltage is too low.")
-        if newval > 25:
-            raise ValueError("Voltage is too high")
+        voltage_latch(newval)
         self.sendcmd("volt1={}".format(newval))
 
     @property
@@ -194,18 +231,15 @@ class LCC25(Instrument):
         
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
-        :type: `~quantities.Quantity`
+        :rtype: `~quantities.Quantity`
         """
         response = self.query("volt2?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.V
+        return float(response)*pq.V
+
     @voltage2.setter
     def voltage2(self, newval):
         newval = assume_units(newval, pq.V).rescale(pq.V).magnitude
-        if newval < 0:
-            raise ValueError("Voltage is too low.")
-        if newval > 25:
-            raise ValueError("Voltage is too high")
+        voltage_latch(newval)
         self.sendcmd("volt2={}".format(newval))
 
     @property
@@ -215,18 +249,14 @@ class LCC25(Instrument):
         
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
-        :type: `~quantities.Quantity`
+        :rtype: `~quantities.Quantity`
         """
         response = self.query("min?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.V
+        return float(response)*pq.V
+
     @min_voltage.setter
     def min_voltage(self, newval):
         newval = assume_units(newval, pq.V).rescale(pq.V).magnitude
-        if newval < 0:
-            raise ValueError("Voltage is too low.")
-        if newval > 25:
-            raise ValueError("Voltage is too high")
         self.sendcmd("min={}".format(newval))
 
     @property
@@ -237,19 +267,16 @@ class LCC25(Instrument):
         
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
-        :type: `~quantities.Quantity`
+        :rtype: `~quantities.Quantity`
         
         """
         response = self.query("max?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.V
+        return float(response)*pq.V
+
     @max_voltage.setter
     def max_voltage(self, newval):
         newval = assume_units(newval, pq.V).rescale(pq.V).magnitude
-        if newval < 0:
-            raise ValueError("Voltage is too low.")
-        if newval > 25:
-            raise ValueError("Voltage is too high")
+        voltage_latch(newval)
         self.sendcmd("max={}".format(newval))
 
     @property
@@ -259,11 +286,11 @@ class LCC25(Instrument):
         
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units milliseconds.
-        :type: `~quantities.Quantity`
+        :rtype: `~quantities.Quantity`
         """
         response = self.query("dwell?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.ms
+        return float(response)*pq.ms
+
     @dwell.setter
     def dwell(self, newval):
         newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
@@ -278,11 +305,11 @@ class LCC25(Instrument):
         
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
-        :type: `~quantities.Quantity`
+        :rtype: `~quantities.Quantity`
         """
         response = self.query("increment?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.V
+        return float(response)*pq.V
+
     @increment.setter
     def increment(self, newval):
         newval = assume_units(newval, pq.V).rescale(pq.V).magnitude
@@ -300,10 +327,7 @@ class LCC25(Instrument):
         :rtype: `int`
         """
         response = self.query("default")
-        if not response is "CMD_NOT_DEFINED":
-            return 1
-        else:
-            return 0
+        return check_cmd(response)
 
     def save(self):
         """
@@ -314,10 +338,7 @@ class LCC25(Instrument):
         :rtype: `int`
         """
         response = self.query("save")
-        if not response is "CMD_NOT_DEFINED":
-            return 1
-        else:
-            return 0
+        return check_cmd(response)
 
     def set_settings(self, slot):
         """
@@ -330,15 +351,9 @@ class LCC25(Instrument):
         
         :rtype: `int`
         """
-        if slot < 0:
-            raise ValueError("Slot number is less than 0")
-        if slot > 4:
-            raise ValueError("Slot number is greater than 4")
+        slot_latch(slot)
         response = self.query("set={}".format(slot))
-        if response != "CMD_NOT_DEFINED" and response != "CMD_ARG_INVALID":
-            return 1
-        else:
-            return 0
+        return check_cmd(response)
 
     def get_settings(self,slot):
         """
@@ -351,15 +366,9 @@ class LCC25(Instrument):
         
         :rtype: `int`
         """
-        if slot < 0:
-            raise ValueError("Slot number is less than 0")
-        if slot > 4:
-            raise ValueError("Slot number is greater than 4")
+        slot_latch(slot)
         response = self.query("get={}".format(slot))
-        if response != "CMD_NOT_DEFINED" and response != "CMD_ARG_INVALID":
-            return 1
-        else:
-            return 0
+        return check_cmd(response)
 
     def test_mode(self):
         """
@@ -372,7 +381,4 @@ class LCC25(Instrument):
         :rtype: `int`
         """
         response = self.query("test")
-        if not response is "CMD_NOT_DEFINED":
-            return 1
-        else:
-            return 0
+        return check_cmd(response)
