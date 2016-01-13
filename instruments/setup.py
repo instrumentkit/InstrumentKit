@@ -52,7 +52,8 @@ setup(
     extras_require = {
         'USBTMC' : ["python-usbtmc"],
         'VISA' : ["pyvisa"],
-        'USB' : ["pyusb"]
+        'USB' : ["pyusb"],
+        'VXI11' ["python-vxi11"]
     },
     description='Test and measurement communication library',
     long_description='''
