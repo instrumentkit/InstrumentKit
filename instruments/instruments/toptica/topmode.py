@@ -4,7 +4,8 @@ from datetime import datetime
 
 from instruments.abstract_instruments import Instrument
 
-def convert_boolean(response):
+
+def convert_toptica_boolean(response):
     """
     Converts the toptica boolean expression to a boolean
     :param response: response string
@@ -19,7 +20,8 @@ def convert_boolean(response):
     else:
         raise ValueError("cannot convert: "+str(response)+" to boolean")
 
-def convert_datetime(response):
+
+def convert_toptica_datetime(response):
     """
     Converts the toptical date format to a python time date
     :param response: the string from the topmode
@@ -28,6 +30,7 @@ def convert_datetime(response):
     :rtype: 'datetime.datetime'
     """
     return datetime.strptime(response, '%b %d %Y %I:%M%p')
+
 
 class TopMode(Instrument):
     """
@@ -48,112 +51,104 @@ class TopMode(Instrument):
         def __init__(self, number=1, parent=None):
             self.number = number
             self.parent = parent
+            self.name = "laser"+str(self.number)
 
         @property
         def serial_number(self):
-            return self.parent.reference("laser"+self.number+":serial-number")
+            return self.parent.reference(self.name+":serial-number")
 
         @property
         def model(self):
-            return self.parent.reference("laser"+self.number+":model")
+            return self.parent.reference(self.name+":model")
 
         @property
         def wavelength(self):
-            return float(self.parent.reference("laser"+self.number+":wavelength"))*pq.nm
+            return float(self.parent.reference(self.name+":wavelength"))*pq.nm
 
         @property
         def production_date(self):
-            return self.parent.reference("laser"+self.number+":production-date")
+            return self.parent.reference(self.name+":production-date")
 
         @property
         def enable(self):
-            return self.parent.reference("laser"+self.number+":emission")
+            return convert_toptica_boolean(self.parent.reference(self.name+":emission"))
 
         @enable.setter
         def enable(self, newval):
             if type(newval) is not bool:
                 raise TypeError("Laser emmission must be a boolean, got: "+type(newval))
-            return self.parent.set("laser"+self.number+":enable-emission", newval)
+            return self.parent.set(self.name+":enable-emission", newval)
 
         @property
-        def ontime(self):
-            return float(self.parent.reference("laser"+self.number+":ontime"))*pq.s
-
-        @property
-        def status(self):
-            return self.parent.reference("laser"+self.number+":health-txt")
+        def on_time(self):
+            return float(self.parent.reference(self.name+":ontime"))*pq.s
 
         @property
         def charm_status(self):
-            response = int(self.parent.reference("laser"+self.number+":health"))
-            return response >> 7
+            response = int(self.parent.reference(self.name+":health"))
+            return (response >> 7) % 2
 
         @property
         def temperature_control_status(self):
-            response = int(self.parent.reference("laser"+self.number+":health"))
-            return response >> 5
+            response = int(self.parent.reference(self.name+":health"))
+            return (response >> 5) % 2
 
         @property
         def current_control_status(self):
-            response = int(self.parent.reference("laser"+self.number+":health"))
-            return response >> 6
-
-        @property
-        def current_control_status(self):
-            response = int(self.parent.reference("laser"+self.number+":health"))
-            return response >> 6
+            response = int(self.parent.reference(self.name+":health"))
+            return (response >> 6) % 2
 
         @property
         def tec_status(self):
-            return convert_boolean(self.parent.reference("laser"+self.number+":tec:ready"))
+            return convert_toptica_boolean(self.parent.reference(self.name+":tec:ready"))
 
         @property
         def intensity(self):
             """
             This parameter is unitless
             """
-            return convert_boolean(self.parent.reference("laser"+self.number+":intensity"))
+            return convert_toptica_boolean(self.parent.reference(self.name+":intensity"))
 
         @property
         def mode_hop(self):
             """
             Checks whether the laser has mode-hopped
             """
-            return convert_boolean(self.parent.reference("laser"+self.number+":charm:reg:mh-occured"))
+            return convert_toptica_boolean(self.parent.reference(self.name+":charm:reg:mh-occured"))
 
         @property
         def lock_start(self):
             """
             Returns the date and time of the start of mode-locking
             """
-            return convert_datetime(self.parent.reference("laser"+self.number+":charm:reg:started"))
+            return convert_toptica_datetime(self.parent.reference(self.name+":charm:reg:started"))
 
         @property
         def first_mode_hop_time(self):
             """
             Returns the date and time of the first mode hop
             """
-            return convert_datetime(self.parent.reference("laser"+self.number+":charm:reg:first-mh"))
+            return convert_toptica_datetime(self.parent.reference(self.name+":charm:reg:first-mh"))
 
         @property
         def first_mode_hop_time(self):
             """
             Returns the date and time of the latest mode hop
             """
-            return convert_datetime(self.parent.reference("laser"+self.number+":charm:reg:latest-mh"))
+            return convert_toptica_datetime(self.parent.reference(self.name+":charm:reg:latest-mh"))
 
         @property
         def correction_status(self):
-            return TopMode.CharmStatus[int(self.parent.reference("laser"+self.number+":charm:correction-status"))]
+            return TopMode.CharmStatus[int(self.parent.reference(self.name+":charm:correction-status"))]
 
         def correction(self):
             """
             run the correction
             """
             if self.correction_status == TopMode.CharmStatus.un_initialized:
-                self.parent.execute("laser"+self.number+":charm:start-correction-initial")
+                self.parent.execute(self.name+":charm:start-correction-initial")
             else:
-                self.parent.execute("laser"+self.number+":charm:start-correction")
+                self.parent.execute(self.name+":charm:start-correction")
 
 
     def __init__(self, filelike):
@@ -203,7 +198,7 @@ class TopMode(Instrument):
         Is the key switch unlocked?
         :return:
         """
-        return convert_boolean(self.reference("front-key-locked"))
+        return convert_toptica_boolean(self.reference("front-key-locked"))
 
     @property
     def interlock(self):
@@ -211,7 +206,7 @@ class TopMode(Instrument):
         Is the interlock switch open?
         :return:
         """
-        return convert_boolean(self.reference("interlock-open"))
+        return convert_toptica_boolean(self.reference("interlock-open"))
 
     @property
     def fpga_status(self):
