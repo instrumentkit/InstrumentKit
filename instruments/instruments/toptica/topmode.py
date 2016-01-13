@@ -150,7 +150,7 @@ class TopMode(Instrument):
             """
             run the correction
             """
-            if self.correction_status = TopMode.CharmStatus.un_initialized:
+            if self.correction_status == TopMode.CharmStatus.un_initialized:
                 self.parent.execute("laser"+self.number+":charm:start-correction-initial")
             else:
                 self.parent.execute("laser"+self.number+":charm:start-correction")
