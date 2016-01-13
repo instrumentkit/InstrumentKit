@@ -1,13 +1,33 @@
 import quantities as pq
 from flufl.enum import IntEnum
+from datetime import datetime
 
 from instruments.abstract_instruments import Instrument
 
-class Laser(object):
+def convert_boolean(response):
     """
-    Since the topmode can have multiple lasers attached to it, a laser object will be defined.
+    Converts the toptica boolean expression to a boolean
+    :param response: response string
+    :type response: str
+    :return: the converted boolean
+    :rtype: bool
     """
-    def __init__(self, filelike,
+    if response.find('f')>-1:
+        return False
+    elif response.find('t')>-1:
+        return True
+    else:
+        raise ValueError("cannot convert: "+str(response)+" to boolean")
+
+def convert_datetime(response):
+    """
+    Converts the toptical date format to a python time date
+    :param response: the string from the topmode
+    :type response: str
+    :return: the converted date
+    :rtype: 'datetime.datetime'
+    """
+    return datetime.strptime(response, '%b %d %Y %I:%M%p')
 
 class TopMode(Instrument):
     """
@@ -15,11 +35,134 @@ class TopMode(Instrument):
     The spec sheet is available here:
     http://www.toptica.com/fileadmin/user_upload/products/Diode_Lasers/Industrial_OEM/Single_Frequency/TopMode/toptica_BR_TopMode.pdf
     """
+    class CharmStatus(IntEnum):
+        un_initialized = 0
+        in_progress = 1
+        success = 2
+        failure = 3
+
+    class Laser(object):
+        """
+        Since the topmode can have multiple lasers attached to it, a laser object will be defined.
+        """
+        def __init__(self, number=1, parent=None):
+            self.number = number
+            self.parent = parent
+
+        @property
+        def serial_number(self):
+            return self.parent.reference("laser"+self.number+":serial-number")
+
+        @property
+        def model(self):
+            return self.parent.reference("laser"+self.number+":model")
+
+        @property
+        def wavelength(self):
+            return float(self.parent.reference("laser"+self.number+":wavelength"))*pq.nm
+
+        @property
+        def production_date(self):
+            return self.parent.reference("laser"+self.number+":production-date")
+
+        @property
+        def enable(self):
+            return self.parent.reference("laser"+self.number+":emission")
+
+        @enable.setter
+        def enable(self, newval):
+            if type(newval) is not bool:
+                raise TypeError("Laser emmission must be a boolean, got: "+type(newval))
+            return self.parent.set("laser"+self.number+":enable-emission", newval)
+
+        @property
+        def ontime(self):
+            return float(self.parent.reference("laser"+self.number+":ontime"))*pq.s
+
+        @property
+        def status(self):
+            return self.parent.reference("laser"+self.number+":health-txt")
+
+        @property
+        def charm_status(self):
+            response = int(self.parent.reference("laser"+self.number+":health"))
+            return response >> 7
+
+        @property
+        def temperature_control_status(self):
+            response = int(self.parent.reference("laser"+self.number+":health"))
+            return response >> 5
+
+        @property
+        def current_control_status(self):
+            response = int(self.parent.reference("laser"+self.number+":health"))
+            return response >> 6
+
+        @property
+        def current_control_status(self):
+            response = int(self.parent.reference("laser"+self.number+":health"))
+            return response >> 6
+
+        @property
+        def tec_status(self):
+            return convert_boolean(self.parent.reference("laser"+self.number+":tec:ready"))
+
+        @property
+        def intensity(self):
+            """
+            This parameter is unitless
+            """
+            return convert_boolean(self.parent.reference("laser"+self.number+":intensity"))
+
+        @property
+        def mode_hop(self):
+            """
+            Checks whether the laser has mode-hopped
+            """
+            return convert_boolean(self.parent.reference("laser"+self.number+":charm:reg:mh-occured"))
+
+        @property
+        def lock_start(self):
+            """
+            Returns the date and time of the start of mode-locking
+            """
+            return convert_datetime(self.parent.reference("laser"+self.number+":charm:reg:started"))
+
+        @property
+        def first_mode_hop_time(self):
+            """
+            Returns the date and time of the first mode hop
+            """
+            return convert_datetime(self.parent.reference("laser"+self.number+":charm:reg:first-mh"))
+
+        @property
+        def first_mode_hop_time(self):
+            """
+            Returns the date and time of the latest mode hop
+            """
+            return convert_datetime(self.parent.reference("laser"+self.number+":charm:reg:latest-mh"))
+
+        @property
+        def correction_status(self):
+            return TopMode.CharmStatus[int(self.parent.reference("laser"+self.number+":charm:correction-status"))]
+
+        def correction(self):
+            """
+            run the correction
+            """
+            if self.correction_status = TopMode.CharmStatus.un_initialized:
+                self.parent.execute("laser"+self.number+":charm:start-correction-initial")
+            else:
+                self.parent.execute("laser"+self.number+":charm:start-correction")
+
+
     def __init__(self, filelike):
         super(TopMode, self).__init__(filelike)
         self.prompt = ">"
         self.terminator = "\n"
         self.echo = False
+        self.laser1 = TopMode.Laser(1, self)
+        self.laser2 = TopMode.Laser(2, self)
 
     # The TopMode has its own control language, here we define each command individually:
     def execute(self, command):
@@ -46,8 +189,13 @@ class TopMode(Instrument):
         is the laser lasing?
         :return:
         """
+        return convert_boolean(self.reference("emission"))
+
     @enable.setter
     def enable(self, newenable):
+        if type(newenable) is not bool:
+            raise TypeError("Emission status must be a boolean, got: "+str(type(newenable)))
+        self.set("enable-emission", newenable)
 
     @property
     def locked(self):
@@ -55,6 +203,7 @@ class TopMode(Instrument):
         Is the key switch unlocked?
         :return:
         """
+        return convert_boolean(self.reference("front-key-locked"))
 
     @property
     def interlock(self):
@@ -62,5 +211,41 @@ class TopMode(Instrument):
         Is the interlock switch open?
         :return:
         """
+        return convert_boolean(self.reference("interlock-open"))
 
     @property
+    def fpga_status(self):
+        """
+        returns false on FPGA failure
+        :return:
+        """
+        response = int(self.reference("system-health"))
+        return False if reponse % 2 else True
+
+    @property
+    def temperature_status(self):
+        """
+        returns false if there is a temperature controller board failure
+        :return:
+        """
+        response = int(self.reference("system-health"))
+        return False if (reponse >> 1) % 2 else True
+
+    @property
+    def current_status(self):
+        """
+        returns false if there is a current controller board failure
+        :return:
+        """
+        response = int(self.reference("system-health"))
+        return False if (reponse >> 2) % 2 else True
+
+    def reboot(self):
+        """
+        Reboots the system (note, this will end the serial connection)
+        """
+        self.execute("reboot-system")
+
+
+    ## Network configuration is unimplemented
+
