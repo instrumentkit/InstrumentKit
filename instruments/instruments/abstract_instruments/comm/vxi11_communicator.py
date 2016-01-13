@@ -27,7 +27,7 @@
 
 import io
 
-from instruments.abstract_instruments.comm.abstract_comm import AbstractCommunicator
+from abstract_comm import AbstractCommunicator
 
 try:
     import vxi11
@@ -109,7 +109,7 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
     def flush(self):
         raise NotImplementedError
 
-    # METHODS ##
+    # METHODS #
 
     def _sendcmd(self, msg):
         self.write(msg)
