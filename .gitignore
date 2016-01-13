@@ -47,3 +47,6 @@ nosetests.xml
 
 #Mr Developer
 .mr.developer.cfg
+
+#pycharm generated
+.idea
