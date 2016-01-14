@@ -30,8 +30,32 @@ from flufl.enum import IntEnum
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units
+from instruments.thorlabs import check_cmd
 
-## CLASSES #####################################################################
+
+def trigger_check(newval):
+    """
+    Validate the trigger
+    :param newval: trigger
+    :type newval: int
+    :return:
+    """
+    if newval != 0 and newval != 1:
+        raise ValueError("Not a valid value for trigger mode")
+
+
+def check_time(newval):
+    """
+    Validate the shutter time
+    :param newval: the new time
+    :type newval: int
+    :return:
+    """
+    if newval < 0:
+        raise ValueError("Duration cannot be negative")
+    if newval > 999999:
+        raise ValueError("Duration is too long")
+
 
 class SC10(Instrument):
     """
@@ -42,8 +66,8 @@ class SC10(Instrument):
     def __init__(self, filelike):
         super(SC10, self).__init__(filelike)
         self.terminator = '\r'
-        self.end_terminator = '>'
-        
+        self.prompt = '>'
+        self.echo = True
     ## ENUMS ##
     
     class Mode(IntEnum):
@@ -55,16 +79,12 @@ class SC10(Instrument):
         
     ## PROPERTIES ##
 
-    @property
     def name(self):
         """
         Gets the name and version number of the device.
         """
-        response = self.check_command("id?")
-        if response is "CMD_NOT_DEFINED":
-            self.name()          
-        else:
-            return response
+        response = self.query("id?")
+        return response
 
     @property
     def enable(self):
@@ -73,9 +93,9 @@ class SC10(Instrument):
         
         :type: `int`
         """
-        response = self.check_command("ens?")
-        if not response is "CMD_NOT_DEFINED":
-            return int(response)
+        response = self.query("ens?")
+        return int(response)
+
     @enable.setter
     def enable(self, newval):
         if newval == 0 or newval ==1:
@@ -92,12 +112,12 @@ class SC10(Instrument):
         
         :type: `int`
         """
-        response = self.check_command("rep?")
-        if not response is "CMD_NOT_DEFINED":
-            return int(response)
+        response = self.query("rep?")
+        return int(response)
+
     @repeat.setter
     def repeat(self, newval):
-        if newval >0 or newval <100:
+        if 0 < newval < 100:
             self.sendcmd("rep={}".format(newval))
             self.read()
         else:
@@ -111,12 +131,15 @@ class SC10(Instrument):
 
         :type: `SC10.Mode`
         """
-        response = self.check_command("mode?")
-        if not response is "CMD_NOT_DEFINED":
-            return SC10.Mode[int(response)]
+        response = self.query("mode?")
+        return SC10.Mode[int(response)]
+
     @mode.setter
     def mode(self, newval):
-        if (newval.enum is not SC10.Mode):
+        if not hasattr(newval, 'enum'):
+            raise TypeError("Mode setting must be a `SC10.Mode` value, "
+                "got {} instead.".format(type(newval)))
+        if newval.enum is not SC10.Mode:
             raise TypeError("Mode setting must be a `SC10.Mode` value, "
                 "got {} instead.".format(type(newval)))
         
@@ -132,13 +155,12 @@ class SC10(Instrument):
         
         :type: `int`
         """
-        response = self.check_command("trig?")
-        if not response is "CMD_NOT_DEFINED":
-            return int(response)
+        response = self.query("trig?")
+        return int(response)
+
     @trigger.setter
     def trigger(self, newval):
-        if newval != 0 and newval != 1:
-            raise ValueError("Not a valid value for trigger mode")
+        trigger_check(newval)
         self.sendcmd("trig={}".format(newval))
         self.read()
     
@@ -152,15 +174,13 @@ class SC10(Instrument):
         
         :type: `int`
         """
-        response = self.check_command("xto?")
-        if not response is "CMD_NOT_DEFINED":
-            return int(response)
+        response = self.query("xto?")
+        return int(response)
+
     @out_trigger.setter
     def out_trigger(self, newval):
-        if newval != 0 and newval != 1:
-            raise ValueError("Not a valid value for output trigger mode")
+        trigger_check(newval)
         self.sendcmd("xto={}".format(newval))
-        self.read()
 
     ###I'm not sure how to handle checking for the number of digits yet.
     @property
@@ -172,18 +192,14 @@ class SC10(Instrument):
             of units milliseconds.
         :type: `~quantities.Quantity`
         """
-        response = self.check_command("open?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.ms
+        response = self.query("open?")
+        return float(response)*pq.ms
+
     @open_time.setter
     def open_time(self, newval):
         newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
-        if newval < 0:
-            raise ValueError("Shutter open time cannot be negative")
-        if newval >999999:
-            raise ValueError("Shutter open duration is too long")
+        check_time(newval)
         self.sendcmd("open={}".format(newval))
-        self.read()
     
     @property
     def shut_time(self):
@@ -192,18 +208,15 @@ class SC10(Instrument):
         
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units milliseconds.
-        :type: `~quantities.Quantity`
+        :rtype: `~quantities.Quantity`
         """
-        response = self.check_command("shut?")
-        if not response is "CMD_NOT_DEFINED":
-            return float(response)*pq.ms
+        response = self.query("shut?")
+        return float(response)*pq.ms
+
     @shut_time.setter
     def shut_time(self, newval):
         newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
-        if newval < 0:
-            raise ValueError("Time cannot be negative")
-        if newval >999999:
-            raise ValueError("Duration is too long")
+        check_time(newval)
         self.sendcmd("shut={}".format(newval))
         self.read()
     
@@ -216,16 +229,15 @@ class SC10(Instrument):
         
         :type: `int`
         """
-        response = self.check_command("baud?")
-        if not response is "CMD_NOT_DEFINED":
-            return 115200 if response else 9600 
+        response = self.sendcmd("baud?")
+        return 115200 if response else 9600
+
     @baud_rate.setter
     def baud_rate(self, newval):
-        if newval != 9600 and newval !=115200:
+        if newval != 9600 and newval != 115200:
             raise ValueError("Invalid baud rate mode")
         else:
             self.sendcmd("baud={}".format(0 if newval == 9600 else 1))
-            self.read()
     
     @property
     def closed(self):
@@ -237,9 +249,8 @@ class SC10(Instrument):
         
         :rtype: `bool`
         """
-        response = self.check_command("closed?")
-        if not response is "CMD_NOT_DEFINED":
-            return True if int(response) is 1 else False
+        response = self.query("closed?")
+        return True if int(response) is 1 else False
     
     @property
     def interlock(self):
@@ -250,34 +261,10 @@ class SC10(Instrument):
         
         :rtype: `bool`
         """
-        response = self.check_command("interlock?")
-        if not response is "CMD_NOT_DEFINED":
-            return True if int(response) is 1 else False
+        response = self.query("interlock?")
+        return True if int(response) is 1 else False
 
     ## Methods ##
-    
-    def check_command(self,command):
-        """
-        Checks for the \"Command error CMD_NOT_DEFINED\" error, which can sometimes occur if there were
-        incorrect terminators on the previous command. If the command is successful, it returns the value,
-        if not, it returns CMD_NOT_DEFINED
-        check_command will also clear out the query string
-        """
-        response = self.query(command)
-        #This device will echo the commands sent, so another line must be read to catch the response.
-        response = self.read()
-        cmd_find = response.find("CMD_NOT_DEFINED")
-        if cmd_find ==-1:
-            error_find = response.find("CMD_ARG_INVALID")
-            if error_find ==-1:
-                output_str = response.replace(command,"")
-                output_str = output_str.replace(self.terminator,"")
-                output_str = output_str.replace(self.end_terminator,"")
-            else:
-                output_str = "CMD_ARG_INVALID"
-        else:
-            output_str = "CMD_NOT_DEFINED"
-        return output_str
         
     def default(self):
         """
@@ -287,11 +274,8 @@ class SC10(Instrument):
         
         :rtype: `int`
         """
-        response = self.check_command("default")
-        if not response is "CMD_NOT_DEFINED":
-            return 1
-        else:
-            return 0
+        response = self.query("default")
+        return check_cmd(response)
 
     def save(self):
         """
@@ -301,11 +285,8 @@ class SC10(Instrument):
         
         :rtype: `int`
         """
-        response = self.check_command("savp")
-        if not response is "CMD_NOT_DEFINED":
-            return 1
-        else:
-            return 0
+        response = self.query("savp")
+        return check_cmd(response)
 
     def save_mode(self):
         """
@@ -315,11 +296,8 @@ class SC10(Instrument):
         
         :rtype: `int`
         """
-        response = self.check_command("save")
-        if not response is "CMD_NOT_DEFINED":
-            return 1
-        else:
-            return 0
+        response = self.query("save")
+        return check_cmd(response)
 
     def restore(self):
         """
@@ -329,8 +307,5 @@ class SC10(Instrument):
         
         :rtype: `int`
         """
-        response = self.check_command("resp")
-        if not response is "CMD_NOT_DEFINED":
-            return 1
-        else:
-            return 0
+        response = self.query("resp")
+        return check_cmd(response)
