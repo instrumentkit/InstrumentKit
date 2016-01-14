@@ -131,7 +131,7 @@ class TopMode(Instrument):
             return convert_toptica_datetime(self.parent.reference(self.name+":charm:reg:first-mh"))
 
         @property
-        def first_mode_hop_time(self):
+        def latest_mode_hop_time(self):
             """
             Returns the date and time of the latest mode hop
             """
@@ -184,7 +184,7 @@ class TopMode(Instrument):
         is the laser lasing?
         :return:
         """
-        return convert_boolean(self.reference("emission"))
+        return convert_toptica_boolean(self.reference("emission"))
 
     @enable.setter
     def enable(self, newenable):
@@ -215,7 +215,7 @@ class TopMode(Instrument):
         :return:
         """
         response = int(self.reference("system-health"))
-        return False if reponse % 2 else True
+        return False if response % 2 else True
 
     @property
     def temperature_status(self):
@@ -224,7 +224,7 @@ class TopMode(Instrument):
         :return:
         """
         response = int(self.reference("system-health"))
-        return False if (reponse >> 1) % 2 else True
+        return False if (response >> 1) % 2 else True
 
     @property
     def current_status(self):
@@ -233,7 +233,7 @@ class TopMode(Instrument):
         :return:
         """
         response = int(self.reference("system-health"))
-        return False if (reponse >> 2) % 2 else True
+        return False if (response >> 2) % 2 else True
 
     def reboot(self):
         """
