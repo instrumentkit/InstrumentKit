@@ -3,7 +3,7 @@
 ##
 # instrument.py: Provides base class for all instruments.
 ##
-# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -30,6 +30,7 @@ import time
 import struct
 import socket
 import urlparse
+from contextlib import contextmanager
 
 from instruments.abstract_instruments.comm import (
     SocketCommunicator,
@@ -79,28 +80,44 @@ _DEFAULT_FORMATS.update({
 
 class Instrument(object):
 
-    # Set a default terminator.
-    # This can and should be overriden in subclasses for instruments
-    # that use different terminators.
-    _terminator = "\n"
-
-    # some instruments issue prompt characters to indicate that it is ready for input. This must be eliminated from
-    # the response
-    _prompt = ""
-
-    # Certain instruments (such as those produced by Thorlabs) echo the command back before producing the response.
-    # this boolean handles that change.
-    _echo = False
-
     def __init__(self, filelike):
         # Check to make sure filelike is a subclass of AbstractCommunicator
         if isinstance(filelike, AbstractCommunicator):
             self._file = filelike
         else:
             raise TypeError('Instrument must be initialized with a filelike '
-                              'object that is a subclass of AbstractCommunicator.')
+                            'object that is a subclass of '
+                            'AbstractCommunicator.')
+        self.prompt = None
+        self.terminator = "\n"
     
     ## COMMAND-HANDLING METHODS ##
+
+    def _ack_expected(self, msg=""):
+        return None
+
+    @contextmanager
+    def _sendcmd_manager(self, msg):
+        yield
+        ack_expected = self._ack_expected(msg)
+        if ack_expected is not None:
+            ack = self.read()
+            if ack != ack_expected:
+                raise IOError("Incorrect ACK message received: got {} "
+                              "expected {}".format(ack, ack_expected))
+
+    @contextmanager
+    def _query_manager(self, msg=""):
+        yield
+        if self._prompt is not None:
+            if self.read() is not self._prompt:
+                raise IOError("Incorrect prompt message received")
+        ack_expected = self._ack_expected(msg)
+        if ack_expected is not None:
+            ack = self.read()
+            if ack != ack_expected:
+                raise IOError("Incorrect ACK message received: got {} "
+                              "expected {}".format(ack, ack_expected))
     
     def sendcmd(self, cmd):
         """
@@ -109,7 +126,18 @@ class Instrument(object):
         :param str cmd: String containing the command to
             be sent.
         """
+        # with self._sendcmd_manager(cmd):
         self._file.sendcmd(str(cmd))
+        ack_expected = self._ack_expected(cmd)
+        print "ack expected {}".format(ack_expected)
+        if ack_expected is not None:
+            ack = self.read()
+            if ack != ack_expected:
+                raise IOError("Incorrect ACK message received: got {} expected {}".format(ack, ack_expected))
+        if self.prompt is not None:
+            prompt = self.read()
+            if prompt != self.prompt:
+                raise IOError("Incorrect prompt message received: got {} expected {}".format(prompt, self.prompt))
         
     def query(self, cmd, size=-1):
         """
@@ -123,12 +151,21 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        if not self._echo:
-            return self._file.query(cmd, size).replace(self.prompt, "")
+        # with self._query_manager(cmd):
+        # value = self._file.query(cmd)
+        ack_expected = self._ack_expected(cmd)
+        if ack_expected is not None:
+            ack = self._file.query(cmd)
+            if ack != ack_expected:
+                raise IOError("Incorrect ACK message received: got {} expected {}".format(ack, ack_expected))
+            value = self.read(size)
         else:
-            response = self._file.query(cmd, size)
-            response = self.readline().replace(self.prompt, "").replace(cmd, "").replace(self.terminator, "")
-            return response
+            value = self._file.query(cmd, size)
+        if self.prompt is not None:
+            prompt = self.read()
+            if prompt is not self.prompt:
+                raise IOError("Incorrect prompt message received: got {} expected {}".format(prompt, self.prompt))
+        return value
 
     def read(self, size=-1):
         """
@@ -204,34 +241,26 @@ class Instrument(object):
 
     @property
     def prompt(self):
-        '''
+        """
         Gets/sets the prompt used for communication.
 
-        For communication options where this is applicable, the value
-        corresponds to the character used for prompt
+        The prompt refers to a character that is sent back from the instrument
+        after it has finished processing your last command. Typically this is
+        used to indicate to an end-user that the device is ready for input when
+        connected to a serial-terminal interface.
 
-        :type: `int`, or `str` for GPIB adapters.
-        '''
-        if not hasattr(self._file, 'prompt'):
-            self._file.prompt = self._prompt
-        return self._file.prompt
+        In IK, the prompt is specified that that it (and its associated
+        termination character) are read in. The value read in from the device
+        is also checked against the stored prompt value to make sure that
+        everything is still in sync.
+
+        :type: `str`
+        """
+        return self._prompt
 
     @prompt.setter
     def prompt(self, newval):
-        self._file.prompt = newval
-
-    @property
-    def echo(self):
-        '''
-        Gets/sets the echo setting
-        :type: `bool`
-        '''
-
-        return self._echo
-
-    @echo.setter
-    def echo(self, newval):
-        self._echo = newval
+        self._prompt = newval
 
     ## BASIC I/O METHODS ##
     

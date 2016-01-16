@@ -3,7 +3,7 @@
 ##
 # lcc25.py: class for the Thorlabs LCC25 Liquid Crystal Controller
 ##
-# © 2014 Steven Casagrande (scasagrande@galvant.ca).
+# © 2014-2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -48,6 +48,7 @@ def voltage_latch(newval):
 def slot_latch(slot):
     """
     Makes sure that the slot is within the number of defined values
+
     :param slot: the slot number
     :type slot: int
     """
@@ -59,7 +60,9 @@ def slot_latch(slot):
 
 def check_cmd(response):
     """
-    Checks the for the two common Thorlabs error messages; CMD_NOT_DEFINED and CMD_ARG_INVALID
+    Checks the for the two common Thorlabs error messages; CMD_NOT_DEFINED and
+    CMD_ARG_INVALID
+
     :param response: the response from the device
     :return: 1 if not found, 0 otherwise
     :rtype: int
@@ -86,6 +89,9 @@ class LCC25(Instrument):
         self.terminator = "\r"
         self.prompt = ">"
         self.echo = True
+
+    def _ack_expected(self, msg=""):
+        return msg
         
     ## ENUMS ##
     
@@ -98,7 +104,9 @@ class LCC25(Instrument):
 
     def name(self):
         """
-        gets the name and version number of the device
+        Gets the name and version number of the device
+
+        :rtype: `str`
         """
         return self.query("*idn?")
 
@@ -335,8 +343,7 @@ class LCC25(Instrument):
         
         :rtype: `int`
         """
-        response = self.query("save")
-        return check_cmd(response)
+        self.sendcmd("save")
 
     def set_settings(self, slot):
         """
@@ -350,10 +357,9 @@ class LCC25(Instrument):
         :rtype: `int`
         """
         slot_latch(slot)
-        response = self.query("set={}".format(slot))
-        return check_cmd(response)
+        self.sendcmd("set={}".format(slot))
 
-    def get_settings(self,slot):
+    def get_settings(self, slot):
         """
         Gets the current settings to memory
         
@@ -365,8 +371,8 @@ class LCC25(Instrument):
         :rtype: `int`
         """
         slot_latch(slot)
-        response = self.query("get={}".format(slot))
-        return check_cmd(response)
+        self.sendcmd("get={}".format(slot))
+
 
     def test_mode(self):
         """
@@ -378,5 +384,5 @@ class LCC25(Instrument):
         
         :rtype: `int`
         """
-        response = self.query("test")
-        return check_cmd(response)
+        self.sendcmd("test")
+

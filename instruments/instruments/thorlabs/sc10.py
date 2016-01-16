@@ -3,7 +3,7 @@
 ##
 # sc10.py: Class for the thorlabs sc10 Shutter Controller
 ##
-# © 2014 Steven Casagrande (scasagrande@galvant.ca).
+# © 2014-2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -68,6 +68,10 @@ class SC10(Instrument):
         self.terminator = '\r'
         self.prompt = '>'
         self.echo = True
+
+    def _ack_expected(self, msg=""):
+        return msg
+
     ## ENUMS ##
     
     class Mode(IntEnum):
@@ -98,9 +102,8 @@ class SC10(Instrument):
 
     @enable.setter
     def enable(self, newval):
-        if newval == 0 or newval ==1:
+        if newval == 0 or newval == 1:
             self.sendcmd("ens={}".format(newval))
-            self.read()
         else:
             raise ValueError("Invalid value for enable, must be 0 or 1")        
 
@@ -144,8 +147,8 @@ class SC10(Instrument):
                 "got {} instead.".format(type(newval)))
         
         self.sendcmd("mode={}".format(newval.value))
-        self.read()        
-    
+
+
     @property
     def trigger(self):
         """
@@ -162,8 +165,7 @@ class SC10(Instrument):
     def trigger(self, newval):
         trigger_check(newval)
         self.sendcmd("trig={}".format(newval))
-        self.read()
-    
+
     @property
     def out_trigger(self):
         """
@@ -218,8 +220,8 @@ class SC10(Instrument):
         newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
         check_time(newval)
         self.sendcmd("shut={}".format(newval))
-        self.read()
-    
+
+
     @property
     def baud_rate(self):
         """
@@ -229,8 +231,8 @@ class SC10(Instrument):
         
         :type: `int`
         """
-        response = self.sendcmd("baud?")
-        return 115200 if response else 9600
+        response = self.query("baud?")
+        return 115200 if int(response) else 9600
 
     @baud_rate.setter
     def baud_rate(self, newval):

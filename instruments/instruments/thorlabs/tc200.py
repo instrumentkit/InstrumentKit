@@ -3,7 +3,7 @@
 ##
 # tc200.py: class for the Thorlabs TC200 Temperature Controller
 ##
-# © 2014 Steven Casagrande (scasagrande@galvant.ca).
+# © 2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -47,6 +47,9 @@ class TC200(Instrument):
         self.prompt = ">"
         self.echo = True
 
+    def _ack_expected(self, msg=""):
+        return msg
+
     ## ENUMS ##
 
     class Mode(IntEnum):
@@ -77,8 +80,8 @@ class TC200(Instrument):
 
         :type: `TC200.Mode`
         """
-        response = self.query("stat?")
-        response_code = (int(response) << 1) % 2
+        response = self.query("stat?", 1)
+        response_code = (ord(response) >> 1) % 2
         return TC200.Mode[response_code]
 
     @mode.setter
@@ -90,7 +93,7 @@ class TC200(Instrument):
             raise TypeError("Mode setting must be a `TC200.Mode` value, "
                 "got {} instead.".format(type(newval)))
         out_query = "mode={}".format(newval.name)
-        self.query(out_query)
+        self.sendcmd(out_query)
 
     @property
     def enable(self):
@@ -112,9 +115,9 @@ class TC200(Instrument):
         # the "ens" command is a toggle, we need to track two different cases, when it should be on and it is off,
         # and when it is off and should be on
         if newval and not self.enable:
-            self.query("ens")
+            self.sendcmd("ens")
         elif not newval and self.enable:
-            self.query("ens")
+            self.sendcmd("ens")
 
     @property
     def temperature(self):
@@ -134,7 +137,7 @@ class TC200(Instrument):
         if newval < 20.0 or newval > self.max_temperature:
             raise ValueError("Temperature is out of range.")
         out_query = "tset={}".format(newval)
-        self.query(out_query)
+        self.sendcmd(out_query)
 
     @property
     def p(self):
@@ -153,7 +156,7 @@ class TC200(Instrument):
             raise ValueError("P-Value is too low.")
         if newval > 250:
             raise ValueError("P-Value is too high")
-        self.query("pgain={}".format(newval))
+        self.sendcmd("pgain={}".format(newval))
 
     @property
     def i(self):
@@ -172,7 +175,7 @@ class TC200(Instrument):
             raise ValueError("I-Value is too low.")
         if newval > 250:
             raise ValueError("I-Value is too high")
-        self.query("igain={}".format(newval))
+        self.sendcmd("igain={}".format(newval))
 
     @property
     def d(self):
@@ -191,7 +194,7 @@ class TC200(Instrument):
             raise ValueError("D-Value is too low.")
         if newval > 250:
             raise ValueError("D-Value is too high")
-        self.query("dgain={}".format(newval))
+        self.sendcmd("dgain={}".format(newval))
 
     @property
     def degrees(self):
@@ -212,11 +215,11 @@ class TC200(Instrument):
     @degrees.setter
     def degrees(self, newval):
         if newval is pq.degC:
-            self.query("unit=c")
+            self.sendcmd("unit=c")
         elif newval is pq.degF:
-            self.query("unit=f")
+            self.sendcmd("unit=f")
         elif newval is pq.degK:
-            self.query("unit=k")
+            self.sendcmd("unit=k")
         else:
             raise TypeError("Invalid temperature type")
 
@@ -241,7 +244,7 @@ class TC200(Instrument):
         if newval.enum is not TC200.Sensor:
             raise TypeError("Sensor setting must be a `TC200.Sensor` value, "
                 "got {} instead.".format(type(newval)))
-        self.query("sns={}".format(newval.name))
+        self.sendcmd("sns={}".format(newval.name))
 
     @property
     def beta(self):
@@ -260,7 +263,7 @@ class TC200(Instrument):
             raise ValueError("Beta Value is too low.")
         if newval > 6000:
             raise ValueError("Beta Value is too high")
-        self.query("beta={}".format(newval))
+        self.sendcmd("beta={}".format(newval))
 
     @property
     def max_power(self):
@@ -280,7 +283,7 @@ class TC200(Instrument):
             raise ValueError("Power is too low.")
         if newval > 18.0:
             raise ValueError("Power is too high")
-        self.query("PMAX={}".format(newval))
+        self.sendcmd("PMAX={}".format(newval))
 
     @property
     def max_temperature(self):
@@ -300,7 +303,7 @@ class TC200(Instrument):
             raise ValueError("Temperature is too low.")
         if newval > 205.0:
             raise ValueError("Temperature is too high")
-        self.query("TMAX={}".format(newval))
+        self.sendcmd("TMAX={}".format(newval))
 
     # The Cycles functionality of the TC200 is currently unimplemented, as it is complex, and its functionality is
     # redundant given a python interface to TC200
