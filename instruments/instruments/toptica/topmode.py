@@ -13,9 +13,11 @@ def convert_toptica_boolean(response):
     :return: the converted boolean
     :rtype: bool
     """
-    if response.find('f')>-1:
+    if response.find('Error: -3') > -1:
+        return None
+    elif response.find('f') > -1:
         return False
-    elif response.find('t')>-1:
+    elif response.find('t') > -1:
         return True
     else:
         raise ValueError("cannot convert: "+str(response)+" to boolean")
@@ -29,7 +31,10 @@ def convert_toptica_datetime(response):
     :return: the converted date
     :rtype: 'datetime.datetime'
     """
-    return datetime.strptime(response, '%b %d %Y %I:%M%p')
+    if response == '""\r':
+        return None
+    else:
+        return datetime.strptime(response, '%b %d %Y %I:%M%p')
 
 
 class TopMode(Instrument):
@@ -86,17 +91,17 @@ class TopMode(Instrument):
         @property
         def charm_status(self):
             response = int(self.parent.reference(self.name+":health"))
-            return (response >> 7) % 2
+            return (response >> 7) % 2 == 1
 
         @property
         def temperature_control_status(self):
             response = int(self.parent.reference(self.name+":health"))
-            return (response >> 5) % 2
+            return (response >> 5) % 2 == 1
 
         @property
         def current_control_status(self):
             response = int(self.parent.reference(self.name+":health"))
-            return (response >> 6) % 2
+            return (response >> 6) % 2 == 1
 
         @property
         def tec_status(self):
@@ -107,7 +112,7 @@ class TopMode(Instrument):
             """
             This parameter is unitless
             """
-            return convert_toptica_boolean(self.parent.reference(self.name+":intensity"))
+            return float(self.parent.reference(self.name+":intensity"))
 
         @property
         def mode_hop(self):
@@ -155,7 +160,7 @@ class TopMode(Instrument):
         super(TopMode, self).__init__(filelike)
         self.prompt = ">"
         self.terminator = "\n"
-        self.echo = False
+        self.echo = True
         self.laser1 = TopMode.Laser(1, self)
         self.laser2 = TopMode.Laser(2, self)
 
