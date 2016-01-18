@@ -23,7 +23,7 @@
 ##
 ##
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 import serial
 import time
@@ -67,7 +67,7 @@ import numpy as np
 
 import collections
 
-## CONSTANTS ###################################################################
+# CONSTANTS ###################################################################
 
 _DEFAULT_FORMATS = collections.defaultdict(lambda: '>b')
 _DEFAULT_FORMATS.update({
@@ -76,7 +76,8 @@ _DEFAULT_FORMATS.update({
     4: '>i'
 })
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class Instrument(object):
 
@@ -97,27 +98,19 @@ class Instrument(object):
         return None
 
     @contextmanager
-    def _sendcmd_manager(self, msg):
+    def _sendcmd_manager(self, cmd):
         yield
-        ack_expected = self._ack_expected(msg)
+        ack_expected = self._ack_expected(cmd)
         if ack_expected is not None:
             ack = self.read()
             if ack != ack_expected:
                 raise IOError("Incorrect ACK message received: got {} "
                               "expected {}".format(ack, ack_expected))
-
-    @contextmanager
-    def _query_manager(self, msg=""):
-        yield
-        if self._prompt is not None:
-            if self.read() is not self._prompt:
-                raise IOError("Incorrect prompt message received")
-        ack_expected = self._ack_expected(msg)
-        if ack_expected is not None:
-            ack = self.read()
-            if ack != ack_expected:
-                raise IOError("Incorrect ACK message received: got {} "
-                              "expected {}".format(ack, ack_expected))
+        if self.prompt is not None:
+            prompt = self.read()
+            if prompt != self.prompt:
+                raise IOError("Incorrect prompt message received: got {} "
+                              "expected {}".format(prompt, self.prompt))
     
     def sendcmd(self, cmd):
         """
@@ -126,18 +119,8 @@ class Instrument(object):
         :param str cmd: String containing the command to
             be sent.
         """
-        # with self._sendcmd_manager(cmd):
-        self._file.sendcmd(str(cmd))
-        ack_expected = self._ack_expected(cmd)
-        print "ack expected {}".format(ack_expected)
-        if ack_expected is not None:
-            ack = self.read()
-            if ack != ack_expected:
-                raise IOError("Incorrect ACK message received: got {} expected {}".format(ack, ack_expected))
-        if self.prompt is not None:
-            prompt = self.read()
-            if prompt != self.prompt:
-                raise IOError("Incorrect prompt message received: got {} expected {}".format(prompt, self.prompt))
+        with self._sendcmd_manager(cmd):
+            self._file.sendcmd(str(cmd))
         
     def query(self, cmd, size=-1):
         """
@@ -151,20 +134,20 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        # with self._query_manager(cmd):
-        # value = self._file.query(cmd)
         ack_expected = self._ack_expected(cmd)
         if ack_expected is not None:
             ack = self._file.query(cmd)
             if ack != ack_expected:
-                raise IOError("Incorrect ACK message received: got {} expected {}".format(ack, ack_expected))
+                raise IOError("Incorrect ACK message received: got {} "
+                              "expected {}".format(ack, ack_expected))
             value = self.read(size)
         else:
             value = self._file.query(cmd, size)
         if self.prompt is not None:
             prompt = self.read()
             if prompt is not self.prompt:
-                raise IOError("Incorrect prompt message received: got {} expected {}".format(prompt, self.prompt))
+                raise IOError("Incorrect prompt message received: got {} "
+                              "expected {}".format(prompt, self.prompt))
         return value
 
     def read(self, size=-1):
