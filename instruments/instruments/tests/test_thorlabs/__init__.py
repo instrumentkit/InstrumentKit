@@ -411,7 +411,6 @@ def test_lcc25_increment_positive():
         lcc.increment = -10
 
 
-
 def test_lcc25_default():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -528,14 +527,8 @@ def test_sc10_enable():
 def test_sc10_enable_invalid():
     with expected_protocol(
         ik.thorlabs.SC10,
-        [
-            # "ens=10"
-        ],
-        [
-            # "ens=10",
-            # "0",
-            # ">"
-        ],
+        [],
+        [],
         sep="\r"
     ) as sc:
         sc.enable = 10
@@ -565,12 +558,8 @@ def test_sc10_repeat():
 def test_sc10_repeat_invalid():
     with expected_protocol(
         ik.thorlabs.SC10,
-        [
-            # "rep=-1\r"
-        ],
-        [
-            # "rep=-1\r>0\r>\r"
-        ],
+        [],
+        [],
         sep="\r"
     ) as sc:
         sc.repeat = -1
@@ -600,14 +589,8 @@ def test_sc10_mode():
 def test_sc10_mode_invalid():
     with expected_protocol(
         ik.thorlabs.SC10,
-        [
-            # "mode=10"
-        ],
-        [
-            # "mode=10",
-            # "0",
-            # ">"
-        ],
+        [],
+        [],
         sep="\r"
     ) as sc:
         sc.mode = "blo"
@@ -617,12 +600,8 @@ def test_sc10_mode_invalid():
 def test_sc10_mode_invalid2():
     with expected_protocol(
         ik.thorlabs.SC10,
-        [
-            # "mode=10\r"
-        ],
-        [
-            # "mode=10\r>0\r>\r"
-        ],
+        [],
+        [],
         sep="\r"
     ) as sc:
         blo = IntEnum("blo", "beep boop bop")
@@ -748,12 +727,8 @@ def test_sc10_baud_rate():
 def test_sc10_baud_rate_error():
     with expected_protocol(
         ik.thorlabs.SC10,
-        [
-            # "\rbaud=1\r"
-        ],
-        [
-            # "\r>\r"
-        ],
+        [],
+        [],
         sep="\r"
     ) as sc:
         sc.baud_rate = 115201
