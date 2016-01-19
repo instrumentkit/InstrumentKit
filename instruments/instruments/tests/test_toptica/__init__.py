@@ -255,10 +255,11 @@ def test_display():
 def test_enable():
     with expected_protocol(
         ik.toptica.TopMode,
-        ["(param-set! \'enable-emission #f)"],
-        ["(param-set! \'enable-emission #f)\n>"],
+        ["(param-ref \'emission)", "(param-set! \'enable-emission #f)"],
+        ["(param-ref \'emission)\n>#f\n", "(param-set! \'enable-emission #f)\n>"],
         sep="\n"
     ) as tm:
+        assert tm.enable == False
         tm.enable = False
 
 
