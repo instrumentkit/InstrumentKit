@@ -166,13 +166,13 @@ class TopMode(Instrument):
 
     # The TopMode has its own control language, here we define each command individually:
     def execute(self, command):
-        self.sendcmd("(exec '"+command+")")
+        self.query("(exec '"+command+")")
 
     def set(self, param, value):
         if type(value) is str:
             self.sendcmd("(param-set! '"+param+" \""+value+"\")")
         elif type(value) is tuple or type(value) is list:
-            self.sendcmd("(param-set! '"+param+" '("+value.join(" ")+"))")
+            self.sendcmd("(param-set! '"+param+" '("+" ".join(value)+"))")
         elif type(value) is bool:
             out_str = "t" if value else "f"
             self.sendcmd("(param-set! '"+param+" #"+out_str+")")
