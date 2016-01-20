@@ -84,8 +84,8 @@ class TC200(Instrument):
 
         :type: `TC200.Mode`
         """
-        response = self.query("stat?", 1)
-        response_code = (ord(response) >> 1) % 2
+        response = self.query("stat?")
+        response_code = (int(response) >> 1) % 2
         return TC200.Mode[response_code]
 
     @mode.setter

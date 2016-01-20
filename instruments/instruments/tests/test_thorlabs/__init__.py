@@ -856,9 +856,11 @@ def test_tc200_mode():
         ],
         [
             "stat?",
-            "{}>".format(str(unichr(0))),
+            "0",
+            ">",
             "stat?",
-            "{}>".format(str(unichr(2))),
+            "2",
+            ">",
             "mode=cycle",
             ">"
         ],
