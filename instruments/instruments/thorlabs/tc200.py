@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # tc200.py: class for the Thorlabs TC200 Temperature Controller
-##
+#
 # © 2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,10 +20,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
 # TC200 Class contributed by Catherine Holloway
 #
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 import quantities as pq
 from flufl.enum import IntEnum
@@ -31,26 +31,29 @@ from flufl.enum import IntEnum
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units, convert_temperature
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
 
 
 class TC200(Instrument):
+
     """
-    The TC200 is is a controller for the voltage across a heating element. It can also read in the temperature off of a
-    thermistor and implements a PID control to keep the temperature at a set value.
+    The TC200 is is a controller for the voltage across a heating element.
+    It can also read in the temperature off of a thermistor and implements
+    a PID control to keep the temperature at a set value.
+
     The user manual can be found here:
     http://www.thorlabs.com/thorcat/12500/TC200-Manual.pdf
     """
+
     def __init__(self, filelike):
         super(TC200, self).__init__(filelike)
         self.terminator = "\r"
         self.prompt = ">"
-        self.echo = True
 
     def _ack_expected(self, msg=""):
         return msg
 
-    ## ENUMS ##
+    # ENUMS #
 
     class Mode(IntEnum):
         normal = 0
@@ -62,11 +65,12 @@ class TC200(Instrument):
         th10k = 2
         ntc10k = 3
 
-    ## PROPERTIES ##
+    # PROPERTIES #
 
     def name(self):
         """
-        gets the name and version number of the device
+        Gets the name and version number of the device
+
         :return: the name string of the device
         :rtype: str
         """
@@ -88,10 +92,10 @@ class TC200(Instrument):
     def mode(self, newval):
         if not hasattr(newval, 'enum'):
             raise TypeError("Mode setting must be a `TC200.Mode` value, "
-                "got {} instead.".format(type(newval)))
+                            "got {} instead.".format(type(newval)))
         if newval.enum is not TC200.Mode:
             raise TypeError("Mode setting must be a `TC200.Mode` value, "
-                "got {} instead.".format(type(newval)))
+                            "got {} instead.".format(type(newval)))
         out_query = "mode={}".format(newval.name)
         self.sendcmd(out_query)
 
@@ -102,7 +106,7 @@ class TC200(Instrument):
 
         If output enable is on (`True`), there is a voltage on the output.
 
-        :rtype: `bool`
+        :type: `bool`
         """
         response = self.query("stat?")
         return True if int(response) % 2 is 1 else False
@@ -112,8 +116,9 @@ class TC200(Instrument):
         if not isinstance(newval, bool):
             raise TypeError("TC200 enable property must be specified with a "
                             "boolean.")
-        # the "ens" command is a toggle, we need to track two different cases, when it should be on and it is off,
-        # and when it is off and should be on
+        # the "ens" command is a toggle, we need to track two different cases,
+        # when it should be on and it is off, and when it is off and
+        # should be on
         if newval and not self.enable:
             self.sendcmd("ens")
         elif not newval and self.enable:
@@ -124,11 +129,15 @@ class TC200(Instrument):
         """
         Gets/sets the temperature
 
+        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+            to be of units degrees C.
+        :type: `~quantities.quantity.Quantity` or `int`
         :return: the temperature (in degrees C)
-        :rtype: float
+        :rtype: `~quantities.quantity.Quantity`
         """
-        response = self.query("tact?").replace(" C", "").replace(" F", "").replace(" K", "")
-        return float(response)*pq.degC
+        response = self.query("tact?").replace(
+            " C", "").replace(" F", "").replace(" K", "")
+        return float(response) * pq.degC
 
     @temperature.setter
     def temperature(self, newval):
@@ -142,10 +151,10 @@ class TC200(Instrument):
     @property
     def p(self):
         """
-        Gets/sets the pgain
+        Gets/sets the p-gain. Valid numbers are [1,250].
 
-        :return: the gain (in nnn)
-        :rtype: int
+        :return: the p-gain (in nnn)
+        :rtype: `int`
         """
         response = self.query("pid?")
         return int(response.split(" ")[0])
@@ -161,10 +170,10 @@ class TC200(Instrument):
     @property
     def i(self):
         """
-        Gets/sets the igain
+        Gets/sets the i-gain. Valid numbers are [1,250]
 
-        :return: the gain
-        :rtype: int
+        :return: the i-gain (in nnn)
+        :rtype: `int`
         """
         response = self.query("pid?")
         return int(response.split(" ")[1])
@@ -180,10 +189,10 @@ class TC200(Instrument):
     @property
     def d(self):
         """
-        Gets/sets the dgain
+        Gets/sets the d-gain. Valid numbers are [0, 250]
 
-        :return: the gain (in nnn)
-        :rtype: int
+        :return: the d-gain (in nnn)
+        :type: `int`
         """
         response = self.query("pid?")
         return int(response.split(" ")[2])
@@ -199,8 +208,9 @@ class TC200(Instrument):
     @property
     def degrees(self):
         """
-        Gets/sets the mode of the temperature measurement.
+        Gets/sets the units of the temperature measurement.
 
+        :return: The temperature units (degC/F/K) the TC200 is measuring in
         :type: `~quantities.unitquantity.UnitTemperature`
         """
         response = self.query("stat?")
@@ -226,24 +236,26 @@ class TC200(Instrument):
     @property
     def sensor(self):
         """
-        Gets/sets the current thermistor type. Used for converting resistances to temperatures.
+        Gets/sets the current thermistor type. Used for converting resistances
+        to temperatures.
 
-        :rtype: TC200.Sensor
-
+        :return: The thermistor type
+        :type: `TC200.Sensor`
         """
         response = self.query("sns?")
-        response = response.split(",")[0].replace("Sensor = ", '').replace(self.terminator, "").replace(" ", "")
+        response = response.split(",")[0].replace(
+            "Sensor = ", '').replace(self.terminator, "").replace(" ", "")
         return TC200.Sensor(response.lower())
 
     @sensor.setter
     def sensor(self, newval):
         if not hasattr(newval, 'enum'):
             raise TypeError("Sensor setting must be a `TC200.Sensor` value, "
-                "got {} instead.".format(type(newval)))
+                            "got {} instead.".format(type(newval)))
 
         if newval.enum is not TC200.Sensor:
             raise TypeError("Sensor setting must be a `TC200.Sensor` value, "
-                "got {} instead.".format(type(newval)))
+                            "got {} instead.".format(type(newval)))
         self.sendcmd("sns={}".format(newval.name))
 
     @property
@@ -252,7 +264,7 @@ class TC200(Instrument):
         Gets/sets the beta value of the thermistor curve.
 
         :return: the gain (in nnn)
-        :rtype: int
+        :type: `int`
         """
         response = self.query("beta?")
         return int(response)
@@ -270,11 +282,12 @@ class TC200(Instrument):
         """
         Gets/sets the maximum power
 
-        :return: the maximum power (in Watts)
-        :rtype: `~quantities.Quantity`
+        :return: The maximum power
+        :units: Watts (linear units)
+        :type: `~quantities.quantity.Quantity`
         """
         response = self.query("pmax?")
-        return float(response)*pq.W
+        return float(response) * pq.W
 
     @max_power.setter
     def max_power(self, newval):
@@ -291,10 +304,12 @@ class TC200(Instrument):
         Gets/sets the maximum temperature
 
         :return: the maximum temperature (in deg C)
-        :rtype: `~quantities.Quantity`
+        :units: As specified or assumed to be degree Celsius. Returns with
+            units degC.
+        :rtype: `~quantities.quantity.Quantity`
         """
-        response = self.query("tmax?").replace(" C","")
-        return float(response)*pq.degC
+        response = self.query("tmax?").replace(" C", "")
+        return float(response) * pq.degC
 
     @max_temperature.setter
     def max_temperature(self, newval):
@@ -304,7 +319,3 @@ class TC200(Instrument):
         if newval > 205.0:
             raise ValueError("Temperature is too high")
         self.sendcmd("TMAX={}".format(newval))
-
-    # The Cycles functionality of the TC200 is currently unimplemented, as it is complex, and its functionality is
-    # redundant given a python interface to TC200
-
