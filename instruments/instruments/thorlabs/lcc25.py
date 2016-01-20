@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # lcc25.py: class for the Thorlabs LCC25 Liquid Crystal Controller
-##
+#
 # © 2014-2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,10 +20,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
 # LCC25 Class contributed by Catherine Holloway
 #
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 import quantities as pq
 from flufl.enum import IntEnum
@@ -73,17 +73,19 @@ def check_cmd(response):
         return 0
 
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
 
 class LCC25(Instrument):
+
     """
     The LCC25 is a controller for the thorlabs liquid crystal modules.
-    it can set two voltages and then oscillate between them at a specific 
+    it can set two voltages and then oscillate between them at a specific
     repetition rate.
-    
+
     The user manual can be found here:
     http://www.thorlabs.com/thorcat/18800/LCC25-Manual.pdf
     """
+
     def __init__(self, filelike):
         super(LCC25, self).__init__(filelike)
         self.terminator = "\r"
@@ -92,15 +94,15 @@ class LCC25(Instrument):
 
     def _ack_expected(self, msg=""):
         return msg
-        
-    ## ENUMS ##
-    
+
+    # ENUMS #
+
     class Mode(IntEnum):
         normal = 0
         voltage1 = 1
         voltage2 = 2
-    
-    ## PROPERTIES ##
+
+    # PROPERTIES #
 
     def name(self):
         """
@@ -113,15 +115,15 @@ class LCC25(Instrument):
     @property
     def frequency(self):
         """
-        Gets/sets the frequency at which the LCC oscillates between the 
+        Gets/sets the frequency at which the LCC oscillates between the
         two voltages.
-        
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units Hertz.
-        :rtype: `~quantities.Quantity`
+
+        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+            to be of units Hertz.
+        :rtype: `~quantities.quantity.Quantity`
         """
         response = self.query("freq?")
-        return float(response)*pq.Hz
+        return float(response) * pq.Hz
 
     @frequency.setter
     def frequency(self, newval):
@@ -136,7 +138,7 @@ class LCC25(Instrument):
     def mode(self):
         """
         Gets/sets the output mode of the LCC25
-        
+
         :rtype: `LCC25.Mode`
         """
         response = self.query("mode?")
@@ -146,19 +148,19 @@ class LCC25(Instrument):
     def mode(self, newval):
         if not hasattr(newval, 'enum'):
             raise TypeError("Mode setting must be a `LCC25.Mode` value, "
-                "got {} instead.".format(type(newval)))
+                            "got {} instead.".format(type(newval)))
         if newval.enum is not LCC25.Mode:
             raise TypeError("Mode setting must be a `LCC25.Mode` value, "
-                "got {} instead.".format(type(newval)))
+                            "got {} instead.".format(type(newval)))
         self.sendcmd("mode={}".format(newval.value))
 
     @property
     def enable(self):
         """
         Gets/sets the output enable status.
-        
+
         If output enable is on (`True`), there is a voltage on the output.
-        
+
         :rtype: `bool`
         """
         response = self.query("enable?")
@@ -170,15 +172,15 @@ class LCC25(Instrument):
             raise TypeError("LLC25 enable property must be specified with a "
                             "boolean.")
         self.sendcmd("enable={}".format(int(newval)))
-    
+
     @property
     def extern(self):
         """
         Gets/sets the use of the external TTL modulation.
-        
+
         Value is `True` for external TTL modulation and `False` for internal
         modulation.
-        
+
         :rtype: `bool`
         """
         response = self.query("extern?")
@@ -196,10 +198,10 @@ class LCC25(Instrument):
     def remote(self):
         """
         Gets/sets front panel lockout status for remote instrument operation.
-        
+
         Value is `False` for normal operation and `True` to lock out the front
         panel buttons.
-        
+
         :rtype: `bool`
         """
         response = self.query("remote?")
@@ -216,13 +218,13 @@ class LCC25(Instrument):
     def voltage1(self):
         """
         Gets/sets the voltage value for output 1.
-        
+
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
         :rtype: `~quantities.Quantity`
         """
         response = self.query("volt1?")
-        return float(response)*pq.V
+        return float(response) * pq.V
 
     @voltage1.setter
     def voltage1(self, newval):
@@ -234,13 +236,13 @@ class LCC25(Instrument):
     def voltage2(self):
         """
         Gets/sets the voltage value for output 2.
-        
+
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
         :rtype: `~quantities.Quantity`
         """
         response = self.query("volt2?")
-        return float(response)*pq.V
+        return float(response) * pq.V
 
     @voltage2.setter
     def voltage2(self, newval):
@@ -252,13 +254,13 @@ class LCC25(Instrument):
     def min_voltage(self):
         """
         Gets/sets the minimum voltage value for the test mode.
-        
+
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
         :rtype: `~quantities.Quantity`
         """
         response = self.query("min?")
-        return float(response)*pq.V
+        return float(response) * pq.V
 
     @min_voltage.setter
     def min_voltage(self, newval):
@@ -268,16 +270,16 @@ class LCC25(Instrument):
     @property
     def max_voltage(self):
         """
-        Gets/sets the maximum voltage value for the test mode. If the maximum 
+        Gets/sets the maximum voltage value for the test mode. If the maximum
         voltage is less than the minimum voltage, nothing happens.
-        
+
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
         :rtype: `~quantities.Quantity`
-        
+
         """
         response = self.query("max?")
-        return float(response)*pq.V
+        return float(response) * pq.V
 
     @max_voltage.setter
     def max_voltage(self, newval):
@@ -289,13 +291,13 @@ class LCC25(Instrument):
     def dwell(self):
         """
         Gets/sets the dwell time for voltages for the test mode.
-        
+
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units milliseconds.
         :rtype: `~quantities.Quantity`
         """
         response = self.query("dwell?")
-        return float(response)*pq.ms
+        return float(response) * pq.ms
 
     @dwell.setter
     def dwell(self, newval):
@@ -308,13 +310,13 @@ class LCC25(Instrument):
     def increment(self):
         """
         Gets/sets the voltage increment for voltages for the test mode.
-        
+
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
         :rtype: `~quantities.Quantity`
         """
         response = self.query("increment?")
-        return float(response)*pq.V
+        return float(response) * pq.V
 
     @increment.setter
     def increment(self, newval):
@@ -323,13 +325,13 @@ class LCC25(Instrument):
             raise ValueError("Increment voltage must be positive")
         self.sendcmd("increment={}".format(newval))
 
-    ## METHODS ##
+    # METHODS ##
     def default(self):
         """
         Restores instrument to factory settings.
-        
+
         Returns 1 if successful, 0 otherwise
-        
+
         :rtype: `int`
         """
         response = self.query("default")
@@ -338,9 +340,9 @@ class LCC25(Instrument):
     def save(self):
         """
         Stores the parameters in static memory
-        
+
         Returns 1 if successful, zero otherwise.
-        
+
         :rtype: `int`
         """
         self.sendcmd("save")
@@ -348,12 +350,12 @@ class LCC25(Instrument):
     def set_settings(self, slot):
         """
         Saves the current settings to memory
-        
+
         Returns 1 if successful, zero otherwise.
-        
+
         :param slot: Memory slot to use, valid range `[1,4]`
         :type slot: `int`
-        
+
         :rtype: `int`
         """
         slot_latch(slot)
@@ -362,27 +364,25 @@ class LCC25(Instrument):
     def get_settings(self, slot):
         """
         Gets the current settings to memory
-        
+
         Returns 1 if successful, zero otherwise.
-        
+
         :param slot: Memory slot to use, valid range `[1,4]`
         :type slot: `int`
-        
+
         :rtype: `int`
         """
         slot_latch(slot)
         self.sendcmd("get={}".format(slot))
 
-
     def test_mode(self):
         """
-        Puts the LCC in test mode - meaning it will increment the output 
-        voltage from the minimum value to the maximum value, in increments, 
+        Puts the LCC in test mode - meaning it will increment the output
+        voltage from the minimum value to the maximum value, in increments,
         waiting for the dwell time
-        
+
         Returns 1 if successful, zero otherwise.
-        
+
         :rtype: `int`
         """
         self.sendcmd("test")
-
