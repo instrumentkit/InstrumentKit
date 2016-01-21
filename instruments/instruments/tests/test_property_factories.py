@@ -187,7 +187,7 @@ def test_bool_property_writeonly_writing_passes():
     
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
     
-    mock_instrument.mock1 = "OFF"
+    mock_instrument.mock1 = False
 
 ## Enum Property Factories ##
     

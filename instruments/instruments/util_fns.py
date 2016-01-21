@@ -175,6 +175,9 @@ def bool_property(name, inst_true, inst_false, doc=None, readonly=False, writeon
     def getter(self):
         return self.query(name + "?").strip() == inst_true
     def setter(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError("Bool properties must be specified with a "
+                            "boolean value")
         self.sendcmd(set_fmt.format(name, inst_true if newval else inst_false))
         
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
@@ -282,7 +285,7 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False, writeonly=F
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
 
-def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, writeonly=False, set_fmt="{} {}"):
+def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, writeonly=False, set_fmt="{} {}", verification_function=None):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
     values. This function assumes that the instrument only accepts
@@ -310,6 +313,8 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, 
         raw = self.query("{}?".format(name))
         return float(raw) * units
     def setter(self, newval):
+        if verification_function is not None:
+            verification_function(newval)
         # Rescale to the correct unit before printing. This will also catch bad units.
         strval = format_code.format(assume_units(newval, units).rescale(units).item())
         self.sendcmd(set_fmt.format(name, strval))
