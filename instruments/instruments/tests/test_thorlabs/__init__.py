@@ -33,26 +33,6 @@ import quantities as pq
 ## TESTS ######################################################################
 
 
-@raises(ValueError)
-def test_voltage_latch_min():
-    ik.thorlabs.voltage_latch(-2)
-
-
-@raises(ValueError)
-def test_voltage_latch_max():
-    ik.thorlabs.voltage_latch(9999)
-
-
-@raises(ValueError)
-def test_slot_latch_min():
-    ik.thorlabs.slot_latch(-2)
-
-
-@raises(ValueError)
-def test_slot_latch_max():
-    ik.thorlabs.slot_latch(9999)
-
-
 def test_lcc25_name():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -66,7 +46,7 @@ def test_lcc25_name():
         ],
         sep="\r"
     ) as lcc:
-        name = lcc.name()
+        name = lcc.name
         assert name == "bloopbloop", "got {} expected bloopbloop".format(name)
 
 
@@ -142,7 +122,7 @@ def test_lcc25_mode():
         lcc.mode = ik.thorlabs.LCC25.Mode.voltage1
 
 
-@raises(TypeError)
+@raises(ValueError)
 def test_lcc25_mode_invalid():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -152,7 +132,7 @@ def test_lcc25_mode_invalid():
         lcc.mode = "blo"
 
 
-@raises(TypeError)
+@raises(ValueError)
 def test_lcc25_mode_invalid2():
     with expected_protocol(
         ik.thorlabs.LCC25,
@@ -160,7 +140,7 @@ def test_lcc25_mode_invalid2():
         []
     ) as lcc:
         blo = IntEnum("blo", "beep boop bop")
-        lcc.mode = blo.beep
+        lcc.mode = blo[0]
 
 
 def test_lcc25_enable():
@@ -274,9 +254,9 @@ def test_lcc25_voltage1():
 
 
 def test_check_cmd():
-    assert ik.thorlabs.check_cmd("blo") == 1
-    assert ik.thorlabs.check_cmd("CMD_NOT_DEFINED") == 0
-    assert ik.thorlabs.check_cmd("CMD_ARG_INVALID") == 0
+    assert ik.thorlabs._utils.check_cmd("blo") == 1
+    assert ik.thorlabs._utils.check_cmd("CMD_NOT_DEFINED") == 0
+    assert ik.thorlabs._utils.check_cmd("CMD_ARG_INVALID") == 0
 
 
 def test_lcc25_voltage2():
@@ -442,7 +422,7 @@ def test_lcc25_save():
         lcc.save()
 
 
-def test_lcc25_save_settings():
+def test_lcc25_set_settings():
     with expected_protocol(
         ik.thorlabs.LCC25,
         [
@@ -455,6 +435,17 @@ def test_lcc25_save_settings():
         sep="\r"
     ) as lcc:
         lcc.set_settings(2)
+
+
+@raises(ValueError)
+def test_lcc25_set_settings_invalid():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        [],
+        [],
+        sep="\r"
+    ) as lcc:
+        lcc.set_settings(5)
 
 
 def test_lcc25_get_settings():
@@ -470,6 +461,17 @@ def test_lcc25_get_settings():
         sep="\r"
     ) as lcc:
         lcc.get_settings(2)
+
+
+@raises(ValueError)
+def test_lcc25_get_settings_invalid():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        [],
+        [],
+        sep="\r"
+    ) as lcc:
+        lcc.get_settings(5)
 
 
 def test_lcc25_test_mode():

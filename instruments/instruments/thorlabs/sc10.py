@@ -30,7 +30,7 @@ from flufl.enum import IntEnum
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units
-from instruments.thorlabs import check_cmd
+from instruments.thorlabs._utils import check_cmd
 
 
 def trigger_check(newval):

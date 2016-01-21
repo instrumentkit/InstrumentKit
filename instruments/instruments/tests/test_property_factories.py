@@ -212,6 +212,19 @@ def test_enum_property():
     
     eq_(mock.value, 'MOCK:A?\nMOCK:B?\nMOCK:A bb\nMOCK:B aa\nMOCK:B bb\n')
 
+@raises(ValueError)
+def test_enum_property_invalid():
+    class SillyEnum(Enum):
+        a = 'aa'
+        b = 'bb'
+
+    class EnumMock(MockInstrument):
+        a = enum_property('MOCK:A', SillyEnum)
+
+    mock = EnumMock({'MOCK:A?': 'aa', 'MOCK:B?': 'bb'})
+
+    mock.a = 'c'
+
 def test_enum_property_set_fmt():
     class SillyEnum(Enum):
         a = 'aa'
@@ -524,6 +537,35 @@ def test_unitful_property_readonly_reading_passes():
     mock_inst = UnitfulMock({'MOCK?':'1'})
     
     eq_(mock_inst.unitful_property, 1 * pq.hertz)
+
+def test_unitful_property_valid_range():
+    class UnitfulMock(MockInstrument):
+        unitful_property = unitful_property('MOCK', pq.hertz, valid_range=(0, 10))
+
+    mock_inst = UnitfulMock()
+
+    mock_inst.unitful_property = 0
+    mock_inst.unitful_property = 10
+
+    eq_(mock_inst.value, 'MOCK {:e}\nMOCK {:e}\n'.format(0, 10))
+
+@raises(ValueError)
+def test_unitful_property_minimum_value():
+    class UnitfulMock(MockInstrument):
+        unitful_property = unitful_property('MOCK', pq.hertz, valid_range=(0, 10))
+
+    mock_inst = UnitfulMock()
+
+    mock_inst.unitful_property = -1
+
+@raises(ValueError)
+def test_unitful_property_maximum_value():
+    class UnitfulMock(MockInstrument):
+        unitful_property = unitful_property('MOCK', pq.hertz, valid_range=(0, 10))
+
+    mock_inst = UnitfulMock()
+
+    mock_inst.unitful_property = 11
 
 ## String Property ##
 
