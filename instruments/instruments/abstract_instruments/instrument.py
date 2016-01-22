@@ -39,6 +39,7 @@ from instruments.abstract_instruments.comm import (
     USBTMCCommunicator,
     serial_manager
 )
+from instruments.errors import AcknowledgementError, PromptError
 
 import os
 
@@ -104,13 +105,17 @@ class Instrument(object):
         if ack_expected is not None:
             ack = self.read()
             if ack != ack_expected:
-                raise IOError("Incorrect ACK message received: got {} "
-                              "expected {}".format(ack, ack_expected))
+                raise AcknowledgementError(
+                        "Incorrect ACK message received: got {} "
+                        "expected {}".format(ack, ack_expected)
+                )
         if self.prompt is not None:
             prompt = self.read()
             if prompt != self.prompt:
-                raise IOError("Incorrect prompt message received: got {} "
-                              "expected {}".format(prompt, self.prompt))
+                raise PromptError(
+                        "Incorrect prompt message received: got {} "
+                        "expected {}".format(prompt, self.prompt)
+                )
 
     def query(self, cmd, size=-1):
         """
@@ -128,16 +133,20 @@ class Instrument(object):
         if ack_expected is not None:
             ack = self._file.query(cmd)
             if ack != ack_expected:
-                raise IOError("Incorrect ACK message received: got {} "
-                              "expected {}".format(ack, ack_expected))
+                raise AcknowledgementError(
+                        "Incorrect ACK message received: got {} "
+                        "expected {}".format(ack, ack_expected)
+                )
             value = self.read(size)
         else:
             value = self._file.query(cmd, size)
         if self.prompt is not None:
             prompt = self.read()
             if prompt is not self.prompt:
-                raise IOError("Incorrect prompt message received: got {} "
-                              "expected {}".format(prompt, self.prompt))
+                raise PromptError(
+                        "Incorrect prompt message received: got {} "
+                        "expected {}".format(prompt, self.prompt)
+                )
         return value
 
     def read(self, size=-1):
