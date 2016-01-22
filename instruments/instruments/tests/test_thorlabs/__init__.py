@@ -415,6 +415,7 @@ def test_lcc25_save():
         ],
         [
             "save",
+            "1",
             ">"
         ],
         sep="\r"
@@ -430,6 +431,7 @@ def test_lcc25_set_settings():
         ],
         [
             "set=2",
+            "1",
             ">"
         ],
         sep="\r"
@@ -456,6 +458,7 @@ def test_lcc25_get_settings():
         ],
         [
             "get=2",
+            "1",
             ">"
         ],
         sep="\r"
@@ -482,6 +485,7 @@ def test_lcc25_test_mode():
         ],
         [
             "test",
+            "1",
             ">"
         ],
         sep="\r"
@@ -502,7 +506,7 @@ def test_sc10_name():
         ],
         sep="\r"
     ) as sc:
-        assert sc.name() == "bloopbloop"
+        assert sc.name == "bloopbloop"
 
 
 def test_sc10_enable():
@@ -521,11 +525,11 @@ def test_sc10_enable():
         ],
         sep="\r"
     ) as sc:
-        assert sc.enable == 0
-        sc.enable = 1
+        assert sc.enable == False
+        sc.enable = True
 
 
-@raises(ValueError)
+@raises(TypeError)
 def test_sc10_enable_invalid():
     with expected_protocol(
         ik.thorlabs.SC10,
@@ -587,7 +591,7 @@ def test_sc10_mode():
         sc.mode = ik.thorlabs.SC10.Mode.auto
 
 
-@raises(TypeError)
+@raises(ValueError)
 def test_sc10_mode_invalid():
     with expected_protocol(
         ik.thorlabs.SC10,
@@ -598,7 +602,7 @@ def test_sc10_mode_invalid():
         sc.mode = "blo"
 
 
-@raises(TypeError)
+@raises(ValueError)
 def test_sc10_mode_invalid2():
     with expected_protocol(
         ik.thorlabs.SC10,
@@ -607,7 +611,7 @@ def test_sc10_mode_invalid2():
         sep="\r"
     ) as sc:
         blo = IntEnum("blo", "beep boop bop")
-        sc.mode = blo.beep
+        sc.mode = blo[0]
 
 
 def test_sc10_trigger():
@@ -628,21 +632,6 @@ def test_sc10_trigger():
     ) as sc:
         assert sc.trigger == 0
         sc.trigger = 1
-
-
-@raises(ValueError)
-def test_trigger_check():
-    ik.thorlabs.trigger_check(2)
-
-
-@raises(ValueError)
-def test_time_check_min():
-    ik.thorlabs.check_time(-1)
-
-
-@raises(ValueError)
-def test_time_check_max():
-    ik.thorlabs.check_time(9999999)
 
 
 def test_sc10_out_trigger():
@@ -682,7 +671,7 @@ def test_sc10_open_time():
         sep="\r"
     ) as sc:
         unit_eq(sc.open_time, pq.Quantity(20, "ms"))
-        sc.open_time = 10.0
+        sc.open_time = 10
 
 
 def test_sc10_shut_time():

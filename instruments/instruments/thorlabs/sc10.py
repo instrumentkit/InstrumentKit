@@ -29,32 +29,12 @@ import quantities as pq
 from flufl.enum import IntEnum
 
 from instruments.abstract_instruments import Instrument
-from instruments.util_fns import assume_units
+from instruments.util_fns import (
+    bool_property, enum_property, int_property, unitful_property
+)
 from instruments.thorlabs._utils import check_cmd
 
-
-def trigger_check(newval):
-    """
-    Validate the trigger
-    :param newval: trigger
-    :type newval: int
-    :return:
-    """
-    if newval != 0 and newval != 1:
-        raise ValueError("Not a valid value for trigger mode")
-
-
-def check_time(newval):
-    """
-    Validate the shutter time
-    :param newval: the new time
-    :type newval: int
-    :return:
-    """
-    if newval < 0:
-        raise ValueError("Duration cannot be negative")
-    if newval > 999999:
-        raise ValueError("Duration is too long")
+# CLASSES #####################################################################
 
 
 class SC10(Instrument):
@@ -69,12 +49,11 @@ class SC10(Instrument):
         super(SC10, self).__init__(filelike)
         self.terminator = '\r'
         self.prompt = '>'
-        self.echo = True
 
     def _ack_expected(self, msg=""):
         return msg
 
-    # ENUMS ##
+    # ENUMS #
 
     class Mode(IntEnum):
         manual = 1
@@ -83,93 +62,75 @@ class SC10(Instrument):
         repeat = 4
         external = 5
 
-    # PROPERTIES ##
+    # PROPERTIES #
 
+    @property
     def name(self):
         """
         Gets the name and version number of the device.
-        """
-        response = self.query("id?")
-        return response
 
-    @property
-    def enable(self):
+        :return: Name and verison number of the device
+        :rtype: `str`
         """
-        Gets/sets the shutter enable status, 0 for disabled, 1 if enabled
+        return self.query("id?")
 
-        :type: `int`
+    enable = bool_property(
+        "ens",
+        "1",
+        "0",
+        set_fmt="{}={}",
+        doc="""
+        Gets/sets the shutter enable status, False for disabled, True if
+        enabled
+
+        If output enable is on (`True`), there is a voltage on the output.
+
+        :rtype: `bool`
         """
-        response = self.query("ens?")
-        return int(response)
+    )
 
-    @enable.setter
-    def enable(self, newval):
-        if newval == 0 or newval == 1:
-            self.sendcmd("ens={}".format(newval))
-        else:
-            raise ValueError("Invalid value for enable, must be 0 or 1")
-
-    @property
-    def repeat(self):
-        """
+    repeat = int_property(
+        "rep",
+        valid_set=xrange(1, 100),
+        set_fmt="{}={}",
+        doc="""
         Gets/sets the repeat count for repeat mode. Valid range is [1,99]
         inclusive.
 
         :type: `int`
         """
-        response = self.query("rep?")
-        return int(response)
+    )
 
-    @repeat.setter
-    def repeat(self, newval):
-        if 0 < newval < 100:
-            self.sendcmd("rep={}".format(newval))
-            self.read()
-        else:
-            raise ValueError("Invalid value for repeat count, must be "
-                             "between 1 and 99")
+    mode = enum_property(
+        "mode",
+        Mode,
+        input_decoration=int,
+        set_fmt="{}={}",
+        doc="""
+        Gets/sets the output mode of the LCC25
 
-    @property
-    def mode(self):
+        :rtype: `LCC25.Mode`
         """
-        Gets/sets the output mode of the SC10.
+    )
 
-        :type: `SC10.Mode`
-        """
-        response = self.query("mode?")
-        return SC10.Mode[int(response)]
-
-    @mode.setter
-    def mode(self, newval):
-        if not hasattr(newval, 'enum'):
-            raise TypeError("Mode setting must be a `SC10.Mode` value, "
-                            "got {} instead.".format(type(newval)))
-        if newval.enum is not SC10.Mode:
-            raise TypeError("Mode setting must be a `SC10.Mode` value, "
-                            "got {} instead.".format(type(newval)))
-
-        self.sendcmd("mode={}".format(newval.value))
-
-    @property
-    def trigger(self):
-        """
+    trigger = int_property(
+        "trig",
+        valid_set=xrange(0, 2),
+        set_fmt="{}={}",
+        doc="""
         Gets/sets the trigger source.
 
         0 for internal trigger, 1 for external trigger
 
         :type: `int`
         """
-        response = self.query("trig?")
-        return int(response)
+    )
 
-    @trigger.setter
-    def trigger(self, newval):
-        trigger_check(newval)
-        self.sendcmd("trig={}".format(newval))
-
-    @property
-    def out_trigger(self):
-        """
+    out_trigger = int_property(
+        "xto",
+        valid_set=xrange(0, 2),
+        set_fmt="{}={}",
+        doc="""
         Gets/sets the out trigger source.
 
         0 trigger out follows shutter output, 1 trigger out follows
@@ -177,50 +138,37 @@ class SC10(Instrument):
 
         :type: `int`
         """
-        response = self.query("xto?")
-        return int(response)
+    )
 
-    @out_trigger.setter
-    def out_trigger(self, newval):
-        trigger_check(newval)
-        self.sendcmd("xto={}".format(newval))
-
-    # I'm not sure how to handle checking for the number of digits yet.
-    @property
-    def open_time(self):
-        """
+    open_time = unitful_property(
+        "open",
+        pq.ms,
+        format_code="{:.0f}",
+        set_fmt="{}={}",
+        valid_range=(0, 999999),
+        doc="""
         Gets/sets the amount of time that the shutter is open, in ms
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units milliseconds.
-        :type: `~quantities.Quantity`
+        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+            to be of units milliseconds.
+        :type: `~quantities.quantity.Quantity`
         """
-        response = self.query("open?")
-        return float(response) * pq.ms
+    )
 
-    @open_time.setter
-    def open_time(self, newval):
-        newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
-        check_time(newval)
-        self.sendcmd("open={}".format(newval))
-
-    @property
-    def shut_time(self):
-        """
+    shut_time = unitful_property(
+        "shut",
+        pq.ms,
+        format_code="{:.0f}",
+        set_fmt="{}={}",
+        valid_range=(0, 999999),
+        doc="""
         Gets/sets the amount of time that the shutter is closed, in ms
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units milliseconds.
-        :rtype: `~quantities.Quantity`
+        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+            to be of units milliseconds.
+        :type: `~quantities.quantity.Quantity`
         """
-        response = self.query("shut?")
-        return float(response) * pq.ms
-
-    @shut_time.setter
-    def shut_time(self, newval):
-        newval = int(assume_units(newval, pq.ms).rescale(pq.ms).magnitude)
-        check_time(newval)
-        self.sendcmd("shut={}".format(newval))
+    )
 
     @property
     def baud_rate(self):
@@ -241,9 +189,12 @@ class SC10(Instrument):
         else:
             self.sendcmd("baud={}".format(0 if newval == 9600 else 1))
 
-    @property
-    def closed(self):
-        """
+    closed = bool_property(
+        "closed",
+        "1",
+        "0",
+        readonly=True,
+        doc="""
         Gets the shutter closed status.
 
         `True` represents the shutter is closed, and `False` for the shutter is
@@ -251,22 +202,23 @@ class SC10(Instrument):
 
         :rtype: `bool`
         """
-        response = self.query("closed?")
-        return True if int(response) is 1 else False
+    )
 
-    @property
-    def interlock(self):
-        """
+    interlock = bool_property(
+        "interlock",
+        "1",
+        "0",
+        readonly=True,
+        doc="""
         Gets the interlock tripped status.
 
         Returns `True` if the interlock is tripped, and `False` otherwise.
 
         :rtype: `bool`
         """
-        response = self.query("interlock?")
-        return True if int(response) is 1 else False
+    )
 
-    # Methods ##
+    # Methods #
 
     def default(self):
         """

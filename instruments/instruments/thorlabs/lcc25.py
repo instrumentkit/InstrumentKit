@@ -215,8 +215,8 @@ class LCC25(Instrument):
         doc="""
         Gets/sets the dwell time for voltages for the test mode.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed to be
-            of units milliseconds.
+        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+            to be of units milliseconds.
         :rtype: `~quantities.quantity.Quantity`
         """
     )
@@ -257,34 +257,48 @@ class LCC25(Instrument):
 
         :rtype: `int`
         """
-        self.sendcmd("save")
+        response = self.query("save")
+        return check_cmd(response)
 
     def set_settings(self, slot):
         """
         Saves the current settings to memory.
 
+        Returns 1 if successful, zero otherwise.
+
         :param slot: Memory slot to use, valid range `[1,4]`
         :type slot: `int`
+        :rtype: `int`
         """
         if slot not in xrange(1, 5):
             raise ValueError("Cannot set memory out of `[1,4]` range")
-        self.sendcmd("set={}".format(slot))
+        response = self.query("set={}".format(slot))
+        return check_cmd(response)
 
     def get_settings(self, slot):
         """
         Gets the current settings to memory.
 
+        Returns 1 if successful, zero otherwise.
+
         :param slot: Memory slot to use, valid range `[1,4]`
         :type slot: `int`
+        :rtype: `int`
         """
         if slot not in xrange(1, 5):
             raise ValueError("Cannot set memory out of `[1,4]` range")
-        self.sendcmd("get={}".format(slot))
+        response = self.query("get={}".format(slot))
+        return check_cmd(response)
 
     def test_mode(self):
         """
         Puts the LCC in test mode - meaning it will increment the output
         voltage from the minimum value to the maximum value, in increments,
         waiting for the dwell time
+
+        Returns 1 if successful, zero otherwise.
+
+        :rtype: `int`
         """
-        self.sendcmd("test")
+        response = self.query("test")
+        return check_cmd(response)
