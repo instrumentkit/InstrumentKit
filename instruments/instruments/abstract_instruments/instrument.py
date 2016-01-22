@@ -27,7 +27,6 @@
 
 import socket
 import urlparse
-from contextlib import contextmanager
 
 from instruments.abstract_instruments.comm import (
     SocketCommunicator,
@@ -86,7 +85,7 @@ class Instrument(object):
                             'object that is a subclass of '
                             'AbstractCommunicator.')
         self._prompt = None
-        self.terminator = "\n"
+        self._terminator = "\n"
 
     # COMMAND-HANDLING METHODS #
 
@@ -156,6 +155,7 @@ class Instrument(object):
     def readline(self):
         """
         Read a full line
+
         :return: the read line
         :rtype: `str`
         """
@@ -439,10 +439,12 @@ class Instrument(object):
         .. seealso::
             `~serial.Serial` for description of `port`, baud rates and timeouts.
         """
-        ser = serial_manager.new_serial_connection(port,
-                                                   baud=baud,
-                                                   timeout=timeout,
-                                                   write_timeout=write_timeout)
+        ser = serial_manager.new_serial_connection(
+            port,
+            baud=baud,
+            timeout=timeout,
+            write_timeout=write_timeout
+        )
         return cls(ser)
 
     @classmethod
@@ -468,12 +470,14 @@ class Instrument(object):
         .. seealso::
             `~serial.Serial` for description of `port` and timeouts.
 
-        .. _Galvant Industries GPIB-USB adapter: http://galvant.ca/shop/gpibusb/
+        .. _Galvant Industries GPIB-USB adapter: galvant.ca/#!/store/gpibusb
         """
-        ser = serial_manager.newSerialConnection(port,
-                                                 baud=460800,
-                                                 timeout=timeout,
-                                                 write_timeout=write_timeout)
+        ser = serial_manager.new_serial_connection(
+            port,
+            baud=460800,
+            timeout=timeout,
+            write_timeout=write_timeout
+        )
         return cls(GPIBCommunicator(ser, gpib_address))
 
     @classmethod

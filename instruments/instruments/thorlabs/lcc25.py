@@ -99,7 +99,7 @@ class LCC25(Instrument):
 
         :rtype: `LCC25.Mode`
         """
-     )
+    )
 
     enable = bool_property(
         "enable",

@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # __init__.py: Tests for Thorlabs-brand instruments.
-##
+#
 # © 2014-2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
 
-## IMPORTS ####################################################################
+# IMPORTS ####################################################################
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
@@ -30,7 +30,7 @@ from nose.tools import raises
 from flufl.enum import IntEnum
 import quantities as pq
 
-## TESTS ######################################################################
+# TESTS ######################################################################
 
 
 def test_lcc25_name():
@@ -616,7 +616,7 @@ def test_sc10_mode_invalid2():
 
 def test_sc10_trigger():
     with expected_protocol(
-        ik.thorlabs.SC10, 
+        ik.thorlabs.SC10,
         [
             "trig?",
             "trig=1"
@@ -950,8 +950,8 @@ def test_tc200_temperature():
         ],
         sep="\r"
     ) as tc:
-        assert tc.temperature == 30.0*pq.degC
-        tc.temperature = 40*pq.degC
+        assert tc.temperature == 30.0 * pq.degC
+        tc.temperature = 40 * pq.degC
 
 
 @raises(ValueError)
@@ -968,7 +968,7 @@ def test_tc200_temperature_range():
         ],
         sep="\r"
     ) as tc:
-        tc.temperature = 50*pq.degC
+        tc.temperature = 50 * pq.degC
 
 
 def test_tc200_pid():
@@ -1283,8 +1283,8 @@ def test_tc200_max_power():
         ],
         sep="\r"
     ) as tc:
-        assert tc.max_power == 15.0*pq.W
-        tc.max_power = 12*pq.W
+        assert tc.max_power == 15.0 * pq.W
+        tc.max_power = 12 * pq.W
 
 
 @raises(ValueError)
@@ -1335,9 +1335,9 @@ def test_tc200_max_temperature():
         ],
         sep="\r"
     ) as tc:
-        assert tc.max_temperature == 200.0*pq.degC
+        assert tc.max_temperature == 200.0 * pq.degC
         print "second test"
-        tc.max_temperature = 180*pq.degC
+        tc.max_temperature = 180 * pq.degC
 
 
 @raises(ValueError)
