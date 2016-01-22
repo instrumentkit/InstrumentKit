@@ -254,9 +254,9 @@ def test_lcc25_voltage1():
 
 
 def test_check_cmd():
-    assert ik.thorlabs._utils.check_cmd("blo") == 1
-    assert ik.thorlabs._utils.check_cmd("CMD_NOT_DEFINED") == 0
-    assert ik.thorlabs._utils.check_cmd("CMD_ARG_INVALID") == 0
+    assert ik.thorlabs.thorlabs_utils.check_cmd("blo") == 1
+    assert ik.thorlabs.thorlabs_utils.check_cmd("CMD_NOT_DEFINED") == 0
+    assert ik.thorlabs.thorlabs_utils.check_cmd("CMD_ARG_INVALID") == 0
 
 
 def test_lcc25_voltage2():

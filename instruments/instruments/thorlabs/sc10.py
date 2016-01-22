@@ -32,7 +32,7 @@ from instruments.abstract_instruments import Instrument
 from instruments.util_fns import (
     bool_property, enum_property, int_property, unitful_property
 )
-from instruments.thorlabs._utils import check_cmd
+from instruments.thorlabs.thorlabs_utils import check_cmd
 
 # CLASSES #####################################################################
 

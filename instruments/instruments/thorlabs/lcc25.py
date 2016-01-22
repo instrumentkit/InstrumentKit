@@ -28,7 +28,7 @@
 import quantities as pq
 from flufl.enum import IntEnum
 
-from instruments.thorlabs._utils import check_cmd
+from instruments.thorlabs.thorlabs_utils import check_cmd
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import enum_property, bool_property, unitful_property
