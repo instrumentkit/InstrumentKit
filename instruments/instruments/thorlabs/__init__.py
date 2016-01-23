@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from instruments.thorlabs.thorlabsapt import (
     ThorLabsAPT, APTPiezoStage, APTStrainGaugeReader, APTMotorController
 )

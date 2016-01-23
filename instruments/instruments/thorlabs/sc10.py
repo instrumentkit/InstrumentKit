@@ -23,10 +23,15 @@
 #
 # SC10 Class contributed by Catherine Holloway
 #
+
 # IMPORTS #####################################################################
 
-import quantities as pq
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
+
 from flufl.enum import IntEnum
+import quantities as pq
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import (
@@ -91,7 +96,7 @@ class SC10(Instrument):
 
     repeat = int_property(
         "rep",
-        valid_set=xrange(1, 100),
+        valid_set=range(1, 100),
         set_fmt="{}={}",
         doc="""
         Gets/sets the repeat count for repeat mode. Valid range is [1,99]
@@ -115,7 +120,7 @@ class SC10(Instrument):
 
     trigger = int_property(
         "trig",
-        valid_set=xrange(0, 2),
+        valid_set=range(0, 2),
         set_fmt="{}={}",
         doc="""
         Gets/sets the trigger source.
@@ -128,7 +133,7 @@ class SC10(Instrument):
 
     out_trigger = int_property(
         "xto",
-        valid_set=xrange(0, 2),
+        valid_set=range(0, 2),
         set_fmt="{}={}",
         doc="""
         Gets/sets the out trigger source.

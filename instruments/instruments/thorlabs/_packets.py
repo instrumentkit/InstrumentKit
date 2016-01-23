@@ -3,7 +3,7 @@
 ##
 # _packets.py: Module for working with ThorLabs packets.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -22,16 +22,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
 
 import struct
 
-## STRUCTS #####################################################################
+# STRUCTS #####################################################################
 
 message_header_nopacket = struct.Struct('<HBBBB')
 message_header_wpacket  = struct.Struct('<HHBB')
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
 
 class ThorLabsPacket(object):
     def __init__(self,

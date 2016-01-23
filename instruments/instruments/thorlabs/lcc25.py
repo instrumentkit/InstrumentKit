@@ -23,7 +23,12 @@
 #
 # LCC25 Class contributed by Catherine Holloway
 #
+
 # IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
 
 import quantities as pq
 from flufl.enum import IntEnum
@@ -270,7 +275,7 @@ class LCC25(Instrument):
         :type slot: `int`
         :rtype: `int`
         """
-        if slot not in xrange(1, 5):
+        if slot not in range(1, 5):
             raise ValueError("Cannot set memory out of `[1,4]` range")
         response = self.query("set={}".format(slot))
         return check_cmd(response)
@@ -285,7 +290,7 @@ class LCC25(Instrument):
         :type slot: `int`
         :rtype: `int`
         """
-        if slot not in xrange(1, 5):
+        if slot not in range(1, 5):
             raise ValueError("Cannot set memory out of `[1,4]` range")
         response = self.query("get={}".format(slot))
         return check_cmd(response)

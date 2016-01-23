@@ -23,7 +23,11 @@
 #
 # TC200 Class contributed by Catherine Holloway
 #
+
 # IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
 
 import quantities as pq
 from flufl.enum import IntEnum

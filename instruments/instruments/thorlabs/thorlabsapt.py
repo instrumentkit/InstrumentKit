@@ -3,7 +3,7 @@
 ##
 # thorlabsapt.py: Driver for the Thorlabs APT Controller.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -22,24 +22,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
+# IMPORTS #####################################################################
 
+from __future__ import absolute_import
 from __future__ import division
-
-## IMPORTS #####################################################################
-
-from instruments.thorlabs import _abstract
-from instruments.thorlabs import _packets
-from instruments.thorlabs import _cmds
-
-from flufl.enum import IntEnum
-
-import quantities as pq
+from builtins import range
 
 import re
 import struct
 
-## LOGGING #####################################################################
+import quantities as pq
+
+from instruments.thorlabs import _abstract, _packets, _cmds
+
+# LOGGING #####################################################################
 
 import logging
 from instruments.util_fns import NullHandler
@@ -47,7 +43,8 @@ from instruments.util_fns import NullHandler
 logger = logging.getLogger(__name__)
 logger.addHandler(NullHandler())
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class ThorLabsAPT(_abstract.ThorLabsInstrument):
     '''
@@ -143,7 +140,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
 
         # Create a tuple of channels of length _n_channel_type
         if self._n_channels > 0:
-            self._channel = list(self._channel_type(self, chan_idx) for chan_idx in xrange(self._n_channels) )
+            self._channel = list(self._channel_type(self, chan_idx) for chan_idx in range(self._n_channels) )
     
     @property
     def serial_number(self):
@@ -175,7 +172,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
         # If we remove channels, remove them from the end of the list.
         if nch > self._n_channels:
             self._channel = self._channel + \
-                list( self._channel_type(self, chan_idx) for chan_idx in xrange(self._n_channels, nch) )
+                list( self._channel_type(self, chan_idx) for chan_idx in range(self._n_channels, nch) )
         elif nch < self._n_channels:
             self._channel = self._channel[:nch]
         self._n_channels = nch
@@ -248,7 +245,7 @@ class APTPiezoDevice(ThorLabsAPT):
                                       param2=None,
                                       dest=self._dest,
                                       source=0x01,
-                                      data=struct.pack('<H', int(round(255*intensity))))
+                                      data=struct.pack('<H', int(round(255*intensity))))  # pylint: disable=round-builtin
         self.sendpacket(pkt)
     
     _channel_type = PiezoDeviceChannel
@@ -380,7 +377,7 @@ class APTMotorController(ThorLabsAPT):
             :param str motor_model: Name of the model of the attached motor,
                 as indicated in the APT protocol documentation (page 14, v9).
             """
-            for driver_re, motor_dict in self.__SCALE_FACTORS_BY_MODEL.iteritems():
+            for driver_re, motor_dict in self.__SCALE_FACTORS_BY_MODEL.items():
                 if driver_re.match(self._apt.model_number) is not None:
                     if motor_model in motor_dict:
                         self.scale_factors = motor_dict[motor_model]
@@ -413,7 +410,7 @@ class APTMotorController(ThorLabsAPT):
             
             status_dict = dict(
                 (key, (status_bits & bit_mask > 0))
-                for key, bit_mask in self.__STATUS_BIT_MASK.iteritems()
+                for key, bit_mask in self.__STATUS_BIT_MASK.items()
             )
             
             return status_dict

@@ -3,7 +3,7 @@
 ##
 # pm100usb.py: Driver class for the PM100USB power meter.
 ##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
+# © 2013-2016 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
@@ -22,11 +22,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
+# IMPORTS #####################################################################
 
+from __future__ import absolute_import
 from __future__ import division
-
-## IMPORTS #####################################################################
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import enum_property
@@ -37,13 +36,14 @@ from collections import defaultdict
 import quantities as pq
 from collections import namedtuple
 
-## LOGGING #####################################################################
+# LOGGING #####################################################################
 
 import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class PM100USB(SCPIInstrument):
     """
