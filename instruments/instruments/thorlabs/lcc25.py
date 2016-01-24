@@ -23,6 +23,11 @@
 #
 # LCC25 Class contributed by Catherine Holloway
 #
+"""
+Provides the support for the Thorlabs LCC25 liquid crystal controller.
+
+Class originally contributed by Catherine Holloway.
+"""
 
 # IMPORTS #####################################################################
 
@@ -63,6 +68,10 @@ class LCC25(Instrument):
     # ENUMS #
 
     class Mode(IntEnum):
+
+        """
+        Enum containing valid output modes of the LCC25
+        """
         normal = 0
         voltage1 = 1
         voltage2 = 2

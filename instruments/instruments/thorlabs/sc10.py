@@ -23,6 +23,11 @@
 #
 # SC10 Class contributed by Catherine Holloway
 #
+"""
+Provides the support for the Thorlabs SC10 optical beam shutter controller.
+
+Class originally contributed by Catherine Holloway.
+"""
 
 # IMPORTS #####################################################################
 
@@ -61,6 +66,10 @@ class SC10(Instrument):
     # ENUMS #
 
     class Mode(IntEnum):
+
+        """
+        Enum containing valid output modes of the SC10
+        """
         manual = 1
         auto = 2
         single = 3
@@ -112,9 +121,9 @@ class SC10(Instrument):
         input_decoration=int,
         set_fmt="{}={}",
         doc="""
-        Gets/sets the output mode of the LCC25
+        Gets/sets the output mode of the SC10
 
-        :rtype: `LCC25.Mode`
+        :rtype: `SC10.Mode`
         """
     )
 
