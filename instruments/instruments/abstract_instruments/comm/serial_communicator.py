@@ -104,10 +104,10 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
             self._conn.close()
         
     def read(self, size):
-        if (size >= 0):
+        if size >= 0:
             resp = self._conn.read(size)
             return resp
-        elif (size == -1):
+        elif size == -1:
             result = bytearray()
             c = 0
             while c != self._terminator:

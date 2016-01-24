@@ -54,6 +54,41 @@ def assume_units(value, units):
         value = pq.Quantity(value, units)
     return value
 
+
+def convert_temperature(temperature, base):
+    """
+    convert the temperature to the specified base
+    :param temperature: a quantity with units of Kelvin, Celsius, or Fahrenheit
+    :type temperature: `quantities.Quantity`
+    :param base: a temperature unit to convert to
+    :type base: `unitquantity.UnitTemperature`
+    :return: the converted temperature
+    :rtype: `quantities.Quantity`
+    """
+    # quantities reports equivalence between degC and degK, so a string comparison is needed
+    newval = assume_units(temperature, pq.degC)
+    if newval.units == pq.degF and str(base).split(" ")[1] == 'degC':
+        return ((newval.magnitude-32.0)*5.0/9.0)*base
+    elif str(newval.units).split(" ")[1] == 'K' and str(base).split(" ")[1] == 'degC':
+        return (newval.magnitude-273.15)*base
+    elif str(newval.units).split(" ")[1] == 'K' and base == pq.degF:
+        return (newval.magnitude/1.8-459/57)*base
+    elif str(newval.units).split(" ")[1] == 'degC' and base == pq.degF:
+        return (newval.magnitude*9.0/5.0+32.0)*base
+    elif newval.units == pq.degF and str(base).split(" ")[1] == 'K':
+        return ((newval.magnitude+459.57)*5.0/9.0)*base
+    elif str(newval.units).split(" ")[1] == 'degC' and str(base).split(" ")[1] == 'K':
+        return (newval.magnitude+273.15)*base
+    elif str(newval.units).split(" ")[1] == 'degC' and str(base).split(" ")[1] == 'degC':
+        return newval
+    elif newval.units == pq.degF and base == pq.degF:
+        return newval
+    elif str(newval.units).split(" ")[1] == 'K' and str(base).split(" ")[1] == 'K':
+        return newval
+    else:
+        raise ValueError("Unable to convert "+str(newval.units)+" to "+str(base))
+
+
 def split_unit_str(s, default_units=pq.dimensionless, lookup=None):
     """
     Given a string of the form "12 C" or "14.7 GHz", returns a tuple of the
@@ -140,6 +175,9 @@ def bool_property(name, inst_true, inst_false, doc=None, readonly=False, writeon
     def getter(self):
         return self.query(name + "?").strip() == inst_true
     def setter(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError("Bool properties must be specified with a "
+                            "boolean value")
         self.sendcmd(set_fmt.format(name, inst_true if newval else inst_false))
         
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
@@ -177,6 +215,10 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     def getter(self):
         return enum[in_decor_fcn(self.query("{}?".format(name)).strip())]
     def setter(self, newval):
+        try:
+            enum[newval]
+        except ValueError:
+            raise ValueError("Enum property new value not in enum.")
         self.sendcmd(set_fmt.format(name, out_decor_fcn(enum[newval].value)))
     
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
@@ -247,7 +289,7 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False, writeonly=F
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
 
-def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, writeonly=False, set_fmt="{} {}"):
+def unitful_property(name, units, format_code='{:e}', doc=None, input_decoration=None, output_decoration=None, readonly=False, writeonly=False, set_fmt="{} {}", valid_range=(None,None)):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
     values. This function assumes that the instrument only accepts
@@ -262,6 +304,10 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, 
     :param str format_code: Argument to `str.format` used in sending the
         magnitude of values to the instrument.
     :param str doc: Docstring to be associated with the new property.
+    :param callable input_decoration: Function called on responses from
+        the instrument before passing to user code.
+    :param callable output_decoration: Function called on commands to the
+        instrument.
     :param bool readonly: If `True`, the returned property does not have a
         setter.
     :param bool writeonly: If `True`, the returned property does not have a
@@ -270,14 +316,30 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, 
         non-query to the instrument. The default is "{} {}" which places a
         space between the SCPI command the associated parameter. By switching
         to "{}={}" an equals sign would instead be used as the separator.
+    :param valid_range: Tuple containing min & max values when setting
+        the property. Index 0 is minimum value, index 1 is maximum value.
+        Setting `None` in either disables bounds checking for that end of the
+        range. The default of `(None, None)` has no min or max constraints.
+        The valid set is inclusive of the values provided.
+    :type valid_range: `tuple` or `list` of `int` or `float`
     """
+    def in_decor_fcn(val):
+        return val if input_decoration is None else input_decoration(val)
+    def out_decor_fcn(val):
+        return val if output_decoration is None else output_decoration(val)
     def getter(self):
-        raw = self.query("{}?".format(name))
+        raw = in_decor_fcn(self.query("{}?".format(name)))
         return float(raw) * units
     def setter(self, newval):
+        if valid_range[0] is not None and newval < valid_range[0]:
+            raise ValueError("Unitful quantity is too low. Got {}, minimum "
+                             "value is {}".format(newval, valid_range[0]))
+        if valid_range[1] is not None and newval > valid_range[1]:
+            raise ValueError("Unitful quantity  is too high. Got {}, maximum "
+                             "value is {}".format(newval, valid_range[1]))
         # Rescale to the correct unit before printing. This will also catch bad units.
         strval = format_code.format(assume_units(newval, units).rescale(units).item())
-        self.sendcmd(set_fmt.format(name, strval))
+        self.sendcmd(set_fmt.format(name, out_decor_fcn(strval)))
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
 
