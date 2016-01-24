@@ -14,8 +14,8 @@ ThorLabs
     :members:
     :undoc-members:
 
-:class:`ThorLabsAPT`
-====================
+:class:`ThorLabsAPT` - ThorLabs APT Controller
+==============================================
 
 .. autoclass:: ThorLabsAPT
     :members:
@@ -33,17 +33,23 @@ ThorLabs
     :members:
     :undoc-members:
 
-:class:`SC10`
-=============
+:class:`SC10` - Optical Beam Shutter Controller
+===============================================
 
 .. autoclass:: SC10
     :members:
     :undoc-members:
 
-:class:`LCC25`
-==============
+:class:`LCC25` - Liquid Crystal Controller
+==========================================
 
 .. autoclass:: LCC25
     :members:
     :undoc-members:
 
+:class:`TC200` - Temperature Controller
+=======================================
+
+.. autoclass:: TC200
+    :members:
+    :undoc-members:

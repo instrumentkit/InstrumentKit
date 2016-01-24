@@ -2,3 +2,4 @@ numpy
 pyserial
 quantities
 flufl.enum
+future
