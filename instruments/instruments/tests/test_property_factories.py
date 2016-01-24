@@ -567,6 +567,28 @@ def test_unitful_property_maximum_value():
 
     mock_inst.unitful_property = 11
 
+def test_unitful_property_input_decoration():
+    class UnitfulMock(MockInstrument):
+        def input_decorator(input):
+            return '1'
+        a = unitful_property('MOCK:A', pq.hertz, input_decoration=input_decorator)
+
+    mock_instrument = UnitfulMock({'MOCK:A?': 'garbage'})
+
+    eq_(mock_instrument.a, 1 * pq.Hz)
+
+def test_unitful_property_output_decoration():
+    class UnitfulMock(MockInstrument):
+        def output_decorator(input):
+            return '1'
+        a = unitful_property('MOCK:A', pq.hertz, output_decoration=output_decorator)
+
+    mock_instrument = UnitfulMock()
+
+    mock_instrument.a = 345 * pq.hertz
+
+    eq_(mock_instrument.value, 'MOCK:A 1\n')
+
 ## String Property ##
 
 def test_string_property_basics():

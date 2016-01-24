@@ -935,11 +935,27 @@ def test_tc200_temperature():
         ik.thorlabs.TC200,
         [
             "tact?",
+        ],
+        [
+            "tact?",
+            "30 C",
+            ">",
+        ],
+        sep="\r"
+    ) as tc:
+        assert tc.temperature == 30.0 * pq.degC
+
+
+def test_tc200_temperature_set():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        [
+            "tset?",
             "tmax?",
             "tset=40.0"
         ],
         [
-            "tact?",
+            "tset?",
             "30 C",
             ">",
             "tmax?",
@@ -950,8 +966,8 @@ def test_tc200_temperature():
         ],
         sep="\r"
     ) as tc:
-        assert tc.temperature == 30.0 * pq.degC
-        tc.temperature = 40 * pq.degC
+        assert tc.temperature_set == 30.0 * pq.degC
+        tc.temperature_set = 40 * pq.degC
 
 
 @raises(ValueError)
@@ -968,7 +984,7 @@ def test_tc200_temperature_range():
         ],
         sep="\r"
     ) as tc:
-        tc.temperature = 50 * pq.degC
+        tc.temperature_set = 50 * pq.degC
 
 
 def test_tc200_pid():
@@ -1025,6 +1041,30 @@ def test_tc200_pid():
     ) as tc:
         assert tc.d == 220
         tc.d = 220
+
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        [
+            "pid?",
+            "pgain=2",
+            "igain=0",
+            "dgain=220"
+        ],
+        [
+            "pid?",
+            "2 0 220",
+            ">",
+            "pgain=2",
+            ">",
+            "igain=0",
+            ">",
+            "dgain=220",
+            ">"
+        ],
+        sep="\r"
+    ) as tc:
+        assert tc.pid == [2, 0, 220]
+        tc.pid = (2, 0, 220)
 
 
 @raises(ValueError)
@@ -1194,7 +1234,7 @@ def test_tc200_sensor():
         tc.sensor = tc.Sensor.ptc100
 
 
-@raises(TypeError)
+@raises(ValueError)
 def test_tc200_sensor_error():
     with expected_protocol(
         ik.thorlabs.TC200,
@@ -1204,7 +1244,7 @@ def test_tc200_sensor_error():
         tc.sensor = "blo"
 
 
-@raises(TypeError)
+@raises(ValueError)
 def test_tc200_sensor_error2():
     with expected_protocol(
         ik.thorlabs.TC200,
@@ -1272,13 +1312,13 @@ def test_tc200_max_power():
         ik.thorlabs.TC200,
         [
             "pmax?",
-            "PMAX=12.0"
+            "pmax=12.0"
         ],
         [
             "pmax?",
             "15.0",
             ">",
-            "PMAX=12.0",
+            "pmax=12.0",
             ">"
         ],
         sep="\r"
@@ -1324,19 +1364,18 @@ def test_tc200_max_temperature():
         ik.thorlabs.TC200,
         [
             "tmax?",
-            "TMAX=180.0"
+            "tmax=180.0"
         ],
         [
             "tmax?",
             "200.0",
             ">",
-            "TMAX=180.0",
+            "tmax=180.0",
             ">"
         ],
         sep="\r"
     ) as tc:
         assert tc.max_temperature == 200.0 * pq.degC
-        print "second test"
         tc.max_temperature = 180 * pq.degC
 
 

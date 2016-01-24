@@ -289,7 +289,7 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False, writeonly=F
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
 
-def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, writeonly=False, set_fmt="{} {}", valid_range=(None,None)):
+def unitful_property(name, units, format_code='{:e}', doc=None, input_decoration=None, output_decoration=None, readonly=False, writeonly=False, set_fmt="{} {}", valid_range=(None,None)):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
     values. This function assumes that the instrument only accepts
@@ -304,6 +304,10 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, 
     :param str format_code: Argument to `str.format` used in sending the
         magnitude of values to the instrument.
     :param str doc: Docstring to be associated with the new property.
+    :param callable input_decoration: Function called on responses from
+        the instrument before passing to user code.
+    :param callable output_decoration: Function called on commands to the
+        instrument.
     :param bool readonly: If `True`, the returned property does not have a
         setter.
     :param bool writeonly: If `True`, the returned property does not have a
@@ -319,8 +323,12 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, 
         The valid set is inclusive of the values provided.
     :type valid_range: `tuple` or `list` of `int` or `float`
     """
+    def in_decor_fcn(val):
+        return val if input_decoration is None else input_decoration(val)
+    def out_decor_fcn(val):
+        return val if output_decoration is None else output_decoration(val)
     def getter(self):
-        raw = self.query("{}?".format(name))
+        raw = in_decor_fcn(self.query("{}?".format(name)))
         return float(raw) * units
     def setter(self, newval):
         if valid_range[0] is not None and newval < valid_range[0]:
@@ -331,7 +339,7 @@ def unitful_property(name, units, format_code='{:e}', doc=None, readonly=False, 
                              "value is {}".format(newval, valid_range[1]))
         # Rescale to the correct unit before printing. This will also catch bad units.
         strval = format_code.format(assume_units(newval, units).rescale(units).item())
-        self.sendcmd(set_fmt.format(name, strval))
+        self.sendcmd(set_fmt.format(name, out_decor_fcn(strval)))
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
 
