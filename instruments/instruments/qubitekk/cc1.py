@@ -24,15 +24,15 @@
 # CC1 Class contributed by Catherine Holloway.
 ##
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 import quantities as pq
 
-from instruments.abstract_instruments import Instrument
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.util_fns import ProxyList, assume_units, split_unit_str
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class CC1(SCPIInstrument):
     """
@@ -74,7 +74,7 @@ class CC1(SCPIInstrument):
             self._chan = self.__CHANNEL_NAMES[self._idx]
             self._count = 0
             
-        ## PROPERTIES ##
+        # PROPERTIES ##
         
         @property
         def count(self):
@@ -87,10 +87,10 @@ class CC1(SCPIInstrument):
             # FIXME: Does this property actually work? The try block seems wrong.
             try:
                 count = int(count)
-                self.count = count
+                self._count = count
                 return self.count
             except ValueError:
-                self.count = self.count
+                self._count = self.count
 
     # METHOD OVERRIDES ##
     def sendcmd(self, cmd):
@@ -123,9 +123,7 @@ class CC1(SCPIInstrument):
         # we should return what we believe to be a successful response.
         return resp
             
-
-    # PROPERTIES ##
-
+    # PROPERTIES #
     @property
     def window(self):
         """
@@ -138,13 +136,13 @@ class CC1(SCPIInstrument):
         return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
 
     @window.setter
-    def window(self, newval):
-        newval_mag = assume_units(newval,pq.ns).rescale(pq.ns).magnitude
-        if newval_mag < 0:
+    def window(self, new_val):
+        new_val_mag = assume_units(new_val, pq.ns).rescale(pq.ns).magnitude
+        if new_val_mag < 0:
             raise ValueError("Window is too small.")
-        if newval_mag >7:
+        if new_val_mag > 7:
             raise ValueError("Window is too big")
-        self.sendcmd(":WIND {}".format(newval_mag))
+        self.sendcmd(":WIND {}".format(new_val_mag))
     
     @property
     def dwell_time(self):
@@ -159,11 +157,11 @@ class CC1(SCPIInstrument):
         return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
 
     @dwell_time.setter
-    def dwell_time(self, newval):
-        newval_mag = assume_units(newval,pq.s).rescale(pq.s).magnitude
-        if newval_mag < 0:
+    def dwell_time(self, new_val):
+        new_val_mag = assume_units(new_val, pq.s).rescale(pq.s).magnitude
+        if new_val_mag < 0:
             raise ValueError("Dwell time cannot be negative.")
-        self.sendcmd(":DWEL {}".format(newval_mag))
+        self.sendcmd(":DWEL {}".format(new_val_mag))
             
     @property
     def gate_enable(self):
@@ -181,15 +179,15 @@ class CC1(SCPIInstrument):
         return True if response is 1 else False
 
     @gate_enable.setter
-    def gate_enable(self, newval):
-        if isinstance(newval, int):
-            if newval != 0 and newval != 1:
+    def gate_enable(self, new_val):
+        if isinstance(new_val, int):
+            if new_val != 0 and new_val != 1:
                 raise ValueError("Not a valid gate_enable mode.")
-            newval = bool(newval)
-        elif not isinstance(newval, bool):
+            new_val = bool(new_val)
+        elif not isinstance(new_val, bool):
             raise TypeError("CC1 gate_enable must be specified as a boolean.")
         
-        if newval is False:
+        if new_val is False:
             self.sendcmd(":GATE:OFF")
         else:
             self.sendcmd(":GATE:ON")
@@ -207,23 +205,24 @@ class CC1(SCPIInstrument):
         response = self.query("COUN?")
         response = int(response)
         return True if response is 1 else False
+
     @count_enable.setter
-    def count_enable(self, newval):
-        if isinstance(newval, int):
-            if newval != 0 and newval != 1:
+    def count_enable(self, new_val):
+        if isinstance(new_val, int):
+            if new_val != 0 and new_val != 1:
                 raise ValueError("Not a valid count_enable mode.")
-            newval = bool(newval)
-        elif not isinstance(newval, bool):
+            new_val = bool(new_val)
+        elif not isinstance(new_val, bool):
             raise TypeError("CC1 count_enable must be specified as a boolean.")
         
-        if newval is False:
+        if new_val is False:
             self.sendcmd(":COUN:OFF")
         else:
             self.sendcmd(":COUN:ON")
     
     @property
     def channel(self):
-        '''
+        """
         Gets a specific channel object. The desired channel is specified like 
         one would access a list.
         
@@ -234,14 +233,13 @@ class CC1(SCPIInstrument):
         
         :rtype: `CC1.Channel`
         
-        '''
+        """
         return ProxyList(self, CC1.Channel, xrange(self.channel_count))
     
-    ## METHODS ##
+    # METHODS ##
     
     def clear_counts(self):
         """
         Clears the current total counts on the counters.
         """
         self.sendcmd("CLEA")
-
