@@ -41,8 +41,8 @@ def test_serial_number():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.serial_number == "bloop1"
-        assert tm.laser2.serial_number == "bloop2"
+        assert tm.laser[0].serial_number == "bloop1"
+        assert tm.laser[1].serial_number == "bloop2"
 
 
 def test_model():
@@ -62,8 +62,8 @@ def test_model():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.model == "bloop1"
-        assert tm.laser2.model == "bloop2"
+        assert tm.laser[0].model == "bloop1"
+        assert tm.laser[1].model == "bloop2"
 
 
 def test_wavelength():
@@ -83,8 +83,8 @@ def test_wavelength():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.wavelength == 640*pq.nm
-        assert tm.laser2.wavelength == 405.3*pq.nm
+        assert tm.laser[0].wavelength == 640*pq.nm
+        assert tm.laser[1].wavelength == 405.3*pq.nm
 
 
 def test_laser_enable():
@@ -103,8 +103,8 @@ def test_laser_enable():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.enable is False
-        tm.laser1.enable = True
+        assert tm.laser[0].enable is False
+        tm.laser[0].enable = True
 
 
 @raises(TypeError)
@@ -120,7 +120,7 @@ def test_laser_enable_error():
         ],
         sep="\n"
     ) as tm:
-        tm.laser1.enable = 'True'
+        tm.laser[0].enable = 'True'
 
 
 def test_laser_tec_status():
@@ -136,7 +136,7 @@ def test_laser_tec_status():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.tec_status is False
+        assert tm.laser[0].tec_status is False
 
 
 def test_laser_intensity():
@@ -152,7 +152,7 @@ def test_laser_intensity():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.intensity == 0.666
+        assert tm.laser[0].intensity == 0.666
 
 
 def test_laser_mode_hop():
@@ -168,7 +168,7 @@ def test_laser_mode_hop():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.mode_hop is False
+        assert tm.laser[0].mode_hop is False
 
 
 def test_laser_lock_start():
@@ -184,7 +184,7 @@ def test_laser_lock_start():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.lock_start is None
+        assert tm.laser[0].lock_start is None
 
 
 def test_laser_first_mode_hop_time():
@@ -200,7 +200,7 @@ def test_laser_first_mode_hop_time():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.first_mode_hop_time is None
+        assert tm.laser[0].first_mode_hop_time is None
 
 
 def test_laser_latest_mode_hop_time():
@@ -216,7 +216,7 @@ def test_laser_latest_mode_hop_time():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.latest_mode_hop_time is None
+        assert tm.laser[0].latest_mode_hop_time is None
 
 
 def test_laser_correction_status():
@@ -232,7 +232,7 @@ def test_laser_correction_status():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.correction_status == ik.toptica.TopMode.CharmStatus.un_initialized
+        assert tm.laser[0].correction_status == ik.toptica.TopMode.CharmStatus.un_initialized
 
 
 def test_laser_correction():
@@ -258,8 +258,8 @@ def test_laser_correction():
         ],
         sep="\n"
     ) as tm:
-        tm.laser1.correction()
-        tm.laser1.correction()
+        tm.laser[0].correction()
+        tm.laser[0].correction()
 
 
 def test_reboot_system():
@@ -290,7 +290,7 @@ def test_laser_ontime():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.on_time == 10000*pq.s
+        assert tm.laser[0].on_time == 10000*pq.s
 
 
 def test_laser_charm_status():
@@ -306,7 +306,7 @@ def test_laser_charm_status():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.charm_status == 1
+        assert tm.laser[0].charm_status == 1
 
 
 def test_laser_temperature_control_status():
@@ -322,7 +322,7 @@ def test_laser_temperature_control_status():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.temperature_control_status == 1
+        assert tm.laser[0].temperature_control_status == 1
 
 
 def test_laser_current_control_status():
@@ -338,7 +338,7 @@ def test_laser_current_control_status():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.current_control_status == 1
+        assert tm.laser[0].current_control_status == 1
 
 
 def test_laser_production_date():
@@ -354,7 +354,7 @@ def test_laser_production_date():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser1.production_date == "2016-01-16"
+        assert tm.laser[0].production_date == "2016-01-16"
 
 
 def test_set_str():
