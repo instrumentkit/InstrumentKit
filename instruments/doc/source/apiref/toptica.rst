@@ -3,9 +3,9 @@
     
 .. currentmodule:: instruments.toptica
     
-========
-ThorLabs
-========
+=======
+Toptica
+=======
 
 :class:`TopMode` - Diode Laser
 ==============================
