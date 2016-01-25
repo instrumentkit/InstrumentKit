@@ -28,5 +28,6 @@ Contents:
     srs
     tektronix  
     thorlabs
-    yokogawa 
+    toptica
+    yokogawa
     config
