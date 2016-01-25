@@ -1,25 +1,36 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# IMPORTS #####################################################################
+
+from __future__ import absolute_import
+import datetime
+
+from nose.tools import raises
+import quantities as pq
+
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
-from nose.tools import raises
-from flufl.enum import IntEnum
-import quantities as pq
-import datetime
+
+# TESTS #######################################################################
 
 
 def test_convert_boolean():
-    assert ik.toptica.convert_toptica_boolean("bloof") == False
-    assert ik.toptica.convert_toptica_boolean("boot") == True
-    assert ik.toptica.convert_toptica_boolean("Error: -3") == None
+    assert ik.toptica.toptica_utils.convert_toptica_boolean("bloof") == False
+    assert ik.toptica.toptica_utils.convert_toptica_boolean("boot") == True
+    assert ik.toptica.toptica_utils.convert_toptica_boolean("Error: -3") is None
+
 
 @raises(ValueError)
 def test_convert_boolean_value():
-    ik.toptica.convert_toptica_boolean("blo")
+    ik.toptica.toptica_utils.convert_toptica_boolean("blo")
+
 
 def test_convert_toptica_datetime():
     blo = datetime.datetime.now()
     blo_str = datetime.datetime.now().strftime("%b %d %Y %I:%M%p")
-    assert ik.toptica.convert_toptica_datetime('""\r') == None
-    blo2 = ik.toptica.convert_toptica_datetime(blo_str)
+    assert ik.toptica.toptica_utils.convert_toptica_datetime('""\r') is None
+    blo2 = ik.toptica.toptica_utils.convert_toptica_datetime(blo_str)
     diff = blo - blo2
     assert diff.seconds < 60
 

@@ -1,1 +1,6 @@
-from instruments.toptica.topmode import TopMode, convert_toptica_boolean, convert_toptica_datetime
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
+from instruments.toptica.topmode import TopMode

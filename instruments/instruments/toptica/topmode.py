@@ -10,45 +10,14 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import range
 
-from datetime import datetime
-
 import quantities as pq
 from flufl.enum import IntEnum
 
+from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
+from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
+
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import ProxyList
-
-
-def convert_toptica_boolean(response):
-    """
-    Converts the toptica boolean expression to a boolean
-    :param response: response string
-    :type response: str
-    :return: the converted boolean
-    :rtype: bool
-    """
-    if response.find('Error: -3') > -1:
-        return None
-    elif response.find('f') > -1:
-        return False
-    elif response.find('t') > -1:
-        return True
-    else:
-        raise ValueError("cannot convert: " + str(response) + " to boolean")
-
-
-def convert_toptica_datetime(response):
-    """
-    Converts the toptical date format to a python time date
-    :param response: the string from the topmode
-    :type response: str
-    :return: the converted date
-    :rtype: 'datetime.datetime'
-    """
-    if response == '""\r':
-        return None
-    else:
-        return datetime.strptime(response, '%b %d %Y %I:%M%p')
 
 # CLASSES #####################################################################
 
@@ -98,7 +67,7 @@ class TopMode(Instrument):
 
         @property
         def enable(self):
-            return convert_toptica_boolean(self.parent.reference(self.name + ":emission"))
+            return ctbool(self.parent.reference(self.name + ":emission"))
 
         @enable.setter
         def enable(self, newval):
@@ -128,7 +97,7 @@ class TopMode(Instrument):
 
         @property
         def tec_status(self):
-            return convert_toptica_boolean(self.parent.reference(self.name + ":tec:ready"))
+            return ctbool(self.parent.reference(self.name + ":tec:ready"))
 
         @property
         def intensity(self):
@@ -142,28 +111,28 @@ class TopMode(Instrument):
             """
             Checks whether the laser has mode-hopped
             """
-            return convert_toptica_boolean(self.parent.reference(self.name + ":charm:reg:mh-occured"))
+            return ctbool(self.parent.reference(self.name + ":charm:reg:mh-occured"))
 
         @property
         def lock_start(self):
             """
             Returns the date and time of the start of mode-locking
             """
-            return convert_toptica_datetime(self.parent.reference(self.name + ":charm:reg:started"))
+            return ctdate(self.parent.reference(self.name + ":charm:reg:started"))
 
         @property
         def first_mode_hop_time(self):
             """
             Returns the date and time of the first mode hop
             """
-            return convert_toptica_datetime(self.parent.reference(self.name + ":charm:reg:first-mh"))
+            return ctdate(self.parent.reference(self.name + ":charm:reg:first-mh"))
 
         @property
         def latest_mode_hop_time(self):
             """
             Returns the date and time of the latest mode hop
             """
-            return convert_toptica_datetime(self.parent.reference(self.name + ":charm:reg:latest-mh"))
+            return ctdate(self.parent.reference(self.name + ":charm:reg:latest-mh"))
 
         @property
         def correction_status(self):
@@ -220,7 +189,7 @@ class TopMode(Instrument):
         is the laser lasing?
         :return:
         """
-        return convert_toptica_boolean(self.reference("emission"))
+        return ctbool(self.reference("emission"))
 
     @enable.setter
     def enable(self, newval):
@@ -235,7 +204,7 @@ class TopMode(Instrument):
         Is the key switch unlocked?
         :return:
         """
-        return convert_toptica_boolean(self.reference("front-key-locked"))
+        return ctbool(self.reference("front-key-locked"))
 
     @property
     def interlock(self):
@@ -243,7 +212,7 @@ class TopMode(Instrument):
         Is the interlock switch open?
         :return:
         """
-        return convert_toptica_boolean(self.reference("interlock-open"))
+        return ctbool(self.reference("interlock-open"))
 
     @property
     def fpga_status(self):
