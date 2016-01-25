@@ -155,18 +155,19 @@ class TopMode(Instrument):
             else:
                 self.parent.execute(self.name+":charm:start-correction")
 
-
     def __init__(self, filelike):
         super(TopMode, self).__init__(filelike)
         self.prompt = ">"
         self.terminator = "\n"
-        self.echo = True
         self.laser1 = TopMode.Laser(1, self)
         self.laser2 = TopMode.Laser(2, self)
 
+    def _ack_expected(self, msg=""):
+        return msg
+
     # The TopMode has its own control language, here we define each command individually:
     def execute(self, command):
-        self.query("(exec '"+command+")")
+        self.sendcmd("(exec '"+command+")")
 
     def set(self, param, value):
         if type(value) is str:
