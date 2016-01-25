@@ -53,7 +53,7 @@ class CC1(SCPIInstrument):
         self.end_terminator = "\n"
         self.channel_count = 3
 
-    ## INNER CLASSES ##
+    # INNER CLASSES ##
 
     class Channel(object):
         """
@@ -92,8 +92,7 @@ class CC1(SCPIInstrument):
             except ValueError:
                 self.count = self.count
 
-    ## METHOD OVERRIDES ##
-
+    # METHOD OVERRIDES ##
     def sendcmd(self, cmd):
         # We override sendcmd here to check for the response
         # "Unknown command", so that property factories not aware
@@ -108,7 +107,6 @@ class CC1(SCPIInstrument):
             raise IOError("CC1 reported that command {0} is unknown: {1}".format(
                 cmd, resp
             ))
-
 
     def query(self, cmd):
         # We override query for the same reason as
@@ -126,7 +124,7 @@ class CC1(SCPIInstrument):
         return resp
             
 
-    ## PROPERTIES ##
+    # PROPERTIES ##
 
     @property
     def window(self):
@@ -181,6 +179,7 @@ class CC1(SCPIInstrument):
         response = self.query("GATE?")
         response = int(response)
         return True if response is 1 else False
+
     @gate_enable.setter
     def gate_enable(self, newval):
         if isinstance(newval, int):
