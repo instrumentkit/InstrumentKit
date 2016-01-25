@@ -133,7 +133,7 @@ class TopMode(Instrument):
             if not isinstance(newval, bool):
                 raise TypeError(
                     "Laser emmission must be a boolean, got: {}".format(newval))
-            return self.parent.set(self.name + ":enable-emission", newval)
+            self.parent.set(self.name + ":enable-emission", newval)
 
         @property
         def on_time(self):
