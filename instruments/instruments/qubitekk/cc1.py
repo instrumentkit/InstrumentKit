@@ -27,6 +27,7 @@
 # IMPORTS #####################################################################
 
 import quantities as pq
+from flufl.enum import IntEnum
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.util_fns import ProxyList, assume_units, split_unit_str
@@ -52,6 +53,9 @@ class CC1(SCPIInstrument):
         self.terminator = "\n"
         self.end_terminator = "\n"
         self.channel_count = 3
+        self.channel1 = self.Channel(self, 1)
+        self.channel2 = self.Channel(self, 2)
+        self.channelc = self.Channel(self, 3)
 
     # INNER CLASSES ##
 
@@ -92,7 +96,11 @@ class CC1(SCPIInstrument):
             except ValueError:
                 self._count = self.count
 
-    # METHOD OVERRIDES ##
+    class TriggerMode(IntEnum):
+        continuous = 0
+        start_stop = 0
+
+    # METHOD OVERRIDES #
     def sendcmd(self, cmd):
         # We override sendcmd here to check for the response
         # "Unknown command", so that property factories not aware
@@ -143,6 +151,29 @@ class CC1(SCPIInstrument):
         if new_val_mag > 7:
             raise ValueError("Window is too big")
         self.sendcmd(":WIND {}".format(new_val_mag))
+
+    @property
+    def delay(self):
+        """
+        Get the delay value (in nanoseconds) on Channel 1. N may be 0, 2, 4, 6, 8, 10, 12, or 14ns.
+        :rtype: quantities.ns
+        :return: the delay value
+        """
+        response = self.query("DELA?")
+        return int(response)*pq.ns
+
+    @delay.setter
+    def delay(self, new_val):
+        """
+        Set the delay value (in nanoseconds) on Channel 1. N may be 0, 2, 4, 6, 8, 10, 12, or 14ns.
+        """
+        new_val = assume_units(new_val, pq.ns).rescale(pq.ns)
+        if new_val < 0*pq.ns or new_val > 14*pq.ns:
+            raise ValueError("New delay value is out of bounds.")
+        if new_val.magnitude % 2 != 0:
+            raise ValueError("New magnitude must be an even number")
+        self.sendcmd(":DELA "+str(int(new_val.magnitude)))
+
     
     @property
     def dwell_time(self):
@@ -235,8 +266,26 @@ class CC1(SCPIInstrument):
         
         """
         return ProxyList(self, CC1.Channel, xrange(self.channel_count))
+
+    @property
+    def trigger(self):
+        """
+        Gets the current trigger mode, meaning, whether the coincidence counter is tallying counts every dwell
+        time over and over - continuous, or start/stop, meaning the coincidence counter is tallying counts between
+        start and stop triggers.
+        :rtype: ik.qubitekk.CC1.TriggerMode
+        :return: the current trigger mode
+        """
+        response = self.query("TRIG?")
+        return self.TriggerMode[int(response)]
+
+    @trigger.setter
+    def trigger(self, new_setting):
+        if new_setting is not self.TriggerMode:
+            raise TypeError("The new trigger setting must be a Trigger Mode.")
+        self.sendcmd(":TRIG "+str(int(new_setting)))
     
-    # METHODS ##
+    # METHODS #
     
     def clear_counts(self):
         """
