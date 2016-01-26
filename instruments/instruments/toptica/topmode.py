@@ -1,187 +1,338 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Provides the support for the Toptica Topmode diode laser.
+
+Class originally contributed by Catherine Holloway.
+"""
+
+# IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
+
 import quantities as pq
 from flufl.enum import IntEnum
-from datetime import datetime
+
+from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
+from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
 
 from instruments.abstract_instruments import Instrument
+from instruments.util_fns import ProxyList
 
-
-def convert_toptica_boolean(response):
-    """
-    Converts the toptica boolean expression to a boolean
-    :param response: response string
-    :type response: str
-    :return: the converted boolean
-    :rtype: bool
-    """
-    if response.find('Error: -3') > -1:
-        return None
-    elif response.find('f') > -1:
-        return False
-    elif response.find('t') > -1:
-        return True
-    else:
-        raise ValueError("cannot convert: "+str(response)+" to boolean")
-
-
-def convert_toptica_datetime(response):
-    """
-    Converts the toptical date format to a python time date
-    :param response: the string from the topmode
-    :type response: str
-    :return: the converted date
-    :rtype: 'datetime.datetime'
-    """
-    if response == '""\r':
-        return None
-    else:
-        return datetime.strptime(response, '%b %d %Y %I:%M%p')
+# CLASSES #####################################################################
 
 
 class TopMode(Instrument):
+
     """
+    Communicates with a `Toptica Topmode`_ instrument.
+
     The TopMode is a diode laser with active stabilization, produced by Toptica.
-    The spec sheet is available here:
-    http://www.toptica.com/fileadmin/user_upload/products/Diode_Lasers/Industrial_OEM/Single_Frequency/TopMode/toptica_BR_TopMode.pdf
+
+    Example usage:
+
+    >>> import instruments as ik
+    >>> import quantities as pq
+    >>> tm = ik.toptica.TopMode.open_serial('/dev/ttyUSB0', 115200)
+    >>> print(tm.laser[0].wavelength)
     """
-    class CharmStatus(IntEnum):
-        un_initialized = 0
-        in_progress = 1
-        success = 2
-        failure = 3
-
-    class Laser(object):
-        """
-        Since the topmode can have multiple lasers attached to it, a laser object will be defined.
-        """
-        def __init__(self, number=1, parent=None):
-            self.number = number
-            self.parent = parent
-            self.name = "laser"+str(self.number)
-
-        @property
-        def serial_number(self):
-            return self.parent.reference(self.name+":serial-number")
-
-        @property
-        def model(self):
-            return self.parent.reference(self.name+":model")
-
-        @property
-        def wavelength(self):
-            return float(self.parent.reference(self.name+":wavelength"))*pq.nm
-
-        @property
-        def production_date(self):
-            return self.parent.reference(self.name+":production-date")
-
-        @property
-        def enable(self):
-            return convert_toptica_boolean(self.parent.reference(self.name+":emission"))
-
-        @enable.setter
-        def enable(self, newval):
-            if type(newval) is not bool:
-                raise TypeError("Laser emmission must be a boolean, got: "+type(newval))
-            return self.parent.set(self.name+":enable-emission", newval)
-
-        @property
-        def on_time(self):
-            return float(self.parent.reference(self.name+":ontime"))*pq.s
-
-        @property
-        def charm_status(self):
-            response = int(self.parent.reference(self.name+":health"))
-            return (response >> 7) % 2 == 1
-
-        @property
-        def temperature_control_status(self):
-            response = int(self.parent.reference(self.name+":health"))
-            return (response >> 5) % 2 == 1
-
-        @property
-        def current_control_status(self):
-            response = int(self.parent.reference(self.name+":health"))
-            return (response >> 6) % 2 == 1
-
-        @property
-        def tec_status(self):
-            return convert_toptica_boolean(self.parent.reference(self.name+":tec:ready"))
-
-        @property
-        def intensity(self):
-            """
-            This parameter is unitless
-            """
-            return float(self.parent.reference(self.name+":intensity"))
-
-        @property
-        def mode_hop(self):
-            """
-            Checks whether the laser has mode-hopped
-            """
-            return convert_toptica_boolean(self.parent.reference(self.name+":charm:reg:mh-occured"))
-
-        @property
-        def lock_start(self):
-            """
-            Returns the date and time of the start of mode-locking
-            """
-            return convert_toptica_datetime(self.parent.reference(self.name+":charm:reg:started"))
-
-        @property
-        def first_mode_hop_time(self):
-            """
-            Returns the date and time of the first mode hop
-            """
-            return convert_toptica_datetime(self.parent.reference(self.name+":charm:reg:first-mh"))
-
-        @property
-        def latest_mode_hop_time(self):
-            """
-            Returns the date and time of the latest mode hop
-            """
-            return convert_toptica_datetime(self.parent.reference(self.name+":charm:reg:latest-mh"))
-
-        @property
-        def correction_status(self):
-            return TopMode.CharmStatus[int(self.parent.reference(self.name+":charm:correction-status"))]
-
-        def correction(self):
-            """
-            run the correction
-            """
-            if self.correction_status == TopMode.CharmStatus.un_initialized:
-                self.parent.execute(self.name+":charm:start-correction-initial")
-            else:
-                self.parent.execute(self.name+":charm:start-correction")
-
 
     def __init__(self, filelike):
         super(TopMode, self).__init__(filelike)
         self.prompt = ">"
         self.terminator = "\n"
-        self.echo = True
-        self.laser1 = TopMode.Laser(1, self)
-        self.laser2 = TopMode.Laser(2, self)
 
-    # The TopMode has its own control language, here we define each command individually:
+    def _ack_expected(self, msg=""):
+        return msg
+
+    # ENUMS #
+
+    class CharmStatus(IntEnum):
+
+        """
+        Enum containing valid charm statuses for the lasers
+        """
+        un_initialized = 0
+        in_progress = 1
+        success = 2
+        failure = 3
+
+    # INNER CLASSES #
+
+    class Laser(object):
+
+        """
+        Class representing a laser on the Toptica Topmode.
+
+        .. warning:: This class should NOT be manually created by the user. It
+        is designed to be initialized by the `Topmode` class.
+        """
+
+        def __init__(self, parent, idx):
+            self.parent = parent
+            self.name = "laser{}".format(idx + 1)
+
+        # PROPERTIES #
+
+        @property
+        def serial_number(self):
+            """
+            Gets the serial number of the laser
+
+            :return: The serial number of the specified laser
+            :type: `str`
+            """
+            return self.parent.reference(self.name + ":serial-number")
+
+        @property
+        def model(self):
+            """
+            Gets the model type of the laser
+
+            :return: The model of the specified laser
+            :type: `str`
+            """
+            return self.parent.reference(self.name + ":model")
+
+        @property
+        def wavelength(self):
+            """
+            Gets the wavelength of the laser
+
+            :return: The wavelength of the specified laser
+            :units: Nanometers (nm)
+            :type: `~quantities.quantity.Quantity`
+            """
+            return float(self.parent.reference(self.name + ":wavelength")) * pq.nm
+
+        @property
+        def production_date(self):
+            """
+            Gets the production date of the laser
+
+            :return: The production date of the specified laser
+            :type: `str`
+            """
+            return self.parent.reference(self.name + ":production-date")
+
+        @property
+        def enable(self):
+            """
+            Gets/sets the enable/disable status of the laser. Value of `True`
+            is for enabled, and `False` for disabled.
+
+            :return: Enable status of the specified laser
+            :type: `bool`
+            """
+            return ctbool(self.parent.reference(self.name + ":emission"))
+
+        @enable.setter
+        def enable(self, newval):
+            if not isinstance(newval, bool):
+                raise TypeError(
+                    "Laser emmission must be a boolean, got: {}".format(newval))
+            self.parent.set(self.name + ":enable-emission", newval)
+
+        @property
+        def on_time(self):
+            """
+            Gets the 'on time' value for the laser
+
+            :return: The 'on time' value for the specified laser
+            :units: Seconds (s)
+            :type: `~quantities.quantity.Quantity`
+            """
+            return float(self.parent.reference(self.name + ":ontime")) * pq.s
+
+        @property
+        def charm_status(self):
+            """
+            Gets the 'charm status' of the laser
+
+            :return: The 'charm status' of the specified laser
+            :type: `bool`
+            """
+            response = int(self.parent.reference(self.name + ":health"))
+            return (response >> 7) % 2 == 1
+
+        @property
+        def temperature_control_status(self):
+            """
+            Gets the temperature control status of the laser
+
+            :return: The temperature control status of the specified laser
+            :type: `bool`
+            """
+            response = int(self.parent.reference(self.name + ":health"))
+            return (response >> 5) % 2 == 1
+
+        @property
+        def current_control_status(self):
+            """
+            Gets the current control status of the laser
+
+            :return: The current control status of the specified laser
+            :type: `bool`
+            """
+            response = int(self.parent.reference(self.name + ":health"))
+            return (response >> 6) % 2 == 1
+
+        @property
+        def tec_status(self):
+            """
+            Gets the TEC status of the laser
+
+            :return: The TEC status of the specified laser
+            :type: `bool`
+            """
+            return ctbool(self.parent.reference(self.name + ":tec:ready"))
+
+        @property
+        def intensity(self):
+            """
+            Gets the intensity of the laser. This property is unitless.
+
+            :return: the intensity of the specified laser
+            :units: Unitless
+            :type: `float`
+            """
+            return float(self.parent.reference(self.name + ":intensity"))
+
+        @property
+        def mode_hop(self):
+            """
+            Gets whether the laser has mode-hopped
+
+            :return: Mode-hop status of the specified laser
+            :type: `bool`
+            """
+            return ctbool(self.parent.reference(self.name + ":charm:reg:mh-occured"))
+
+        @property
+        def lock_start(self):
+            """
+            Gets the date and time of the start of mode-locking
+
+            :return: The datetime of start of mode-locking for specified laser
+            :type: `datetime`
+            """
+            return ctdate(self.parent.reference(self.name + ":charm:reg:started"))
+
+        @property
+        def first_mode_hop_time(self):
+            """
+            Gets the date and time of the first mode hop
+
+            :return: The datetime of the first mode hop for the specified laser
+            :type: `datetime`
+            """
+            return ctdate(self.parent.reference(self.name + ":charm:reg:first-mh"))
+
+        @property
+        def latest_mode_hop_time(self):
+            """
+            Gets the date and time of the latest mode hop
+
+            :return: The datetime of the latest mode hop for the
+                specified laser
+            :type: `datetime`
+            """
+            return ctdate(self.parent.reference(self.name + ":charm:reg:latest-mh"))
+
+        @property
+        def correction_status(self):
+            """
+            Gets the correction status of the laser
+
+            :return: The correction status of the specified laser
+            :type: `~TopMode.CharmStatus`
+            """
+            value = self.parent.reference(
+                self.name + ":charm:correction-status")
+            return TopMode.CharmStatus[int(value)]
+
+        # METHODS #
+
+        def correction(self):
+            """
+            Run the correction against the specified laser
+            """
+            if self.correction_status == TopMode.CharmStatus.un_initialized:
+                self.parent.execute(
+                    self.name + ":charm:start-correction-initial")
+            else:
+                self.parent.execute(self.name + ":charm:start-correction")
+
+    # TOPMODE CONTROL LANGUAGE #
+
     def execute(self, command):
-        self.query("(exec '"+command+")")
+        """
+        Sends an execute command to the Topmode. This is used to automatically
+        append (exec ' + command + ) to your command.
+
+        :param str command: The command to be executed.
+        """
+        self.sendcmd("(exec '" + command + ")")
 
     def set(self, param, value):
-        if type(value) is str:
-            self.sendcmd("(param-set! '"+param+" \""+value+"\")")
-        elif type(value) is tuple or type(value) is list:
-            self.sendcmd("(param-set! '"+param+" '("+" ".join(value)+"))")
-        elif type(value) is bool:
-            out_str = "t" if value else "f"
-            self.sendcmd("(param-set! '"+param+" #"+out_str+")")
+        """
+        Sends a param-set command to the Topmode. This is used to automatically
+        handle appending "param-set!" and the rest of the param-set message
+        structure to your message.
+
+        :param str param: Parameter that will be set
+        :param value: Value that the parameter will be set to
+        :type value: `str`, `tuple`, `list`, or `bool`
+        """
+        if isinstance(value, str):
+            self.sendcmd("(param-set! '{} \"{}\")".format(param, value))
+        elif isinstance(value, tuple) or isinstance(value, list):
+            self.sendcmd(
+                "(param-set! '{} '({}))".format(param, " ".join(value)))
+        elif isinstance(value, bool):
+            value = "t" if value else "f"
+            self.sendcmd("(param-set! '{} #{})".format(param, value))
 
     def reference(self, param):
-        return self.query("(param-ref '"+param+")")
+        """
+        Sends a reference commands to the Topmode. This is effectively a query
+        request. It will append the required (param-ref ' + param + ).
+
+        :param str param: Parameter that should be queried
+        :return: Response to the reference request
+        :rtype: `str`
+        """
+        return self.query("(param-ref '{})".format(param))
 
     def display(self, param):
-        return self.query("(param-disp '"+param+")")
+        """
+        Sends a display command to the Topmode.
+
+        :param str param: Parameter that will be sent with a display request
+        :return: Response to the display request
+        """
+        return self.query("(param-disp '{})".format(param))
+
+    # PROPERTIES #
+
+    @property
+    def laser(self):
+        """
+        Gets a specific Topmode laser object. The desired laser is
+        specified like one would access a list.
+
+        For example, the following would print the wavelength from laser 1:
+
+        >>> import instruments as ik
+        >>> import quantities as pq
+        >>> tm = ik.toptica.TopMode.open_serial('/dev/ttyUSB0', 115200)
+        >>> print(tm.laser[0].wavelength)
+
+        :rtype: `~TopMode.Laser`
+        """
+        return ProxyList(self, self.Laser, range(2))
 
     @property
     def enable(self):
@@ -189,35 +340,43 @@ class TopMode(Instrument):
         is the laser lasing?
         :return:
         """
-        return convert_toptica_boolean(self.reference("emission"))
+        return ctbool(self.reference("emission"))
 
     @enable.setter
-    def enable(self, newenable):
-        if type(newenable) is not bool:
-            raise TypeError("Emission status must be a boolean, got: "+str(type(newenable)))
-        self.set("enable-emission", newenable)
+    def enable(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError("Emission status must be a boolean, "
+                            "got: {}".format(type(newval)))
+        self.set("enable-emission", newval)
 
     @property
     def locked(self):
         """
-        Is the key switch unlocked?
-        :return:
+        Gets the key switch lock status
+
+        :return: `True` if key switch is locked, `False` otherwise
+        :type: `bool`
         """
-        return convert_toptica_boolean(self.reference("front-key-locked"))
+        return ctbool(self.reference("front-key-locked"))
 
     @property
     def interlock(self):
         """
-        Is the interlock switch open?
-        :return:
+        Gets the interlock switch open state
+
+        :return: `True` if interlock switch is open, `False` otherwise
+        :type: `bool`
         """
-        return convert_toptica_boolean(self.reference("interlock-open"))
+        return ctbool(self.reference("interlock-open"))
 
     @property
     def fpga_status(self):
         """
-        returns false on FPGA failure
-        :return:
+        Gets the FPGA health status
+
+        :return: `False` if there has been a failure for the FPGA,
+            `True` otherwise
+        :type: `bool`
         """
         response = int(self.reference("system-health"))
         return False if response % 2 else True
@@ -225,8 +384,11 @@ class TopMode(Instrument):
     @property
     def temperature_status(self):
         """
-        returns false if there is a temperature controller board failure
-        :return:
+        Gets the temperature controller board health status
+
+        :return: `False` if there has been a failure for the temperature
+            controller board, `True` otherwise
+        :type: `bool`
         """
         response = int(self.reference("system-health"))
         return False if (response >> 1) % 2 else True
@@ -234,18 +396,20 @@ class TopMode(Instrument):
     @property
     def current_status(self):
         """
-        returns false if there is a current controller board failure
-        :return:
+        Gets the current controller board health status
+
+        :return: `False` if there has been a failure for the current controller
+            board, `True` otherwise
+        :type: `bool`
         """
         response = int(self.reference("system-health"))
         return False if (response >> 2) % 2 else True
 
+    # METHODS #
+
     def reboot(self):
         """
-        Reboots the system (note, this will end the serial connection)
+        Reboots the system (note that the serial connect might have to be
+        re-opened after this)
         """
         self.execute("reboot-system")
-
-
-    ## Network configuration is unimplemented
-
