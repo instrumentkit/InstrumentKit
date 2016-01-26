@@ -118,15 +118,13 @@ class CC1(SCPIInstrument):
             of units nanoseconds.
         :type: `~quantities.Quantity`
         """
-        return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
+        return pq.Quantity(*split_unit_str(self.query("WIND?"), "ns"))
 
     @window.setter
     def window(self, new_val):
         new_val_mag = assume_units(new_val, pq.ns).rescale(pq.ns).magnitude
-        if new_val_mag < 0:
-            raise ValueError("Window is too small.")
-        if new_val_mag > 7:
-            raise ValueError("Window is too big")
+        if new_val_mag < 0 or new_val_mag > 7:
+            raise ValueError("Window is out of range.")
         self.sendcmd(":WIND {}".format(new_val_mag))
 
     @property
