@@ -1,1 +1,1 @@
-from instruments.qubitekk.cc1 import CC1
+from instruments.qubitekk.cc1 import CC1, qubitekk_check_unknown

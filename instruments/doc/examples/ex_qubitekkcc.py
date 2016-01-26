@@ -53,16 +53,23 @@ def getvalues(i):
 
 def gate_enable():
     if gate_enabled.get():
-        cc.gate_enable = True
+        cc.gate = True
     else:
-        cc.gate_enable = False
+        cc.gate = False
 
 
-def count_enable():
-    if count_enabled.get():
-        cc.count_enable = True
+def subtract_enable():
+    if subtract_enabled.get():
+        cc.subtract = True
     else:
-        cc.count_enable = False
+        cc.subtract = False
+
+
+def trigger_enable():
+    if trigger_enabled.get():
+        cc.trigger = cc.TriggerMode.continuous
+    else:
+        cc.trigger = cc.TriggerMode.start_stop
 
 
 def parse(*args):
@@ -74,7 +81,7 @@ def reset(*args):
     cc.reset()
     dwell_time.set(cc.dwell_time)
     window.set(cc.window)
-    count_enabled.set(cc.count_enable)
+    trigger_enabled.set(cc.count_enable)
     gate_enabled.set(cc.gate_enable)
 
 if __name__ == "__main__":
@@ -114,24 +121,31 @@ if __name__ == "__main__":
     coinc_counts.set(cc.channel[2].count)
 
     gate_enabled = tk.IntVar()
-    count_enabled = tk.IntVar()
+    subtract_enabled = tk.IntVar()
+    trigger_enabled = tk.IntVar()
 
     # set up the initial checkbox value for the gate enable
-    if cc.gate_enable:
+    if cc.gate:
         gate_enabled.set(1)
     else:
         gate_enabled.set(0)
 
-    # set up the initial checkbox value for the count enable
-    if cc.count_enable:
-        count_enabled.set(1)
+    # set up the initial checkbox value for the trigger enable
+    if cc.subtract:
+        subtract_enabled.set(1)
     else:
-        count_enabled.set(0)
+        subtract_enabled.set(0)
+
+    # set up the initial checkbox value for the trigger enable
+    if cc.trigger:
+        trigger_enabled.set(1)
+    else:
+        trigger_enabled.set(0)
 
     # set up the plotting area
 
-    f = Figure(figsize=(10,8), dpi=100)
-    a = f.add_subplot(111,axisbg='black')
+    f = Figure(figsize=(10, 8), dpi=100)
+    a = f.add_subplot(111, axisbg='black')
 
     t = []
     coincvals = []
@@ -140,16 +154,13 @@ if __name__ == "__main__":
 
     # a tk.DrawingArea
     canvas = FigureCanvasTkAgg(f, mainframe)
-    canvas.get_tk_widget().grid(column=3, row=1, rowspan=9,sticky=tk.W)
+    canvas.get_tk_widget().grid(column=3, row=1, rowspan=11, sticky=tk.W)
 
     # label initialization
     dwell_time_entry = tk.Entry(mainframe, width=7, textvariable=dwell_time, font="Verdana 20")
     dwell_time_entry.grid(column=2, row=2, sticky=(tk.W, tk.E))
     window_entry = tk.Entry(mainframe, width=7, textvariable=window, font="Verdana 20")
     window_entry.grid(column=2, row=3, sticky=(tk.W, tk.E))
-    qubitekklogo = tk.PhotoImage(file="qubitekklogo.gif")
-
-    tk.Label(mainframe, image=qubitekklogo).grid(column=1, row=1, columnspan=2)
 
     tk.Label(mainframe, text="Dwell Time:", font="Verdana 20").grid(column=1, row=2, sticky=tk.W)
     tk.Label(mainframe, text="Window size:", font="Verdana 20").grid(column=1, row=3, sticky=tk.W)
@@ -157,21 +168,30 @@ if __name__ == "__main__":
     tk.Checkbutton(mainframe, font="Verdana 20", variable=gate_enabled, command=gate_enable).grid(column=2, row=4)
     tk.Label(mainframe, text="Gate Enable: ", font="Verdana 20").grid(column=1, row=4, sticky=tk.W)
 
-    tk.Checkbutton(mainframe, font="Verdana 20", variable=count_enabled, command=count_enable).grid(column=2, row=5)
-    tk.Label(mainframe, text="Count Enable: ", font="Verdana 20").grid(column=1, row=5, sticky=tk.W)
+    tk.Checkbutton(mainframe, font="Verdana 20", variable=subtract_enabled, command=subtract_enable).grid(column=2, row=5)
+    tk.Label(mainframe, text="Subtract Accidentals: ", font="Verdana 20").grid(column=1, row=5, sticky=tk.W)
 
-    tk.Label(mainframe, text="Channel 1: ", font="Verdana 20").grid(column=1, row=6, sticky=tk.W)
-    tk.Label(mainframe, text="Channel 2: ", font="Verdana 20").grid(column=1, row=7, sticky=tk.W)
-    tk.Label(mainframe, text="Coincidences: ", font="Verdana 20").grid(column=1, row=8, sticky=tk.W)
+    tk.Checkbutton(mainframe, font="Verdana 20", variable=trigger_enabled, command=trigger_enable).grid(column=2, row=6)
+    tk.Label(mainframe, text="Continuous Trigger: ", font="Verdana 20").grid(column=1, row=6, sticky=tk.W)
 
+    tk.Label(mainframe, text="Channel 1: ", font="Verdana 20").grid(column=1, row=7, sticky=tk.W)
+    tk.Label(mainframe, text="Channel 2: ", font="Verdana 20").grid(column=1, row=8, sticky=tk.W)
+    tk.Label(mainframe, text="Coincidences: ", font="Verdana 20").grid(column=1, row=9, sticky=tk.W)
 
-    tk.Label(mainframe, textvariable=chan1counts,font="Verdana 34",fg="white",bg="black").grid(column=2,row=6,sticky=tk.W)
-    tk.Label(mainframe, textvariable=chan2counts,font="Verdana 34",fg="white",bg="black").grid(column=2,row=7,sticky=tk.W)
-    tk.Label(mainframe, textvariable=coinc_counts,font="Verdana 34",fg="white",bg="black").grid(column=2,row=8,sticky=tk.W)
+    tk.Label(mainframe, textvariable=chan1counts, font="Verdana 34", fg="white", bg="black").grid(column=2, row=7,
+                                                                                                  sticky=tk.W)
+    tk.Label(mainframe, textvariable=chan2counts, font="Verdana 34", fg="white", bg="black").grid(column=2, row=8,
+                                                                                                  sticky=tk.W)
+    tk.Label(mainframe, textvariable=coinc_counts, font="Verdana 34", fg="white", bg="black").grid(column=2, row=9,
+                                                                                                   sticky=tk.W)
 
-    tk.Button(mainframe,text="Reset",font="Verdana 24",command=reset).grid(column=1,row=9,sticky = tk.W)
+    tk.Button(mainframe, text="Reset", font="Verdana 24", command=reset).grid(column=1, row=10, sticky=tk.W)
 
-    tk.Button(mainframe,text="Clear Counts",font="Verdana 24",command=clear_counts).grid(column=2,row=9,sticky = tk.W)
+    tk.Button(mainframe, text="Clear Counts", font="Verdana 24", command=clear_counts).grid(column=2, row=10,
+                                                                                            sticky=tk.W)
+
+    tk.Label(mainframe, text="Firmware Version: " + cc.firmware, font="Verdana 20").grid(column=1, row=11,
+                                                                                         columnspan=2, sticky=tk.W)
 
     for child in mainframe.winfo_children():
         child.grid_configure(padx=5, pady=5)
