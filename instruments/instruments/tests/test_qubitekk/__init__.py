@@ -230,3 +230,95 @@ def test_cc1_gate_error2():
         sep="\n"
     ) as cc:
         cc.gate = "blo"
+
+
+def test_cc1_subtract():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "SUBT?",
+            ":SUBT:ON",
+            ":SUBT:OFF",
+            ":SUBT:ON",
+            ":SUBT 1",
+            ":SUBT:OFF",
+            ":SUBT 0"
+
+        ],
+        [
+            "1",
+            "",
+            "",
+            "Unknown command",
+            "Unknown command",
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.subtract is True
+        cc.subtract = True
+        cc.subtract = False
+        cc.subtract = True
+        cc.subtract = False
+
+
+@raises(ValueError)
+def test_cc1_subtract_error1():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":SUBT -1"
+
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.subtract = -1
+
+
+@raises(TypeError)
+def test_cc1_subtract_error2():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":SUBT blo"
+
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.subtract = "blo"
+
+
+def test_cc1_trigger():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "TRIG?",
+            ":TRIG:MODE CONT",
+            ":TRIG:MODE STOP",
+            ":TRIG:MODE CONT",
+            ":TRIG 0",
+            ":TRIG:MODE STOP",
+            ":TRIG 1"
+
+        ],
+        [
+            "1",
+            "",
+            "",
+            "Unknown command",
+            "Unknown command",
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.trigger is cc.TriggerMode.start_stop
+        cc.trigger = cc.TriggerMode.continuous
+        cc.trigger = cc.TriggerMode.start_stop
+        cc.trigger = cc.TriggerMode.continuous
+        cc.trigger = cc.TriggerMode.start_stop

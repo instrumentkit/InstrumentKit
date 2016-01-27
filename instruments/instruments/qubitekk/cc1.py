@@ -266,7 +266,12 @@ class CC1(SCPIInstrument):
     def trigger(self, new_setting):
         if not (new_setting is self.TriggerMode.continuous or new_setting is self.TriggerMode.start_stop):
             raise TypeError("The new trigger setting must be a Trigger Mode.")
-        self.sendcmd(":TRIG "+str(int(new_setting)))
+        if new_setting == 0:
+            if not qubitekk_check_unknown(self.query(":TRIG:MODE CONT")):
+                self.sendcmd(":TRIG 0")
+        else:
+            if not qubitekk_check_unknown(self.query(":TRIG:MODE STOP")):
+                self.sendcmd(":TRIG 1")
 
     # METHODS #
     
