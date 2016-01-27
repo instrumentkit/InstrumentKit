@@ -14,6 +14,6 @@ install:
 # command to run tests
 script:
   - nosetests --with-coverage -w instruments
-  - cd instruments && pylint --py3k instruments/
+  - cd instruments && pylint --py3k instruments/ && cd ../
 after_success:
   - coveralls
