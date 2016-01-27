@@ -65,9 +65,6 @@ class CC1(SCPIInstrument):
         self.terminator = "\n"
         self.end_terminator = "\n"
         self.channel_count = 3
-        self.channel1 = self.Channel(self, 02)
-        self.channel2 = self.Channel(self, 1)
-        self.channelc = self.Channel(self, 2)
 
     # INNER CLASSES ##
 
