@@ -24,16 +24,29 @@
 # CC1 Class contributed by Catherine Holloway.
 ##
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 import quantities as pq
+from flufl.enum import IntEnum
 
-from instruments.abstract_instruments import Instrument
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.util_fns import ProxyList, assume_units, split_unit_str
 
-## CLASSES #####################################################################
 
+def qubitekk_check_unknown(response):
+    """
+    Check whether the command was understood by the CC1
+    :param response: the string received from the device
+    :type response: str
+    :return: True if the command was understood
+    """
+    if "Unknown command" == response.strip():
+        return False
+    else:
+        return True
+
+
+# CLASSES #####################################################################
 class CC1(SCPIInstrument):
     """
     The CC1 is a hand-held coincidence counter.
@@ -53,7 +66,7 @@ class CC1(SCPIInstrument):
         self.end_terminator = "\n"
         self.channel_count = 3
 
-    ## INNER CLASSES ##
+    # INNER CLASSES ##
 
     class Channel(object):
         """
@@ -63,7 +76,7 @@ class CC1(SCPIInstrument):
         __CHANNEL_NAMES = {
             1: 'C1',
             2: 'C2',
-            3: 'C0'
+            3: 'CO'
         }
 
         def __init__(self, cc1, idx):
@@ -74,7 +87,7 @@ class CC1(SCPIInstrument):
             self._chan = self.__CHANNEL_NAMES[self._idx]
             self._count = 0
             
-        ## PROPERTIES ##
+        # PROPERTIES ##
         
         @property
         def count(self):
@@ -84,50 +97,15 @@ class CC1(SCPIInstrument):
             :rtype: `int`
             """
             count = self._cc1.query("COUN:{0}?".format(self._chan))
-            # FIXME: Does this property actually work? The try block seems wrong.
-            try:
-                count = int(count)
-                self.count = count
-                return self.count
-            except ValueError:
-                self.count = self.count
+            count = int(count)
+            self._count = count
+            return self._count
 
-    ## METHOD OVERRIDES ##
+    class TriggerMode(IntEnum):
+        continuous = 0
+        start_stop = 1
 
-    def sendcmd(self, cmd):
-        # We override sendcmd here to check for the response
-        # "Unknown command", so that property factories not aware
-        # of this response can blindly call sendcmd() and rely on
-        # exception handling to get us the rest of the way there.
-        #
-        # Note that we call the superclass *query* and not *sendcmd*;
-        # this is so we can get the error message out!
-        resp = super(CC1, self).query(cmd)
-
-        if "Unknown command" == resp.strip():
-            raise IOError("CC1 reported that command {0} is unknown: {1}".format(
-                cmd, resp
-            ))
-
-
-    def query(self, cmd):
-        # We override query for the same reason as
-        # above.
-        resp = super(CC1, self).query(cmd)
-
-        if "Unknown command" == resp.strip():
-            raise IOError("CC1 reported that command {0} is unknown: {1}".format(
-                cmd, resp
-            ))
-
-        # If we survived, then the command was not marked as unknown.
-        # Something else may have gone wrong, but since we don't know that,
-        # we should return what we believe to be a successful response.
-        return resp
-            
-
-    ## PROPERTIES ##
-
+    # PROPERTIES #
     @property
     def window(self):
         """
@@ -137,17 +115,37 @@ class CC1(SCPIInstrument):
             of units nanoseconds.
         :type: `~quantities.Quantity`
         """
-        return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
+        return pq.Quantity(*split_unit_str(self.query("WIND?"), "ns"))
 
     @window.setter
-    def window(self, newval):
-        newval_mag = assume_units(newval,pq.ns).rescale(pq.ns).magnitude
-        if newval_mag < 0:
-            raise ValueError("Window is too small.")
-        if newval_mag >7:
-            raise ValueError("Window is too big")
-        self.sendcmd(":WIND {}".format(newval_mag))
-    
+    def window(self, new_val):
+        new_val_mag = assume_units(new_val, pq.ns).rescale(pq.ns).magnitude
+        if new_val_mag < 0 or new_val_mag > 7:
+            raise ValueError("Window is out of range.")
+        self.sendcmd(":WIND {}".format(new_val_mag))
+
+    @property
+    def delay(self):
+        """
+        Get the delay value (in nanoseconds) on Channel 1. N may be 0, 2, 4, 6, 8, 10, 12, or 14ns.
+        :rtype: quantities.ns
+        :return: the delay value
+        """
+        response = self.query("DELA?")
+        return int(response)*pq.ns
+
+    @delay.setter
+    def delay(self, new_val):
+        """
+        Set the delay value (in nanoseconds) on Channel 1. N may be 0, 2, 4, 6, 8, 10, 12, or 14ns.
+        """
+        new_val = assume_units(new_val, pq.ns).rescale(pq.ns)
+        if new_val < 0*pq.ns or new_val > 14*pq.ns:
+            raise ValueError("New delay value is out of bounds.")
+        if new_val.magnitude % 2 != 0:
+            raise ValueError("New magnitude must be an even number")
+        self.sendcmd(":DELA "+str(int(new_val.magnitude)))
+
     @property
     def dwell_time(self):
         """
@@ -161,14 +159,18 @@ class CC1(SCPIInstrument):
         return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
 
     @dwell_time.setter
-    def dwell_time(self, newval):
-        newval_mag = assume_units(newval,pq.s).rescale(pq.s).magnitude
-        if newval_mag < 0:
+    def dwell_time(self, new_val):
+        new_val_mag = assume_units(new_val, pq.s).rescale(pq.s).magnitude
+        if new_val_mag < 0:
             raise ValueError("Dwell time cannot be negative.")
-        self.sendcmd(":DWEL {}".format(newval_mag))
+        self.sendcmd(":DWEL {}".format(new_val_mag))
+
+    @property
+    def firmware(self):
+        return self.query("FIRM?")
             
     @property
-    def gate_enable(self):
+    def gate(self):
         """
         Gets/sets the Gate mode of the CC1.
         
@@ -181,50 +183,26 @@ class CC1(SCPIInstrument):
         response = self.query("GATE?")
         response = int(response)
         return True if response is 1 else False
-    @gate_enable.setter
-    def gate_enable(self, newval):
-        if isinstance(newval, int):
-            if newval != 0 and newval != 1:
+
+    @gate.setter
+    def gate(self, new_val):
+        if isinstance(new_val, int):
+            if new_val != 0 and new_val != 1:
                 raise ValueError("Not a valid gate_enable mode.")
-            newval = bool(newval)
-        elif not isinstance(newval, bool):
+            new_val = bool(new_val)
+        elif not isinstance(new_val, bool):
             raise TypeError("CC1 gate_enable must be specified as a boolean.")
         
-        if newval is False:
-            self.sendcmd(":GATE:OFF")
+        if new_val is False:
+            if not qubitekk_check_unknown(self.query(":GATE:OFF")):
+                self.sendcmd(":GATE 0")
         else:
-            self.sendcmd(":GATE:ON")
+            if not qubitekk_check_unknown(self.query(":GATE:ON")):
+                self.sendcmd(":GATE 1")
 
     @property
-    def count_enable(self):
-        """
-        The count mode of the CC1.
-        
-        A setting of `True` means the dwell time passes before the counters are 
-        cleared and `False` means the counters are cleared every 0.1 seconds.
-        
-        :type: `bool`
-        """
-        response = self.query("COUN?")
-        response = int(response)
-        return True if response is 1 else False
-    @count_enable.setter
-    def count_enable(self, newval):
-        if isinstance(newval, int):
-            if newval != 0 and newval != 1:
-                raise ValueError("Not a valid count_enable mode.")
-            newval = bool(newval)
-        elif not isinstance(newval, bool):
-            raise TypeError("CC1 count_enable must be specified as a boolean.")
-        
-        if newval is False:
-            self.sendcmd(":COUN:OFF")
-        else:
-            self.sendcmd(":COUN:ON")
-    
-    @property
     def channel(self):
-        '''
+        """
         Gets a specific channel object. The desired channel is specified like 
         one would access a list.
         
@@ -235,14 +213,67 @@ class CC1(SCPIInstrument):
         
         :rtype: `CC1.Channel`
         
-        '''
+        """
         return ProxyList(self, CC1.Channel, xrange(self.channel_count))
-    
-    ## METHODS ##
+
+    @property
+    def subtract(self):
+        """
+        Gets/sets the accidental subtraction mode of the CC1.
+
+        A setting of `True` means the reported coincidences have the estimated accidentals subtracted
+        signal and `False` means the raw coincidences are reported
+        signal.
+
+        :type: `bool`
+        """
+        response = self.query("SUBT?")
+        response = int(response)
+        return True if response is 1 else False
+
+    @subtract.setter
+    def subtract(self, new_val):
+        if isinstance(new_val, int):
+            if new_val != 0 and new_val != 1:
+                raise ValueError("Not a valid subtract mode.")
+            new_val = bool(new_val)
+        elif not isinstance(new_val, bool):
+            raise TypeError("CC1 subtract must be specified as a boolean.")
+
+        if new_val is False:
+            if not qubitekk_check_unknown(self.query(":SUBT:OFF")):
+                self.sendcmd(":SUBT 0")
+        else:
+            if not qubitekk_check_unknown(self.query(":SUBT:ON")):
+                self.sendcmd(":SUBT 1")
+
+    @property
+    def trigger(self):
+        """
+        Gets the current trigger mode, meaning, whether the coincidence counter is tallying counts every dwell
+        time over and over - continuous, or start/stop, meaning the coincidence counter is tallying counts between
+        start and stop triggers.
+        :rtype: ik.qubitekk.CC1.TriggerMode
+        :return: the current trigger mode
+        """
+        response = self.query("TRIG?")
+        return self.TriggerMode[int(response)]
+
+    @trigger.setter
+    def trigger(self, new_setting):
+        if not (new_setting is self.TriggerMode.continuous or new_setting is self.TriggerMode.start_stop):
+            raise TypeError("The new trigger setting must be a Trigger Mode.")
+        if new_setting == 0:
+            if not qubitekk_check_unknown(self.query(":TRIG:MODE CONT")):
+                self.sendcmd(":TRIG 0")
+        else:
+            if not qubitekk_check_unknown(self.query(":TRIG:MODE STOP")):
+                self.sendcmd(":TRIG 1")
+
+    # METHODS #
     
     def clear_counts(self):
         """
         Clears the current total counts on the counters.
         """
         self.sendcmd("CLEA")
-

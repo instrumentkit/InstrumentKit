@@ -32,22 +32,324 @@ import quantities as pq
 
 from nose.tools import raises
 
-## TESTS ######################################################################
 
-test_cc1_name = make_name_test(ik.qubitekk.CC1)
-    
-@raises(IOError)
-def test_cc1_unknown_command():
-    """
-    CC1: Checks that invalid commands are properly turned into exceptions.
-    """
-    with expected_protocol(ik.qubitekk.CC1,
-            [
-                "FTN"
-            ], [
-                "Unknown command"
-            ]
-    ) as cc1:
-        cc1.sendcmd("FTN")
+def test_cc1_count():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "COUN:C1?"
+        ],
+        [
+            "20"
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.channel[0].count == 20.0
+
+
+def test_cc1_window():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "WIND?",
+            ":WIND 7"
+        ],
+        [
+            "2",
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        unit_eq(cc.window, pq.Quantity(2, "ns"))
+        cc.window = 7
+
+
+@raises(ValueError)
+def test_cc1_window_error():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":WIND 10"
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.window = 10
+
+
+def test_cc1_delay():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "DELA?",
+            ":DELA 2"
+        ],
+        [
+            "8",
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        unit_eq(cc.delay, pq.Quantity(8, "ns"))
+        cc.delay = 2
+
+
+@raises(ValueError)
+def test_cc1_delay_error1():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":DELA -1"
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.delay = -1
 
         
+@raises(ValueError)
+def test_cc1_delay_error2():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":DELA 1"
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.delay = 1
+
+
+def test_cc1_dwell():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "DWEL?",
+            ":DWEL 2"
+        ],
+        [
+            "8",
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        unit_eq(cc.dwell_time, pq.Quantity(8, "s"))
+        cc.dwell_time = 2
+
+
+@raises(ValueError)
+def test_cc1_dwell_time_error():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":DWEL -1"
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.dwell_time = -1
+
+
+def test_cc1_firmware():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?"
+        ],
+        [
+            "blo"
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.firmware == "blo"
+
+
+def test_cc1_gate():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "GATE?",
+            ":GATE:ON",
+            ":GATE:OFF",
+            ":GATE:ON",
+            ":GATE 1",
+            ":GATE:OFF",
+            ":GATE 0"
+
+        ],
+        [
+            "1",
+            "",
+            "",
+            "Unknown command",
+            "Unknown command",
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.gate is True
+        cc.gate = True
+        cc.gate = False
+        cc.gate = True
+        cc.gate = False
+
+
+@raises(ValueError)
+def test_cc1_gate_error1():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":GATE 2"
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.gate = 2
+
+
+@raises(TypeError)
+def test_cc1_gate_error2():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":GATE blo"
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.gate = "blo"
+
+
+def test_cc1_subtract():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "SUBT?",
+            ":SUBT:ON",
+            ":SUBT:OFF",
+            ":SUBT:ON",
+            ":SUBT 1",
+            ":SUBT:OFF",
+            ":SUBT 0"
+
+        ],
+        [
+            "1",
+            "",
+            "",
+            "Unknown command",
+            "Unknown command",
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.subtract is True
+        cc.subtract = True
+        cc.subtract = False
+        cc.subtract = True
+        cc.subtract = False
+
+
+@raises(ValueError)
+def test_cc1_subtract_error1():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":SUBT -1"
+
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.subtract = -1
+
+
+@raises(TypeError)
+def test_cc1_subtract_error2():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":SUBT blo"
+
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.subtract = "blo"
+
+
+def test_cc1_trigger():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "TRIG?",
+            ":TRIG:MODE CONT",
+            ":TRIG:MODE STOP",
+            ":TRIG:MODE CONT",
+            ":TRIG 0",
+            ":TRIG:MODE STOP",
+            ":TRIG 1"
+
+        ],
+        [
+            "1",
+            "",
+            "",
+            "Unknown command",
+            "Unknown command",
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.trigger is cc.TriggerMode.start_stop
+        cc.trigger = cc.TriggerMode.continuous
+        cc.trigger = cc.TriggerMode.start_stop
+        cc.trigger = cc.TriggerMode.continuous
+        cc.trigger = cc.TriggerMode.start_stop
+
+
+@raises(TypeError)
+def test_cc1_trigger_error():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":TRIG blo"
+
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.trigger = "blo"
+
+
+def test_cc1_clear():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "CLEA"
+
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.clear_counts()
