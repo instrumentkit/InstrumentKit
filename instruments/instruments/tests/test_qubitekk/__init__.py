@@ -24,13 +24,12 @@
 
 ## IMPORTS ####################################################################
 
-import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
-
-from cStringIO import StringIO
-import quantities as pq
+from __future__ import absolute_import
 
 from nose.tools import raises
+
+import instruments as ik
+from instruments.tests import expected_protocol, make_name_test, unit_eq
 
 ## TESTS ######################################################################
 
