@@ -25,11 +25,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map, round
+from functools import reduce
 
 import time
 import numpy as np
@@ -357,7 +358,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         
         :rtype: `_TDS5xxMeasurement`
         """
-        return ProxyList(self, _TekTDS5xxMeasurement, xrange(3))
+        return ProxyList(self, _TekTDS5xxMeasurement, range(3))
     
     
     @property
@@ -373,7 +374,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         
         :rtype: `_TekTDS5xxChannel`
         """
-        return ProxyList(self, _TekTDS5xxChannel, xrange(4))
+        return ProxyList(self, _TekTDS5xxChannel, range(4))
         
     @property
     def ref(self):
@@ -390,7 +391,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         return ProxyList(self,
             lambda s, idx: _TekTDS5xxDataSource(s, "REF{}".format(idx  + 1)),
-            xrange(4))
+            range(4))
         
     @property
     def math(self):
@@ -401,7 +402,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         return ProxyList(self,
             lambda s, idx: _TekTDS5xxDataSource(s, "MATH{}".format(idx  + 1)),
-            xrange(3))
+            range(3))
     
     @property
     def sources(self):

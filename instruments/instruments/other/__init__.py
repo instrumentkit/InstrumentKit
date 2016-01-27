@@ -1,3 +1,8 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 # Provide the classes that used to be in instruments.other by importing them
 # from their new homes.
 from instruments.oxford import OxfordITC503

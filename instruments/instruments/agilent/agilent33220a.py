@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
 
 from flufl.enum import Enum
 from flufl.enum._enum import EnumValue
@@ -35,7 +35,7 @@ import quantities as pq
 
 from instruments.generic_scpi import SCPIFunctionGenerator
 from instruments.util_fns import (
-    enum_property, int_property, bool_property, unitful_property, assume_units
+    enum_property, int_property, bool_property, assume_units
 )
 
 
@@ -89,7 +89,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         
         :type: `int`
         """,
-        valid_set=xrange(101)
+        valid_set=range(101)
     )
     
     ramp_symmetry = int_property(
@@ -102,7 +102,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         
         :type: `int`
         """,
-        valid_set=xrange(101)
+        valid_set=range(101)
     )
     
     output = bool_property(

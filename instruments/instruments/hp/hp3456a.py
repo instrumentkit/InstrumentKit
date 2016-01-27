@@ -24,12 +24,13 @@
 
 ## IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
+
 import time
-import struct
 from flufl.enum import Enum, IntEnum
 
 import quantities as pq
-import numpy as np
 
 from instruments.abstract_instruments import Multimeter
 from instruments.util_fns import (bool_property, enum_property)

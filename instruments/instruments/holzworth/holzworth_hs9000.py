@@ -25,11 +25,10 @@
 
 # FIXME: so much documentation missing!
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
 
 from instruments.abstract_instruments import Instrument
 from instruments.abstract_instruments.signal_generator import (

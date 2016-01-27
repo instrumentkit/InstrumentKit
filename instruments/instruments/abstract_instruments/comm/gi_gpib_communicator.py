@@ -25,6 +25,10 @@
 
 ## IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
+from builtins import chr
+
 import io
 import time
 
@@ -165,7 +169,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             self._eos = newval
         elif self._version >= 5:
             if isinstance(newval, int):
-                newval = str(unichr(newval))
+                newval = str(chr(newval))
             if newval == "\r\n":
                 self._eos = newval
                 newval = 0

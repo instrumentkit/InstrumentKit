@@ -22,18 +22,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 from flufl.enum import Enum
 import quantities as pq
 
 from instruments.generic_scpi import SCPIMultimeter
 from instruments.abstract_instruments import Multimeter
-from instruments.util_fns import assume_units, ProxyList
+from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
 
@@ -141,7 +141,7 @@ class Keithley2182(SCPIMultimeter):
         
         :rtype: `_Keithley2182Channel`
         """
-        return ProxyList(self, _Keithley2182Channel, xrange(2))
+        return ProxyList(self, _Keithley2182Channel, range(2))
         
     @property
     def relative(self):

@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 from flufl.enum import IntEnum
 from flufl.enum._enum import EnumValue
@@ -65,7 +65,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         FunctionGenerator.VoltageMode.dBm:          "DB",
     }
     
-    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.iteritems())
+    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.items())
     
     ## FunctionGenerator CONTRACT ##
     

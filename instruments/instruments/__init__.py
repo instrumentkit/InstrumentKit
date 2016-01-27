@@ -23,6 +23,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
+from __future__ import absolute_import
+
 ## VERSION METADATA ###########################################################
 # In keeping with PEP-396, we define a version number of the form
 # {major}.{minor}[.{postrelease}]{prerelease-tag}

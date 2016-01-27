@@ -22,11 +22,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
 
 from flufl.enum import Enum
 from flufl.enum._enum import EnumValue

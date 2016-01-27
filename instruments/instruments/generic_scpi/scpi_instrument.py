@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import map
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units

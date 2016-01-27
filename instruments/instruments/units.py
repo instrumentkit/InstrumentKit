@@ -24,6 +24,9 @@
 
 ## IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
+
 from quantities import Hz, milli, GHz, UnitQuantity, Quantity
 from quantities.unitquantity import IrreducibleUnit
 

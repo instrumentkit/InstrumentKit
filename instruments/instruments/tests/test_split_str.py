@@ -24,6 +24,8 @@
 
 ## IMPORTS ####################################################################
 
+from __future__ import absolute_import
+
 import quantities as pq
 
 from nose.tools import raises, eq_

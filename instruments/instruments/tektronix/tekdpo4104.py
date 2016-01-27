@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 from time import time, sleep
 
@@ -238,7 +238,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         
         :rtype: `_TekDPO4104Channel`
         '''
-        return ProxyList(self, _TekDPO4104Channel, xrange(4))
+        return ProxyList(self, _TekDPO4104Channel, range(4))
 
     @property
     def ref(self):
@@ -255,7 +255,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         '''
         return ProxyList(self,
             lambda s, idx: _TekDPO4104DataSource(s, "REF{}".format(idx  + 1)),
-            xrange(4))
+            range(4))
         
     @property
     def math(self):

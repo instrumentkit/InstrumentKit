@@ -22,18 +22,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
 
-import abc
+from __future__ import absolute_import
+from __future__ import division
 
-from instruments.abstract_instruments import Instrument
-from signal_generator import SignalGenerator
-from channel import SGChannel
-from instruments.util_fns import ProxyList
+from instruments.abstract_instruments.signal_generator import SignalGenerator
+from instruments.abstract_instruments.signal_generator.channel import SGChannel
 
 ## CLASSES #####################################################################
 

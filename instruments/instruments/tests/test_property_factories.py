@@ -24,8 +24,10 @@
 
 ## IMPORTS ####################################################################
 
+from __future__ import absolute_import
+
 import quantities as pq
-from cStringIO import StringIO
+from io import BytesIO
 
 from nose.tools import raises, eq_
 
@@ -46,7 +48,7 @@ class MockInstrument(object):
     """
     
     def __init__(self, responses=None):
-        self._buf = StringIO()
+        self._buf = BytesIO()
         self._responses = responses if responses is not None else {}
         
     @property

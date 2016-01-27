@@ -26,6 +26,11 @@
 
 # IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from builtins import input
+
 import io
 from instruments.abstract_instruments.comm import AbstractCommunicator
 import sys
@@ -110,14 +115,14 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
             else:
                 raise ValueError('Must read a positive value of characters.')
         else:
-            input_var = raw_input("Desired Response: ")
+            input_var = input("Desired Response: ")
         return input_var
 
     def write(self, msg):
         if self._stdout is not None:
             self._stdout.write(msg)
         else:
-            print " <- {} ".format(repr(msg))
+            print(" <- {} ".format(repr(msg)))
 
     def seek(self, offset):
         return NotImplemented

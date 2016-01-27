@@ -34,6 +34,9 @@ pyserial connections can be open at the same time to the same serial port.
 
 ## IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
+
 import serial
 
 from instruments.abstract_instruments.comm import SerialCommunicator
