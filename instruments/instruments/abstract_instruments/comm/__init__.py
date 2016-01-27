@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from instruments.abstract_instruments.comm.abstract_comm import AbstractCommunicator
 
 from instruments.abstract_instruments.comm.socket_communicator import SocketCommunicator

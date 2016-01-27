@@ -24,8 +24,10 @@
 
 ## IMPORTS ####################################################################
 
+from __future__ import absolute_import
+from builtins import range
+
 import quantities as pq
-from cStringIO import StringIO
 
 from nose.tools import raises, eq_
 
@@ -46,7 +48,7 @@ def test_ProxyList_basics():
             
     parent = object()
     
-    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    proxy_list = ProxyList(parent, ProxyChild, range(10))
     
     child = proxy_list[0]
     assert child._parent is parent
@@ -77,7 +79,7 @@ def test_ProxyList_length():
             
     parent = object()
     
-    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    proxy_list = ProxyList(parent, ProxyChild, range(10))
     
     eq_(len(proxy_list), 10)
     
@@ -89,7 +91,7 @@ def test_ProxyList_iterator():
             
     parent = object()
     
-    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    proxy_list = ProxyList(parent, ProxyChild, range(10))
     
     i = 0
     for item in proxy_list:
@@ -122,7 +124,7 @@ def test_ProxyList_invalid_idx():
         
     parent = object()
     
-    proxy_list = ProxyList(parent, ProxyChild, xrange(5))
+    proxy_list = ProxyList(parent, ProxyChild, range(5))
     
     proxy_list[10] # Should raise IndexError
 

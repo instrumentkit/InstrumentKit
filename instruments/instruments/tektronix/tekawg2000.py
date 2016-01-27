@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 from flufl.enum import Enum
 
@@ -195,7 +195,7 @@ class TekAWG2000(SCPIInstrument):
     
     @property
     def channel(self):
-        return ProxyList(self, TekAWG2000Channel, xrange(2))
+        return ProxyList(self, TekAWG2000Channel, range(2))
         
     ## METHODS ##
     

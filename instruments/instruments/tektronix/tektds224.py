@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 import time
 import numpy as np
@@ -193,7 +193,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         
         :rtype: `_TekTDS224Channel`
         '''
-        return ProxyList(self, _TekTDS224Channel, xrange(4))
+        return ProxyList(self, _TekTDS224Channel, range(4))
         
     @property
     def ref(self):
@@ -210,7 +210,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         '''
         return ProxyList(self,
             lambda s, idx: _TekTDS224DataSource(s, "REF{}".format(idx  + 1)),
-            xrange(4))
+            range(4))
         
     @property
     def math(self):

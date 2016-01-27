@@ -22,13 +22,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ###################################################################
-
-from __future__ import division
-
 ## IMPORTS ####################################################################
 
-from time import time, sleep
+from __future__ import absolute_import
+from __future__ import division
 
 import datetime
 

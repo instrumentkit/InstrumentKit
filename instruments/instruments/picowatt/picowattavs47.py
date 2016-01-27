@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 import quantities as pq
 from flufl.enum import IntEnum
@@ -105,7 +105,7 @@ class PicowattAVS47(SCPIInstrument):
         .. seealso::
             `PicowattAVS47` for an example using this property.
         """
-        return ProxyList(self, PicowattAVS47.Sensor, xrange(8))
+        return ProxyList(self, PicowattAVS47.Sensor, range(8))
         
     remote = bool_property(
         name="REM",

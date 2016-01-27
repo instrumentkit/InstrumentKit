@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from instruments.abstract_instruments.instrument import Instrument
 from instruments.abstract_instruments.multimeter import Multimeter
 from instruments.abstract_instruments.electrometer import Electrometer

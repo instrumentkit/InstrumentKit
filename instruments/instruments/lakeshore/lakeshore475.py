@@ -23,11 +23,11 @@
 ##
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
 
 import quantities as pq
 from flufl.enum import IntEnum
@@ -331,7 +331,7 @@ class Lakeshore475(SCPIInstrument):
         peak_disp = peak_disp.value
 
         # Parse the resolution
-        if resolution in xrange(3, 6):
+        if resolution in range(3, 6):
             resolution = resolution - 2
         else:
             raise ValueError('Only 3,4,5 are valid resolutions.')

@@ -24,11 +24,14 @@
 
 # IMPORTS ####################################################################
 
+from __future__ import absolute_import
+
+from flufl.enum import IntEnum
+from nose.tools import raises
+import quantities as pq
+
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
-from nose.tools import raises
-from flufl.enum import IntEnum
-import quantities as pq
 
 # TESTS ######################################################################
 

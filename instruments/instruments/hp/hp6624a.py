@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
 
 import quantities as pq
 
@@ -234,7 +234,7 @@ class HP6624a(PowerSupply):
         .. seealso::
             `HP6624a` for example using this property.
         '''
-        return ProxyList(self, _HP6624aChannel, xrange(self.channel_count))
+        return ProxyList(self, _HP6624aChannel, range(self.channel_count))
         
     @property
     def voltage(self):
@@ -246,7 +246,7 @@ class HP6624a(PowerSupply):
         :type: `list` of `~quantities.Quantity` with units Volt
         """
         values = []
-        for i in xrange(self.channel_count):
+        for i in range(self.channel_count):
             values.append(self.channel[i].voltage)
         return tuple(values)
     @voltage.setter
@@ -258,7 +258,7 @@ class HP6624a(PowerSupply):
                                  'length {}.'.format(self.channel_count))
             self.channel[i].voltage = newval[i]
         else:
-            for i in xrange(self.channel_count):
+            for i in range(self.channel_count):
                 self.channel[i].voltage = newval
                 
     @property
@@ -271,7 +271,7 @@ class HP6624a(PowerSupply):
         :type: `list` of `~quantities.Quantity` with units Amp
         """
         values = []
-        for i in xrange(self.channel_count):
+        for i in range(self.channel_count):
             values.append(self.channel[i].current)
         return tuple(values)
     @current.setter
@@ -283,7 +283,7 @@ class HP6624a(PowerSupply):
                                  'length {}.'.format(self.channel_count))
             self.channel[i].current = newval[i]
         else:
-            for i in xrange(self.channel_count):
+            for i in range(self.channel_count):
                 self.channel[i].current = newval
                 
     @property
@@ -295,7 +295,7 @@ class HP6624a(PowerSupply):
         :rtype: `tuple` of `~quantities.Quantity`
         """
         values = []
-        for i in xrange(self.channel_count):
+        for i in range(self.channel_count):
             values.append(self.channel[i].voltage_sense)
         return tuple(values)
         
@@ -308,7 +308,7 @@ class HP6624a(PowerSupply):
         :rtype: `tuple` of `~quantities.Quantity`
         """
         values = []
-        for i in xrange(self.channel_count):
+        for i in range(self.channel_count):
             values.append(self.channel[i].current_sense)
         return tuple(values)
                 

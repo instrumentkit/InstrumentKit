@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 import math
 import time
@@ -47,7 +47,7 @@ from instruments.util_fns import assume_units
 
 ## CONSTANTS ###################################################################
 
-VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)]
+VALID_SAMPLE_RATES = [2.0**n for n in range(-4, 10)]
 
 ## CLASSES #####################################################################
 
@@ -83,8 +83,8 @@ class SRS830(SCPIInstrument):
             elif isinstance(self._file, SerialCommunicator):
                 self.sendcmd('OUTX 2')
             else:
-                print 'OUTX command has not been set. Instrument behavour is '\
-                        'unknown.'
+                raise IOError("OUTX command has not been set. Instrument "
+                              "behavour is unknown.")
     ## ENUMS ##
     
     class FreqSource(IntEnum):
@@ -403,8 +403,7 @@ class SRS830(SCPIInstrument):
         
         self.init(sample_rate, SRS830.BufferMode['one_shot'])
         self.start_data_transfer()
-        
-        print 'Sampling will take {} seconds.'.format(sample_time)
+
         time.sleep(sample_time+0.1)  
         
         self.pause()

@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 from flufl.enum import Enum
 
@@ -204,7 +204,7 @@ class SRSCTC100(SCPIInstrument):
             # Reset the position to the first point, then save it.
             with self._ctc._error_checking_disabled():
                 ts[0], temps[0] = get_log_point('first', units)
-                for idx in xrange(1, n_points):
+                for idx in range(1, n_points):
                     ts[idx], temps[idx] = get_log_point('next', units)
             
             # Do an actual error check now.
@@ -286,7 +286,7 @@ class SRSCTC100(SCPIInstrument):
         return int(self.query('system.display.figures?'))
     @display_figures.setter
     def display_figures(self, newval):
-        if newval not in xrange(7):
+        if newval not in range(7):
             raise ValueError("Number of display figures must be an integer from 0 to 6, inclusive.")
         self.sendcmd('system.display.figures = {}'.format(newval))
         

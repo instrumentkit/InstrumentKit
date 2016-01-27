@@ -22,19 +22,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from future.utils import with_metaclass
 
 import abc
 
-from instruments.abstract_instruments import Instrument
-
 ## CLASSES #####################################################################
 
-class SGChannel(object):
+class SGChannel(with_metaclass(abc.ABCMeta, object)):
     """
     Python abstract base class representing a single channel for a signal 
     generator. 
@@ -42,7 +40,6 @@ class SGChannel(object):
     .. warning:: This class should NOT be manually created by the user. It is 
         designed to be initialized by the `~instruments.SignalGenerator` class.
     """
-    __metaclass__ = abc.ABCMeta
     
     ## PROPERTIES ##
     

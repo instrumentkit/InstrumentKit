@@ -23,18 +23,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 import time
 import struct
-from flufl.enum import Enum, IntEnum
+from flufl.enum import IntEnum
 
 import quantities as pq
-import numpy as np
 
 from instruments.abstract_instruments import Instrument
 

@@ -24,6 +24,10 @@
 
 ## IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
+
 from flufl.enum import Enum, IntEnum
 import quantities as pq
 
