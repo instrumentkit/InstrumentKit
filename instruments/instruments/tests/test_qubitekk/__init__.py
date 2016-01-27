@@ -322,3 +322,34 @@ def test_cc1_trigger():
         cc.trigger = cc.TriggerMode.start_stop
         cc.trigger = cc.TriggerMode.continuous
         cc.trigger = cc.TriggerMode.start_stop
+
+
+@raises(TypeError)
+def test_cc1_trigger_error():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            ":TRIG blo"
+
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.trigger = "blo"
+
+
+def test_cc1_clear():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "CLEA"
+
+        ],
+        [
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        cc.clear_counts()
