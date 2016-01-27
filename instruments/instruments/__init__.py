@@ -42,7 +42,7 @@ def __check_versions():
         'flufl.enum': StrictVersion('4.0')
     }
     
-    for module_name, version in VERSIONS_NEEDED.iteritems():
+    for module_name, version in VERSIONS_NEEDED.items():
         module = __import__(module_name, fromlist=['__version__'])
         if StrictVersion(module.__version__) < version:
             raise ImportError("Module {} is version {}, but we need version {}.".format(module_name, module.__version__, version))
