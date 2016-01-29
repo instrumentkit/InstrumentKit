@@ -31,7 +31,7 @@ from __future__ import division
 from builtins import range
 
 import quantities as pq
-from flufl.enum import IntEnum
+from enum import IntEnum
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.util_fns import ProxyList, assume_units, split_unit_str
@@ -254,20 +254,23 @@ class CC1(SCPIInstrument):
     @property
     def trigger(self):
         """
-        Gets the current trigger mode, meaning, whether the coincidence counter is tallying counts every dwell
-        time over and over - continuous, or start/stop, meaning the coincidence counter is tallying counts between
-        start and stop triggers.
+        Gets the current trigger mode, meaning, whether the coincidence
+        counter is tallying counts every dwell time over and over - continuous,
+        or start/stop, meaning the coincidence counter is tallying counts
+        between start and stop triggers.
+
         :rtype: ik.qubitekk.CC1.TriggerMode
         :return: the current trigger mode
         """
         response = self.query("TRIG?")
-        return self.TriggerMode[int(response)]
+        return self.TriggerMode(int(response))
 
     @trigger.setter
-    def trigger(self, new_setting):
-        if not (new_setting is self.TriggerMode.continuous or new_setting is self.TriggerMode.start_stop):
-            raise TypeError("The new trigger setting must be a Trigger Mode.")
-        if new_setting == 0:
+    def trigger(self, newval):
+        if not isinstance(newval, self.TriggerMode):
+            raise TypeError("The new trigger setting must be a CC1.TriggerMode.")
+        newval = newval.value
+        if newval == 0:
             if not qubitekk_check_unknown(self.query(":TRIG:MODE CONT")):
                 self.sendcmd(":TRIG 0")
         else:
