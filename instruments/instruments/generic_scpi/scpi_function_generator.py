@@ -22,13 +22,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
 
-from flufl.enum import Enum
+from __future__ import absolute_import
+from __future__ import division
+
+from enum import Enum
 
 import quantities as pq
 import numpy as np
@@ -52,7 +51,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
         FunctionGenerator.VoltageMode.dBm:          "DBM",
     }
     
-    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.iteritems())
+    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.items())
     
     ## FunctionGenerator CONTRACT ##
     

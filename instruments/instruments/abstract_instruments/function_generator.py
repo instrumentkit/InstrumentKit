@@ -23,11 +23,11 @@
 ##
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from future.utils import with_metaclass
 
 import abc
 
@@ -37,12 +37,11 @@ from instruments.util_fns import assume_units
 
 import quantities as pq
 
-from flufl.enum import Enum
+from enum import Enum
 
 ## CLASSES #####################################################################
 
-class FunctionGenerator(Instrument):
-    __metaclass__ = abc.ABCMeta
+class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
 
     ## ENUMS ##
     

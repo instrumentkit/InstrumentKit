@@ -24,11 +24,14 @@
 
 # IMPORTS ####################################################################
 
+from __future__ import absolute_import
+
+from enum import IntEnum
+from nose.tools import raises
+import quantities as pq
+
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
-from nose.tools import raises
-from flufl.enum import IntEnum
-import quantities as pq
 
 # TESTS ######################################################################
 
@@ -140,7 +143,7 @@ def test_lcc25_mode_invalid2():
         []
     ) as lcc:
         blo = IntEnum("blo", "beep boop bop")
-        lcc.mode = blo[0]
+        lcc.mode = blo(0)
 
 
 def test_lcc25_enable():
@@ -611,7 +614,7 @@ def test_sc10_mode_invalid2():
         sep="\r"
     ) as sc:
         blo = IntEnum("blo", "beep boop bop")
-        sc.mode = blo[0]
+        sc.mode = blo(0)
 
 
 def test_sc10_trigger():

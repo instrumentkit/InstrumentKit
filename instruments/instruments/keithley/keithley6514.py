@@ -22,22 +22,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
 
-import time
-from flufl.enum import Enum, IntEnum
-import struct
+from __future__ import absolute_import
+from __future__ import division
+from builtins import map
+
+from enum import Enum
 
 import quantities as pq
-import numpy as np
 
 from instruments.abstract_instruments import Electrometer
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units, ProxyList, bool_property, enum_property
+from instruments.util_fns import bool_property, enum_property
 
 ## CLASSES #####################################################################
 

@@ -22,20 +22,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
 
-from flufl.enum import Enum
-from flufl.enum._enum import EnumValue
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
+
+from enum import Enum
 
 import quantities as pq
 
 from instruments.generic_scpi import SCPIFunctionGenerator
 from instruments.util_fns import (
-    enum_property, int_property, bool_property, unitful_property, assume_units
+    enum_property, int_property, bool_property, assume_units
 )
 
 
@@ -89,7 +88,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         
         :type: `int`
         """,
-        valid_set=xrange(101)
+        valid_set=range(101)
     )
     
     ramp_symmetry = int_property(
@@ -102,7 +101,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         
         :type: `int`
         """,
-        valid_set=xrange(101)
+        valid_set=range(101)
     )
     
     output = bool_property(
@@ -157,12 +156,11 @@ class Agilent33220a(SCPIFunctionGenerator):
         value = self.query("OUTP:LOAD?")
         try:
             return int(value) * pq.ohm
-        except:
-            return self.LoadResistance[value.strip()]
+        except ValueError:
+            return self.LoadResistance(value.strip())
     @load_resistance.setter
     def load_resistance(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                        self.LoadResistance):
+        if isinstance(newval, self.LoadResistance):
             newval = newval.value
         elif isinstance(newval, int):
             if (newval < 0) or (newval > 10000):

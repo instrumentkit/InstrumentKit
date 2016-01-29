@@ -23,11 +23,11 @@
 ##
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from future.utils import with_metaclass
 
 import abc
 
@@ -35,8 +35,7 @@ from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 
-class OscilloscopeDataSource(object):
-    __metaclass__ = abc.ABCMeta
+class OscilloscopeDataSource(with_metaclass(abc.ABCMeta, object)):
     
     ## PROPERTIES ##
     
@@ -50,8 +49,7 @@ class OscilloscopeDataSource(object):
     def read_waveform(self, bin_format=True):
         raise NotImplementedError
 
-class OscilloscopeChannel(object):
-    __metaclass__ = abc.ABCMeta
+class OscilloscopeChannel(with_metaclass(abc.ABCMeta, object)):
     
     ## PROPERTIES ##
     
@@ -68,8 +66,7 @@ class OscilloscopeChannel(object):
     coupling = abc.abstractproperty(getcoupling, setcoupling)
         
 
-class Oscilloscope(Instrument):
-    __metaclass__ = abc.ABCMeta
+class Oscilloscope(with_metaclass(abc.ABCMeta, Instrument)):
 
     ## PROPERTIES ##
     

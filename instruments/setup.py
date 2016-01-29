@@ -41,6 +41,7 @@ setup(
         'instruments.srs',
         'instruments.tektronix',
         'instruments.thorlabs',
+        'instruments.toptica',
         'instruments.yokogawa',
     ],
     install_requires = [

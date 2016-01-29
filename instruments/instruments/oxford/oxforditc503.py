@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
 
 import quantities as pq
 
@@ -91,4 +91,4 @@ class OxfordITC503(Instrument):
         >>> itc = ik.other.OxfordITC503.open_gpibusb('/dev/ttyUSB0', 1)
         >>> print itc.sensor[0].temperature
         """
-        return ProxyList(self, OxfordITC503.Sensor, xrange(3))
+        return ProxyList(self, OxfordITC503.Sensor, range(3))

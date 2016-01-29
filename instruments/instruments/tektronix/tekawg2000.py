@@ -22,13 +22,13 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
 
-from flufl.enum import Enum
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
+
+from enum import Enum
 
 import numpy as np
 import quantities as pq
@@ -132,7 +132,7 @@ class TekAWG2000Channel(object):
                                                 self._name)).strip()]
     @polarity.setter
     def polarity(self, newval):
-        if newval.enum is not TekAWG2000.Polarity:
+        if not isinstance(newval, TekAWG2000.Polarity):
             raise TypeError('Polarity settings must be a `TekAWG2000.Polarity` '
                 'value, got {} instead.'.format(type(newval)))
         
@@ -150,7 +150,7 @@ class TekAWG2000Channel(object):
                                             self._name)).strip().split(',')[0]]
     @shape.setter
     def shape(self, newval):
-        if newval.enum is not TekAWG2000.Shape:
+        if not isinstance(newval, TekAWG2000.Shape):
             raise TypeError('Shape settings must be a `TekAWG2000.Shape` '
                 'value, got {} instead.'.format(type(newval)))
         self._tek.sendcmd('FG:{}:SHAP {}'.format(self._name, newval.value))
@@ -195,7 +195,7 @@ class TekAWG2000(SCPIInstrument):
     
     @property
     def channel(self):
-        return ProxyList(self, TekAWG2000Channel, xrange(2))
+        return ProxyList(self, TekAWG2000Channel, range(2))
         
     ## METHODS ##
     

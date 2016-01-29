@@ -22,17 +22,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
+from functools import reduce
 
 from time import time, sleep
 
 import datetime
 
-from flufl.enum import IntEnum
+from enum import IntEnum
 
 from contextlib import contextmanager
 
@@ -264,9 +265,9 @@ class NewportESP301(Instrument):
         >>> controller.run_program(15)
         
         :param int program_id: An integer label for the new program.
-            Must be in ``xrange(1, 101)``.
+            Must be in ``range(1, 101)``.
         """
-        if program_id not in xrange(1, 101):
+        if program_id not in range(1, 101):
             raise ValueError("Invalid program ID. Must be an integer from 1 to 100 (inclusive).")
         self._newport_cmd("XX", target=program_id)
         try:
@@ -296,7 +297,7 @@ class NewportESP301(Instrument):
         """
         Runs a previously defined user program with a given program ID.
         """
-        if program_id not in xrange(1, 101):
+        if program_id not in range(1, 101):
             raise ValueError("Invalid program ID. Must be an integer from 1 to 100 (inclusive).")
         self._newport_cmd("EX", target=program_id)
     
@@ -1045,7 +1046,7 @@ class NewportESP301Axis(object):
         try:
             self._controller._newport_cmd("ST",target=self.axis_id)
         except NewportError, e:
-            print e
+            raise NewportError(e)
 
     def wait_for_position(self,position):
         """
@@ -1339,7 +1340,7 @@ class NewportESP301Axis(object):
         
         :return int:
         """
-        for num, quant in self._unit_dict.iteritems():
+        for num, quant in self._unit_dict.items():
             if quant == quantity:
                 return num
                 

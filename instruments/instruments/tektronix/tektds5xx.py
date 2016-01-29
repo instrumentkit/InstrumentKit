@@ -25,16 +25,16 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map, round
+from functools import reduce
 
 import time
 import numpy as np
-from flufl.enum import Enum
-from flufl.enum._enum import EnumValue
+from enum import Enum
 
 from time import sleep
 from datetime import datetime
@@ -200,13 +200,12 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `TekTDS5xx.Coupling`
         """
-        return TekTDS5xx.Coupling[self._tek.query("CH{}:COUPL?".format(
+        return TekTDS5xx.Coupling(self._tek.query("CH{}:COUPL?".format(
                                                                 self._idx)
-                                                                )]
+                                                                ))
     @coupling.setter
     def coupling(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                           TekTDS5xx.Coupling):
+        if not isinstance(newval, TekTDS5xx.Coupling):
             raise TypeError("Coupling setting must be a `TekTDS5xx.Coupling`"
                 " value, got {} instead.".format(type(newval)))
 
@@ -219,13 +218,12 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `TekTDS5xx.Bandwidth`
         """
-        return TekTDS5xx.Bandwidth[self._tek.query("CH{}:BAND?".format(
+        return TekTDS5xx.Bandwidth(self._tek.query("CH{}:BAND?".format(
                                                                 self._idx)
-                                                                )]
+                                                                ))
     @bandwidth.setter
     def bandwidth(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                           TekTDS5xx.Bandwidth):
+        if not isinstance(newval, TekTDS5xx.Bandwidth):
             raise TypeError("Bandwidth setting must be a `TekTDS5xx.Bandwidth`"
                 " value, got {} instead.".format(type(newval)))
 
@@ -238,13 +236,12 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `TekTDS5xx.Impedance`
         """
-        return TekTDS5xx.Impedance[self._tek.query("CH{}:IMP?".format(
+        return TekTDS5xx.Impedance(self._tek.query("CH{}:IMP?".format(
                                                                 self._idx)
-                                                                )]
+                                                                ))
     @impedance.setter
     def impedance(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                           TekTDS5xx.Impedance):
+        if not isinstance(newval, TekTDS5xx.Impedance):
             raise TypeError("Impedance setting must be a `TekTDS5xx.Impedance`"
                 " value, got {} instead.".format(type(newval)))
 
@@ -357,7 +354,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         
         :rtype: `_TDS5xxMeasurement`
         """
-        return ProxyList(self, _TekTDS5xxMeasurement, xrange(3))
+        return ProxyList(self, _TekTDS5xxMeasurement, range(3))
     
     
     @property
@@ -373,7 +370,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         
         :rtype: `_TekTDS5xxChannel`
         """
-        return ProxyList(self, _TekTDS5xxChannel, xrange(4))
+        return ProxyList(self, _TekTDS5xxChannel, range(4))
         
     @property
     def ref(self):
@@ -390,7 +387,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         return ProxyList(self,
             lambda s, idx: _TekTDS5xxDataSource(s, "REF{}".format(idx  + 1)),
-            xrange(4))
+            range(4))
         
     @property
     def math(self):
@@ -401,7 +398,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         return ProxyList(self,
             lambda s, idx: _TekTDS5xxDataSource(s, "MATH{}".format(idx  + 1)),
-            xrange(3))
+            range(3))
     
     @property
     def sources(self):
@@ -442,8 +439,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
     def data_source(self, newval):
         if isinstance(newval, _TekTDS5xxDataSource):
             newval = TekTDS5xx.Source[newval.name]
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                            TekTDS5xx.Source):
+        if not isinstance(newval, TekTDS5xx.Source):
             raise TypeError("Source setting must be a `TekTDS5xx.Source`"
                 " value, got {} instead.".format(type(newval)))
 
@@ -513,8 +509,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
     
     @trigger_coupling.setter
     def trigger_coupling(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                   TekTDS5xx.Coupling):
+        if not isinstance(newval, TekTDS5xx.Coupling):
             raise TypeError("Coupling setting must be a `TekTDS5xx.Coupling`"
                 " value, got {} instead.".format(type(newval)))
 
@@ -527,12 +522,11 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         
         :type: `TekTDS5xx.Edge`
         """
-        return TekTDS5xx.Edge[self.query("TRIG:MAI:EDGE:SLO?")]
+        return TekTDS5xx.Edge(self.query("TRIG:MAI:EDGE:SLO?"))
     
     @trigger_slope.setter
     def trigger_slope(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                   TekTDS5xx.Edge):
+        if not isinstance(newval, TekTDS5xx.Edge):
             raise TypeError("Edge setting must be a `TekTDS5xx.Edge`"
                 " value, got {} instead.".format(type(newval)))
 
@@ -545,12 +539,11 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         
         :type: `TekTDS5xx.Trigger`
         """
-        return TekTDS5xx.Trigger[self.query("TRIG:MAI:EDGE:SOU?")]
+        return TekTDS5xx.Trigger(self.query("TRIG:MAI:EDGE:SOU?"))
     
     @trigger_source.setter
     def trigger_source(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                   TekTDS5xx.Trigger):
+        if not isinstance(newval, TekTDS5xx.Trigger):
             raise TypeError("Trigger source setting must be a"
                 "`TekTDS5xx.source` value, got {} instead.".format(type(newval)))
 

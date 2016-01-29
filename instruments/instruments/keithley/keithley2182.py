@@ -22,18 +22,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
 
-from flufl.enum import Enum
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
+
+from enum import Enum
 import quantities as pq
 
 from instruments.generic_scpi import SCPIMultimeter
 from instruments.abstract_instruments import Multimeter
-from instruments.util_fns import assume_units, ProxyList
+from instruments.util_fns import ProxyList
 
 ## CLASSES #####################################################################
 
@@ -141,7 +141,7 @@ class Keithley2182(SCPIMultimeter):
         
         :rtype: `_Keithley2182Channel`
         """
-        return ProxyList(self, _Keithley2182Channel, xrange(2))
+        return ProxyList(self, _Keithley2182Channel, range(2))
         
     @property
     def relative(self):
@@ -216,7 +216,7 @@ class Keithley2182(SCPIMultimeter):
         :return: Measurement readings from the instrument output buffer.
         :rtype: `list` of `~quantities.quantity.Quantity` elements
         """
-        return map(float, self.query('FETC?').split(',')) * self.units
+        return list(map(float, self.query('FETC?').split(','))) * self.units
     
     def measure(self, mode=None):
         """
@@ -232,9 +232,9 @@ class Keithley2182(SCPIMultimeter):
         """
         if mode is None:
             mode = self.mode
-        if mode not in Keithley2182.Mode:
+        if not isinstance(mode, Keithley2182.Mode):
             raise TypeError("Mode must be specified as a Keithley2182.Mode "
-                            "value, got {} instead.".format(newval))
+                            "value, got {} instead.".format(mode))
         value = float(self.query('MEAS:{}?'.format(mode)))
         unit = self.units
         return value * unit

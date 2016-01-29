@@ -26,6 +26,10 @@
 
 ## IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range
+
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument
@@ -236,7 +240,7 @@ class CC1(SCPIInstrument):
         :rtype: `CC1.Channel`
         
         '''
-        return ProxyList(self, CC1.Channel, xrange(self.channel_count))
+        return ProxyList(self, CC1.Channel, range(self.channel_count))
     
     ## METHODS ##
     

@@ -31,7 +31,7 @@ $ pip install -r requirements.txt
 - NumPy
 - `PySerial`_
 - `quantities`_
-- `flufl.enum`_ version 4.0 or later
+- `enum34`_
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
@@ -42,7 +42,7 @@ Optional Dependencies
 
 .. _PySerial: http://pyserial.sourceforge.net/
 .. _quantities: http://pythonhosted.org/quantities/
-.. _flufl.enum: http://pythonhosted.org/flufl.enum/
+.. _enum34: https://pypi.python.org/pypi/enum34
 .. _PyYAML: https://bitbucket.org/xi/pyyaml
 .. _PyUSB: http://sourceforge.net/apps/trac/pyusb/
 .. _PyVISA: http://pyvisa.sourceforge.net/

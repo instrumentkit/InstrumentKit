@@ -22,20 +22,18 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 import math
 import time
 
 import numpy as np
 
-from flufl.enum import Enum
-from flufl.enum import IntEnum
-from flufl.enum._enum import EnumValue
+from enum import Enum, IntEnum
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
@@ -47,7 +45,7 @@ from instruments.util_fns import assume_units
 
 ## CONSTANTS ###################################################################
 
-VALID_SAMPLE_RATES = [2.0**n for n in xrange(-4, 10)]
+VALID_SAMPLE_RATES = [2.0**n for n in range(-4, 10)]
 
 ## CLASSES #####################################################################
 
@@ -83,8 +81,8 @@ class SRS830(SCPIInstrument):
             elif isinstance(self._file, SerialCommunicator):
                 self.sendcmd('OUTX 2')
             else:
-                print 'OUTX command has not been set. Instrument behavour is '\
-                        'unknown.'
+                raise IOError("OUTX command has not been set. Instrument "
+                              "behavour is unknown.")
     ## ENUMS ##
     
     class FreqSource(IntEnum):
@@ -141,11 +139,10 @@ class SRS830(SCPIInstrument):
         return self.FreqSource[int(self.query('FMOD?'))]
     @frequency_source.setter
     def frequency_source(self, newval):
-        if not isinstance(newval, EnumValue) or \
-                (newval.enum is not SRS830.FreqSource):
+        if not isinstance(newval, SRS830.FreqSource):
             raise TypeError("Frequency source setting must be a "
-                              "`SRS830.FreqSource` value, got {} "
-                              "instead.".format(type(newval)))
+                            "`SRS830.FreqSource` value, got {} "
+                            "instead.".format(type(newval)))
         self.sendcmd('FMOD {}'.format(newval.value))
         
     @property
@@ -222,14 +219,13 @@ class SRS830(SCPIInstrument):
         
         :type: `SRS830.Coupling`
         '''
-        return SRS830.Coupling[int(self.query('ICPL?'))]
+        return SRS830.Coupling(int(self.query('ICPL?')))
     @coupling.setter
     def coupling(self, newval):
-        if not isinstance(newval, EnumValue) or \
-                (newval.enum is not SRS830.Coupling):
+        if not isinstance(newval, SRS830.Coupling):
             raise TypeError("Input coupling setting must be a "
-                              "`SRS830.Coupling` value, got {} "
-                              "instead.".format(type(newval)))
+                            "`SRS830.Coupling` value, got {} "
+                            "instead.".format(type(newval)))
         self.sendcmd('ICPL {}'.format(newval.value))
         
     @property
@@ -269,14 +265,13 @@ class SRS830(SCPIInstrument):
         
         :type: `SRS830.BufferMode`
         '''
-        return SRS830.BufferMode[int(self.query('SEND?'))]
+        return SRS830.BufferMode(int(self.query('SEND?')))
     @buffer_mode.setter
     def buffer_mode(self, newval):
-        if not isinstance(newval, EnumValue) or \
-                (newval.enum is not SRS830.BufferMode):
+        if not isinstance(newval, SRS830.BufferMode):
             raise TypeError("Input coupling setting must be a "
-                              "`SRS830.BufferMode` value, got {} "
-                              "instead.".format(type(newval)))
+                            "`SRS830.BufferMode` value, got {} "
+                            "instead.".format(type(newval)))
         self.sendcmd('SEND {}'.format(newval.value))     
     
     @property
@@ -403,8 +398,7 @@ class SRS830(SCPIInstrument):
         
         self.init(sample_rate, SRS830.BufferMode['one_shot'])
         self.start_data_transfer()
-        
-        print 'Sampling will take {} seconds.'.format(sample_time)
+
         time.sleep(sample_time+0.1)  
         
         self.pause()
@@ -617,8 +611,3 @@ class SRS830(SCPIInstrument):
         ratio = self._valid_channel_ratio[channel-1][display]
         
         self.sendcmd('DDEF {},{},{}'.format(channel,display,ratio))        
-            
-            
-            
-            
-            

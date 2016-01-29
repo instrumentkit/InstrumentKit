@@ -10,8 +10,11 @@ install:
   - "pip install -r instruments/dev-requirements.txt"
   - pip install python-coveralls
   - pip install coverage
+  - pip install nose
+  - pip install pylint
 # command to run tests
 script:
   - nosetests --with-coverage -w instruments
+  - cd instruments && pylint --py3k instruments/ && cd ../
 after_success:
   - coveralls

@@ -22,14 +22,14 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
+
 import quantities as pq
-from flufl.enum import IntEnum
+from enum import IntEnum
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import (enum_property, bool_property, int_property,
@@ -80,7 +80,7 @@ class PicowattAVS47(SCPIInstrument):
             if not self._parent.mux_channel == self._idx:
                 self._parent.input_source = self._parent.InputSource.ground
                 self._parent.mux_channel = self._idx
-                self_.parent.input_source = self._parent.InputSource.actual
+                self._parent.input_source = self._parent.InputSource.actual
             # Next, prep a measurement with the ADC command
             self._parent.sendcmd("ADC")
             return float(self._parent.query("RES?")) * pq.ohm 
@@ -105,7 +105,7 @@ class PicowattAVS47(SCPIInstrument):
         .. seealso::
             `PicowattAVS47` for an example using this property.
         """
-        return ProxyList(self, PicowattAVS47.Sensor, xrange(8))
+        return ProxyList(self, PicowattAVS47.Sensor, range(8))
         
     remote = bool_property(
         name="REM",

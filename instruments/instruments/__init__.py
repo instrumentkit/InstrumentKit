@@ -23,6 +23,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
+from __future__ import absolute_import
+
 ## VERSION METADATA ###########################################################
 # In keeping with PEP-396, we define a version number of the form
 # {major}.{minor}[.{postrelease}]{prerelease-tag}
@@ -37,10 +39,10 @@ def __check_versions():
     from distutils.version import StrictVersion
     
     VERSIONS_NEEDED = {
-        'flufl.enum': StrictVersion('4.0')
+        # 'flufl.enum': StrictVersion('4.0')
     }
     
-    for module_name, version in VERSIONS_NEEDED.iteritems():
+    for module_name, version in VERSIONS_NEEDED.items():
         module = __import__(module_name, fromlist=['__version__'])
         if StrictVersion(module.__version__) < version:
             raise ImportError("Module {} is version {}, but we need version {}.".format(module_name, module.__version__, version))
@@ -63,6 +65,7 @@ import instruments.picowatt
 import instruments.rigol
 import instruments.srs
 import instruments.tektronix
+import instruments.toptica
 import instruments.thorlabs
 import instruments.qubitekk
 import instruments.hp

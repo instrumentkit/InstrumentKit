@@ -1,3 +1,8 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from instruments.hp.hp3456a import HP3456a
 
 from instruments.hp.hp6624a import (

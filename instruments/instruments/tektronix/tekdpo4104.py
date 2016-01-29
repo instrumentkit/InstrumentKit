@@ -22,16 +22,15 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 from time import time, sleep
 
-from flufl.enum import Enum
-from flufl.enum._enum import EnumValue
+from enum import Enum
 
 from contextlib import contextmanager
 
@@ -190,13 +189,12 @@ class _TekDPO4104Channel(_TekDPO4104DataSource, OscilloscopeChannel):
 
         :type: `TekDPO4104.Coupling`
         """
-        return TekDPO4104.Coupling[self._tek.query("CH{}:COUPL?".format(
+        return TekDPO4104.Coupling(self._tek.query("CH{}:COUPL?".format(
                                                                 self._idx)
-                                                                )]
+                                                                ))
     @coupling.setter
     def coupling(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                           TekDPO4104.Coupling):
+        if not isinstance(newval, TekDPO4104.Coupling):
             raise TypeError("Coupling setting must be a `TekDPO4104.Coupling`"
                 " value, got {} instead.".format(type(newval)))
 
@@ -238,7 +236,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         
         :rtype: `_TekDPO4104Channel`
         '''
-        return ProxyList(self, _TekDPO4104Channel, xrange(4))
+        return ProxyList(self, _TekDPO4104Channel, range(4))
 
     @property
     def ref(self):
@@ -255,7 +253,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         '''
         return ProxyList(self,
             lambda s, idx: _TekDPO4104DataSource(s, "REF{}".format(idx  + 1)),
-            xrange(4))
+            range(4))
         
     @property
     def math(self):
@@ -353,4 +351,3 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         Note that this is distinct from the standard SCPI "\*TRG" functionality.
         """
         self.sendcmd('TRIG FORCE')
-    

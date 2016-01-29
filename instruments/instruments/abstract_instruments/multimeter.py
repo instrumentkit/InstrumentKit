@@ -23,11 +23,11 @@
 ##
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from future.utils import with_metaclass
 
 import abc
 
@@ -35,8 +35,7 @@ from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 
-class Multimeter(Instrument):
-    __metaclass__ = abc.ABCMeta
+class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
     ## PROPERTIES ##
     

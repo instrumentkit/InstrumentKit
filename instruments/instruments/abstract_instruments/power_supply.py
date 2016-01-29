@@ -22,11 +22,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from future.utils import with_metaclass
 
 import abc
 
@@ -34,8 +34,7 @@ from instruments.abstract_instruments import Instrument
 
 ## CLASSES #####################################################################
 
-class PowerSupplyChannel(object):
-    __metaclass__ = abc.ABCMeta
+class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
     
     ## PROPERTIES ##
     
@@ -76,8 +75,7 @@ class PowerSupplyChannel(object):
     output = abc.abstractproperty(getoutput, setoutput)
     
 
-class PowerSupply(Instrument):
-    __metaclass__ = abc.ABCMeta
+class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
     
     ## PROPERTIES ##
     

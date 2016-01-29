@@ -22,14 +22,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
 
-from flufl.enum import Enum
-from flufl.enum._enum import EnumValue
+from __future__ import absolute_import
+from __future__ import division
+
+from enum import Enum
 
 import quantities as pq
 import numpy as np
@@ -182,18 +180,18 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         :type: `~quantities.Quantity`, or `~SCPIMultimeter.InputRange`
         """
         value = self.query('CONF?')
-        mode = self.Mode[self._mode_parse(value)]
-        value = value.split(" ")[1].split(",")[0] # Extract device range
+        mode = self.Mode(self._mode_parse(value))
+        value = value.split(" ")[1].split(",")[0]  # Extract device range
         try:
             return float(value) * UNITS[mode]
-        except:
-            return self.InputRange[value.strip()]
+        except ValueError:
+            return self.InputRange(value.strip())
     @input_range.setter
     def input_range(self, newval):
         current = self.query("CONF?")
-        mode = self.Mode[self._mode_parse(current)]
+        mode = self.Mode(self._mode_parse(current))
         units = UNITS[mode]
-        if isinstance(newval, EnumValue) and (newval.enum is self.InputRange):
+        if isinstance(newval, self.InputRange):
             newval = newval.value
         else:
             newval = assume_units(newval, units).rescale(units).magnitude
@@ -214,17 +212,17 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         :type: `int`, `float` or `~SCPIMultimeter.Resolution`
         """
         value = self.query('CONF?')
-        value = value.split(" ")[1].split(",")[1] # Extract resolution
+        value = value.split(" ")[1].split(",")[1]  # Extract resolution
         try:
             return float(value)
         except:
-            return self.Resolution[value.strip()]
+            return self.Resolution(value.strip())
     @resolution.setter
     def resolution(self, newval):
         current = self.query("CONF?")
-        mode = self.Mode[self._mode_parse(current)]
+        mode = self.Mode(self._mode_parse(current))
         input_range = current.split(" ")[1].split(",")[0]
-        if isinstance(newval, EnumValue) and (newval.enum is self.Resolution):
+        if isinstance(newval, self.Resolution):
             newval = newval.value
         elif not isinstance(newval, float) and not isinstance(newval, int):
             raise TypeError("Resolution must be specified as an int, float, "
@@ -259,11 +257,11 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         value = self.query('TRIG:COUN?')
         try:
             return int(value)
-        except:
-            return self.TriggerCount[value.strip()]
+        except ValueError:
+            return self.TriggerCount(value.strip())
     @trigger_count.setter
     def trigger_count(self, newval):
-        if isinstance(newval, EnumValue) and (newval.enum is self.TriggerCount):
+        if isinstance(newval, self.TriggerCount):
             newval = newval.value
         elif not isinstance(newval, int):
             raise TypeError("Trigger count must be specified as an int "
@@ -299,11 +297,11 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         value = self.query('SAMP:COUN?')
         try:
             return int(value)
-        except:
-            return self.SampleCount[value.strip()]
+        except ValueError:
+            return self.SampleCount(value.strip())
     @sample_count.setter
     def sample_count(self, newval):
-        if isinstance(newval, EnumValue) and (newval.enum is self.SampleCount):
+        if isinstance(newval, self.SampleCount):
             newval = newval.value
         elif not isinstance(newval, int):
             raise TypeError("Sample count must be specified as an int "
@@ -380,9 +378,9 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         """
         if mode is None:
             mode = self.mode
-        if mode.enum is not SCPIMultimeter.Mode:
+        if not isinstance(mode, SCPIMultimeter.Mode):
             raise TypeError("Mode must be specified as a SCPIMultimeter.Mode "
-                            "value, got {} instead.".format(type(newval)))
+                            "value, got {} instead.".format(type(mode)))
         value = float(self.query('MEAS:{}?'.format(mode.value)))
         return value * UNITS[mode]
         

@@ -24,12 +24,13 @@
 
 ## IMPORTS #####################################################################
 
-from flufl.enum import Enum
+from __future__ import absolute_import
+from __future__ import division
+from builtins import map
+
 import quantities as pq
-import numpy as np
 
 from instruments.generic_scpi import SCPIMultimeter
-from instruments.util_fns import split_unit_str
 
 ## CLASSES #####################################################################
 
@@ -133,7 +134,7 @@ class Agilent34410a(SCPIMultimeter):
         :rtype: `list` of `~quantities.quantity.Quantity` elements
         """
         units = UNITS[self.mode]
-        return map(float, self.query('FETC?').split(',')) * units
+        return list(map(float, self.query('FETC?').split(','))) * units
     
     def read_data(self, sample_count):
         """
@@ -156,7 +157,7 @@ class Agilent34410a(SCPIMultimeter):
         units = UNITS[self.mode]
         self.sendcmd('FORM:DATA ASC')
         data = self.query('DATA:REM? {}'.format(sample_count)).split(',')
-        return map(float, data) * units
+        return list(map(float, data)) * units
     
     def read_data_NVMEM(self):
         """
@@ -165,7 +166,7 @@ class Agilent34410a(SCPIMultimeter):
         :rtype: `list` of `~quantities.quantity.Quantity` elements
         """
         units = UNITS[self.mode]
-        data = map(float, self.query('DATA:DATA? NVMEM').split(','))
+        data = list(map(float, self.query('DATA:DATA? NVMEM').split(',')))
         return data * units
     
     def read_last_data(self):

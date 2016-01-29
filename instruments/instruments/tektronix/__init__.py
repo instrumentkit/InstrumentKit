@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 from instruments.tektronix.tekdpo4104 import (
     TekDPO4104,
     _TekDPO4104Channel,

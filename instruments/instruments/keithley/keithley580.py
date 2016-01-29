@@ -23,18 +23,17 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
+
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
 import time
 import struct
-from flufl.enum import Enum, IntEnum
+from enum import IntEnum
 
 import quantities as pq
-import numpy as np
 
 from instruments.abstract_instruments import Instrument
 
@@ -103,7 +102,7 @@ class Keithley580(Instrument):
     def polarity(self, newval):
         if isinstance(newval, str):
             newval = Keithley580.Polarity[newval]
-        if newval not in Keithley580.Polarity:
+        if not isinstance(newval, Keithley580.Polarity):
             raise TypeError('Polarity must be specified as a '
                             'Keithley580.Polarity, got {} '
                             'instead.'.format(newval))
@@ -127,9 +126,9 @@ class Keithley580(Instrument):
         return Keithley580.Drive[value]
     @drive.setter
     def drive(self, newval):
-        if  isinstance(newval, str):
+        if isinstance(newval, str):
             newval = Keithley580.Drive[newval]
-        if newval not in Keithley580.Drive:
+        if not isinstance(newval, Keithley580.Drive):
             raise TypeError('Drive must be specified as a '
                             'Keithley580.Drive, got {} '
                             'instead.'.format(newval))
@@ -247,7 +246,7 @@ class Keithley580(Instrument):
     @input_range.setter
     def input_range(self, newval):
         valid = ('auto', 2e-1, 2e0, 2e1, 2e2, 2e3, 2e4, 2e5)
-        if isisntance(newval, str):
+        if isinstance(newval, str):
             newval = newval.lower()
             if newval == 'auto':
                 self.sendcmd('R0X')
@@ -258,7 +257,7 @@ class Keithley580(Instrument):
         if isinstance(newval, pq.quantity.Quantity):
             newval = float(newval)
 
-        if isinstance(newval, float) or isinstance(newval, int):
+        if isinstance(newval, (float, int)):
             if newval in valid:
                 newval = valid.index(newval)
             else:

@@ -25,6 +25,9 @@
 
 ## IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
+
 import io
 
 # Trick to conditionally ignore the NameError caused by catching WindowsError.

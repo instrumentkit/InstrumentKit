@@ -23,15 +23,13 @@
 ##
 ##
 
-## FEATURES ####################################################################
-
-from __future__ import division
-
 ## IMPORTS #####################################################################
 
-import abc
+from __future__ import absolute_import
+from __future__ import division
+from builtins import range, map
 
-from flufl.enum import Enum
+from enum import Enum
 
 from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
@@ -114,7 +112,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
     def channel(self):
         # Rigol DS1000 series oscilloscopes all have two channels,
         # according to the documentation.
-        return ProxyList(self, self.Channel, xrange(2))
+        return ProxyList(self, self.Channel, range(2))
         
     @property
     def math(self):
@@ -131,7 +129,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
         return int(self.query(":ACQ:AVER?"))
     @acquire_averages.setter
     def acquire_averages(self, newval):
-        if newval not in [2**i for i in xrange(1,9)]:
+        if newval not in [2**i for i in range(1,9)]:
             raise ValueError(
                 "Number of averages {} not supported by instrument; "
                 "must be a power of 2 from 2 to 256.".format(newval)

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##
 # __init__.py: Package for InstrumentKit unit tests.
@@ -24,8 +24,10 @@
 
 ## IMPORTS ####################################################################
 
+from __future__ import absolute_import
+
 import contextlib
-from cStringIO import StringIO
+from io import BytesIO
 
 from nose.tools import nottest, eq_
 
@@ -59,8 +61,8 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n"):
     if isinstance(host_to_ins, list):
         host_to_ins = sep.join(host_to_ins) + (sep if host_to_ins else "")
 
-    stdin = StringIO(ins_to_host)
-    stdout = StringIO()
+    stdin = BytesIO(ins_to_host)
+    stdout = BytesIO()
     
     yield ins_class.open_test(stdin, stdout)
     

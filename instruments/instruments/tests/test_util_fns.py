@@ -24,8 +24,10 @@
 
 ## IMPORTS ####################################################################
 
+from __future__ import absolute_import
+from builtins import range
+
 import quantities as pq
-from cStringIO import StringIO
 
 from nose.tools import raises, eq_
 
@@ -34,7 +36,7 @@ from instruments.util_fns import (
     assume_units, convert_temperature
 )
 
-from flufl.enum import Enum
+from enum import Enum
 
 ## TEST CASES #################################################################
 
@@ -46,7 +48,7 @@ def test_ProxyList_basics():
             
     parent = object()
     
-    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    proxy_list = ProxyList(parent, ProxyChild, range(10))
     
     child = proxy_list[0]
     assert child._parent is parent
@@ -65,9 +67,9 @@ def test_ProxyList_valid_range_is_enum():
     parent = object()
     
     proxy_list = ProxyList(parent, ProxyChild, MockEnum)
-    assert proxy_list['aa']._name == MockEnum.a
-    assert proxy_list['b']._name  == MockEnum.b
-    assert proxy_list[MockEnum.a]._name == MockEnum.a
+    assert proxy_list['aa']._name == MockEnum.a.value
+    assert proxy_list['b']._name  == MockEnum.b.value
+    assert proxy_list[MockEnum.a]._name == MockEnum.a.value
     
 def test_ProxyList_length():
     class ProxyChild(object):
@@ -77,7 +79,7 @@ def test_ProxyList_length():
             
     parent = object()
     
-    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    proxy_list = ProxyList(parent, ProxyChild, range(10))
     
     eq_(len(proxy_list), 10)
     
@@ -89,7 +91,7 @@ def test_ProxyList_iterator():
             
     parent = object()
     
-    proxy_list = ProxyList(parent, ProxyChild, xrange(10))
+    proxy_list = ProxyList(parent, ProxyChild, range(10))
     
     i = 0
     for item in proxy_list:
@@ -122,7 +124,7 @@ def test_ProxyList_invalid_idx():
         
     parent = object()
     
-    proxy_list = ProxyList(parent, ProxyChild, xrange(5))
+    proxy_list = ProxyList(parent, ProxyChild, range(5))
     
     proxy_list[10] # Should raise IndexError
 
