@@ -28,7 +28,7 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import range
 
-from flufl.enum import Enum, IntEnum
+from enum import Enum, IntEnum
 import quantities as pq
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
@@ -87,7 +87,68 @@ class HP6632b(SCPIInstrument, HP6652a):
         request_service_bit = 'RQS'
         off = 'OFF'
 
-    class ErrorCodes(SCPIInstrument.ErrorCodes):
+    class ErrorCodes(IntEnum):
+        no_error = 0
+
+        ## -100 BLOCK: COMMAND ERRORS ##
+        command_error = -100
+        invalid_character = -101
+        syntax_error = -102
+        invalid_separator = -103
+        data_type_error = -104
+        get_not_allowed = -105
+        # -106 and -107 not specified.
+        parameter_not_allowed = -108
+        missing_parameter = -109
+        command_header_error = -110
+        header_separator_error = -111
+        program_mnemonic_too_long = -112
+        undefined_header = -113
+        header_suffix_out_of_range = -114
+        unexpected_number_of_parameters = -115
+        numeric_data_error = -120
+        invalid_character_in_number = -121
+        exponent_too_large = -123
+        too_many_digits = -124
+        numeric_data_not_allowed = -128
+        suffix_error = -130
+        invalid_suffix = -131
+        suffix_too_long = -134
+        suffix_not_allowed = -138
+        character_data_error = -140
+        invalid_character_data = -141
+        character_data_too_long = -144
+        character_data_not_allowed = -148
+        string_data_error = -150
+        invalid_string_data = -151
+        string_data_not_allowed = -158
+        block_data_error = -160
+        invalid_block_data = -161
+        block_data_not_allowed = -168
+        expression_error = -170
+        invalid_expression = -171
+        expression_not_allowed = -178
+        macro_error = -180
+        invalid_outside_macro_definition = -181
+        invalid_inside_macro_definition = -183
+        macro_parameter_error = -184
+
+        # TODO: copy over other blocks.
+        ## -200 BLOCK: EXECUTION ERRORS ##
+        ## -300 BLOCK: DEVICE-SPECIFIC ERRORS ##
+        # Note that device-specific errors also include all positive numbers.
+        ## -400 BLOCK: QUERY ERRORS ##
+
+        ## OTHER ERRORS ##
+
+        #: Raised when the instrument detects that it has been turned from
+        #: off to on.
+        power_on = -500 # Yes, SCPI 1999 defines the instrument turning on as
+        # an error. Yes, this makes my brain hurt.
+        user_request_event = -600
+        request_control_event = -700
+        operation_complete = -800
+
         # -200 BLOCK: EXECUTION ERRORS
         execution_error = -200
         data_out_of_range = -222
@@ -367,6 +428,6 @@ class HP6632b(SCPIInstrument, HP6652a):
             if err == self.ErrorCodes.no_error:
                 done = True
             else:
-                result.append(self.ErrorCodes[err] if err in self.ErrorCodes else err)
+                result.append(self.ErrorCodes(err) if err in self.ErrorCodes else err)
 
         return result

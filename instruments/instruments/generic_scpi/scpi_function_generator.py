@@ -27,7 +27,7 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from flufl.enum import Enum
+from enum import Enum
 
 import quantities as pq
 import numpy as np

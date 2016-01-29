@@ -37,7 +37,7 @@ from instruments.util_fns import assume_units
 
 import quantities as pq
 
-from flufl.enum import Enum
+from enum import Enum
 
 ## CLASSES #####################################################################
 

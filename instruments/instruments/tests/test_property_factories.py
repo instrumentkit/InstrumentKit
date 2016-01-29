@@ -37,7 +37,7 @@ from instruments.util_fns import (
     unitful_property, unitless_property
 )
 
-from flufl.enum import Enum
+from enum import Enum
 
 ## CLASSES ####################################################################
 

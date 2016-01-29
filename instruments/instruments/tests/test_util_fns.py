@@ -36,7 +36,7 @@ from instruments.util_fns import (
     assume_units, convert_temperature
 )
 
-from flufl.enum import Enum
+from enum import Enum
 
 ## TEST CASES #################################################################
 
@@ -67,9 +67,9 @@ def test_ProxyList_valid_range_is_enum():
     parent = object()
     
     proxy_list = ProxyList(parent, ProxyChild, MockEnum)
-    assert proxy_list['aa']._name == MockEnum.a
-    assert proxy_list['b']._name  == MockEnum.b
-    assert proxy_list[MockEnum.a]._name == MockEnum.a
+    assert proxy_list['aa']._name == MockEnum.a.value
+    assert proxy_list['b']._name  == MockEnum.b.value
+    assert proxy_list[MockEnum.a]._name == MockEnum.a.value
     
 def test_ProxyList_length():
     class ProxyChild(object):

@@ -31,8 +31,7 @@ from builtins import range, map
 import time
 import numpy as np
 import quantities as pq
-from flufl.enum import Enum
-from flufl.enum._enum import EnumValue
+from enum import Enum
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
@@ -157,16 +156,14 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
 
         :type: `TekTDS224.Coupling`
         """
-        return TekTDS224.Coupling[self._tek.query("CH{}:COUPL?".format(
-                                                                self._idx)
-                                                                )]
+        return TekTDS224.Coupling(self._tek.query(
+                "CH{}:COUPL?".format(self._idx)
+        ))
     @coupling.setter
     def coupling(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                           TekTDS224.Coupling):
+        if not isinstance(newval, TekTDS224.Coupling):
             raise TypeError("Coupling setting must be a `TekTDS224.Coupling`"
-                " value, got {} instead.".format(type(newval)))
-
+                            " value, got {} instead.".format(type(newval)))
         self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
         
 class TekTDS224(SCPIInstrument, Oscilloscope):
@@ -209,7 +206,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         :rtype: `_TekTDS224DataSource`
         '''
         return ProxyList(self,
-            lambda s, idx: _TekTDS224DataSource(s, "REF{}".format(idx  + 1)),
+            lambda s, idx: _TekTDS224DataSource(s, "REF{}".format(idx + 1)),
             range(4))
         
     @property
@@ -255,5 +252,3 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
     @property
     def force_trigger(self):
         raise NotImplementedError
-    
-        

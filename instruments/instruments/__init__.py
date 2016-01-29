@@ -39,7 +39,7 @@ def __check_versions():
     from distutils.version import StrictVersion
     
     VERSIONS_NEEDED = {
-        'flufl.enum': StrictVersion('4.0')
+        # 'flufl.enum': StrictVersion('4.0')
     }
     
     for module_name, version in VERSIONS_NEEDED.items():
