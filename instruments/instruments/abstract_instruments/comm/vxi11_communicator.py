@@ -25,6 +25,8 @@
 
 # IMPORTS #####################################################################
 
+from __future__ import absolute_import
+
 import io
 
 from abstract_comm import AbstractCommunicator
