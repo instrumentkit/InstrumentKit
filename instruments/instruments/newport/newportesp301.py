@@ -33,7 +33,7 @@ from time import time, sleep
 
 import datetime
 
-from flufl.enum import IntEnum
+from enum import IntEnum
 
 from contextlib import contextmanager
 

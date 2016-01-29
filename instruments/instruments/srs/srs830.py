@@ -33,9 +33,7 @@ import time
 
 import numpy as np
 
-from flufl.enum import Enum
-from flufl.enum import IntEnum
-from flufl.enum._enum import EnumValue
+from enum import Enum, IntEnum
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument
@@ -141,11 +139,10 @@ class SRS830(SCPIInstrument):
         return self.FreqSource[int(self.query('FMOD?'))]
     @frequency_source.setter
     def frequency_source(self, newval):
-        if not isinstance(newval, EnumValue) or \
-                (newval.enum is not SRS830.FreqSource):
+        if not isinstance(newval, SRS830.FreqSource):
             raise TypeError("Frequency source setting must be a "
-                              "`SRS830.FreqSource` value, got {} "
-                              "instead.".format(type(newval)))
+                            "`SRS830.FreqSource` value, got {} "
+                            "instead.".format(type(newval)))
         self.sendcmd('FMOD {}'.format(newval.value))
         
     @property
@@ -222,14 +219,13 @@ class SRS830(SCPIInstrument):
         
         :type: `SRS830.Coupling`
         '''
-        return SRS830.Coupling[int(self.query('ICPL?'))]
+        return SRS830.Coupling(int(self.query('ICPL?')))
     @coupling.setter
     def coupling(self, newval):
-        if not isinstance(newval, EnumValue) or \
-                (newval.enum is not SRS830.Coupling):
+        if not isinstance(newval, SRS830.Coupling):
             raise TypeError("Input coupling setting must be a "
-                              "`SRS830.Coupling` value, got {} "
-                              "instead.".format(type(newval)))
+                            "`SRS830.Coupling` value, got {} "
+                            "instead.".format(type(newval)))
         self.sendcmd('ICPL {}'.format(newval.value))
         
     @property
@@ -269,14 +265,13 @@ class SRS830(SCPIInstrument):
         
         :type: `SRS830.BufferMode`
         '''
-        return SRS830.BufferMode[int(self.query('SEND?'))]
+        return SRS830.BufferMode(int(self.query('SEND?')))
     @buffer_mode.setter
     def buffer_mode(self, newval):
-        if not isinstance(newval, EnumValue) or \
-                (newval.enum is not SRS830.BufferMode):
+        if not isinstance(newval, SRS830.BufferMode):
             raise TypeError("Input coupling setting must be a "
-                              "`SRS830.BufferMode` value, got {} "
-                              "instead.".format(type(newval)))
+                            "`SRS830.BufferMode` value, got {} "
+                            "instead.".format(type(newval)))
         self.sendcmd('SEND {}'.format(newval.value))     
     
     @property
@@ -616,8 +611,3 @@ class SRS830(SCPIInstrument):
         ratio = self._valid_channel_ratio[channel-1][display]
         
         self.sendcmd('DDEF {},{},{}'.format(channel,display,ratio))        
-            
-            
-            
-            
-            

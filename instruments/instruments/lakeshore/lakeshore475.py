@@ -30,7 +30,7 @@ from __future__ import division
 from builtins import range
 
 import quantities as pq
-from flufl.enum import IntEnum
+from enum import IntEnum
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units, bool_property
@@ -302,28 +302,24 @@ class Lakeshore475(SCPIInstrument):
             used.
         :type peak_disp: `Lakeshore475.PeakDisplay`
         """
-        if not isinstance(mode, EnumValue) or \
-                (mode.enum is not Lakeshore475.Mode):
+        if not isinstance(mode, Lakeshore475.Mode):
             raise TypeError("Mode setting must be a "
-                              "`Lakeshore475.Mode` value, got {} "
-                              "instead.".format(type(mode)))
+                            "`Lakeshore475.Mode` value, got {} "
+                            "instead.".format(type(mode)))
         if not isinstance(resolution, int):
             raise TypeError('Parameter "resolution" must be an integer.')
-        if not isinstance(filter_type, EnumValue) or \
-                (filter_type.enum is not Lakeshore475.Filter):
+        if not isinstance(filter_type, Lakeshore475.Filter):
             raise TypeError("Filter type setting must be a "
-                              "`Lakeshore475.Filter` value, got {} "
-                              "instead.".format(type(filter_type)))
-        if not isinstance(peak_mode, EnumValue) or \
-                (peak_mode.enum is not Lakeshore475.PeakMode):
+                            "`Lakeshore475.Filter` value, got {} "
+                            "instead.".format(type(filter_type)))
+        if not isinstance(peak_mode, Lakeshore475.PeakMode):
             raise TypeError("Filter type setting must be a "
-                              "`Lakeshore475.PeakMode` value, got {} "
-                              "instead.".format(type(peak_mode)))
-        if not isinstance(peak_disp, EnumValue) or \
-                (peak_disp.enum is not Lakeshore475.PeakDisplay):
+                            "`Lakeshore475.PeakMode` value, got {} "
+                            "instead.".format(type(peak_mode)))
+        if not isinstance(peak_disp, Lakeshore475.PeakDisplay):
             raise TypeError("Filter type setting must be a "
-                              "`Lakeshore475.PeakDisplay` value, got {} "
-                              "instead.".format(type(peak_disp)))      
+                            "`Lakeshore475.PeakDisplay` value, got {} "
+                            "instead.".format(type(peak_disp)))
 
         mode = mode.value
         filter_type = filter_type.value

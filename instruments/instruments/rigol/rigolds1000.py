@@ -29,7 +29,7 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import range, map
 
-from flufl.enum import Enum
+from enum import Enum
 
 from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource

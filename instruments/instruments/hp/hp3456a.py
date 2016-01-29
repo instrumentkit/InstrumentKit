@@ -28,7 +28,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import time
-from flufl.enum import Enum, IntEnum
+from enum import Enum, IntEnum
 
 import quantities as pq
 
@@ -562,7 +562,7 @@ class HP3456a(Multimeter):
         """
         if isinstance(name, str):
             name = HP3456a.Register[name]
-        if name not in HP3456a.Register:
+        if not isinstance(name, HP3456a.Register):
             raise TypeError('register must be specified as a '
                             'HP3456a.Register, got {} '
                             'instead.'.format(name))
@@ -578,8 +578,8 @@ class HP3456a(Multimeter):
         :type value: `float`
         """
         if isinstance(name, str):
-            r = HP3456a.Register[name]
-        if name not in HP3456a.Register:
+            name = HP3456a.Register[name]
+        if not isinstance(name, HP3456a.Register):
             raise TypeError('register must be specified as a '
                             'HP3456a.Register, got {} '
                             'instead.'.format(name))

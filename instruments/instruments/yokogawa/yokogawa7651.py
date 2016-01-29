@@ -28,8 +28,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import quantities as pq
-from flufl.enum import Enum, IntEnum
-from flufl.enum._enum import EnumValue
+from enum import Enum, IntEnum
 
 from instruments.abstract_instruments import (
     PowerSupply,
@@ -77,8 +76,7 @@ class Yokogawa7651(PowerSupply, Instrument):
                                       'querying the operation mode.')
         @mode.setter
         def mode(self, newval):
-            if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                            Yokogawa7651.Mode):
+            if not isinstance(newval, Yokogawa7651.Mode):
                 raise TypeError("Mode setting must be a `Yokogawa7651.Mode` "
                                 "value, got {} instead.".format(type(newval)))
             self._parent.sendcmd('F{};'.format(newval.value))

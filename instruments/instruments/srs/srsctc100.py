@@ -28,7 +28,7 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import range, map
 
-from flufl.enum import Enum
+from enum import Enum
 
 import quantities as pq
 
@@ -37,9 +37,6 @@ from contextlib import contextmanager
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units, ProxyList
 import sys
-## ENUMS #######################################################################
-
-
 
 ## CLASSES #####################################################################
 

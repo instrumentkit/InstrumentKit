@@ -28,7 +28,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import time
-from flufl.enum import Enum, IntEnum
+from enum import Enum, IntEnum
 import struct
 
 import quantities as pq
@@ -107,7 +107,7 @@ class Keithley195(Multimeter):
     def mode(self, newval):
         if isinstance(newval, str):
             newval = self.Mode[newval]
-        if newval not in Keithley195.Mode:
+        if not isinstance(newval, Keithley195.Mode):
             raise TypeError("Mode must be specified as a Keithley195.Mode "
                             "value, got {} instead.".format(newval))
         self.sendcmd('F{}DX'.format(newval.value))
@@ -142,7 +142,7 @@ class Keithley195(Multimeter):
     def trigger_mode(self, newval):
         if isinstance(newval, str):
             newval = Keithley195.TriggerMode[newval]
-        if newval not in Keithley195.TriggerMode:
+        if not isinstance(newval, Keithley195.TriggerMode):
             raise TypeError('Drive must be specified as a ' 
                             'Keithley195.TriggerMode, got {} '
                             'instead.'.format(newval))
@@ -219,7 +219,7 @@ class Keithley195(Multimeter):
             
         mode = self.mode
         valid = Keithley195.ValidRange[mode.name].value
-        if isinstance(newval, float) or isinstance(newval, int):
+        if isinstance(newval, (float, int)):
             if newval in valid:
                 newval = valid.index(newval) + 1
             else:
@@ -307,8 +307,8 @@ class Keithley195(Multimeter):
          delay, multiplex, selftest, data_fmt, data_ctrl, filter_mode, \
          terminator) = struct.unpack('@4c2s3c2s5c2s', statusword[4:])
         
-        return { 'trigger': Keithley195.TriggerMode[int(trigger)],
-                 'mode': Keithley195.Mode[int(function)],
+        return { 'trigger': Keithley195.TriggerMode(int(trigger)),
+                 'mode': Keithley195.Mode(int(function)),
                  'range': int(input_range),
                  'eoi': (eoi == '1'),
                  'buffer': buf,

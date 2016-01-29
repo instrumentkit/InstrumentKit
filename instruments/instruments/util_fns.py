@@ -31,7 +31,7 @@ import sys
 import re
 
 import quantities as pq
-from flufl.enum import Enum, IntEnum
+from enum import Enum, IntEnum
 
 ## FUNCTIONS ###################################################################
 
@@ -212,13 +212,16 @@ def enum_property(name, enum, doc=None, input_decoration=None, output_decoration
     def out_decor_fcn(val):
         return val if output_decoration is None else output_decoration(val)
     def getter(self):
-        return enum[in_decor_fcn(self.query("{}?".format(name)).strip())]
+        return enum(in_decor_fcn(self.query("{}?".format(name)).strip()))
     def setter(self, newval):
-        try:
-            enum[newval]
-        except ValueError:
-            raise ValueError("Enum property new value not in enum.")
-        self.sendcmd(set_fmt.format(name, out_decor_fcn(enum[newval].value)))
+        try:  # First assume newval is Enum.value
+            newval = enum[newval]
+        except KeyError:  # Check if newval is Enum.name instead
+            try:
+                newval = enum(newval)
+            except ValueError:
+                raise ValueError("Enum property new value not in enum.")
+        self.sendcmd(set_fmt.format(name, out_decor_fcn(enum(newval).value)))
     
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
 
@@ -378,17 +381,25 @@ class ProxyList(object):
         if self._isenum:
             try:
                 idx = self._valid_set[idx]
-            except ValueError:
-                pass
-            
-        if idx not in self._valid_set:
-            raise IndexError("Index out of range. Must be "
-                                "in {}.".format(self._valid_set))
+            except KeyError:
+                try:
+                    idx = self._valid_set(idx)
+                except ValueError:
+                    pass
+            if not isinstance(idx, self._valid_set):
+                raise IndexError("Index out of range. Must be "
+                                 "in {}.".format(self._valid_set))
+            else:
+                idx = idx.value
+        else:
+            if idx not in self._valid_set:
+                raise IndexError("Index out of range. Must be "
+                                    "in {}.".format(self._valid_set))
         return self._proxy_cls(self._parent, idx)
     def __len__(self):
         return len(self._valid_set)
 
-if sys.version_info[0] == 2 and sys.version_info[1] == 6: # pragma: no cover
+if sys.version_info[0] == 2 and sys.version_info[1] == 6:  # pragma: no cover
 
     import logging
 

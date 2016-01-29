@@ -30,8 +30,7 @@ from builtins import range, map
 
 from time import time, sleep
 
-from flufl.enum import Enum
-from flufl.enum._enum import EnumValue
+from enum import Enum
 
 from contextlib import contextmanager
 
@@ -190,13 +189,12 @@ class _TekDPO4104Channel(_TekDPO4104DataSource, OscilloscopeChannel):
 
         :type: `TekDPO4104.Coupling`
         """
-        return TekDPO4104.Coupling[self._tek.query("CH{}:COUPL?".format(
+        return TekDPO4104.Coupling(self._tek.query("CH{}:COUPL?".format(
                                                                 self._idx)
-                                                                )]
+                                                                ))
     @coupling.setter
     def coupling(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                           TekDPO4104.Coupling):
+        if not isinstance(newval, TekDPO4104.Coupling):
             raise TypeError("Coupling setting must be a `TekDPO4104.Coupling`"
                 " value, got {} instead.".format(type(newval)))
 
@@ -353,4 +351,3 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         Note that this is distinct from the standard SCPI "\*TRG" functionality.
         """
         self.sendcmd('TRIG FORCE')
-    
