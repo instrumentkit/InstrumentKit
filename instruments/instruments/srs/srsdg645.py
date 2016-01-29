@@ -30,8 +30,7 @@ from builtins import range, map
 
 from time import time, sleep
 
-from flufl.enum import IntEnum
-from flufl.enum._enum import EnumValue
+from enum import IntEnum, Enum
 
 from contextlib import contextmanager
 
@@ -40,10 +39,6 @@ import quantities as pq
 from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.comm import GPIBCommunicator
 from instruments.util_fns import assume_units, ProxyList
-
-## ENUMS #######################################################################
-
-
 
 ## CLASSES #####################################################################
 
@@ -58,7 +53,7 @@ class _SRSDG645Channel(object):
         if not isinstance(ddg, SRSDG645):
             raise TypeError("Don't do that.")
 
-        if isinstance(chan, EnumValue):
+        if isinstance(chan, SRSDG645.Channels):
             self._chan = chan.value
         else:
             self._chan = chan
@@ -192,13 +187,17 @@ class SRSDG645(SCPIInstrument):
             
             :type: :class:`SRSDG645.LevelPolarity`
             """
-            return self._parent.LevelPolarity[
+            return self._parent.LevelPolarity(
                 int(self._parent.query("LPOL? {}".format(self._idx)))
-            ]
+            )
         @polarity.setter
         def polarity(self, newval):
+            if not isinstance(newval, self._parent.LevelPolarity):
+                raise TypeError("Mode must be specified as a "
+                                "SRSDG645.LevelPolarity value, got {} "
+                                "instead.".format(type(newval)))
             self._parent.sendcmd("LPOL {},{}".format(
-                self._idx, int(self._parent.LevelPolarity[newval])
+                self._idx, int(newval.value)
             ))
             
         @property

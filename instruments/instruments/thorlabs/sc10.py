@@ -35,7 +35,7 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import range
 
-from flufl.enum import IntEnum
+from enum import IntEnum
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument

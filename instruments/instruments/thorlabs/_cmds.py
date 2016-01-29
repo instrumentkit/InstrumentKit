@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import
 from __future__ import division
-from flufl.enum import IntEnum
+from enum import IntEnum
 
 # CLASSES #####################################################################
 

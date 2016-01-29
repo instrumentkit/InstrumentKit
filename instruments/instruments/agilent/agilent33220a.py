@@ -28,8 +28,7 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import range
 
-from flufl.enum import Enum
-from flufl.enum._enum import EnumValue
+from enum import Enum
 
 import quantities as pq
 
@@ -157,12 +156,11 @@ class Agilent33220a(SCPIFunctionGenerator):
         value = self.query("OUTP:LOAD?")
         try:
             return int(value) * pq.ohm
-        except:
-            return self.LoadResistance[value.strip()]
+        except ValueError:
+            return self.LoadResistance(value.strip())
     @load_resistance.setter
     def load_resistance(self, newval):
-        if (not isinstance(newval, EnumValue)) or (newval.enum is not 
-                                                        self.LoadResistance):
+        if isinstance(newval, self.LoadResistance):
             newval = newval.value
         elif isinstance(newval, int):
             if (newval < 0) or (newval > 10000):

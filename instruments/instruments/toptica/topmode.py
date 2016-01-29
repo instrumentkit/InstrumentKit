@@ -13,7 +13,7 @@ from __future__ import division
 from builtins import range
 
 import quantities as pq
-from flufl.enum import IntEnum
+from enum import IntEnum
 
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
 from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
@@ -251,7 +251,7 @@ class TopMode(Instrument):
             """
             value = self.parent.reference(
                 self.name + ":charm:correction-status")
-            return TopMode.CharmStatus[int(value)]
+            return TopMode.CharmStatus(int(value))
 
         # METHODS #
 

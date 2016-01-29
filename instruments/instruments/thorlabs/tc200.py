@@ -36,7 +36,7 @@ from __future__ import division
 from builtins import range, map
 
 import quantities as pq
-from flufl.enum import IntEnum, Enum
+from enum import IntEnum, Enum
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import convert_temperature
@@ -105,14 +105,11 @@ class TC200(Instrument):
         """
         response = self.query("stat?")
         response_code = (int(response) >> 1) % 2
-        return TC200.Mode[response_code]
+        return TC200.Mode(response_code)
 
     @mode.setter
     def mode(self, newval):
-        if not hasattr(newval, 'enum'):
-            raise TypeError("Mode setting must be a `TC200.Mode` value, "
-                            "got {} instead.".format(type(newval)))
-        if newval.enum is not TC200.Mode:
+        if not isinstance(newval, TC200.Mode):
             raise TypeError("Mode setting must be a `TC200.Mode` value, "
                             "got {} instead.".format(type(newval)))
         out_query = "mode={}".format(newval.name)

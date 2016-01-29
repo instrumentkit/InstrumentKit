@@ -28,8 +28,7 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import range, map
 
-from flufl.enum import IntEnum
-from flufl.enum._enum import EnumValue
+from enum import IntEnum
 
 import quantities as pq
 

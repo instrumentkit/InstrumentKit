@@ -31,7 +31,7 @@ from builtins import range, map
 import abc
 import time
 
-from flufl.enum import Enum
+from enum import Enum
 
 from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
@@ -94,6 +94,13 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
     class ByteOrder(Enum):
         little_endian = "LSB"
         big_endian = "MSB"
+
+    class TriggerState(Enum):
+        armed = "ARMED"
+        auto = "AUTO"
+        dpo = "DPO"
+        partial = "PARTIAL"
+        ready = "READY"
         
     ## STATIC METHODS ##
     
@@ -107,14 +114,6 @@ class TekDPO70000Series(SCPIInstrument, Oscilloscope):
             TekDPO70000Series.BinaryFormat.uint: "u",
             TekDPO70000Series.BinaryFormat.float: "f"
         }[binary_format], n_bytes)
-
-
-    class TriggerState(Enum):
-        armed = "ARMED"
-        auto = "AUTO"
-        dpo = "DPO"
-        partial = "PARTIAL"
-        ready = "READY"
 
     ## CLASSES ##
 

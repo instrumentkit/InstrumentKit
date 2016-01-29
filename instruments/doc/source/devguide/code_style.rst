@@ -27,8 +27,8 @@ the `if` statement.
 
 If a property has more than two permissible values, or the two allowable
 values are not naturally interpreted as a Boolean (e.g.: positive/negative,
-AC/DC coupling, etc.), then consider using an `~flufl.enum.Enum` or `~flufl.enum.IntEnum` as
-provided by `flufl.enum`. The latter is useful in Python 2.6 and 2.7 for
+AC/DC coupling, etc.), then consider using an `~enum.Enum` or `~enum.IntEnum` as
+provided by `enum`. The latter is useful in Python 2.6 and 2.7 for
 wrapping integer values that are meaningful to the device.
 For example, if an instrument can operate in AC or DC mode, use an enumeration
 like the following::
