@@ -29,7 +29,7 @@ from __future__ import absolute_import
 
 import io
 
-from abstract_comm import AbstractCommunicator
+from instruments.abstract_instruments.comm import AbstractCommunicator
 
 try:
     import vxi11
