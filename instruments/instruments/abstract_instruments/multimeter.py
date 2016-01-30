@@ -42,6 +42,12 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
     @property
     @abc.abstractmethod
     def mode(self):
+        """
+        Gets/sets the measurement mode for the multimeter. This is an
+        abstract method.
+
+        :type: `~enum.Enum`
+        """
         pass
 
     @mode.setter
@@ -52,6 +58,12 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
     @property
     @abc.abstractmethod
     def trigger_mode(self):
+        """
+        Gets/sets the trigger mode for the multimeter. This is an
+        abstract method.
+
+        :type: `~enum.Enum`
+        """
         pass
 
     @trigger_mode.setter
@@ -62,6 +74,12 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
     @property
     @abc.abstractmethod
     def relative(self):
+        """
+        Gets/sets the status of relative measuring mode for the multimeter.
+        This is an abstract method.
+
+        :type: `bool`
+        """
         pass
 
     @relative.setter
@@ -72,6 +90,12 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
     @property
     @abc.abstractmethod
     def input_range(self):
+        """
+        Gets/sets the current input range setting of the multimeter.
+        This is an abstract method.
+
+        :type: `~quantities.quantity.Quantity` or `~enum.Enum`
+        """
         pass
 
     @input_range.setter
@@ -83,8 +107,7 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
     
     @abc.abstractmethod
     def measure(self, mode):
-        '''
+        """
         Perform a measurement as specified by mode parameter.
-        '''
+        """
         pass
-        
