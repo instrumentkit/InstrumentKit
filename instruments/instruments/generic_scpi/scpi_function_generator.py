@@ -116,4 +116,3 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     @phase.setter
     def phase(self, newval):
         raise NotImplementedError
-    

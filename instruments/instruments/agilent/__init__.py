@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Module containing Agilent instruments
+"""
 
 from __future__ import absolute_import
 

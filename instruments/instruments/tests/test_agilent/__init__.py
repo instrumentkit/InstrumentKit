@@ -47,7 +47,7 @@ def test_agilent34410a_read():
             "+1.86850000E-03"
         ]
     ) as dmm:
-        unit_eq(dmm.read(), +1.86850000E-03 * pq.volt)
+        unit_eq(dmm.read_meter(), +1.86850000E-03 * pq.volt)
         
 def test_agilent34410a_data_point_count():
     with expected_protocol(
@@ -116,7 +116,7 @@ def test_agilent34410a_read_data_nvmem():
             "+4.27150000E-03,5.27150000E-03"
         ]
     ) as dmm:
-        data = dmm.read_data_NVMEM()
+        data = dmm.read_data_nvmem()
         unit_eq(data[0], 4.27150000E-03 * pq.volt)
         unit_eq(data[1], 5.27150000E-03 * pq.volt)
         

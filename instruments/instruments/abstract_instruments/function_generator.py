@@ -68,38 +68,46 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
         pass
     
     ## ABSTRACT PROPERTIES ##
- 
-    """   
-    def getamplitude(self):
-        raise NotImplementedError('')
-    def setamplitude(self, newval):
-        raise NotImplementedError('')
-    amplitude = abc.abstractproperty(getamplitude, setamplitude)
-    """
+
+    @property
+    @abc.abstractmethod
+    def frequency(self):
+        pass
+
+    @frequency.setter
+    @abc.abstractmethod
+    def frequency(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def function(self):
+        pass
+
+    @function.setter
+    @abc.abstractmethod
+    def function(self, newval):
+        pass
     
-    def getfrequency(self):
-        raise NotImplementedError('')
-    def setfrequency(self, newval):
-        raise NotImplementedError('')
-    frequency = abc.abstractproperty(getfrequency, setfrequency)
+    @property
+    @abc.abstractmethod
+    def offset(self):
+        pass
+
+    @offset.setter
+    @abc.abstractmethod
+    def offset(self, newval):
+        pass
     
-    def getfunction(self):
-        raise NotImplementedError('')
-    def setfunction(self, newval):
-        raise NotImplementedError('')
-    function = abc.abstractproperty(getfunction, setfunction)
-    
-    def getoffset(self):
-        raise NotImplementedError('')
-    def setoffset(self, newval):
-        raise NotImplementedError('')
-    offset = abc.abstractproperty(getoffset, setoffset)
-    
-    def getphase(self):
-        raise NotImplementedError('')
-    def setphase(self, newval):
-        raise NotImplementedError('')
-    phase = abc.abstractproperty(getphase, setphase)
+    @property
+    @abc.abstractmethod
+    def phase(self):
+        pass
+
+    @phase.setter
+    @abc.abstractmethod
+    def phase(self, newval):
+        pass
     
     ## CONCRETE PROPERTIES ##
     
@@ -147,4 +155,3 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
             mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
         
         self._set_amplitude_(mag, units)
-        
