@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Provides the support for the Lakeshore 370 AC resistance bridge.
+Provides support for the Lakeshore 370 AC resistance bridge.
 """
 
 # IMPORTS #####################################################################

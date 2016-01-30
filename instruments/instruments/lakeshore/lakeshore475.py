@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Provides the support for the Lakeshore 475 Gaussmeter.
+Provides support for the Lakeshore 475 Gaussmeter.
 """
 
 # IMPORTS #####################################################################

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Provides the support for the Lakeshore 340 cryogenic temperature controller.
+Provides support for the Lakeshore 340 cryogenic temperature controller.
 """
 
 # IMPORTS #####################################################################
