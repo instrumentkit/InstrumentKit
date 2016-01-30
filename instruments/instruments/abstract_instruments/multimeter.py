@@ -38,57 +38,47 @@ from instruments.abstract_instruments import Instrument
 class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
     ## PROPERTIES ##
+
+    @property
+    @abc.abstractmethod
+    def mode(self):
+        raise NotImplementedError
+
+    @mode.setter
+    @abc.abstractmethod
+    def mode(self, newval):
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def trigger_mode(self):
+        raise NotImplementedError
+
+    @trigger_mode.setter
+    @abc.abstractmethod
+    def trigger_mode(self, newval):
+        raise NotImplementedError
     
-    def getmode(self):
-        """
-        Read measurement mode the multimeter is currently in.
-        """
+    @property
+    @abc.abstractmethod
+    def relative(self):
         raise NotImplementedError
-    def setmode(self, newval):
-        """
-        Change the mode the multimeter is in.
-        """
+
+    @relative.setter
+    @abc.abstractmethod
+    def relative(self, newval):
         raise NotImplementedError
-    mode = abc.abstractproperty(getmode, setmode)
-    
-    def gettrigger_mode(self):
-        """
-        Get the current trigger mode the multimeter is set to.
-        """
+
+    @property
+    @abc.abstractmethod
+    def input_range(self):
         raise NotImplementedError
-    def settrigger_mode(self, newval):
-        """
-        Set the multimeter triggering mode.
-        """
+
+    @input_range.setter
+    @abc.abstractmethod
+    def input_range(self, newval):
         raise NotImplementedError
-    trigger_mode = abc.abstractproperty(gettrigger_mode, settrigger_mode)
-    
-    def getrelative(self):
-        """
-        Get the status of relative measuring mode (usually on or off).
-        """
-        raise NotImplementedError
-    def setrelative(self, newval):
-        """
-        Set (enable/disable) the relative measuring mode of the multimeter.
-        """
-        raise NotImplementedError
-    relative = abc.abstractproperty(getrelative, setrelative)
-    
-    def getinput_range(self):
-        """
-        Get the current input range setting of the multimeter.
-        """
-        raise NotImplementedError
-    def setinput_range(self, newval):
-        """
-        Set the input range setting of the multimeter.
-        """
-        raise NotImplementedError
-    input_range = abc.abstractproperty(getinput_range, setinput_range)
-    
-    
-    
+
     ## METHODS ##
     
     @abc.abstractmethod
