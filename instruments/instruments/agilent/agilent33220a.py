@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Provides the support for the Agilent 33220a function generator.
+Provides support for the Agilent 33220a function generator.
 """
 
 # IMPORTS #####################################################################

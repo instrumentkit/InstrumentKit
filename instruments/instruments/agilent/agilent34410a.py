@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Provides the support for the Agilent 34410a digital multimeter.
+Provides support for the Agilent 34410a digital multimeter.
 """
 
 # IMPORTS #####################################################################
