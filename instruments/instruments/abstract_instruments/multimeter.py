@@ -42,42 +42,42 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
     @property
     @abc.abstractmethod
     def mode(self):
-        raise NotImplementedError
+        pass
 
     @mode.setter
     @abc.abstractmethod
     def mode(self, newval):
-        raise NotImplementedError
+        pass
 
     @property
     @abc.abstractmethod
     def trigger_mode(self):
-        raise NotImplementedError
+        pass
 
     @trigger_mode.setter
     @abc.abstractmethod
     def trigger_mode(self, newval):
-        raise NotImplementedError
+        pass
     
     @property
     @abc.abstractmethod
     def relative(self):
-        raise NotImplementedError
+        pass
 
     @relative.setter
     @abc.abstractmethod
     def relative(self, newval):
-        raise NotImplementedError
+        pass
 
     @property
     @abc.abstractmethod
     def input_range(self):
-        raise NotImplementedError
+        pass
 
     @input_range.setter
     @abc.abstractmethod
     def input_range(self, newval):
-        raise NotImplementedError
+        pass
 
     ## METHODS ##
     
@@ -86,5 +86,5 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
         '''
         Perform a measurement as specified by mode parameter.
         '''
-        raise NotImplementedError
+        pass
         

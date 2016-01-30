@@ -72,42 +72,42 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
     @property
     @abc.abstractmethod
     def frequency(self):
-        raise NotImplementedError
+        pass
 
     @frequency.setter
     @abc.abstractmethod
     def frequency(self, newval):
-        raise NotImplementedError
+        pass
 
     @property
     @abc.abstractmethod
     def function(self):
-        raise NotImplementedError
+        pass
 
     @function.setter
     @abc.abstractmethod
     def function(self, newval):
-        raise NotImplementedError
+        pass
     
     @property
     @abc.abstractmethod
     def offset(self):
-        raise NotImplementedError
+        pass
 
     @offset.setter
     @abc.abstractmethod
     def offset(self, newval):
-        raise NotImplementedError
+        pass
     
     @property
     @abc.abstractmethod
     def phase(self):
-        raise NotImplementedError
+        pass
 
     @phase.setter
     @abc.abstractmethod
     def phase(self, newval):
-        raise NotImplementedError
+        pass
     
     ## CONCRETE PROPERTIES ##
     
