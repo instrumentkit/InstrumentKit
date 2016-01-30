@@ -27,7 +27,7 @@ class SCPIInstrument(Instrument):
 
     This class does not implement any instrument-specific communication
     commands. What it does add is several of the generic SCPI star commands.
-    This includes commands such as *IDN?, *OPC?, and *RST.
+    This includes commands such as ``*IDN?``, ``*OPC?``, and ``*RST``.
 
     Example usage:
 
