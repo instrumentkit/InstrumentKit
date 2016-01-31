@@ -333,17 +333,45 @@ def unitful_property(name, units, format_code='{:e}', doc=None, input_decoration
         raw = in_decor_fcn(self.query("{}?".format(name)))
         return float(raw) * units
     def setter(self, newval):
-        if valid_range[0] is not None and newval < valid_range[0]:
-            raise ValueError("Unitful quantity is too low. Got {}, minimum "
-                             "value is {}".format(newval, valid_range[0]))
-        if valid_range[1] is not None and newval > valid_range[1]:
-            raise ValueError("Unitful quantity  is too high. Got {}, maximum "
-                             "value is {}".format(newval, valid_range[1]))
-        # Rescale to the correct unit before printing. This will also catch bad units.
+        min_value, max_value = valid_range
+        if min_value is not None:
+            if hasattr(min_value, '__call__'):
+                min_value = min_value(self)
+            if newval < min_value:
+                raise ValueError("Unitful quantity is too low. Got {}, minimum "
+                                 "value is {}".format(newval, min_value))
+        if max_value is not None:
+            if hasattr(max_value, '__call__'):
+                max_value = max_value(self)
+            if newval > max_value:
+                raise ValueError("Unitful quantity is too high. Got {}, maximum"
+                                 " value is {}".format(newval, max_value))
+        # Rescale to the correct unit before printing. This will also
+        # catch bad units.
         strval = format_code.format(assume_units(newval, units).rescale(units).item())
         self.sendcmd(set_fmt.format(name, out_decor_fcn(strval)))
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
+
+def bounded_unitful_property(name, units, doc="", min_fmt_str="{}:MIN?", max_fmt_str="{}:MAX?", valid_range=(None, None), **kwargs):
+
+    def min_getter(self):
+        if valid_range[0] is None:
+            return pq.Quantity(*split_unit_str(self.query(min_fmt_str.format(name)), units))
+        else:
+            return valid_range[0] * units
+
+    def max_getter(self):
+        if valid_range[1] is None:
+            return pq.Quantity(*split_unit_str(self.query(max_fmt_str.format(name)), units))
+        else:
+            return valid_range[1] * units
+
+    return (
+        unitful_property(name, units, valid_range=(min_getter, max_getter), **kwargs),
+        property(min_getter),
+        property(max_getter)
+    )
 
 def string_property(name, bookmark_symbol='"', doc=None, readonly=False, writeonly=False, set_fmt="{} {}{}{}"):
     """
