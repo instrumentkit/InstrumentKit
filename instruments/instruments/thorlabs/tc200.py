@@ -187,7 +187,7 @@ class TC200(Instrument):
         units=pq.degC,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(20, 205),
+        valid_range=(20*pq.degC, 205*pq.degC),
         doc="""
         Gets/sets the maximum temperature
 
@@ -356,7 +356,7 @@ class TC200(Instrument):
         units=pq.W,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(0.1, 18.0),
+        valid_range=(0.1*pq.W, 18.0*pq.W),
         doc="""
         Gets/sets the maximum power
 

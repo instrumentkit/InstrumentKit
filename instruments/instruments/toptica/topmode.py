@@ -44,8 +44,8 @@ class TopMode(Instrument):
         self.prompt = ">"
         self.terminator = "\n"
 
-    def _ack_expected(self, msg=""):
-        return msg
+#    def _ack_expected(self, msg=""):
+#        return msg
 
     # ENUMS #
 
