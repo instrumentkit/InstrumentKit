@@ -384,7 +384,9 @@ def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?", max_fmt_str="{}
         string ``"query"``.
     :param kwargs: All other keyword arguments are passed onto
         `unitful_property`
-    :return:
+    :return: Returns a `tuple` of 3 properties: first is as returned by
+        `unitful_property`, second is a property representing the minimum
+        value, and third is a property representing the maximum value
     """
 
     def min_getter(self):
