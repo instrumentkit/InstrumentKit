@@ -63,7 +63,6 @@ class CC1(SCPIInstrument):
     def __init__(self, filelike):
         super(CC1, self).__init__(filelike)
         self.terminator = "\n"
-        self.end_terminator = "\n"
         self.channel_count = 3
 
     # INNER CLASSES ##
@@ -119,9 +118,10 @@ class CC1(SCPIInstrument):
 
     @window.setter
     def window(self, new_val):
-        new_val_mag = assume_units(new_val, pq.ns).rescale(pq.ns).magnitude
+        new_val_mag = int(assume_units(new_val, pq.ns).rescale(pq.ns).magnitude)
         if new_val_mag < 0 or new_val_mag > 7:
             raise ValueError("Window is out of range.")
+        # window must be an integer!
         self.sendcmd(":WIND {}".format(new_val_mag))
 
     @property
@@ -144,7 +144,7 @@ class CC1(SCPIInstrument):
             raise ValueError("New delay value is out of bounds.")
         if new_val.magnitude % 2 != 0:
             raise ValueError("New magnitude must be an even number")
-        self.sendcmd(":DELA "+str(int(new_val.magnitude)))
+        self.sendcmd(":DELA "+str(int(new_val.magnitude))+"\n")
 
     @property
     def dwell_time(self):
@@ -264,11 +264,13 @@ class CC1(SCPIInstrument):
         if not (new_setting is self.TriggerMode.continuous or new_setting is self.TriggerMode.start_stop):
             raise TypeError("The new trigger setting must be a Trigger Mode.")
         if new_setting == 0:
-            if not qubitekk_check_unknown(self.query(":TRIG:MODE CONT")):
-                self.sendcmd(":TRIG 0")
+            response = self.query(":TRIG:MODE CONT\n")
+            if not qubitekk_check_unknown(response):
+                self.sendcmd(":TRIG 0\n")
         else:
-            if not qubitekk_check_unknown(self.query(":TRIG:MODE STOP")):
-                self.sendcmd(":TRIG 1")
+            response = self.query(":TRIG:MODE STOP\n")
+            if not qubitekk_check_unknown(response):
+                self.sendcmd(":TRIG 1\n")
 
     # METHODS #
     
