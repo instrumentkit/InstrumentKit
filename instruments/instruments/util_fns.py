@@ -331,6 +331,7 @@ def unitful_property(name, units, format_code='{:e}', doc=None, input_decoration
         raw = in_decor_fcn(self.query("{}?".format(name)))
         return float(raw) * units
     def setter(self, newval):
+        newval = assume_units(newval, units).rescale(units).item()
         if valid_range[0] is not None and newval < valid_range[0]:
             raise ValueError("Unitful quantity is too low. Got {}, minimum "
                              "value is {}".format(newval, valid_range[0]))
@@ -338,7 +339,7 @@ def unitful_property(name, units, format_code='{:e}', doc=None, input_decoration
             raise ValueError("Unitful quantity  is too high. Got {}, maximum "
                              "value is {}".format(newval, valid_range[1]))
         # Rescale to the correct unit before printing. This will also catch bad units.
-        strval = format_code.format(assume_units(newval, units).rescale(units).item())
+        strval = format_code.format(newval)
         self.sendcmd(set_fmt.format(name, out_decor_fcn(strval)))
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
