@@ -333,17 +333,84 @@ def unitful_property(name, units, format_code='{:e}', doc=None, input_decoration
         raw = in_decor_fcn(self.query("{}?".format(name)))
         return float(raw) * units
     def setter(self, newval):
-        if valid_range[0] is not None and newval < valid_range[0]:
-            raise ValueError("Unitful quantity is too low. Got {}, minimum "
-                             "value is {}".format(newval, valid_range[0]))
-        if valid_range[1] is not None and newval > valid_range[1]:
-            raise ValueError("Unitful quantity  is too high. Got {}, maximum "
-                             "value is {}".format(newval, valid_range[1]))
-        # Rescale to the correct unit before printing. This will also catch bad units.
+        min_value, max_value = valid_range
+        if min_value is not None:
+            if hasattr(min_value, '__call__'):
+                min_value = min_value(self)
+            if newval < min_value:
+                raise ValueError("Unitful quantity is too low. Got {}, minimum "
+                                 "value is {}".format(newval, min_value))
+        if max_value is not None:
+            if hasattr(max_value, '__call__'):
+                max_value = max_value(self)
+            if newval > max_value:
+                raise ValueError("Unitful quantity is too high. Got {}, maximum"
+                                 " value is {}".format(newval, max_value))
+        # Rescale to the correct unit before printing. This will also
+        # catch bad units.
         strval = format_code.format(assume_units(newval, units).rescale(units).item())
         self.sendcmd(set_fmt.format(name, out_decor_fcn(strval)))
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
+
+def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?", max_fmt_str="{}:MAX?", valid_range=("query", "query"), **kwargs):
+    """
+    Called inside of SCPI classes to instantiate properties with unitful numeric
+    values which have upper and lower bounds. This function in turn calls
+    `unitful_property` where all kwargs for this function are passed on to.
+    See `unitful_property` documentation for information about additional
+    parameters that will be passed on.
+
+    Compared to `unitful_property`, this function will return 3 properties:
+    the one created by `unitful_property`, one for the minimum value, and one
+    for the maximum value.
+
+    :param str name: Name of the SCPI command corresponding to this property.
+    :param units: Units to assume in sending and receiving magnitudes to and
+        from the instrument.
+    :param str min_fmt_str: Specify the string format to use when sending a
+        minimum value query. The default is ``"{}:MIN?"`` which will place
+        the property name in before the colon. Eg: ``"MOCK:MIN?"``
+    :param str max_fmt_str: Specify the string format to use when sending a
+        maximum value query. The default is ``"{}:MAX?"`` which will place
+        the property name in before the colon. Eg: ``"MOCK:MAX?"``
+    :param valid_range: Tuple containing min & max values when setting
+        the property. Index 0 is minimum value, index 1 is maximum value.
+        Setting `None` in either disables bounds checking for that end of the
+        range. The default of ``("query", "query")`` will query the instrument
+        for min and max parameter values. The valid set is inclusive of
+        the values provided.
+    :type valid_range: `list` or `tuple` of `int`, `float`, `None`, or the
+        string ``"query"``.
+    :param kwargs: All other keyword arguments are passed onto
+        `unitful_property`
+    :return: Returns a `tuple` of 3 properties: first is as returned by
+        `unitful_property`, second is a property representing the minimum
+        value, and third is a property representing the maximum value
+    """
+
+    def min_getter(self):
+        if valid_range[0] == "query":
+            return pq.Quantity(*split_unit_str(self.query(min_fmt_str.format(name)), units))
+        else:
+            return valid_range[0] * units
+
+    def max_getter(self):
+        if valid_range[1] == "query":
+            return pq.Quantity(*split_unit_str(self.query(max_fmt_str.format(name)), units))
+        else:
+            return valid_range[1] * units
+
+    new_range = (
+        None if valid_range[0] is None else min_getter,
+        None if valid_range[1] is None else max_getter
+    )
+
+    return (
+        unitful_property(name, units, valid_range=new_range, **kwargs),
+        property(min_getter) if valid_range[0] is not None else None,
+        property(max_getter) if valid_range[1] is not None else None
+    )
 
 def string_property(name, bookmark_symbol='"', doc=None, readonly=False, writeonly=False, set_fmt="{} {}{}{}"):
     """
