@@ -144,7 +144,7 @@ class CC1(SCPIInstrument):
             raise ValueError("New delay value is out of bounds.")
         if new_val.magnitude % 2 != 0:
             raise ValueError("New magnitude must be an even number")
-        self.sendcmd(":DELA "+str(int(new_val.magnitude))+"\n")
+        self.sendcmd(":DELA "+str(int(new_val.magnitude)))
 
     @property
     def dwell_time(self):
@@ -167,7 +167,11 @@ class CC1(SCPIInstrument):
 
     @property
     def firmware(self):
-        return self.query("FIRM?")
+        response = self.query("FIRM?")
+        if not qubitekk_check_unknown(response):
+            # run command again
+            response = self.query("FIRM?")
+        return response
             
     @property
     def gate(self):
@@ -194,11 +198,15 @@ class CC1(SCPIInstrument):
             raise TypeError("CC1 gate_enable must be specified as a boolean.")
         
         if new_val is False:
-            if not qubitekk_check_unknown(self.query(":GATE:OFF")):
+            if self.firmware.find("v2.001") > 0:
                 self.sendcmd(":GATE 0")
+            else:
+                self.sendcmd(":GATE:OFF")
         else:
-            if not qubitekk_check_unknown(self.query(":GATE:ON")):
+            if self.firmware.find("v2.001") > 0:
                 self.sendcmd(":GATE 1")
+            else:
+                self.sendcmd(":GATE:ON")
 
     @property
     def channel(self):
@@ -241,11 +249,15 @@ class CC1(SCPIInstrument):
             raise TypeError("CC1 subtract must be specified as a boolean.")
 
         if new_val is False:
-            if not qubitekk_check_unknown(self.query(":SUBT:OFF")):
+            if self.firmware.find("v2.001") > 0:
                 self.sendcmd(":SUBT 0")
+            else:
+                self.sendcmd(":SUBT:OFF")
         else:
-            if not qubitekk_check_unknown(self.query(":SUBT:ON")):
+            if self.firmware.find("v2.001") > 0:
                 self.sendcmd(":SUBT 1")
+            else:
+                self.sendcmd(":SUBT:ON")
 
     @property
     def trigger(self):
@@ -264,13 +276,16 @@ class CC1(SCPIInstrument):
         if not (new_setting is self.TriggerMode.continuous or new_setting is self.TriggerMode.start_stop):
             raise TypeError("The new trigger setting must be a Trigger Mode.")
         if new_setting == 0:
-            response = self.query(":TRIG:MODE CONT\n")
-            if not qubitekk_check_unknown(response):
-                self.sendcmd(":TRIG 0\n")
+            if self.firmware.find("v2.001") > 0:
+                self.sendcmd(":TRIG 0")
+            else:
+                self.sendcmd(":TRIG:MODE CONT")
         else:
-            response = self.query(":TRIG:MODE STOP\n")
-            if not qubitekk_check_unknown(response):
-                self.sendcmd(":TRIG 1\n")
+            if self.firmware.find("v2.001") > 0:
+                self.sendcmd(":TRIG 1")
+            else:
+                self.sendcmd(":TRIG:MODE STOP")
+
 
     # METHODS #
     
