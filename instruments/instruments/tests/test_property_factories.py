@@ -30,6 +30,7 @@ import quantities as pq
 from io import BytesIO
 
 from nose.tools import raises, eq_
+import mock
 
 from instruments.util_fns import (
     ProxyList, assume_units,
@@ -609,6 +610,7 @@ def test_unitful_property_output_decoration():
 
     eq_(mock_instrument.value, 'MOCK:A 1\n')
 
+
 # Bounded Unitful Property #
 
 def test_bounded_unitful_property_basics():
@@ -626,6 +628,7 @@ def test_bounded_unitful_property_basics():
 
     mock_inst.property = 1000 * pq.hertz
 
+
 @raises(ValueError)
 def test_bounded_unitful_property_set_outside_max():
     class BoundedUnitfulMock(MockInstrument):
@@ -638,6 +641,7 @@ def test_bounded_unitful_property_set_outside_max():
 
     mock_inst.property = 10000 * pq.hertz  # Should raise ValueError
 
+
 @raises(ValueError)
 def test_bounded_unitful_property_set_outside_min():
     class BoundedUnitfulMock(MockInstrument):
@@ -649,6 +653,7 @@ def test_bounded_unitful_property_set_outside_min():
     mock_inst = BoundedUnitfulMock({'MOCK?': '1000', 'MOCK:MIN?': '10', 'MOCK:MAX?': '9999'})
 
     mock_inst.property = 1 * pq.hertz  # Should raise ValueError
+
 
 def test_bounded_unitful_property_min_fmt_str():
     class BoundedUnitfulMock(MockInstrument):
@@ -663,6 +668,7 @@ def test_bounded_unitful_property_min_fmt_str():
     eq_(mock_inst.property_min, 10 * pq.Hz)
     eq_(mock_inst.value, 'MOCK MIN?\n')
 
+
 def test_bounded_unitful_property_max_fmt_str():
     class BoundedUnitfulMock(MockInstrument):
         property, property_min, property_max = bounded_unitful_property(
@@ -676,6 +682,7 @@ def test_bounded_unitful_property_max_fmt_str():
     eq_(mock_inst.property_max, 9999 * pq.Hz)
     eq_(mock_inst.value, 'MOCK MAX?\n')
 
+
 def test_bounded_unitful_property_static_range():
     class BoundedUnitfulMock(MockInstrument):
         property, property_min, property_max = bounded_unitful_property(
@@ -688,6 +695,50 @@ def test_bounded_unitful_property_static_range():
 
     eq_(mock_inst.property_min, 10 * pq.Hz)
     eq_(mock_inst.property_max, 9999 * pq.Hz)
+
+
+@mock.patch("instruments.util_fns.unitful_property")
+def test_bounded_unitful_property_passes_kwargs(mock_unitful_property):
+    bounded_unitful_property(
+        name='MOCK',
+        units=pq.Hz,
+        derp="foobar"
+    )
+    mock_unitful_property.assert_called_with(
+        'MOCK',
+        pq.Hz,
+        derp="foobar",
+        valid_range=(mock.ANY, mock.ANY)
+    )
+
+
+@mock.patch("instruments.util_fns.unitful_property")
+def test_bounded_unitful_property_valid_range_none(mock_unitful_property):
+    bounded_unitful_property(
+        name='MOCK',
+        units=pq.Hz,
+        valid_range=(None, None)
+    )
+    mock_unitful_property.assert_called_with(
+        'MOCK',
+        pq.Hz,
+        valid_range=(None, None)
+    )
+
+
+def test_bounded_unitful_property_returns_none():
+    class BoundedUnitfulMock(MockInstrument):
+        property, property_min, property_max = bounded_unitful_property(
+            'MOCK',
+            units=pq.hertz,
+            valid_range=(None, None)
+        )
+
+    mock_inst = BoundedUnitfulMock()
+
+    eq_(mock_inst.property_min, None)
+    eq_(mock_inst.property_max, None)
+
 
 ## String Property ##
 

@@ -353,24 +353,61 @@ def unitful_property(name, units, format_code='{:e}', doc=None, input_decoration
 
     return rproperty(fget=getter, fset=setter, doc=doc, readonly=readonly, writeonly=writeonly)
 
-def bounded_unitful_property(name, units, doc="", min_fmt_str="{}:MIN?", max_fmt_str="{}:MAX?", valid_range=(None, None), **kwargs):
+def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?", max_fmt_str="{}:MAX?", valid_range=("query", "query"), **kwargs):
+    """
+    Called inside of SCPI classes to instantiate properties with unitful numeric
+    values which have upper and lower bounds. This function in turn calls
+    `unitful_property` where all kwargs for this function are passed on to.
+    See `unitful_property` documentation for information about additional
+    parameters that will be passed on.
+
+    Compared to `unitful_property`, this function will return 3 properties:
+    the one created by `unitful_property`, one for the minimum value, and one
+    for the maximum value.
+
+    :param str name: Name of the SCPI command corresponding to this property.
+    :param units: Units to assume in sending and receiving magnitudes to and
+        from the instrument.
+    :param str min_fmt_str: Specify the string format to use when sending a
+        minimum value query. The default is ``"{}:MIN?"`` which will place
+        the property name in before the colon. Eg: ``"MOCK:MIN?"``
+    :param str max_fmt_str: Specify the string format to use when sending a
+        maximum value query. The default is ``"{}:MAX?"`` which will place
+        the property name in before the colon. Eg: ``"MOCK:MAX?"``
+    :param valid_range: Tuple containing min & max values when setting
+        the property. Index 0 is minimum value, index 1 is maximum value.
+        Setting `None` in either disables bounds checking for that end of the
+        range. The default of ``("query", "query")`` will query the instrument
+        for min and max parameter values. The valid set is inclusive of
+        the values provided.
+    :type valid_range: `list` or `tuple` of `int`, `float`, `None`, or the
+        string ``"query"``.
+    :param kwargs: All other keyword arguments are passed onto
+        `unitful_property`
+    :return:
+    """
 
     def min_getter(self):
-        if valid_range[0] is None:
+        if valid_range[0] == "query":
             return pq.Quantity(*split_unit_str(self.query(min_fmt_str.format(name)), units))
         else:
             return valid_range[0] * units
 
     def max_getter(self):
-        if valid_range[1] is None:
+        if valid_range[1] == "query":
             return pq.Quantity(*split_unit_str(self.query(max_fmt_str.format(name)), units))
         else:
             return valid_range[1] * units
 
+    new_range = (
+        None if valid_range[0] is None else min_getter,
+        None if valid_range[1] is None else max_getter
+    )
+
     return (
-        unitful_property(name, units, valid_range=(min_getter, max_getter), **kwargs),
-        property(min_getter),
-        property(max_getter)
+        unitful_property(name, units, valid_range=new_range, **kwargs),
+        property(min_getter) if valid_range[0] is not None else None,
+        property(max_getter) if valid_range[1] is not None else None
     )
 
 def string_property(name, bookmark_symbol='"', doc=None, readonly=False, writeonly=False, set_fmt="{} {}{}{}"):
