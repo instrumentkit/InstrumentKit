@@ -255,7 +255,7 @@ class HS9000(SignalGenerator):
         """
         Gets identification string of the HS9000
 
-        :return: The string as returned by ``*IDN?``
+        :return: The string as usually returned by ``*IDN?`` on SCPI instruments
         :rtype: `str`
         """
         # This is a weird one; the HS-9000 associates the :IDN? command

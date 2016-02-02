@@ -17,6 +17,20 @@ from instruments.units import dBm
 
 # TEST CLASSES ################################################################
 
+def test_hs9000_name():
+    with expected_protocol(
+        ik.holzworth.HS9000,
+        [
+            ":ATTACH?",
+            ":CH1:IDN?"
+        ],
+        [
+            ":CH1:CH2:FOO",
+            "Foobar name"
+        ],
+        sep="\n"
+    ) as hs:
+        assert hs.name == "Foobar name"
 
 def test_channel_idx_list():
     with expected_protocol(
