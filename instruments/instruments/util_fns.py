@@ -331,7 +331,7 @@ def unitful_property(name, units, format_code='{:e}', doc=None, input_decoration
         return val if output_decoration is None else output_decoration(val)
     def getter(self):
         raw = in_decor_fcn(self.query("{}?".format(name)))
-        return float(raw) * units
+        return pq.Quantity(*split_unit_str(raw, units)).rescale(units)
     def setter(self, newval):
         min_value, max_value = valid_range
         if min_value is not None:
