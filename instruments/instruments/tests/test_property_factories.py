@@ -610,6 +610,16 @@ def test_unitful_property_output_decoration():
 
     eq_(mock_instrument.value, 'MOCK:A 1\n')
 
+def test_unitful_property_split_str():
+    class UnitfulMock(MockInstrument):
+        unitful_property = unitful_property('MOCK', pq.hertz, valid_range=(0, 10))
+
+    mock_inst = UnitfulMock({"MOCK?": "1 kHz"})
+
+    value = mock_inst.unitful_property
+    assert value.magnitude == 1000
+    assert value.units == pq.hertz
+
 
 # Bounded Unitful Property #
 
