@@ -96,7 +96,11 @@ class CC1(SCPIInstrument):
             :rtype: `int`
             """
             count = self._cc1.query("COUN:{0}?".format(self._chan))
-            count = int(count)
+            try:
+                count = int(count)
+            except ValueError:
+                # try to read again
+                count = int(self._file.read(-1))
             self._count = count
             return self._count
 
