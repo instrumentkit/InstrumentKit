@@ -42,40 +42,63 @@ class SGChannel(with_metaclass(abc.ABCMeta, object)):
     """
     
     ## PROPERTIES ##
+
+    @property
+    @abc.abstractmethod
+    def frequency(self):
+        """
+        Gets/sets the output frequency of the signal generator channel
+
+        :type: `~quantities.quantity.Quantity`
+        """
+        pass
+
+    @frequency.setter
+    @abc.abstractmethod
+    def frequency(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def power(self):
+        """
+        Gets/sets the output power of the signal generator channel
+
+        :type: `~quantities.quantity.Quantity`
+        """
+        pass
+
+    @power.setter
+    @abc.abstractmethod
+    def power(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def phase(self):
+        """
+        Gets/sets the output phase of the signal generator channel
+
+        :type: `~quantities.quantity.Quantity`
+        """
+        pass
+
+    @phase.setter
+    @abc.abstractmethod
+    def phase(self, newval):
+        pass
     
-    def getfreq(self):
+    @property
+    @abc.abstractmethod
+    def output(self):
         """
-        Gets/sets the output frequency of the SG channel
+        Gets/sets the output status of the signal generator channel
+
+        :type: `bool`
         """
-        raise NotImplementedError
-    def setfreq(self):
-        raise NotImplementedError
-    freq = abc.abstractproperty(getfreq, setfreq)
-    
-    def getpower(self):
-        """
-        Gets/sets the output power of the SG channel
-        """
-        raise NotImplementedError
-    def setpower(self):
-        raise NotImplementedError
-    power = abc.abstractproperty(getpower, setpower)
-    
-    def getphase(self):
-        """
-        Gets/sets the output phase of the SG channel
-        """
-        raise NotImplementedError
-    def setphase(self):
-        raise NotImplementedError
-    phase = abc.abstractproperty(getphase, setphase)
-    
-    def getoutput(self):
-        """
-        Gets/sets the output status of the device. IE enabling output turns on
-        the RF connector.
-        """
-        raise NotImplementedError
-    def setoutput(self):
-        raise NotImplementedError
-    output = abc.abstractproperty(getoutput, setoutput)
+        pass
+
+    @output.setter
+    @abc.abstractmethod
+    def output(self, newval):
+        pass

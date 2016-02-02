@@ -1,100 +1,51 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-##
-# holzworth_hs9000.py: Instrument class for Holzworth HS-9000 series
-#     multi-channel synthesizers.
-##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-##
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+"""
+Provides support for the Holzworth HS9000
+"""
 
-# FIXME: so much documentation missing!
-
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
 
-from instruments.abstract_instruments import Instrument
+import quantities as pq
+
 from instruments.abstract_instruments.signal_generator import (
-    SignalGenerator, 
+    SignalGenerator,
     SGChannel
 )
-from instruments.util_fns import assume_units, ProxyList, split_unit_str
+from instruments.util_fns import (
+    ProxyList, split_unit_str, bounded_unitful_property, bool_property
+)
 from instruments.units import dBm
 
-import quantities as pq
-import re
+# CLASSES #####################################################################
 
-## FUNCTIONS ###################################################################
-            
-# TODO: elevate this to util_fns, generalize enough to capture fixed limits
-#       rather than just :MIN, :MAX style SCPI limits, so that it can be used
-#       for instruments like the Qubitekk CC1.
-#       While doing that, rename to bounded_unitful_property for parity
-#       with unitful_property, and write some bloody unit tests for it.
-def _bounded_property(base_name, allowed_units, default_units, doc=""):
-    
-    def getter(self):
-        return pq.Quantity(*split_unit_str(
-            self._query("{}?".format(base_name)),
-            default_units
-        ))
-    
-    def min_getter(self):
-        return pq.Quantity(*split_unit_str(self._query("{}:MIN?".format(base_name))))
-    
-    def max_getter(self):
-        return pq.Quantity(*split_unit_str(self._query("{}:MAX?".format(base_name))))
-    
-    def setter(self, newval):
-        newval = assume_units(newval, default_units)
-        
-        if newval > max_getter(self) or newval < min_getter(self):
-            raise ValueError("Value outside allowed bounds for this channel.")
-        
-        if newval.units not in allowed_units:
-            newval = newval.rescale(default_units)
-            
-        self._sendcmd("{}:{}".format(base_name, newval))
-        
-    return property(getter, setter, doc=doc), property(min_getter), property(max_getter)
-    
 
-## CLASSES #####################################################################
+class HS9000(SignalGenerator):
 
-class HolzworthHS9000(SignalGenerator):
     """
     Communicates with a `Holzworth HS-9000 series`_ multi-channel frequency
-    synthesizer. 
-    
+    synthesizer.
+
     .. _Holzworth HS-9000 series: http://www.holzworth.com/synthesizers-multi.htm
     """
-    
-    ## INNER CLASSES ##
-    
+
+    # INNER CLASSES #
+
     class Channel(SGChannel):
-        # TODO: docstring!
-        
+        """
+        Class representing a physical channel on the Holzworth HS9000
+
+        .. warning:: This class should NOT be manually created by the user. It
+        is designed to be initialized by the `HS9000` class.
+        """
+
         def __init__(self, hs, idx_chan):
             self._hs = hs
             self._idx = idx_chan
-            
+
             # We unpacked the channel index from the string of the form "CH1",
             # in order to make the API more Pythonic, but now we need to put
             # it back.
@@ -104,55 +55,168 @@ class HolzworthHS9000(SignalGenerator):
                 idx_chan if isinstance(idx_chan, str)
                 else "CH{}".format(idx_chan + 1)
             )
-                      
-        ## PRIVATE METHODS ##
-            
-        def _sendcmd(self, cmd):
+
+        # PRIVATE METHODS #
+
+        def sendcmd(self, cmd):
+            """
+            Function used to send a command to the instrument while wrapping
+            the command with the neccessary identifier for the channel.
+
+            :param str cmd: Command that will be sent to the instrument after
+                being prefixed with the channel identifier
+            """
             self._hs.sendcmd(":{ch}:{cmd}".format(ch=self._ch_name, cmd=cmd))
-            
-        def _query(self, cmd):
+
+        def query(self, cmd):
+            """
+            Function used to send a command to the instrument while wrapping
+            the command with the neccessary identifier for the channel.
+
+            :param str cmd: Command that will be sent to the instrument after
+                being prefixed with the channel identifier
+            :return: The result from the query
+            :rtype: `str`
+            """
             return self._hs.query(":{ch}:{cmd}".format(ch=self._ch_name, cmd=cmd))
-            
-        
-        ## STATE METHODS ##
-            
+
+        # STATE METHODS #
+
         def reset(self):
-            self._sendcmd("*RST")
-            
+            """
+            Resets the setting of the specified channel
+
+            Example usage:
+            >>> import instruments as ik
+            >>> hs = ik.holzworth.HS9000.open_tcpip("192.168.0.2", 8080)
+            >>> hs.channel[0].reset()
+            """
+            self.sendcmd("*RST")
+
         def recall_state(self):
-            self._sendcmd("*RCL")
-            
+            """
+            Recalls the state of the specified channel from memory.
+
+            Example usage:
+            >>> import instruments as ik
+            >>> hs = ik.holzworth.HS9000.open_tcpip("192.168.0.2", 8080)
+            >>> hs.channel[0].recall_state()
+            """
+            self.sendcmd("*RCL")
+
         def save_state(self):
-            self._sendcmd("*SAV")
-            
-        ## PROPERTIES ##
-        
+            """
+            Saves the current state of the specified channel.
+
+            Example usage:
+            >>> import instruments as ik
+            >>> hs = ik.holzworth.HS9000.open_tcpip("192.168.0.2", 8080)
+            >>> hs.channel[0].save_state()
+            """
+            self.sendcmd("*SAV")
+
+        # PROPERTIES #
+
         @property
         def temperature(self):
-            val, units = split_unit_str(self._query("TEMP?"))
+            """
+            Gets the current temperature of the specified channel.
+
+            :units: As specified by the instrument.
+            :rtype: `~quantities.quantity.Quantity`
+            """
+            val, units = split_unit_str(self.query("TEMP?"))
             units = "deg{}".format(units)
             return pq.Quantity(val, units)
-            
-        freq, freq_min, freq_max = _bounded_property(
-            "FREQ", [pq.Hz, pq.kHz, pq.MHz, pq.GHz], pq.GHz
+
+        frequency, frequency_min, frequency_max = bounded_unitful_property(
+            "FREQ",
+            units=pq.GHz,
+            doc="""
+            Gets/sets the frequency of the specified channel. When setting,
+            values are bounded between what is returned by `frequency_min`
+            and `frequency_max`.
+
+            Example usage:
+            >>> import instruments as ik
+            >>> hs = ik.holzworth.HS9000.open_tcpip("192.168.0.2", 8080)
+            >>> print(hs.channel[0].frequency)
+            >>> print(hs.channel[0].frequency_min)
+            >>> print(hs.channel[0].frequency_max)
+
+            :type: `~quantities.quantity.Quantity`
+            :units: As specified or assumed to be of units GHz
+            """
         )
-        power, power_min, power_max = _bounded_property(
-            "PWR", [dBm], dBm
+        power, power_min, power_max = bounded_unitful_property(
+            "PWR",
+            units=dBm,
+            doc="""
+            Gets/sets the output power of the specified channel. When setting,
+            values are bounded between what is returned by `power_min`
+            and `power_max`.
+
+            Example usage:
+            >>> import instruments as ik
+            >>> hs = ik.holzworth.HS9000.open_tcpip("192.168.0.2", 8080)
+            >>> print(hs.channel[0].power)
+            >>> print(hs.channel[0].power_min)
+            >>> print(hs.channel[0].power_max)
+
+            :type: `~quantities.quantity.Quantity`
+            :units: `instruments.units.dBm`
+            """
         )
-        phase, phase_min, phase_max = _bounded_property(
-            "PHASE", [pq.degree], pq.degree
+        phase, phase_min, phase_max = bounded_unitful_property(
+            "PHASE",
+            units=pq.degree,
+            doc="""
+            Gets/sets the output phase of the specified channel. When setting,
+            values are bounded between what is returned by `phase_min`
+            and `phase_max`.
+
+            Example usage:
+            >>> import instruments as ik
+            >>> hs = ik.holzworth.HS9000.open_tcpip("192.168.0.2", 8080)
+            >>> print(hs.channel[0].phase)
+            >>> print(hs.channel[0].phase_min)
+            >>> print(hs.channel[0].phase_max)
+
+            :type: `~quantities.quantity.Quantity`
+            :units: As specified or assumed to be of units degrees
+            """
         )
-        
-        @property
-        def output(self):
-            return (self._query("PWR:RF?").strip() == 'ON')
-        @output.setter
-        def output(self, newval):
-            self._sendcmd("PWR:RF:{}".format("ON" if newval else "OFF"))
-                
-    ## PROXY LIST ##
-    
+
+        output = bool_property(
+            "PWR:RF",
+            inst_true="ON",
+            inst_false="OFF",
+            set_fmt="{}:{}",
+            doc="""
+            Gets/sets the output status of the channel. Setting to `True` will
+            turn the channel's output stage on, while a value of `False` will
+            turn it off.
+
+            Example usage:
+            >>> import instruments as ik
+            >>> hs = ik.holzworth.HS9000.open_tcpip("192.168.0.2", 8080)
+            >>> print(hs.channel[0].output)
+            >>> hs.channel[0].output = True
+
+            :type: `bool`
+            """
+        )
+
+    # PROXY LIST ##
+
     def _channel_idxs(self):
+        """
+        Internal function used to get the list of valid channel names
+        to be used by `HS9000.channel`
+
+        :return: A list of valid channel indicies
+        :rtype: `list` of `int` and `str`
+        """
         # The command :ATTACH? returns a string of the form ":CH1:CH2" to
         # indicate what channels are attached to the internal USB bus.
         # We convert what channel names we can to integers, and leave the
@@ -166,23 +230,46 @@ class HolzworthHS9000(SignalGenerator):
             for ch_name in self.query(":ATTACH?").split(":")
             if ch_name
         ]
-        
+
     @property
     def channel(self):
+        """
+        Gets a specific channel on the HS9000. The desired channel is accessed
+        like one would access a list.
+
+        Example usage:
+
+        >>> import instruments as ik
+        >>> hs = ik.holzworth.HS9000.open_tcpip("192.168.0.2", 8080)
+        >>> print(hs.channel[0].frequency)
+
+        :return: A channel object for the HS9000
+        :rtype: `~HS9000.Channel`
+        """
         return ProxyList(self, self.Channel, self._channel_idxs())
-        
-    ## OTHER PROPERTIES ##
-    
+
+    # OTHER PROPERTIES #
+
     @property
     def name(self):
+        """
+        Gets identification string of the HS9000
+
+        :return: The string as returned by ``*IDN?``
+        :rtype: `str`
+        """
         # This is a weird one; the HS-9000 associates the :IDN? command
         # with each individual channel, though we want it to be a synthesizer-
         # wide property. To solve this, we assume that CH1 is always a channel
         # and ask its name.
-        return self.channel[0]._query("IDN?")
-    
+        return self.channel[0].query("IDN?")
+
     @property
     def ready(self):
+        """
+        Gets the ready status of the HS9000.
+
+        :return: If the instrument is ready for operation
+        :rtype: `bool`
+        """
         return "Ready" in self.query(":COMM:READY?")
-        
-        
