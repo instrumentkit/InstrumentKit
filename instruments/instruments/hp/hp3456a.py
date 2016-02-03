@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # hp3456a.py: Driver for the HP3456a Digital Voltmeter.
-##
+#
 # © 2014 Willem Dijkstra (wpd@xs4all.nl).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,17 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
+"""
+Driver for the HP3456a Digital Voltmeter
 
-## IMPORTS #####################################################################
+Originally contributted and copyright held by Willem Dijkstra (wpd@xs4all.nl)
+
+An unrestricted license has been provided to the maintainers of the Instrument
+Kit project.
+"""
+
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,12 +41,13 @@ from enum import Enum, IntEnum
 import quantities as pq
 
 from instruments.abstract_instruments import Multimeter
-from instruments.util_fns import (bool_property, enum_property)
+from instruments.util_fns import assume_units, bool_property, enum_property
 
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
 
 class HP3456a(Multimeter):
+
     """The `HP3456a` is a 6 1/2 digit bench multimeter.
 
     It supports DCV, ACV, ACV + DCV, 2 wire Ohms, 4 wire Ohms, DCV/DCV Ratio,
@@ -58,12 +67,14 @@ class HP3456a(Multimeter):
         """
         super(HP3456a, self).__init__(filelike)
         self.timeout = 15 * pq.second
-        self.terminator = '\r'
-        self.sendcmd('HO0T4SO1')
+        self.terminator = "\r"
+        self.sendcmd("HO0T4SO1")
+        self._null = False
 
-    ## ENUMS ##
+    # ENUMS ##
 
     class MathMode(IntEnum):
+
         """
         Enum with the supported math modes
         """
@@ -79,48 +90,51 @@ class HP3456a(Multimeter):
         db = 9
 
     class Mode(Enum):
+
         """
         Enum containing the supported mode codes
         """
         #: DC voltage
-        dcv = 'S0F1'
+        dcv = "S0F1"
         #: AC voltage
-        acv = 'S0F2'
+        acv = "S0F2"
         #: RMS of DC + AC voltage
-        acvdcv = 'S0F3'
+        acvdcv = "S0F3"
         #: 2 wire resistance
-        resistance_2wire = 'S0F4'
+        resistance_2wire = "S0F4"
         #: 4 wire resistance
-        resistance_4wire = 'S0F5'
+        resistance_4wire = "S0F5"
         #: ratio DC / DC voltage
-        ratio_dcv_dcv = 'S1F1'
+        ratio_dcv_dcv = "S1F1"
         #: ratio AC / DC voltage
-        ratio_acv_dcv = 'S1F2'
+        ratio_acv_dcv = "S1F2"
         #: ratio (AC + DC) / DC voltage
-        ratio_acvdcv_dcv = 'S1F3'
+        ratio_acvdcv_dcv = "S1F3"
         #: offset compensated 2 wire resistance
-        oc_resistence_2wire = 'S1F4'
+        oc_resistence_2wire = "S1F4"
         #: offset compensated 4 wire resistance
-        oc_resistence_4wire = 'S1F5'
+        oc_resistence_4wire = "S1F5"
 
     class Register(Enum):
+
         """
         Enum with the register names for all `HP3456a` internal registers.
         """
-        number_of_readings = 'N'
-        number_of_digits = 'G'
-        nplc = 'I'
-        delay = 'D'
-        mean = 'M'
-        variance = 'V'
-        count = 'C'
-        lower = 'L'
-        r = 'R'
-        upper = 'U'
-        y = 'Y'
-        z = 'Z'
+        number_of_readings = "N"
+        number_of_digits = "G"
+        nplc = "I"
+        delay = "D"
+        mean = "M"
+        variance = "V"
+        count = "C"
+        lower = "L"
+        r = "R"
+        upper = "U"
+        y = "Y"
+        z = "Z"
 
     class TriggerMode(IntEnum):
+
         """
         Enum with valid trigger modes.
         """
@@ -130,6 +144,7 @@ class HP3456a(Multimeter):
         hold = 4
 
     class ValidRange(Enum):
+
         """
         Enum with the valid ranges for voltage, resistance, and number of powerline
         cycles to integrate over.
@@ -139,10 +154,10 @@ class HP3456a(Multimeter):
         resistance = (1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9)
         nplc = (1e-1, 1e0, 1e1, 1e2)
 
-    ## PROPERTIES ##
+    # PROPERTIES ##
 
     mode = enum_property(
-        '',
+        "",
         Mode,
         doc="""Set the measurement mode.
 
@@ -152,29 +167,29 @@ class HP3456a(Multimeter):
         set_fmt="{}{}")
 
     autozero = bool_property(
-        'Z',
-        '1',
-        '0',
+        "Z",
+        "1",
+        "0",
         doc="""Set the autozero mode.
 
         This is used to compensate for offsets in the dc
-        input amplifier circuit of the multimeter. If set, the amplifier's input
+        input amplifier circuit of the multimeter. If set, the amplifier"s input
         circuit is shorted to ground prior to actual measurement in order to
         take an offset reading. This offset is then used to compensate for
         drift in the next measurement. When disabled, one offset reading
         is taken immediately and stored into memory to be used for all
         successive measurements onwards. Disabling autozero increases the
-        `HP3456a`'s measurement speed, and also makes the instrument more
+        `HP3456a`"s measurement speed, and also makes the instrument more
         suitable for high impendance measurements since no input switching is
         done.""",
         writeonly=True,
-        set_fmt='{}{}')
+        set_fmt="{}{}")
 
     filter = bool_property(
-        'FL',
-        '1',
-        '0',
-        doc = """Set the analog filter mode.
+        "FL",
+        "1",
+        "0",
+        doc="""Set the analog filter mode.
 
         The `HP3456a` has a 3 pole active filter with
         greater than 60dB attenuation at frequencies of 50Hz and higher. The
@@ -182,11 +197,11 @@ class HP3456a(Multimeter):
         in ACV or ACV+DCV functions the filter is applied to the output of the
         ac converter and input amplifier. In these modes select the filter for
         measurements below 400Hz.""",
-        writeonly = True,
-        set_fmt = '{}{}')
+        writeonly=True,
+        set_fmt="{}{}")
 
     math_mode = enum_property(
-        'M',
+        "M",
         MathMode,
         doc="""Set the math mode.
 
@@ -201,7 +216,7 @@ class HP3456a(Multimeter):
         set_fmt="{}{}")
 
     trigger_mode = enum_property(
-        'T',
+        "T",
         TriggerMode,
         doc="""Set the trigger mode.
 
@@ -211,8 +226,8 @@ class HP3456a(Multimeter):
         :type: `HP3456a.TriggerMode`
 
         """,
-        writeonly = True,
-        set_fmt='{}{}')
+        writeonly=True,
+        set_fmt="{}{}")
 
     @property
     def number_of_readings(self):
@@ -246,8 +261,8 @@ class HP3456a(Multimeter):
     def number_of_digits(self, value):
         valid = (3, 4, 5, 6)
         if value not in valid:
-            raise ValueError('Valid number_of_digits are: '
-                             '{}'.format(valid))
+            raise ValueError("Valid number_of_digits are: "
+                             "{}".format(valid))
 
         self._register_write(HP3456a.Register.number_of_digits, value)
 
@@ -267,16 +282,16 @@ class HP3456a(Multimeter):
 
     @nplc.setter
     def nplc(self, value):
-        valid = HP3456a.ValidRange['nplc'].value
+        valid = HP3456a.ValidRange["nplc"].value
         if isinstance(value, float) or isinstance(value, int):
             if value in valid:
                 self._register_write(HP3456a.Register.nplc, value)
             else:
-                raise ValueError('Valid nplc settings are: '
-                                 '{}'.format(valid))
+                raise ValueError("Valid nplc settings are: "
+                                 "{}".format(valid))
         else:
-            raise TypeError('NPLC must be specified as float or int, '
-                            'got {}'.format(type(value)))
+            raise TypeError("NPLC must be specified as float or int, "
+                            "got {}".format(type(value)))
 
     @property
     def delay(self):
@@ -418,33 +433,32 @@ class HP3456a(Multimeter):
     @input_range.setter
     def input_range(self, value):
         if isinstance(value, str):
-            if value.lower() == 'auto':
-                self.sendcmd('R1W')
+            if value.lower() == "auto":
+                self.sendcmd("R1W")
             else:
-                raise ValueError('Only "auto" is acceptable when specifying '
-                                 'the input range as a string.')
+                raise ValueError("Only 'auto' is acceptable when specifying "
+                                 "the input range as a string.")
 
         elif isinstance(value, pq.quantity.Quantity):
-            if (value.units == pq.volt):
+            if value.units == pq.volt:
                 valid = HP3456a.ValidRange.voltage.value
                 value = value.rescale(pq.volt)
-            elif (value.units == pq.ohm):
+            elif value.units == pq.ohm:
                 valid = HP3456a.ValidRange.resistance.value
                 value = value.rescale(pq.ohm)
             else:
-                raise ValueError('Value {} not quantity.volt or quantity.ohm'
-                                 ''.format(value))
+                raise ValueError("Value {} not quantity.volt or quantity.ohm"
+                                 "".format(value))
 
             value = float(value)
             if value not in valid:
-                raise ValueError('Value {} outside valid ranges '
-                                 '{}'.format(value, valid))
+                raise ValueError("Value {} outside valid ranges "
+                                 "{}".format(value, valid))
             value = valid.index(value) + 2
-            self._range = value
-            self.sendcmd('R{}W'.format(self._range))
+            self.sendcmd("R{}W".format(value))
         else:
-            raise TypeError('Range setting must be specified as a float, int, '
-                            'or the string "auto", got {}'.format(type(value)))
+            raise TypeError("Range setting must be specified as a float, int, "
+                            "or the string 'auto', got {}".format(type(value)))
 
     @property
     def relative(self):
@@ -453,21 +467,21 @@ class HP3456a(Multimeter):
 
         :type: `bool`
         """
-        raise NotImplementedError
+        return self._null
 
     @relative.setter
     def relative(self, value):
         if value is True:
             self._null = True
-            self.sendcmd('M{}'.format(HP3456a.MathMode.null.value))
+            self.sendcmd("M{}".format(HP3456a.MathMode.null.value))
         elif value is False:
             self._null = False
-            self.sendcmd('M{}'.format(HP3456a.MathMode.off.value))
+            self.sendcmd("M{}".format(HP3456a.MathMode.off.value))
         else:
-            raise TypeError('Relative setting must be specified as a bool'
-                            ', got {}'.format(type(value)))
+            raise TypeError("Relative setting must be specified as a bool, "
+                            "got {}".format(type(value)))
 
-    ## METHODS ##
+    # METHODS ##
 
     def auto_range(self):
         """
@@ -475,9 +489,9 @@ class HP3456a(Multimeter):
         120% and downscale when it below 11% full scale. Note that auto ranging
         can increase the measurement time.
         """
-        self.input_range = 'auto'
+        self.input_range = "auto"
 
-    def fetch(self, mode = None):
+    def fetch(self, mode=None):
         """Retrieve n measurements after the HP3456a has been instructed to perform a
         series of similar measurements. Typically the mode, range, nplc, analog
         filter, autozero is set along with the number of measurements to
@@ -498,7 +512,7 @@ class HP3456a(Multimeter):
         10
 
         :param mode: Desired measurement mode. If not specified, the previous
-                     set mode will be used, but no measurement unit will be returned.
+            set mode will be used, but no measurement unit will be returned.
 
         :type mode: `HP3456a.Mode`
 
@@ -506,17 +520,15 @@ class HP3456a(Multimeter):
         :rtype: `~quantities.quantity.Quantity`
         """
         if mode is not None:
-            modevalue = mode.value
             units = UNITS[mode]
         else:
-            modevalue = None
             units = 1
 
-        value = self.query('', size=-1)
-        values = [float(x) * units for x in value.split(',')]
+        value = self.query("", size=-1)
+        values = [float(x) * units for x in value.split(",")]
         return values
 
-    def measure(self, mode = None):
+    def measure(self, mode=None):
         """Instruct the HP3456a to perform a one time measurement. The measurement
         will use the current set registers for the measurement
         (number_of_readings, number_of_digits, nplc, delay, mean, lower, upper,
@@ -527,7 +539,7 @@ class HP3456a(Multimeter):
 
         Example usage:
 
-        >>> dmm = ik.hp.HP3456a.open_gpibusb('/dev/ttyUSB0', 22)
+        >>> dmm = ik.hp.HP3456a.open_gpibusb("/dev/ttyUSB0", 22)
         >>> dmm.number_of_digits = 6
         >>> dmm.nplc = 1
         >>> print dmm.measure(dmm.Mode.resistance_2wire)
@@ -548,56 +560,66 @@ class HP3456a(Multimeter):
             modevalue = None
             units = 1
 
-        self.sendcmd('{}W1STNT3'.format(modevalue))
+        self.sendcmd("{}W1STNT3".format(modevalue))
 
-        value = self.query('', size=-1)
+        value = self.query("", size=-1)
         return float(value) * units
 
     def _register_read(self, name):
         """
         Read a register on the HP3456a.
 
-        :type: `HP3456a.Register`
+        :param name: The name of the register to read from
+        :type name: `HP3456a.Register`
         :rtype: `float`
         """
-        if isinstance(name, str):
+        try:
             name = HP3456a.Register[name]
+        except KeyError:
+            pass
         if not isinstance(name, HP3456a.Register):
-            raise TypeError('register must be specified as a '
-                            'HP3456a.Register, got {} '
-                            'instead.'.format(name))
-        self.sendcmd('RE{}'.format(name.value))
+            raise TypeError("register must be specified as a "
+                            "HP3456a.Register, got {} "
+                            "instead.".format(name))
+        self.sendcmd("RE{}".format(name.value))
         time.sleep(.1)
-        return float(self.query('', size = -1))
+        return float(self.query("", size=-1))
 
     def _register_write(self, name, value):
         """
         Write a register on the HP3456a.
 
+        :param name: The name of the register to write to
         :type name: `HP3456a.Register`
         :type value: `float`
         """
-        if isinstance(name, str):
+        try:
             name = HP3456a.Register[name]
+        except KeyError:
+            pass
         if not isinstance(name, HP3456a.Register):
-            raise TypeError('register must be specified as a '
-                            'HP3456a.Register, got {} '
-                            'instead.'.format(name))
-        if name in [HP3456a.Register.mean, HP3456a.Register.variance, HP3456a.Register.count]:
-            raise ValueError('register {} is read only'.format(name))
-        self.sendcmd('W{}ST{}'.format(value, name.value))
+            raise TypeError("register must be specified as a "
+                            "HP3456a.Register, got {} "
+                            "instead.".format(name))
+        if name in [
+                HP3456a.Register.mean,
+                HP3456a.Register.variance,
+                HP3456a.Register.count
+        ]:
+            raise ValueError("register {} is read only".format(name))
+        self.sendcmd("W{}ST{}".format(value, name.value))
         time.sleep(.1)
 
     def trigger(self):
         """
         Signal a single manual trigger event to the `HP3456a`.
         """
-        self.sendcmd('T3')
+        self.sendcmd("T3")
 
-## UNITS #######################################################################
+# UNITS #######################################################################
 
 UNITS = {
-    None : 1,
+    None: 1,
     HP3456a.Mode.dcv: pq.volt,
     HP3456a.Mode.acv: pq.volt,
     HP3456a.Mode.acvdcv: pq.volt,
