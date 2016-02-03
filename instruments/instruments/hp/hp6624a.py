@@ -17,7 +17,7 @@ from instruments.abstract_instruments import (
     PowerSupply,
     PowerSupplyChannel
 )
-from instruments.util_fns import assume_units, ProxyList
+from instruments.util_fns import ProxyList, unitful_property, bool_property
 
 # CLASSES #####################################################################
 
@@ -57,14 +57,18 @@ class HP6624a(PowerSupply):
             self._hp = hp
             self._idx = idx + 1
 
-        # PRIVATE METHODS #
+        # COMMUNICATION METHODS #
 
         def _format_cmd(self, cmd):
             cmd = cmd.split(" ")
             if len(cmd) == 1:
                 cmd = "{cmd} {idx}".format(cmd=cmd[0], idx=self._idx)
             else:
-                cmd = "{cmd} {idx},{value}".format(cmd=cmd[0], idx=self._idx, value=cmd[1])
+                cmd = "{cmd} {idx},{value}".format(
+                    cmd=cmd[0],
+                    idx=self._idx,
+                    value=cmd[1]
+                )
             return cmd
 
         def sendcmd(self, cmd):
@@ -104,115 +108,97 @@ class HP6624a(PowerSupply):
         def mode(self, newval):
             raise NotImplementedError
 
-        @property
-        def voltage(self):
-            """
+        voltage = unitful_property(
+            "VSET",
+            pq.volt,
+            set_fmt="{} {:.1f}",
+            output_decoration=float,
+            doc="""
             Gets/sets the voltage of the specified channel. If the device is in
             constant current mode, this sets the voltage limit.
 
             Note there is no bounds checking on the value specified.
 
             :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-            :type: `float` or `~quantities.Quantity`
+            :type: `float` or `~quantities.quantity.Quantity`
             """
-            return pq.Quantity(float(self._hp.query(
-                'VSET? {}'.format(self._idx)).strip()), pq.volt)
+        )
 
-        @voltage.setter
-        def voltage(self, newval):
-            self._hp.sendcmd('VSET {},{}'.format(
-                self._idx,
-                assume_units(newval, pq.volt).rescale(pq.volt).magnitude,
-            ))
-
-        @property
-        def current(self):
-            """
+        current = unitful_property(
+            "ISET",
+            pq.amp,
+            set_fmt="{} {:.1f}",
+            output_decoration=float,
+            doc="""
             Gets/sets the current of the specified channel. If the device is in
             constant voltage mode, this sets the current limit.
 
             Note there is no bounds checking on the value specified.
 
             :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-            :type: `float` or `~quantities.Quantity`
+            :type: `float` or `~quantities.quantity.Quantity`
             """
-            return pq.Quantity(float(self._hp.query(
-                'ISET? {}'.format(self._idx)).strip()), pq.amp)
+        )
 
-        @current.setter
-        def current(self, newval):
-            self._hp.sendcmd('ISET {},{}'.format(
-                self._idx,
-                assume_units(newval, pq.amp).rescale(pq.amp).magnitude
-            ))
-
-        @property
-        def voltage_sense(self):
-            """
+        voltage_sense = unitful_property(
+            "VOUT",
+            pq.volt,
+            readonly=True,
+            doc="""
             Gets the actual voltage as measured by the sense wires for the
             specified channel.
 
             :units: :math:`\\text{V}` (volts)
-            :rtype: `~quantities.Quantity`
+            :rtype: `~quantities.quantity.Quantity`
             """
-            return pq.Quantity(float(self._hp.query(
-                'VOUT? {}'.format(self._idx)).strip()), pq.volt)
+        )
 
-        @property
-        def current_sense(self):
-            """
+        current_sense = unitful_property(
+            "IOUT",
+            pq.amp,
+            readonly=True,
+            doc="""
             Gets the actual output current as measured by the instrument for
             the specified channel.
 
             :units: :math:`\\text{A}` (amps)
-            :rtype: `~quantities.Quantity`
+            :rtype: `~quantities.quantity.Quantity`
             """
-            return pq.Quantity(float(self._hp.query(
-                'IOUT? {}'.format(self._idx)).strip()), pq.amp)
+        )
 
-        @property
-        def overvoltage(self):
-            """
+        overvoltage = unitful_property(
+            "OVSET",
+            pq.volt,
+            set_fmt="{} {:.1f}",
+            output_decoration=float,
+            doc="""
             Gets/sets the overvoltage protection setting for the specified channel.
 
             Note there is no bounds checking on the value specified.
 
             :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-            :type: `float` or `~quantities.Quantity`
+            :type: `float` or `~quantities.quantity.Quantity`
             """
-            return pq.Quantity(float(self._hp.query(
-                'OVSET? {}'.format(self._idx)).strip()), pq.volt)
+        )
 
-        @overvoltage.setter
-        def overvoltage(self, newval):
-            self._hp.sendcmd('OVSET {},{}'.format(
-                self._idx,
-                assume_units(newval, pq.volt).rescale(pq.volt).magnitude
-            ))
-
-        @property
-        def overcurrent(self):
-            """
+        overcurrent = bool_property(
+            "OVP",
+            inst_true="1",
+            inst_false="0",
+            doc="""
             Gets/sets the overcurrent protection setting for the specified channel.
 
             This is a toggle setting. It is either on or off.
 
             :type: `bool`
             """
-            return (True if self._hp.query('OVP? {}'.format(self._idx)).strip()
-                    is '1' else False)
+        )
 
-        @overcurrent.setter
-        def overcurrent(self, newval):
-            if newval is True:
-                newval = 1
-            else:
-                newval = 0
-            self._hp.sendcmd('OVP {},{}'.format(self._idx, newval))
-
-        @property
-        def output(self):
-            """
+        output = bool_property(
+            "OUT",
+            inst_true="1",
+            inst_false="0",
+            doc="""
             Gets/sets the outputting status of the specified channel.
 
             This is a toggle setting. True will turn on the channel output
@@ -220,16 +206,7 @@ class HP6624a(PowerSupply):
 
             :type: `bool`
             """
-            return (True if self._hp.query('OUT? {}'.format(self._idx)).strip()
-                    is '1' else False)
-
-        @output.setter
-        def output(self, newval):
-            if newval is True:
-                newval = 1
-            else:
-                newval = 0
-            self._hp.sendcmd('OUT {},{}'.format(self._idx, newval))
+        )
 
         # METHODS ##
 
@@ -237,13 +214,19 @@ class HP6624a(PowerSupply):
             """
             Reset overvoltage and overcurrent errors to resume operation.
             """
-            self._hp.sendcmd('OVRST {}'.format(self._idx))
-            self._hp.sendcmd('OCRST {}'.format(self._idx))
+            self.sendcmd('OVRST')
+            self.sendcmd('OCRST')
 
     # ENUMS #
 
     class Mode(Enum):
-        # TODO: lookup correct values here...can this model even do this?
+        """
+        Enum holding typical valid output modes for a power supply.
+
+        However, for the HP6624a I believe that it is only capable of
+        constant-voltage output, so this class current does not do anything
+        and is just a placeholder.
+        """
         voltage = 0
         current = 0
 
@@ -269,12 +252,11 @@ class HP6624a(PowerSupply):
 
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Volts.
-        :type: `list` of `~quantities.Quantity` with units Volt
+        :type: `list` of `~quantities.quantity.Quantity` with units Volt
         """
-        values = []
-        for i in range(self.channel_count):
-            values.append(self.channel[i].voltage)
-        return tuple(values)
+        return [
+            self.channel[i].voltage for i in range(self.channel_count)
+        ]
 
     @voltage.setter
     def voltage(self, newval):
@@ -296,16 +278,15 @@ class HP6624a(PowerSupply):
 
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units Amps.
-        :type: `list` of `~quantities.Quantity` with units Amp
+        :type: `list` of `~quantities.quantity.Quantity` with units Amp
         """
-        values = []
-        for i in range(self.channel_count):
-            values.append(self.channel[i].current)
-        return tuple(values)
+        return [
+            self.channel[i].current for i in range(self.channel_count)
+        ]
 
     @current.setter
     def current(self, newval):
-        if isinstance(newval, list) or isinstance(newval, tuple):
+        if isinstance(newval, (list, tuple)):
             if len(newval) is not self.channel_count:
                 raise ValueError('When specifying the current for all channels '
                                  'as a list or tuple, it must be of '
@@ -322,12 +303,11 @@ class HP6624a(PowerSupply):
         Gets the actual voltage as measured by the sense wires for all channels.
 
         :units: :math:`\\text{V}` (volts)
-        :rtype: `tuple` of `~quantities.Quantity`
+        :rtype: `tuple` of `~quantities.quantity.Quantity`
         """
-        values = []
-        for i in range(self.channel_count):
-            values.append(self.channel[i].voltage_sense)
-        return tuple(values)
+        return (
+            self.channel[i].voltage_sense for i in range(self.channel_count)
+        )
 
     @property
     def current_sense(self):
@@ -335,12 +315,11 @@ class HP6624a(PowerSupply):
         Gets the actual current as measured by the instrument for all channels.
 
         :units: :math:`\\text{A}` (amps)
-        :rtype: `tuple` of `~quantities.Quantity`
+        :rtype: `tuple` of `~quantities.quantity.Quantity`
         """
-        values = []
-        for i in range(self.channel_count):
-            values.append(self.channel[i].current_sense)
-        return tuple(values)
+        return (
+            self.channel[i].current_sense for i in range(self.channel_count)
+        )
 
     @property
     def channel_count(self):
