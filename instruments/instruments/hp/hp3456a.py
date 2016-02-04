@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # hp3456a.py: Driver for the HP3456a Digital Voltmeter.
