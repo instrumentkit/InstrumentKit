@@ -14,7 +14,7 @@ import mock
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
 
-# TEST CLASSES ################################################################
+# TESTS #######################################################################
 
 
 def test_channel_returns_inner_class():
