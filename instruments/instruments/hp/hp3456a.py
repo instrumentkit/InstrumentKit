@@ -24,7 +24,7 @@
 """
 Driver for the HP3456a Digital Voltmeter
 
-Originally contributted and copyright held by Willem Dijkstra (wpd@xs4all.nl)
+Originally contributed and copyright held by Willem Dijkstra (wpd@xs4all.nl)
 
 An unrestricted license has been provided to the maintainers of the Instrument
 Kit project.

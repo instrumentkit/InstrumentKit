@@ -24,7 +24,7 @@
 """
 Driver for the HP6632b DC power supply
 
-Originally contributted and copyright held by Willem Dijkstra (wpd@xs4all.nl)
+Originally contributed and copyright held by Willem Dijkstra (wpd@xs4all.nl)
 
 An unrestricted license has been provided to the maintainers of the Instrument
 Kit project.

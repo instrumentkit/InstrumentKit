@@ -1,30 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-# hp6652a.py: Python class for the HP 6652a power supply
-##
-# © 2014 Steven Casagrande (scasagrande@galvant.ca)
-# hp6652a class authored by Wil Langford (wil.langford+instrumentkit@gmail.com)
-# portions adapted from hp6624a.py by Steven Casagrande
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-##
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+"""
+Driver for the HP6652a single output power supply
 
-## IMPORTS #####################################################################
+Originally contributed by Wil Langford (wil.langford+instrumentkit@gmail.com)
+"""
+
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,10 +17,11 @@ from instruments.abstract_instruments import (PowerSupply, PowerSupplyChannel)
 from instruments.util_fns import unitful_property, bool_property
 
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
 
 
 class HP6652a(PowerSupply, PowerSupplyChannel):
+
     """
     The HP6652a is a single output power supply.
 
@@ -50,7 +33,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
     (e.g. HP6652A and HP6671A)
 
     HOWEVER, it has only been tested by the author with an HP6652A power supply.
-    
+
     Example usage:
 
     >>> import time
@@ -71,16 +54,16 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
     >>> time.sleep(5)
     >>> psu.display_textmode=False
     """
-    
+
     def __init__(self, filelike):
         super(HP6652a, self).__init__(filelike)
 
-    ## ENUMS ##
+    # ENUMS ##
 
     # I don't know of any possible enumerations supported
     # by this instrument.
 
-    ## PROPERTIES ##
+    # PROPERTIES ##
 
     voltage = unitful_property(
         "VOLT",
@@ -92,7 +75,8 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        """)
+        """
+    )
 
     current = unitful_property(
         "CURR",
@@ -104,30 +88,31 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        """)
+        """
+    )
 
     voltage_sense = unitful_property(
         "MEAS:VOLT",
         pq.volt,
+        readonly=True,
         doc="""
         Gets the actual output voltage as measured by the sense wires.
 
         :units: :math:`\\text{V}` (volts)
         :rtype: `~quantities.Quantity`
-        """,
-        readonly=True
+        """
     )
 
     current_sense = unitful_property(
         "MEAS:CURR",
         pq.amp,
+        readonly=True,
         doc="""
         Gets the actual output current as measured by the sense wires.
 
         :units: :math:`\\text{A}` (amps)
         :rtype: `~quantities.Quantity`
-        """,
-        readonly=True
+        """
     )
 
     overvoltage = unitful_property(
@@ -145,8 +130,8 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     overcurrent = bool_property(
         "CURR:PROT:STAT",
-        '1',
-        '0',
+        inst_true="1",
+        inst_false="0",
         doc="""
         Gets/sets the overcurrent protection setting.
 
@@ -158,8 +143,8 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     output = bool_property(
         "OUTP",
-        '1',
-        '0',
+        inst_true="1",
+        inst_false="0",
         doc="""
         Gets/sets the output status.
 
@@ -172,8 +157,8 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     display_textmode = bool_property(
         "DISP:MODE",
-        'TEXT',
-        'NORM',
+        inst_true="TEXT",
+        inst_false="NORM",
         doc="""
         Gets/sets the display mode.
 
@@ -181,7 +166,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         front-panel LCD with the display_text() method.  False returns to
         the normal display mode.
 
-        See also: display_text()
+        .. seealso:: `~HP6652a.display_text()`
 
         :type: `bool`
         """
@@ -192,7 +177,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         """
         The name of the connected instrument, as reported by the
         standard SCPI command ``*IDN?``.
-        
+
         :rtype: `str`
         """
         idn_string = self.query("*IDN?")
@@ -213,7 +198,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         """
         raise NotImplementedError("Setting the mode is not implemented.")
 
-    ## METHODS ##
+    # METHODS ##
 
     def reset(self):
         """
@@ -242,7 +227,13 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         Because the string cannot be read back from the instrument,
         this method returns the actual string value sent.
 
-        :type: 'str'
+        :param text_to_display: The text that you wish to have displayed
+            on the front-panel LCD
+        :type text_to_display: 'str'
+        :return: Returns the version of the provided string that will
+            be send to the instrument. This means it will be truncated to
+            a maximum of 15 characters and changed to all upper case.
+        :rtype: `str`
         """
 
         if len(text_to_display) > 15:
@@ -255,8 +246,10 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     def channel(self):
         """
-        Return the channel (which in this case is the entire instrument.)
+        Return the channel (which in this case is the entire instrument, since
+        there is only 1 channel on the HP6652a.)
 
-        :rtype: 'tuple'
+        :rtype: 'tuple' of length 1 containing a reference back to the parent
+            HP6652a object.
         """
-        return (self,)
+        return self,
