@@ -37,10 +37,12 @@ def test_hp6632b_display_text():
         ik.hp.HP6632b,
         [
             'DISP:TEXT "TEST"',
+            'DISP:TEXT "TEST AAAAAAAAAA"'
         ],
         []
     ) as psu:
         assert psu.display_text("TEST") == "TEST"
+        assert psu.display_text("TEST AAAAAAAAAAAAAAAA") == "TEST AAAAAAAAAA"
 
 
 def test_hp6632b_output():

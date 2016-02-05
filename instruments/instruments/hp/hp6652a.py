@@ -244,6 +244,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
         return text_to_display
 
+    @property
     def channel(self):
         """
         Return the channel (which in this case is the entire instrument, since
