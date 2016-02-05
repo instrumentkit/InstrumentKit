@@ -3,3 +3,8 @@ omit =
     */python?.?/*
     */site-packages/nose/*
     *__init__*
+exclude_lines =
+    pragma: no cover
+    if self._testing:
+    raise NotImplementedError
+    raise AssertionError

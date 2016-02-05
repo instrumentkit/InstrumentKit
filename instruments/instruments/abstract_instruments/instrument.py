@@ -88,6 +88,13 @@ class Instrument(object):
             raise TypeError('Instrument must be initialized with a filelike '
                             'object that is a subclass of '
                             'AbstractCommunicator.')
+        # Record if we're using the Loopback Communicator and put class in
+        # testing mode so we can disable sleeps in class implementations
+        if isinstance(self._file, LoopbackCommunicator):
+            self._testing = True
+        else:
+            self._testing = False
+
         self._prompt = None
         self._terminator = "\n"
 

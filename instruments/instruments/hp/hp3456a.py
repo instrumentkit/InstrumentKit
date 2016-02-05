@@ -168,8 +168,8 @@ class HP3456a(Multimeter):
 
     autozero = bool_property(
         "Z",
-        "1",
-        "0",
+        inst_true="1",
+        inst_false="0",
         doc="""Set the autozero mode.
 
         This is used to compensate for offsets in the dc
@@ -187,8 +187,8 @@ class HP3456a(Multimeter):
 
     filter = bool_property(
         "FL",
-        "1",
-        "0",
+        inst_true="1",
+        inst_false="0",
         doc="""Set the analog filter mode.
 
         The `HP3456a` has a 3 pole active filter with
@@ -252,19 +252,17 @@ class HP3456a(Multimeter):
         Set to higher values to increase accuracy at the cost of measurement speed.
 
         :type: `int`
-        :rtype: `float`
-
         """
-        return self._register_read(HP3456a.Register.number_of_digits)
+        return int(self._register_read(HP3456a.Register.number_of_digits))
 
     @number_of_digits.setter
-    def number_of_digits(self, value):
-        valid = (3, 4, 5, 6)
-        if value not in valid:
+    def number_of_digits(self, newval):
+        newval = int(newval)
+        if newval not in range(3, 7):
             raise ValueError("Valid number_of_digits are: "
-                             "{}".format(valid))
+                             "{}".format(list(range(3, 7))))
 
-        self._register_write(HP3456a.Register.number_of_digits, value)
+        self._register_write(HP3456a.Register.number_of_digits, newval)
 
     @property
     def nplc(self):
@@ -276,22 +274,18 @@ class HP3456a(Multimeter):
         stable over the number of powerline cycles to integrate.
 
         :type: `int`
-        :rtype: `float`
         """
-        return self._register_read(HP3456a.Register.nplc)
+        return int(self._register_read(HP3456a.Register.nplc))
 
     @nplc.setter
-    def nplc(self, value):
+    def nplc(self, newval):
+        newval = int(newval)
         valid = HP3456a.ValidRange["nplc"].value
-        if isinstance(value, float) or isinstance(value, int):
-            if value in valid:
-                self._register_write(HP3456a.Register.nplc, value)
-            else:
-                raise ValueError("Valid nplc settings are: "
-                                 "{}".format(valid))
+        if newval in valid:
+            self._register_write(HP3456a.Register.nplc, newval)
         else:
-            raise TypeError("NPLC must be specified as float or int, "
-                            "got {}".format(type(value)))
+            raise ValueError("Valid nplc settings are: "
+                             "{}".format(valid))
 
     @property
     def delay(self):
@@ -347,7 +341,6 @@ class HP3456a(Multimeter):
         value preset for `HP3456a.MathMode.pass_fail`.
 
         :type: `float`
-        :rtype: `float`
         """
         return self._register_read(HP3456a.Register.lower)
 
@@ -557,7 +550,7 @@ class HP3456a(Multimeter):
             modevalue = mode.value
             units = UNITS[mode]
         else:
-            modevalue = None
+            modevalue = ""
             units = 1
 
         self.sendcmd("{}W1STNT3".format(modevalue))
@@ -582,7 +575,8 @@ class HP3456a(Multimeter):
                             "HP3456a.Register, got {} "
                             "instead.".format(name))
         self.sendcmd("RE{}".format(name.value))
-        time.sleep(.1)
+        if not self._testing:
+            time.sleep(.1)
         return float(self.query("", size=-1))
 
     def _register_write(self, name, value):
@@ -608,7 +602,8 @@ class HP3456a(Multimeter):
         ]:
             raise ValueError("register {} is read only".format(name))
         self.sendcmd("W{}ST{}".format(value, name.value))
-        time.sleep(.1)
+        if not self._testing:
+            time.sleep(.1)
 
     def trigger(self):
         """
