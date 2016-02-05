@@ -314,6 +314,17 @@ def test_hp6632b_init_output_trigger():
         psu.init_output_trigger()
 
 
+def test_hp6632b_abort_output_trigger():
+    with expected_protocol(
+        ik.hp.HP6632b,
+        [
+            "ABORT",
+        ],
+        []
+    ) as psu:
+        psu.abort_output_trigger()
+
+
 def test_hp6632b_check_error_queue():
     with expected_protocol(
         ik.hp.HP6632b,

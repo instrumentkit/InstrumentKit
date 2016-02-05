@@ -381,6 +381,17 @@ def test_hp3456a_input_range_bad_type():
         dmm.input_range = True
 
 
+@raises(ValueError)
+def test_hp3456a_input_range_bad_units():
+    with expected_protocol(
+        ik.hp.HP3456a,
+        [],
+        [],
+        sep="\r"
+    ) as dmm:
+        dmm.input_range = 1 * pq.amp
+
+
 def test_hp3456a_relative():
     with expected_protocol(
         ik.hp.HP3456a,

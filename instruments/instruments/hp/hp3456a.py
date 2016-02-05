@@ -576,7 +576,7 @@ class HP3456a(Multimeter):
                             "HP3456a.Register, got {} "
                             "instead.".format(name))
         self.sendcmd("RE{}".format(name.value))
-        if not self._testing:
+        if not self._testing:  # pragma: no cover
             time.sleep(.1)
         return float(self.query("", size=-1))
 
@@ -603,7 +603,7 @@ class HP3456a(Multimeter):
         ]:
             raise ValueError("register {} is read only".format(name))
         self.sendcmd("W{}ST{}".format(value, name.value))
-        if not self._testing:
+        if not self._testing:  # pragma: no cover
             time.sleep(.1)
 
     def trigger(self):
