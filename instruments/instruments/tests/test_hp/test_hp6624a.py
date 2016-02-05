@@ -212,7 +212,7 @@ def test_all_voltage_wrong_length():
         [],
         sep="\n"
     ) as hp:
-        hp.voltage = (1, 2) * pq.volt
+        hp.voltage = (1 * pq.volt, 2 * pq.volt)
 
 
 def test_all_current():
@@ -255,7 +255,7 @@ def test_all_current_wrong_length():
         [],
         sep="\n"
     ) as hp:
-        hp.current = (1, 2) * pq.amp
+        hp.current = (1 * pq.amp, 2 * pq.amp)
 
 
 def test_all_voltage_sense():
