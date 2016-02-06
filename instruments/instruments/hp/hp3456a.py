@@ -34,9 +34,9 @@ Kit project.
 
 from __future__ import absolute_import
 from __future__ import division
+import time
 from builtins import range
 
-import time
 from enum import Enum, IntEnum
 
 import quantities as pq
@@ -44,8 +44,8 @@ import quantities as pq
 from instruments.abstract_instruments import Multimeter
 from instruments.util_fns import assume_units, bool_property, enum_property
 
-
 # CLASSES #####################################################################
+
 
 class HP3456a(Multimeter):
 
@@ -147,8 +147,8 @@ class HP3456a(Multimeter):
     class ValidRange(Enum):
 
         """
-        Enum with the valid ranges for voltage, resistance, and number of powerline
-        cycles to integrate over.
+        Enum with the valid ranges for voltage, resistance, and number of
+        powerline cycles to integrate over.
 
         """
         voltage = (1e-1, 1e0, 1e1, 1e2, 1e3)
@@ -232,8 +232,8 @@ class HP3456a(Multimeter):
 
     @property
     def number_of_readings(self):
-        """Get/set the number of readings done per trigger/measurement cycle using
-        `HP3456a.Register.number_of_readings`.
+        """Get/set the number of readings done per trigger/measurement cycle
+        using `HP3456a.Register.number_of_readings`.
 
         :type: `float`
         :rtype: `float`
@@ -250,7 +250,8 @@ class HP3456a(Multimeter):
         """Get/set the number of digits used in measurements using
         `HP3456a.Register.number_of_digits`.
 
-        Set to higher values to increase accuracy at the cost of measurement speed.
+        Set to higher values to increase accuracy at the cost of measurement
+        speed.
 
         :type: `int`
         """
@@ -267,8 +268,8 @@ class HP3456a(Multimeter):
 
     @property
     def nplc(self):
-        """Get/set the number of powerline cycles to integrate per measurement using
-        `HP3456a.Register.nplc`.
+        """Get/set the number of powerline cycles to integrate per measurement
+        using `HP3456a.Register.nplc`.
 
         Setting higher values increases accuracy at the cost of a longer
         measurement time. The implicit assumption is that the input reading is
@@ -290,8 +291,8 @@ class HP3456a(Multimeter):
 
     @property
     def delay(self):
-        """Get/set the delay that is waited after a trigger for the input to settle
-        using `HP3456a.Register.delay`.
+        """Get/set the delay that is waited after a trigger for the input to
+        settle using `HP3456a.Register.delay`.
 
         :type: As specified, assumed to be `~quantaties.Quantity.s` otherwise
         :rtype: `~quantaties.Quantity.s`
@@ -327,8 +328,8 @@ class HP3456a(Multimeter):
     @property
     def count(self):
         """
-        Get the number of measurements taken from `HP3456a.Register.count` when in
-        `HP3456a.MathMode.statistic`.
+        Get the number of measurements taken from `HP3456a.Register.count` when
+        in `HP3456a.MathMode.statistic`.
 
         :rtype: `int`
         """
@@ -337,9 +338,9 @@ class HP3456a(Multimeter):
     @property
     def lower(self):
         """
-        Get/set the value in `HP3456a.Register.lower`, which indicates the lowest value
-        measurement made while in `HP3456a.MathMode.statistic`, or the lowest
-        value preset for `HP3456a.MathMode.pass_fail`.
+        Get/set the value in `HP3456a.Register.lower`, which indicates the
+        lowest value measurement made while in `HP3456a.MathMode.statistic`, or
+        the lowest value preset for `HP3456a.MathMode.pass_fail`.
 
         :type: `float`
         """
@@ -352,9 +353,9 @@ class HP3456a(Multimeter):
     @property
     def upper(self):
         """
-        Get/set the value in `HP3456a.Register.upper`, which indicates the highest value
-        measurement made while in `HP3456a.MathMode.statistic`, or the highest
-        value preset for `HP3456a.MathMode.pass_fail`.
+        Get/set the value in `HP3456a.Register.upper`, which indicates the
+        highest value measurement made while in `HP3456a.MathMode.statistic`,
+        or the highest value preset for `HP3456a.MathMode.pass_fail`.
 
         :type: `float`
         :rtype: `float`
@@ -368,9 +369,9 @@ class HP3456a(Multimeter):
     @property
     def r(self):
         """
-        Get/set the value in `HP3456a.Register.r`, which indicates the resistor value
-        used while in `HP3456a.MathMode.dbm` or the number of recalled readings
-        in reading storage mode.
+        Get/set the value in `HP3456a.Register.r`, which indicates the resistor
+        value used while in `HP3456a.MathMode.dbm` or the number of recalled
+        readings in reading storage mode.
 
         :type: `float`
         :rtype: `float`
@@ -384,8 +385,8 @@ class HP3456a(Multimeter):
     @property
     def y(self):
         """
-        Get/set the value in `HP3456a.Register.y` to be used in calculations when in
-        `HP3456a.MathMode.scale` or `HP3456a.MathMode.percent`.
+        Get/set the value in `HP3456a.Register.y` to be used in calculations
+        when in `HP3456a.MathMode.scale` or `HP3456a.MathMode.percent`.
 
         :type: `float`
         :rtype: `float`
@@ -399,8 +400,8 @@ class HP3456a(Multimeter):
     @property
     def z(self):
         """
-        Get/set the value in `HP3456a.Register.z` to be used in calculations when in
-        `HP3456a.MathMode.scale` or the first reading when in
+        Get/set the value in `HP3456a.Register.z` to be used in calculations
+        when in `HP3456a.MathMode.scale` or the first reading when in
         `HP3456a.MathMode.statistic`.
 
         :type: `float`
@@ -479,17 +480,18 @@ class HP3456a(Multimeter):
 
     def auto_range(self):
         """
-        Set input range to auto. The `HP3456a` should upscale when a reading is at
-        120% and downscale when it below 11% full scale. Note that auto ranging
-        can increase the measurement time.
+        Set input range to auto. The `HP3456a` should upscale when a reading
+        is at 120% and downscale when it below 11% full scale. Note that auto
+        ranging can increase the measurement time.
         """
         self.input_range = "auto"
 
     def fetch(self, mode=None):
-        """Retrieve n measurements after the HP3456a has been instructed to perform a
-        series of similar measurements. Typically the mode, range, nplc, analog
-        filter, autozero is set along with the number of measurements to
-        take. The series is then started at the trigger command.
+        """Retrieve n measurements after the HP3456a has been instructed to
+        perform a series of similar measurements. Typically the mode, range,
+        nplc, analog filter, autozero is set along with the number of
+        measurements to take. The series is then started at the trigger
+        command.
 
         Example usage:
 
@@ -523,8 +525,8 @@ class HP3456a(Multimeter):
         return values
 
     def measure(self, mode=None):
-        """Instruct the HP3456a to perform a one time measurement. The measurement
-        will use the current set registers for the measurement
+        """Instruct the HP3456a to perform a one time measurement. The
+        measurement will use the current set registers for the measurement
         (number_of_readings, number_of_digits, nplc, delay, mean, lower, upper,
         y and z) and will immediately take place.
 
@@ -539,7 +541,8 @@ class HP3456a(Multimeter):
         >>> print dmm.measure(dmm.Mode.resistance_2wire)
 
         :param mode: Desired measurement mode. If not specified, the previous
-                     set mode will be used, but no measurement unit will be returned.
+            set mode will be used, but no measurement unit will be
+            returned.
 
         :type mode: `HP3456a.Mode`
 
