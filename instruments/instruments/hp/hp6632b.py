@@ -1,13 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-##
+#
 # hp6632b.py: Python class for the HP6632b power supply
-##
+#
 # © 2014 Willem Dijkstra (wpd@xs4all.nl).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,17 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
+"""
+Driver for the HP6632b DC power supply
 
-## IMPORTS #####################################################################
+Originally contributed and copyright held by Willem Dijkstra (wpd@xs4all.nl)
+
+An unrestricted license has been provided to the maintainers of the Instrument
+Kit project.
+"""
+
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,12 +41,14 @@ import quantities as pq
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.hp.hp6652a import HP6652a
-from instruments.util_fns import (unitful_property, unitless_property, 
+from instruments.util_fns import (unitful_property, unitless_property,
                                   bool_property, enum_property, int_property)
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class HP6632b(SCPIInstrument, HP6652a):
+
     """
     The HP6632b is a system dc power supply with an output rating of 0-20V/0-5A,
     precision low current measurement and low output noise.
@@ -69,18 +79,27 @@ class HP6632b(SCPIInstrument, HP6652a):
 
     def __init__(self, filelike):
         super(HP6632b, self).__init__(filelike)
-        
-    ## ENUMS ##
+
+    # ENUMS ##
 
     class ALCBandwidth(IntEnum):
+        """
+        Enum containing valid ALC bandwidth modes for the hp6632b
+        """
         normal = 1.5e4
         fast = 6e4
 
     class DigitalFunction(Enum):
+        """
+        Enum containing valid digital function modes for the hp6632b
+        """
         remote_inhibit = 'RIDF'
         data = 'DIG'
 
     class DFISource(Enum):
+        """
+        Enum containing valid DFI sources for the hp6632b
+        """
         questionable = 'QUES'
         operation = 'OPER'
         event_status_bit = 'ESB'
@@ -88,9 +107,13 @@ class HP6632b(SCPIInstrument, HP6652a):
         off = 'OFF'
 
     class ErrorCodes(IntEnum):
+        """
+        Enum containing generic-SCPI error codes along with codes specific
+        to the HP6632b.
+        """
         no_error = 0
 
-        ## -100 BLOCK: COMMAND ERRORS ##
+        # -100 BLOCK: COMMAND ERRORS ##
         command_error = -100
         invalid_character = -101
         syntax_error = -102
@@ -133,17 +156,16 @@ class HP6632b(SCPIInstrument, HP6652a):
         invalid_inside_macro_definition = -183
         macro_parameter_error = -184
 
-        # TODO: copy over other blocks.
-        ## -200 BLOCK: EXECUTION ERRORS ##
-        ## -300 BLOCK: DEVICE-SPECIFIC ERRORS ##
+        # -200 BLOCK: EXECUTION ERRORS ##
+        # -300 BLOCK: DEVICE-SPECIFIC ERRORS ##
         # Note that device-specific errors also include all positive numbers.
-        ## -400 BLOCK: QUERY ERRORS ##
+        # -400 BLOCK: QUERY ERRORS ##
 
-        ## OTHER ERRORS ##
+        # OTHER ERRORS ##
 
         #: Raised when the instrument detects that it has been turned from
         #: off to on.
-        power_on = -500 # Yes, SCPI 1999 defines the instrument turning on as
+        power_on = -500  # Yes, SCPI 1999 defines the instrument turning on as
         # an error. Yes, this makes my brain hurt.
         user_request_event = -600
         request_control_event = -700
@@ -208,28 +230,35 @@ class HP6632b(SCPIInstrument, HP6652a):
         measurement_overrange = 604
 
     class RemoteInhibit(Enum):
+        """
+        Enum containing vlaid remote inhibit modes for the hp6632b.
+        """
         latching = 'LATC'
         live = 'LIVE'
         off = 'OFF'
 
     class SenseWindow(Enum):
+        """
+        Enum containing valid sense window modes for the hp6632b.
+        """
         hanning = 'HANN'
         rectangular = 'RECT'
-        
-    ## PROPERTIES ##
+
+    # PROPERTIES ##
 
     voltage_alc_bandwidth = enum_property(
         "VOLT:ALC:BAND",
         ALCBandwidth,
         input_decoration=lambda x: int(float(x)),
+        readonly=True,
         doc="""
         Get the "automatic level control bandwidth" which for the HP66332A and
         HP6631-6634 determines if the output capacitor is in circuit. `Normal`
         denotes that it is, and `Fast` denotes that it is not.
 
         :type: `~HP6632b.ALCBandwidth`
-        """,
-        readonly=True)
+        """
+    )
 
     voltage_trigger = unitful_property(
         "VOLT:TRIG",
@@ -241,7 +270,8 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        """)
+        """
+    )
 
     current_trigger = unitful_property(
         "CURR:TRIG",
@@ -253,7 +283,8 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        """)
+        """
+    )
 
     init_output_continuous = bool_property(
         "INIT:CONT:SEQ1",
@@ -266,7 +297,8 @@ class HP6632b(SCPIInstrument, HP6652a):
         levels.
 
         :type: `bool`
-        """)
+        """
+    )
 
     current_sense_range = unitful_property(
         'SENS:CURR:RANGE',
@@ -279,8 +311,9 @@ class HP6632b(SCPIInstrument, HP6652a):
         range increases the low current measurement sensitivity and accuracy.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
-        """)
+        :type: `float` or `~quantities.quantity.Quantity`
+        """
+    )
 
     output_dfi = bool_property(
         'OUTP:DFI',
@@ -293,7 +326,8 @@ class HP6632b(SCPIInstrument, HP6652a):
         a fault is detected.
 
         :type: `bool`
-        """)
+        """
+    )
 
     output_dfi_source = enum_property(
         "OUTP:DFI:SOUR",
@@ -302,7 +336,8 @@ class HP6632b(SCPIInstrument, HP6652a):
         Get/set the source for discrete fault indicator (DFI) events.
 
         :type: `~HP6632b.DFISource`
-        """)
+        """
+    )
 
     output_remote_inhibit = enum_property(
         "OUTP:RI:MODE",
@@ -313,7 +348,8 @@ class HP6632b(SCPIInstrument, HP6652a):
         connection, which allows an external device to signal a fault.
 
         :type: `~HP6632b.RemoteInhibit`
-        """)
+        """
+    )
 
     digital_function = enum_property(
         "DIG:FUNC",
@@ -322,16 +358,18 @@ class HP6632b(SCPIInstrument, HP6652a):
         Get/set the inhibit+fault port to digital in+out or vice-versa.
 
         :type: `~HP6632b.DigitalFunction`
-        """)
+        """
+    )
 
     digital_data = int_property(
         "DIG:DATA",
+        valid_set=range(0, 8),
         doc="""
         Get/set digital in+out port to data. Data can be an integer from 0-7.
 
         :type: `int`
-        """,
-        valid_set = range(0,8))
+        """
+    )
 
     sense_sweep_points = unitless_property(
         "SENS:SWE:POIN",
@@ -339,7 +377,8 @@ class HP6632b(SCPIInstrument, HP6652a):
         Get/set the number of points in a measurement sweep.
 
         :type: `int`
-        """)
+        """
+    )
 
     sense_sweep_interval = unitful_property(
         "SENS:SWE:TINT",
@@ -350,7 +389,8 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :units: As specified, or assumed to be :math:`\\text{s}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        """)
+        """
+    )
 
     sense_window = enum_property(
         "SENS:WIND",
@@ -359,7 +399,8 @@ class HP6632b(SCPIInstrument, HP6652a):
         Get/set the measurement window function.
 
         :type: `~HP6632b.SenseWindow`
-        """)
+        """
+    )
 
     output_protection_delay = unitful_property(
         "OUTP:PROT:DEL",
@@ -372,13 +413,14 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :units: As specified, or assumed to be :math:`\\text{s}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        """)
-    
-    ## FUNCTIONS ##
-        
+        """
+    )
+
+    # FUNCTIONS ##
+
     def init_output_trigger(self):
         """
-        Set the output trigger system to the initiated state. In this state, 
+        Set the output trigger system to the initiated state. In this state,
         the power supply will respond to the next output trigger command.
         """
         self.sendcmd('INIT:NAME TRAN')
@@ -412,7 +454,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         raise NotImplementedError
 
     @display_contrast.setter
-    def display_brightness(self, newval):
+    def display_contrast(self, newval):
         raise NotImplementedError
 
     def check_error_queue(self):
@@ -423,11 +465,12 @@ class HP6632b(SCPIInstrument, HP6652a):
         """
         done = False
         result = []
-        while (not done):
+        while not done:
             err = int(self.query('SYST:ERR?').split(',')[0])
             if err == self.ErrorCodes.no_error:
                 done = True
             else:
-                result.append(self.ErrorCodes(err) if err in self.ErrorCodes else err)
+                result.append(
+                    self.ErrorCodes(err) if err in self.ErrorCodes else err)
 
         return result

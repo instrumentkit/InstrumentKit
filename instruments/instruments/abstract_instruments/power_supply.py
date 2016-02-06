@@ -37,68 +37,117 @@ from instruments.abstract_instruments import Instrument
 class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
     
     ## PROPERTIES ##
-    
-    def getmode(self):
+
+    @property
+    @abc.abstractmethod
+    def mode(self):
         """
-        Get/set the mode for this channel
+        Gets/sets the output mode for the power supply channel. This is an
+        abstract method.
+
+        :type: `~enum.Enum`
         """
-        raise NotImplementedError
-    def setmode(self, newval):
-        raise NotImplementedError
-    mode = abc.abstractproperty(getmode, setmode)
-    
-    def getvoltage(self):
+        pass
+
+    @mode.setter
+    @abc.abstractmethod
+    def mode(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def voltage(self):
         """
-        Get/set the voltage for this channel
+        Gets/sets the output voltage for the power supply channel. This is an
+        abstract method.
+
+        :type: `~quantities.quantity.Quantity`
         """
-        raise NotImplementedError
-    def setvoltage(self, newval):
-        raise NotImplementedError
-    voltage = abc.abstractproperty(getvoltage, setvoltage)
-    
-    def getcurrent(self):
+        pass
+
+    @voltage.setter
+    @abc.abstractmethod
+    def voltage(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def current(self):
         """
-        Get/set the current for this channel
+        Gets/sets the output current for the power supply channel. This is an
+        abstract method.
+
+        :type: `~quantities.quantity.Quantity`
         """
-        raise NotImplementedError
-    def setcurrent(self, newval):
-        raise NotImplementedError
-    current = abc.abstractproperty(getcurrent, setcurrent)
-    
-    def getoutput(self):
+        pass
+
+    @current.setter
+    @abc.abstractmethod
+    def current(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def output(self):
         """
-        Get/set the output state of this channel
+        Gets/sets the output status for the power supply channel. This is an
+        abstract method.
+
+        :type: `bool`
         """
-        raise NotImplementedError
-    def setoutput(self, newval):
-        raise NotImplementedError
-    output = abc.abstractproperty(getoutput, setoutput)
+        pass
+
+    @output.setter
+    @abc.abstractmethod
+    def output(self, newval):
+        pass
     
 
 class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
     
     ## PROPERTIES ##
     
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def channel(self):
-        raise NotImplementedError
-    
-    def getvoltage(self):
         """
-        Get/set the voltage for all channels
-        """
-        raise NotImplementedError
-    def setvoltage(self, newval):
-        raise NotImplementedError
-    voltage = abc.abstractproperty(getvoltage, setvoltage)
-    
-    def getcurrent(self):
-        """
-        Get/set the current for all channels
+        Gets a channel object for the power supply. This should use
+        `~instruments.util_fns.ProxyList` to achieve this.
+
+        This is an abstract method.
+
+        :rtype: `PowerSupplyChannel`
         """
         raise NotImplementedError
-    def setcurrent(self, newval):
-        raise NotImplementedError
-    current = abc.abstractproperty(getcurrent, setcurrent)
     
-    
+    @property
+    @abc.abstractmethod
+    def voltage(self):
+        """
+        Gets/sets the output voltage for all channel on the power supply.
+        This is an abstract method.
+
+        :type: `~quantities.quantity.Quantity`
+        """
+        pass
+
+    @voltage.setter
+    @abc.abstractmethod
+    def voltage(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def current(self):
+        """
+        Gets/sets the output current for all channel on the power supply.
+        This is an abstract method.
+
+        :type: `~quantities.quantity.Quantity`
+        """
+        pass
+
+    @current.setter
+    @abc.abstractmethod
+    def current(self, newval):
+        pass

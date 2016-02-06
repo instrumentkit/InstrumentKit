@@ -21,10 +21,6 @@ Hewlett-Packard
     :members:
     :undoc-members:
 
-.. autoclass:: _HP6624aChannel
-    :members:
-    :undoc-members:
-
 :class:`HP6632b`
 ================
 

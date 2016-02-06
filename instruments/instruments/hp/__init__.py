@@ -1,14 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""
+Module containing HP instruments
+"""
 
 from __future__ import absolute_import
 
-from instruments.hp.hp3456a import HP3456a
-
-from instruments.hp.hp6624a import (
-    HP6624a,
-    _HP6624aChannel
-)
-
-from instruments.hp.hp6632b import HP6632b
-from instruments.hp.hp6652a import HP6652a
+from .hp3456a import HP3456a
+from .hp6624a import HP6624a
+from .hp6632b import HP6632b
+from .hp6652a import HP6652a

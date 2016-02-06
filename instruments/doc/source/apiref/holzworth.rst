@@ -7,7 +7,7 @@
 Holzworth
 =========
 
-.. autoclass:: HolzworthHS9000
+.. autoclass:: HS9000
     :members:
     :undoc-members:
     
