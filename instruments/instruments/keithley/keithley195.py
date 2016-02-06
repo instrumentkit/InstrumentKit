@@ -76,7 +76,7 @@ class Keithley195(Multimeter):
         current_ac = (20e-6, 200e-6, 2e-3, 20e-3, 200e-3, 2, 2)
         resistance = (20, 200, 2000, 20e3, 200e3, 2e6, 20e6)
 
-    # PROPERTIES ##
+    # PROPERTIES #
 
     @property
     def mode(self):
@@ -226,7 +226,7 @@ class Keithley195(Multimeter):
                             'or the string "auto", got {}'.format(type(newval)))
         self.sendcmd('R{}DX'.format(newval))
 
-    # METHODS ##
+    # METHODS #
 
     def measure(self, mode=None):
         """
