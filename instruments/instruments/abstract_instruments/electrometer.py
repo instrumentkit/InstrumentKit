@@ -38,92 +38,111 @@ from instruments.abstract_instruments import Instrument
 class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
     ## PROPERTIES ##
-    
-    def _getmode(self):
-        """
-        Read measurement mode the electrometer is currently in.
-        """
-        raise NotImplementedError
-    def _setmode(self, newval):
-        """
-        Change the mode the electrometer is in.
-        """
-        raise NotImplementedError
-    mode = abc.abstractproperty(_getmode, _setmode)
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
+    def mode(self):
+        """
+        Gets/sets the measurement mode for the electrometer. This is an
+        abstract method.
+
+        :type: `~enum.Enum`
+        """
+        pass
+
+    @mode.setter
+    @abc.abstractmethod
+    def mode(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
     def unit(self):
         """
-        Returns the unit corresponding to the current mode.
-        """
-        raise NotImplementedError
-    
-    def _gettrigger_mode(self):
-        """
-        Get the current trigger mode the electrometer is set to.
-        """
-        raise NotImplementedError
-    def _settrigger_mode(self, newval):
-        """
-        Set the electrometer triggering mode.
-        """
-        raise NotImplementedError
-    trigger_mode = abc.abstractproperty(_gettrigger_mode, _settrigger_mode)
-    
-   
-    def _getinput_range(self):
-        """
-        Get the current input range setting of the electrometer.
-        """
-        raise NotImplementedError
-    def _setinput_range(self, newval):
-        """
-        Set the input range setting of the electrometer.
-        """
-        raise NotImplementedError
-    input_range = abc.abstractproperty(_getinput_range, _setinput_range)
+        Gets/sets the measurement mode for the multimeter. This is an
+        abstract method.
 
-    
-    def _getzero_check(self):
+        :type: `~quantities.UnitQuantity`
         """
-        Get the current zero check status.
-        """
-        raise NotImplementedError
-    def _setzero_check(self, newval):
-        """
-        Set the current zero check status.
-        """
-        raise NotImplementedError
-    zero_check = abc.abstractproperty(_getzero_check, _setzero_check)
+        pass
 
-    def _getzero_correct(self):
+    @property
+    @abc.abstractmethod
+    def trigger_mode(self):
         """
-        Get the current zero correct status.
+        Gets/sets the trigger mode for the electrometer. This is an
+        abstract method.
+
+        :type: `~enum.Enum`
         """
-        raise NotImplementedError
-    def _setzero_correct(self, newval):
+        pass
+
+    @trigger_mode.setter
+    @abc.abstractmethod
+    def trigger_mode(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def input_range(self):
         """
-        Set the current zero correct status.
+        Gets/sets the input range setting for the electrometer. This is an
+        abstract method.
+
+        :type: `~enum.Enum`
         """
-        raise NotImplementedError
-    zero_correct = abc.abstractproperty(_getzero_correct, _setzero_correct)
-    
-    
+        pass
+
+    @input_range.setter
+    @abc.abstractmethod
+    def input_range(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def zero_check(self):
+        """
+        Gets/sets the zero check status for the electrometer. This is an
+        abstract method.
+
+        :type: `bool`
+        """
+        pass
+
+    @zero_check.setter
+    @abc.abstractmethod
+    def zero_check(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def zero_correct(self):
+        """
+        Gets/sets the zero correct status for the electrometer. This is an
+        abstract method.
+
+        :type: `bool`
+        """
+        pass
+
+    @zero_correct.setter
+    @abc.abstractmethod
+    def zero_correct(self, newval):
+        pass
+
     ## METHODS ##
 
     @abc.abstractmethod
     def fetch(self):
-        '''
+        """
         Request the latest post-processed readings using the current mode. 
         (So does not issue a trigger)
-        '''
+        """
         raise NotImplementedError
 
     @abc.abstractmethod
     def read(self):
-        '''
+        """
         Trigger and acquire readings using the current mode.
-        '''
+        """
         raise NotImplementedError
-        
-        
