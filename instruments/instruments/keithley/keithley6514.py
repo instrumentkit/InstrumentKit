@@ -100,7 +100,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
 
     def _parse_measurement(self, ascii):
         # TODO: don't assume ASCII data format # pylint: disable=fixme
-        vals = map(float, ascii.split(','))
+        vals = list(map(float, ascii.split(',')))
         reading = vals[0] * self.unit
         timestamp = vals[1]
         status = vals[2]
@@ -188,7 +188,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
     def input_range(self, newval):
         mode = self.mode
         val = newval.rescale(self._MODE_UNITS[mode]).item()
-        if val not in self._valid_range(mode):
+        if val not in self._valid_range(mode).value:
             raise ValueError(
                 'Unexpected range limit for currently selected mode.')
         self.sendcmd('{}:RANGE:UPPER {:e}'.format(mode.value, val))
