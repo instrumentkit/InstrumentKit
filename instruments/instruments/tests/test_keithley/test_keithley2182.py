@@ -163,3 +163,74 @@ def test_measure():
         ]
     ) as inst:
         assert inst.measure() == 1.234 * pq.volt
+
+
+@raises(TypeError)
+def test_measure_invalid_mode():
+    with expected_protocol(
+        ik.keithley.Keithley2182,
+        [],
+        []
+    ) as inst:
+        inst.measure("derp")
+
+
+def test_relative_get():
+    with expected_protocol(
+        ik.keithley.Keithley2182,
+        [
+            "SENS:FUNC?",
+            "SENS:VOLT:CHAN1:REF:STAT?"
+        ],
+        [
+            "VOLT",
+            "ON"
+        ]
+    ) as inst:
+        assert inst.relative is True
+
+
+def test_relative_set_already_enabled():
+    with expected_protocol(
+        ik.keithley.Keithley2182,
+        [
+            "SENS:FUNC?",
+            "SENS:FUNC?",
+            "SENS:VOLT:CHAN1:REF:STAT?",
+            "SENS:VOLT:CHAN1:REF:ACQ"
+        ],
+        [
+            "VOLT",
+            "VOLT",
+            "ON",
+        ]
+    ) as inst:
+        inst.relative = True
+
+
+def test_relative_set_start_disabled():
+    with expected_protocol(
+        ik.keithley.Keithley2182,
+        [
+            "SENS:FUNC?",
+            "SENS:FUNC?",
+            "SENS:VOLT:CHAN1:REF:STAT?",
+            "SENS:VOLT:CHAN1:REF:STAT ON"
+        ],
+        [
+            "VOLT",
+            "VOLT",
+            "OFF",
+        ]
+    ) as inst:
+        inst.relative = True
+
+
+@raises(TypeError)
+def test_relative_set_wrong_type():
+    with expected_protocol(
+        ik.keithley.Keithley2182,
+        [],
+        []
+    ) as inst:
+        inst.relative = "derp"

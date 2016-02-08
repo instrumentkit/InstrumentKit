@@ -100,7 +100,8 @@ class Keithley2182(SCPIMultimeter):
             :rtype: `~quantities.quantity.Quantity`
             """
             if mode is not None:
-                self.mode = mode
+                # self.mode = mode
+                raise NotImplementedError
             self._parent.sendcmd('SENS:CHAN {}'.format(self._idx))
             value = float(self._parent.query('SENS:DATA:FRES?'))
             unit = self._parent.units
@@ -160,14 +161,14 @@ class Keithley2182(SCPIMultimeter):
 
         :type: `bool`
         """
-        mode = self.mode
+        mode = self.channel[0].mode
         return self.query("SENS:{}:CHAN1:REF:STAT?".format(mode.value)) == "ON"
 
     @relative.setter
     def relative(self, newval):
         if not isinstance(newval, bool):
             raise TypeError("Relative mode must be a boolean.")
-        mode = self.mode
+        mode = self.channel[0].mode
         if self.relative:
             self.sendcmd("SENS:{}:CHAN1:REF:ACQ".format(mode.value))
         else:
