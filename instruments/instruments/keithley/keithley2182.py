@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Driver for the Keithley 2182 digital multimeter
+Driver for the Keithley 2182 nano-voltmeter
 """
 
 # IMPORTS #####################################################################
@@ -32,7 +32,7 @@ class Keithley2182(SCPIMultimeter):
     >>> meter = ik.keithley.Keithley2182.open_gpibusb("/dev/ttyUSB0", 10)
     >>> print meter.measure(meter.Mode.voltage_dc)
 
-    .. _user's guide: http://www.keithley.com/products/dcac/sensitive/lowvoltage/?mn=2182A
+
     """
 
     def __init__(self, filelike):
@@ -48,8 +48,8 @@ class Keithley2182(SCPIMultimeter):
             is designed to be initialized by the `Keithley2182` class.
         """
 
+        # pylint: disable=super-init-not-called
         def __init__(self, parent, idx):
-            super(Keithley2182.Channel, self).__init__(None)
             self._parent = parent
             self._idx = idx + 1
 
@@ -57,7 +57,7 @@ class Keithley2182(SCPIMultimeter):
 
         @property
         def mode(self):
-            return Keithley2182.Mode[self._parent.query('SENS:FUNC?')]
+            return Keithley2182.Mode(self._parent.query('SENS:FUNC?'))
 
         @mode.setter
         def mode(self, newval):
@@ -112,8 +112,8 @@ class Keithley2182(SCPIMultimeter):
         """
         Enum containing valid measurement modes for the Keithley 2182
         """
-        voltage_dc = 'VOLT'
-        temperature = 'TEMP'
+        voltage_dc = "VOLT"
+        temperature = "TEMP"
 
     class TriggerMode(Enum):
         """
@@ -190,9 +190,9 @@ class Keithley2182(SCPIMultimeter):
 
         :rtype: `~quantities.unitquantity.UnitQuantity`
         """
-        mode = self.mode
+        mode = self.channel[0].mode
         if mode == Keithley2182.Mode.voltage_dc:
-            return pq.ohm
+            return pq.volt
         unit = self.query("UNIT:TEMP?")
         if unit == "C":
             unit = pq.celsius
@@ -212,8 +212,8 @@ class Keithley2182(SCPIMultimeter):
         to the computer.
         If currently taking a reading, the instrument will wait until it is
         complete before executing this command.
-        Readings are NOT erased from memory when using fetch. Use the R? command
-        to read and erase data.
+        Readings are NOT erased from memory when using fetch. Use the ``R?``
+        command to read and erase data.
         Note that the data is transfered as ASCII, and thus it is not
         recommended to transfer a large number of data points using GPIB.
 
@@ -235,10 +235,10 @@ class Keithley2182(SCPIMultimeter):
         :units: Volts, Celsius, Kelvin, or Fahrenheit
         """
         if mode is None:
-            mode = self.mode
+            mode = self.channel[0].mode
         if not isinstance(mode, Keithley2182.Mode):
             raise TypeError("Mode must be specified as a Keithley2182.Mode "
                             "value, got {} instead.".format(mode))
-        value = float(self.query("MEAS:{}?".format(mode)))
+        value = float(self.query("MEAS:{}?".format(mode.value)))
         unit = self.units
         return value * unit

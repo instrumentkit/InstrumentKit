@@ -27,6 +27,7 @@ Keithley
 .. autoclass:: Keithley2182
     :members:
     :undoc-members:
+.. _user's guide: http://www.keithley.com/products/dcac/sensitive/lowvoltage/?mn=2182A
 
 :class:`Keithley6220`
 =====================
