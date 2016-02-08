@@ -51,7 +51,7 @@ class Keithley6220(SCPIInstrument, PowerSupply):
         >>> ccs.channel[0].current = 0.01
         >>> ccs.current = 0.01
         """
-        return tuple(self)
+        return self,
 
     @property
     def voltage(self):
