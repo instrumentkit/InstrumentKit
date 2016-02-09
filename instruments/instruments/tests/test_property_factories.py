@@ -707,6 +707,20 @@ def test_bounded_unitful_property_static_range():
     eq_(mock_inst.property_max, 9999 * pq.Hz)
 
 
+def test_bounded_unitful_property_static_range_with_units():
+    class BoundedUnitfulMock(MockInstrument):
+        property, property_min, property_max = bounded_unitful_property(
+            'MOCK',
+            units=pq.hertz,
+            valid_range=(10 * pq.kilohertz, 9999 * pq.kilohertz)
+        )
+
+    mock_inst = BoundedUnitfulMock()
+
+    eq_(mock_inst.property_min, 10 * 1000 * pq.Hz)
+    eq_(mock_inst.property_max, 9999 * 1000 * pq.Hz)
+
+
 @mock.patch("instruments.util_fns.unitful_property")
 def test_bounded_unitful_property_passes_kwargs(mock_unitful_property):
     bounded_unitful_property(

@@ -393,13 +393,13 @@ def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?", max_fmt_str="{}
         if valid_range[0] == "query":
             return pq.Quantity(*split_unit_str(self.query(min_fmt_str.format(name)), units))
         else:
-            return valid_range[0] * units
+            return assume_units(valid_range[0], units).rescale(units)
 
     def max_getter(self):
         if valid_range[1] == "query":
             return pq.Quantity(*split_unit_str(self.query(max_fmt_str.format(name)), units))
         else:
-            return valid_range[1] * units
+            return assume_units(valid_range[1], units).rescale(units)
 
     new_range = (
         None if valid_range[0] is None else min_getter,

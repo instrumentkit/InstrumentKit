@@ -27,6 +27,7 @@ Keithley
 .. autoclass:: Keithley2182
     :members:
     :undoc-members:
+.. _user's guide: http://www.keithley.com/products/dcac/sensitive/lowvoltage/?mn=2182A
 
 :class:`Keithley6220`
 =====================
@@ -34,3 +35,11 @@ Keithley
 .. autoclass:: Keithley6220
     :members:
     :undoc-members:
+
+:class:`Keithley6514`
+=====================
+
+.. autoclass:: Keithley6514
+    :members:
+    :undoc-members:
+.. _Keithley 6514: http://www.tunl.duke.edu/documents/public/electronics/Keithley/keithley-6514-electrometer-manual.pdf
