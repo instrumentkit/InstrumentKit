@@ -1,26 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# errors.py: Common error handling for Newport devices.
-#
-# © 2014 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+"""
+Provides common error handling for Newport devices.
+"""
 
 # IMPORTS ####################################################################
 
@@ -33,13 +15,13 @@ import datetime
 
 
 class NewportError(IOError):
-    start_time = datetime.datetime.now()
     """
     Raised in response to an error with a Newport-brand instrument.
     """
+    start_time = datetime.datetime.now()
 
-    # Dict Containing all possible errors.Uses strings for keys in order to handle axis
-    # Outside self definition so not rebuilt for everytime
+    # Dict Containing all possible errors.
+    # Uses strings for keys in order to handle axis
     messageDict = {
         '0': "NO ERROR DETECTED",
         '1': "PCI COMMUNICATION TIME-OUT",
@@ -124,7 +106,7 @@ class NewportError(IOError):
             self._timestamp = datetime.datetime.now() - NewportError.start_time
         else:
             self._timestamp = datetime.timedelta(
-                seconds=(timestamp * (400E-6)))
+                seconds=(timestamp * 400E-6))
 
         if errcode is not None:
             # Break the error code into an axis number
@@ -133,14 +115,20 @@ class NewportError(IOError):
             self._axis = errcode // 100
             if self._axis == 0:
                 self._axis = None
-                error_message = self.getMessage(str(errcode))
-                error = "Newport Error: {0}. Error Message: {1}. At time : {2}".format(
-                    str(errcode), error_message, self._timestamp)
+                error_message = self.get_message(str(errcode))
+                error = "Newport Error: {0}. Error Message: {1}. " \
+                        "At time : {2}".format(str(errcode),
+                                               error_message,
+                                               self._timestamp)
                 super(NewportError, self).__init__(error)
             else:
-                error_message = self.getMessage('x{0}'.format(self._errcode))
-                error = "Newport Error: {0}. Axis: {1}. Error Message: {2}. At time : {3}".format(
-                    str(self._errcode), self._axis, error_message, self._timestamp)
+                error_message = self.get_message('x{0}'.format(self._errcode))
+                error = "Newport Error: {0}. Axis: {1}. " \
+                        "Error Message: {2}. " \
+                        "At time : {3}".format(str(self._errcode),
+                                               self._axis,
+                                               error_message,
+                                               self._timestamp)
                 super(NewportError, self).__init__(error)
 
         else:
@@ -151,7 +139,7 @@ class NewportError(IOError):
     # PRIVATE METHODS ##
 
     @staticmethod
-    def __getMessage(code):
+    def get_message(code):
         return NewportError.messageDict.get(code, "Error code not recognised")
 
     # PROPERTIES ##
