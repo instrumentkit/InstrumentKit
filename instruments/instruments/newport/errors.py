@@ -140,6 +140,13 @@ class NewportError(IOError):
 
     @staticmethod
     def get_message(code):
+        """
+        Returns the error string for a given error code
+
+        :param str code: Error code as returned by instrument
+        :return: Full error code string
+        :rtype: `str`
+        """
         return NewportError.messageDict.get(code, "Error code not recognised")
 
     # PROPERTIES ##
