@@ -168,7 +168,6 @@ class NewportESP301(Instrument):
         query_resp = None
         if isinstance(target, NewportESP301Axis):
             target = target.axis_id
-
         raw_cmd = "{target}{cmd}{params}".format(
             target=target if target is not None else "",
             cmd=cmd.upper(),
@@ -374,12 +373,13 @@ class NewportESP301Axis(object):
             NewportESP301Units
         """
         return NewportESP301Units(
-            self._newport_cmd("SN?", target=self.axis_id)
+            int(self._newport_cmd("SN?", target=self.axis_id))
         )
 
     def _set_units(self, new_units):
         return self._newport_cmd(
-            "SN", target=self.axis_id,
+            "SN",
+            target=self.axis_id,
             params=[int(new_units)]
         )
 
@@ -1477,4 +1477,4 @@ class NewportESP301Axis(object):
         :param kwargs:
         :return:
         """
-        return self._controller._newport_cmd(cmd, kwargs)
+        return self._controller._newport_cmd(cmd, **kwargs)
