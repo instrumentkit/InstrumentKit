@@ -23,6 +23,15 @@ class PhaseMatrixFSW0020(SingleChannelSG):
     """
     Communicates with a Phase Matrix FSW-0020 signal generator via the
     "Native SPI" protocol, supported on all FSW firmware versions.
+
+    Example::
+
+        >>> import instruments as ik
+        >>> import quantities as pq
+        >>> inst = ik.phasematrix.PhaseMatrixFSW0020.open_serial("/dev/ttyUSB0", baud=115200)
+        >>> inst.frequency = 1 * pq.GHz
+        >>> inst.power = 0 * ik.units.dBm  # Can omit units and will assume dBm
+        >>> inst.output = True
     """
 
     def reset(self):
@@ -40,7 +49,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         If units are not specified, the frequency is assumed
         to be in gigahertz (GHz).
 
-        :type: `~quantities.Quantity` or `float`
+        :type: `~quantities.Quantity`
         :units: frequency, assumed to be GHz
         """
         return (int(self.query('04.'), 16) * mHz).rescale(GHz)
@@ -64,7 +73,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         If units are not specified, the power is assumed to be in
         decibel-milliwatts (dBm).
 
-        :type: `~quantities.Quantity` or `float`
+        :type: `~quantities.Quantity`
         :units: log-power, assumed to be dBm
         """
         return (int(self.query('0D.'), 16) * cBm).rescale(dBm)
@@ -92,10 +101,11 @@ class PhaseMatrixFSW0020(SingleChannelSG):
     @property
     def blanking(self):
         """
+        Gets/sets the blanking status of the FSW0020
+
         :type: `bool`
         """
-        # TODO
-        pass
+        raise NotImplementedError
 
     @blanking.setter
     def blanking(self, newval):
@@ -104,10 +114,11 @@ class PhaseMatrixFSW0020(SingleChannelSG):
     @property
     def ref_output(self):
         """
+        Gets/sets the reference output status of the FSW0020
+
         :type: `bool`
         """
-        # TODO
-        pass
+        raise NotImplementedError
 
     @ref_output.setter
     def ref_output(self, newval):
@@ -116,10 +127,12 @@ class PhaseMatrixFSW0020(SingleChannelSG):
     @property
     def output(self):
         """
+        Gets/sets the channel output status of the FSW0020. Setting this
+        property to `True` will turn the output on.
+
         :type: `bool`
         """
-        # TODO
-        pass
+        raise NotImplementedError
 
     @output.setter
     def output(self, newval):
@@ -128,10 +141,11 @@ class PhaseMatrixFSW0020(SingleChannelSG):
     @property
     def pulse_modulation(self):
         """
+        Gets/sets the pulse modulation status of the FSW0020
+
         :type: `bool`
         """
-        # TODO
-        pass
+        raise NotImplementedError
 
     @pulse_modulation.setter
     def pulse_modulation(self, newval):
@@ -140,10 +154,11 @@ class PhaseMatrixFSW0020(SingleChannelSG):
     @property
     def am_modulation(self):
         """
+        Gets/sets the amplitude modulation status of the FSW0020
+
         :type: `bool`
         """
-        # TODO
-        pass
+        raise NotImplementedError
 
     @am_modulation.setter
     def am_modulation(self, newval):
