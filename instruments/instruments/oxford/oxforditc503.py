@@ -27,13 +27,13 @@ class OxfordITC503(Instrument):
 
     >>> import instruments as ik
     >>> itc = ik.oxford.OxfordITC503.open_gpibusb('/dev/ttyUSB0', 1)
-    >>> print itc.sensor[0].temperature
-    >>> print itc.sensor[1].temperature
+    >>> print(itc.sensor[0].temperature)
+    >>> print(itc.sensor[1].temperature)
     """
 
     def __init__(self, filelike):
         super(OxfordITC503, self).__init__(filelike)
-        self.terminator = 13  # Set EOS char to CR
+        self.terminator = "\r"
         self.sendcmd('C3')  # Enable remote commands
 
     # INNER CLASSES #
@@ -43,15 +43,15 @@ class OxfordITC503(Instrument):
         """
         Class representing a probe sensor on the Oxford ITC 503.
 
-        .. warning:: This class should NOT be manually created by the user. It is
-            designed to be initialized by the `OxfordITC503` class.
+        .. warning:: This class should NOT be manually created by the user. It
+            is designed to be initialized by the `OxfordITC503` class.
         """
 
         def __init__(self, parent, idx):
             self._parent = parent
             self._idx = idx + 1
 
-        # PROPERTIES ##
+        # PROPERTIES #
 
         @property
         def temperature(self):
@@ -59,7 +59,7 @@ class OxfordITC503(Instrument):
             Read the temperature of the attached probe to the specified channel.
 
             :units: Kelvin
-            :rtype: `~quantities.quantity.Quantity`
+            :type: `~quantities.quantity.Quantity`
             """
             value = float(self._parent.query('R{}'.format(self._idx))[1:])
             return pq.Quantity(value, pq.Kelvin)
@@ -75,6 +75,8 @@ class OxfordITC503(Instrument):
         For instance, this would query the temperature of the first sensor::
 
         >>> itc = ik.other.OxfordITC503.open_gpibusb('/dev/ttyUSB0', 1)
-        >>> print itc.sensor[0].temperature
+        >>> print(itc.sensor[0].temperature)
+
+        :type: `OxfordITC503.Sensor`
         """
         return ProxyList(self, OxfordITC503.Sensor, range(3))
