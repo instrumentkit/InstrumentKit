@@ -8,7 +8,7 @@ Provides support for the Picowatt AVS 47 resistance bridge
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import range, map
+from builtins import range
 
 import quantities as pq
 from enum import IntEnum
@@ -55,14 +55,14 @@ class PicowattAVS47(SCPIInstrument):
         @property
         def resistance(self):
             """
-            Gets the resistance. It first ensures that the next measurement reading
-            is up to date by first sending the "ADC" command.
+            Gets the resistance. It first ensures that the next measurement
+            reading is up to date by first sending the "ADC" command.
 
             :units: :math:`\\Omega` (ohms)
             :rtype: `~quantities.Quantity`
             """
             # First make sure the mux is on the correct channel
-            if not self._parent.mux_channel == self._idx:
+            if self._parent.mux_channel != self._idx:
                 self._parent.input_source = self._parent.InputSource.ground
                 self._parent.mux_channel = self._idx
                 self._parent.input_source = self._parent.InputSource.actual
@@ -73,6 +73,9 @@ class PicowattAVS47(SCPIInstrument):
     # ENUMS #
 
     class InputSource(IntEnum):
+        """
+        Enum containing valid input source modes for the AVS 47
+        """
         ground = 0
         actual = 1
         reference = 2
@@ -103,16 +106,19 @@ class PicowattAVS47(SCPIInstrument):
         interface and locks-out the front panel.
 
         :type: `bool`
-        """)
+        """
+    )
 
     input_source = enum_property(
         name="INP",
         enum=InputSource,
+        input_decoration=int,
         doc="""
         Gets/sets the input source.
 
         :type: `PicowattAVS47.InputSource`
-        """)
+        """
+    )
 
     mux_channel = int_property(
         name="MUX",
@@ -125,7 +131,8 @@ class PicowattAVS47(SCPIInstrument):
 
         :type: `int`
         """,
-        valid_set=range(8))
+        valid_set=range(8)
+    )
 
     excitation = int_property(
         name="EXC",
@@ -136,7 +143,8 @@ class PicowattAVS47(SCPIInstrument):
 
         :type: `int`
         """,
-        valid_set=range(8))
+        valid_set=range(8)
+    )
 
     display = int_property(
         name="DIS",
@@ -147,4 +155,5 @@ class PicowattAVS47(SCPIInstrument):
 
         :type: `int`
         """,
-        valid_set=range(8))
+        valid_set=range(8)
+    )
