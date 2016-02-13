@@ -43,7 +43,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         self.sendcmd('0E.')
 
     @property
-    def freq(self):
+    def frequency(self):
         """
         Gets/sets the output frequency of the signal generator.
         If units are not specified, the frequency is assumed
@@ -54,8 +54,8 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         """
         return (int(self.query('04.'), 16) * mHz).rescale(GHz)
 
-    @freq.setter
-    def freq(self, newval):
+    @frequency.setter
+    def frequency(self, newval):
         # Rescale the input to millihertz as demanded by the signal
         # generator, then convert to an integer.
         newval = int(assume_units(newval, GHz).rescale(mHz).magnitude)
