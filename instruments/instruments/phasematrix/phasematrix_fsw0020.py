@@ -9,14 +9,14 @@ Provides support for the Phase Matrix FSW0020 signal generator.
 from __future__ import absolute_import
 from __future__ import division
 
+from quantities import GHz
+
 from instruments.abstract_instruments.signal_generator import SingleChannelSG
 from instruments.util_fns import assume_units
-from quantities import Hz, milli, GHz, UnitQuantity, Quantity
-from quantities.unitquantity import IrreducibleUnit
-from instruments.units import *
-
+from instruments.units import dBm, cBm, mHz
 
 # CLASSES #####################################################################
+
 
 class PhaseMatrixFSW0020(SingleChannelSG):
 
