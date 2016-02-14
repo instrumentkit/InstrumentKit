@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Module containing Qubitekk instruments
+"""
 
 from __future__ import absolute_import
 
-from instruments.qubitekk.cc1 import CC1
+from .cc1 import CC1
