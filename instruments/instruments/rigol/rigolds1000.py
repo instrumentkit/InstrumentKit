@@ -115,7 +115,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
             """
             return self._parent.query(":CHAN{}:{}".format(self._idx, cmd))
 
-        coupling = enum_property("COUP", RigolDS1000Series.Coupling)
+        coupling = enum_property("COUP", lambda: RigolDS1000Series.Coupling)
 
         bw_limit = bool_property("BWL", "ON", "OFF")
         display = bool_property("DISP", "ON", "OFF")
