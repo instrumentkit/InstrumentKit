@@ -62,12 +62,12 @@ class OscilloscopeChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `~enum.Enum`
         """
-        pass
+        raise NotImplementedError
 
     @coupling.setter
     @abc.abstractmethod
     def coupling(self, newval):
-        pass
+        raise NotImplementedError
         
 
 class Oscilloscope(with_metaclass(abc.ABCMeta, Instrument)):
