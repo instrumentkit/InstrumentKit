@@ -52,18 +52,22 @@ class OscilloscopeDataSource(with_metaclass(abc.ABCMeta, object)):
 class OscilloscopeChannel(with_metaclass(abc.ABCMeta, object)):
     
     ## PROPERTIES ##
-    
-    def getcoupling(self):
-        '''
-        Gets the coupling settings for this channel
-        '''
-        raise NotImplementedError
-    def setcoupling(self, newval):
-        '''
-        Sets the coupling settings for this channel
-        '''
-        raise NotImplementedError
-    coupling = abc.abstractproperty(getcoupling, setcoupling)
+
+    @property
+    @abc.abstractmethod
+    def coupling(self):
+        """
+        Gets/sets the coupling setting for the oscilloscope. This is an
+        abstract method.
+
+        :type: `~enum.Enum`
+        """
+        pass
+
+    @coupling.setter
+    @abc.abstractmethod
+    def coupling(self, newval):
+        pass
         
 
 class Oscilloscope(with_metaclass(abc.ABCMeta, Instrument)):
@@ -90,4 +94,3 @@ class Oscilloscope(with_metaclass(abc.ABCMeta, Instrument)):
         Forces a trigger event to occur on the attached oscilloscope.
         '''
         raise NotImplementedError
-        
