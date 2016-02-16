@@ -1,32 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# srs345.py: Implements a driver for the SRS 345 function generator.
-#
-# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+"""
+Provides support for the SRS 345 function generator.
+"""
 
 # IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import range, map
 
 from enum import IntEnum
 
@@ -34,9 +15,7 @@ import quantities as pq
 
 from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units, enum_property, unitful_property
-
-from instruments.units import dBm
+from instruments.util_fns import enum_property, unitful_property
 
 # CLASSES #####################################################################
 
@@ -52,7 +31,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     >>> import quantities as pq
     >>> srs = ik.srs.SRS345.open_gpib('/dev/ttyUSB0', 1)
     >>> srs.frequency = 1 * pq.MHz
-    >>> print srs.offset
+    >>> print(srs.offset)
     >>> srs.function = srs.Function.triangle
     """
     # FIXME: need to add OUTX 1 here, but doing so seems to cause a syntax
@@ -86,6 +65,9 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     # ENUMS ##
 
     class Function(IntEnum):
+        """
+        Enum containing valid output function modes for the SRS 345
+        """
         sinusoid = 0
         square = 1
         triangle = 2
