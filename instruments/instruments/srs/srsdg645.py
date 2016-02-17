@@ -1,38 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# srsdg645.py: Class for communicating with the SRS DG645 DDG.
-#
-# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+"""
+Provides support for the SRS DG645 digital delay generator.
+"""
 
 # IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import range, map
+from builtins import map
 
-from time import time, sleep
-
-from enum import IntEnum, Enum
-
-from contextlib import contextmanager
+from enum import IntEnum
 
 import quantities as pq
 
@@ -45,12 +23,12 @@ from instruments.util_fns import assume_units, ProxyList
 
 class _SRSDG645Channel(object):
 
-    '''
+    """
     Class representing a sensor attached to the SRS DG645.
 
     .. warning:: This class should NOT be manually created by the user. It is
         designed to be initialized by the `SRSDG645` class.
-    '''
+    """
 
     def __init__(self, ddg, chan):
         if not isinstance(ddg, SRSDG645):
@@ -63,7 +41,18 @@ class _SRSDG645Channel(object):
 
         self._ddg = ddg
 
-    # PROPERTIES ##
+    # PROPERTIES #
+
+    @property
+    def idx(self):
+        """
+        Gets the channel identifier number as used for communication
+
+        :return: The communication identification number for the specified
+            channel
+        :rtype: `int`
+        """
+        return self._chan
 
     @property
     def delay(self):
@@ -74,13 +63,13 @@ class _SRSDG645Channel(object):
         indicates a delay of 10 picoseconds from delay channel A.
         """
         resp = self._ddg.query("DLAY?{}".format(int(self._chan))).split(",")
-        return (SRSDG645.Channels(int(resp[0])), pq.Quantity(float(resp[1]), "s"))
+        return SRSDG645.Channels(int(resp[0])), pq.Quantity(float(resp[1]), "s")
 
     @delay.setter
     def delay(self, newval):
         self._ddg.sendcmd("DLAY {},{},{}".format(
             int(self._chan),
-            int(newval[0]._chan),
+            int(newval[0].idx),
             newval[1].rescale("s").magnitude
         ))
 
@@ -109,7 +98,7 @@ class SRSDG645(SCPIInstrument):
         if isinstance(filelike, GPIBCommunicator):
             filelike.strip = 2
 
-    # ENUMS ##
+    # ENUMS #
 
     class LevelPolarity(IntEnum):
 
@@ -180,7 +169,7 @@ class SRSDG645(SCPIInstrument):
         single_shot = 5
         line = 6
 
-    # INNER CLASSES ##
+    # INNER CLASSES #
 
     class Output(object):
 
@@ -231,22 +220,24 @@ class SRSDG645(SCPIInstrument):
             newval = assume_units(newval, 'V').magnitude
             self._parent.sendcmd("LAMP {},{}".format(self._idx, newval))
 
-    # PROPERTIES ##
+    # PROPERTIES #
 
     @property
     def channel(self):
-        '''
+        """
         Gets a specific channel object.
 
         The desired channel is accessed by passing an EnumValue from
         `~SRSDG645.Channels`. For example, to access channel A:
 
+        >>> import instruments as ik
+        >>> inst = ik.srs.SRSDG645.open_gpibusb('/dev/ttyUSB0', 1)
         >>> inst.channel[inst.Channels.A]
 
         See the example in `SRSDG645` for a more complete example.
 
         :rtype: `_SRSDG645Channel`
-        '''
+        """
         return ProxyList(self, _SRSDG645Channel, SRSDG645.Channels)
 
     @property
@@ -267,7 +258,7 @@ class SRSDG645(SCPIInstrument):
         :type: `tuple` of an `SRSDG645.DisplayMode` and an `SRSDG645.Channels`
         """
         disp_mode, chan = map(int, self.query("DISP?").split(","))
-        return (SRSDG645.DisplayMode(disp_mode), SRSDG645.Channels(chan))
+        return SRSDG645.DisplayMode(disp_mode), SRSDG645.Channels(chan)
 
     @display.setter
     def display(self, newval):
