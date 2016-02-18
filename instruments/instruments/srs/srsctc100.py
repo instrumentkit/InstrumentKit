@@ -1,42 +1,24 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# srsctc100.py: Class for communicating with the SRS CTC-100.
-#
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+"""
+Provides support for the SRS CTC-100 cryogenic temperature controller.
+"""
 
 # IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import range, map
+from contextlib import contextmanager
+from builtins import range
 
 from enum import Enum
 
 import quantities as pq
+import numpy as np
 
-from contextlib import contextmanager
 
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import assume_units, ProxyList
-import sys
+from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
 
@@ -52,7 +34,8 @@ class SRSCTC100(SCPIInstrument):
         super(SRSCTC100, self).__init__(filelike)
         self._do_errcheck = True
 
-    # DICTIONARIES ##
+    # DICTIONARIES #
+
     _BOOL_NAMES = {
         'On': True,
         'Off': False
@@ -70,6 +53,9 @@ class SRSCTC100(SCPIInstrument):
     # INNER CLASSES ##
 
     class SensorType(Enum):
+        """
+        Enum containing valid sensor types for the SRS CTC-100
+        """
         rtd = 'RTD'
         thermistor = 'Thermistor'
         diode = 'Diode'
@@ -92,7 +78,8 @@ class SRSCTC100(SCPIInstrument):
             # specified on page 14 of the manual.
             self._rem_name = chan_name.replace(" ", "")
 
-        # PRIVATE METHODS ##
+        # PRIVATE METHODS #
+
         def _get(self, prop_name):
             return self._ctc.query("{}.{}?".format(
                 self._rem_name,
@@ -103,12 +90,19 @@ class SRSCTC100(SCPIInstrument):
             self._ctc.sendcmd(
                 '{}.{} = "{}"'.format(self._rem_name, prop_name, newval))
 
-        # DISPLAY AND PROGRAMMING ##
+        # DISPLAY AND PROGRAMMING #
         # These properties control how the channel is identified in scripts
         # and on the front-panel display.
 
         @property
         def name(self):
+            """
+            Gets/sets the name of the channel that will be used by the
+            instrument to identify the channel in programming and on the
+            display.
+
+            :type: `str`
+            """
             return self._chan_name
 
         @name.setter
@@ -118,10 +112,17 @@ class SRSCTC100(SCPIInstrument):
             self._chan_name = newval
             self._rem_name = newval.replace(" ", "")
 
-        # BASICS ##
+        # BASICS #
 
         @property
         def value(self):
+            """
+            Gets the measurement value of the channel. Units depend on what
+            kind of sensor and/or channel you have specified. Units can be one
+            of ``celsius``, ``watt``, ``volt``, ``ohm``, or ``dimensionless``.
+
+            :type: `~quantities.Quantity`
+            """
             # WARNING: Queries all units all the time.
             # TODO: Make an OutputChannel that subclasses this class,
             #       and add a setter for value.
@@ -132,8 +133,16 @@ class SRSCTC100(SCPIInstrument):
 
         @property
         def units(self):
+            """
+            Gets the appropriate units for the specified channel.
+
+            Units can be one of ``celsius``, ``watt``, ``volt``, ``ohm``, or
+            ``dimensionless``.
+
+            :type: `~quantities.UnitQuantity`
+            """
             # FIXME: does not respect "chan.d/dt" property.
-            return self._ctc._channel_units()[self._chan_name]
+            return self._ctc.channel_units()[self._chan_name]
             # FIXME: the following line doesn't do what I'd expect, and so it's
             #        commented out.
             # return
@@ -141,23 +150,39 @@ class SRSCTC100(SCPIInstrument):
 
         @property
         def sensor_type(self):
+            """
+            Gets the type of sensor attached to the specified channel.
+
+            :type: `SRSCTC100.SensorType`
+            """
             return self._ctc.SensorType(self._get('sensor'))
 
-        # STATS ##
+        # STATS #
         # The following properties control and query the statistics of the
         # channel.
 
         @property
         def stats_enabled(self):
-            return self._ctc._BOOL_NAMES[self._get('stats')]
+            """
+            Gets/sets enabling the statistics for the specified channel.
+
+            :type: `bool`
+            """
+            return True if self._get('stats') is 'On' else False
 
         @stats_enabled.setter
         def stats_enabled(self, newval):
-            # FIXME: replace with inverse dict.
+            # FIXME: replace with bool_property factory
             self._set('stats', 'On' if newval else 'Off')
 
         @property
         def stats_points(self):
+            """
+            Gets/sets the number of sample points to use for the channel
+            statistics.
+
+            :type: `int`
+            """
             return int(self._get('points'))
 
         @stats_points.setter
@@ -166,6 +191,12 @@ class SRSCTC100(SCPIInstrument):
 
         @property
         def average(self):
+            """
+            Gets the average measurement for the specified channel as
+            determined by the statistics gathering.
+
+            :type: `~quantities.Quantity`
+            """
             return pq.Quantity(
                 float(self._get('average')),
                 self.units
@@ -173,14 +204,33 @@ class SRSCTC100(SCPIInstrument):
 
         @property
         def std_dev(self):
+            """
+            Gets the standard deviation for the specified channel as determined
+            by the statistics gathering.
+
+            :type: `~quantities.Quantity`
+            """
             return pq.Quantity(
                 float(self._get('SD')),
                 self.units
             )
 
-        # LOGGING ##
+        # LOGGING #
 
         def get_log_point(self, which='next', units=None):
+            """
+            Get a log data point from the instrument.
+
+            :param str which: Which data point you want. Valid examples
+                include ``first``, and ``next``. Consult the instrument
+                manual for the complete list
+            :param units: Units to attach to the returned data point. If left
+                with the value of `None` then the instrument will be queried
+                for the current units setting.
+            :type units: `~quantities.UnitQuantity`
+            :return: The log data point with units
+            :rtype: `~quantities.Quantity`
+            """
             if units is None:
                 units = self.units
 
@@ -193,6 +243,15 @@ class SRSCTC100(SCPIInstrument):
             return pq.Quantity(point[0], 'ms'), pq.Quantity(point[1], units)
 
         def get_log(self):
+            """
+            Gets all of the log data points currently saved in the instrument
+            memory.
+
+            :return: Tuple of all the log data points. First value is time,
+                second is the measurement value.
+            :rtype: Tuple of 2x `~quantities.Quantity`, each comprised of
+                a numpy array (`numpy.dnarray`).
+            """
             # Remember the current units.
             units = self.units
 
@@ -206,14 +265,15 @@ class SRSCTC100(SCPIInstrument):
             temps = pq.Quantity(np.empty((n_points,)), units)
 
             # Reset the position to the first point, then save it.
+            # pylint: disable=protected-access
             with self._ctc._error_checking_disabled():
-                ts[0], temps[0] = get_log_point('first', units)
+                ts[0], temps[0] = self.get_log_point('first', units)
                 for idx in range(1, n_points):
-                    ts[idx], temps[idx] = get_log_point('next', units)
+                    ts[idx], temps[idx] = self.get_log_point('next', units)
 
             # Do an actual error check now.
-            if self._ctc._do_errcheck:
-                self._ctc._errcheck()
+            if self._ctc.error_check_toggle:
+                self._ctc.errcheck()
 
             return ts, temps
 
@@ -244,12 +304,14 @@ class SRSCTC100(SCPIInstrument):
         ]
         return names
 
-    def _channel_units(self):
+    def channel_units(self):
         """
         Returns a dictionary from channel names to channel units, using the
         ``getOutput.units`` command. Unknown units and dimensionless quantities
         are presented the same way by the instrument, and so both are reported
         using `pq.dimensionless`.
+
+        :rtype: `dict` with channel names as keys and units as values
         """
         unit_strings = [
             unit_str.strip()
@@ -260,12 +322,19 @@ class SRSCTC100(SCPIInstrument):
             for chan_name, unit_str in zip(self._channel_names(), unit_strings)
         )
 
-    def _errcheck(self):
+    def errcheck(self):
+        """
+        Performs an error check query against the CTC100. This function does
+        not return anything, but will raise an `IOError` if the error code
+        received by the instrument is not zero.
+
+        :return: Nothing
+        """
         errs = super(SRSCTC100, self).query('geterror?').strip()
         err_code, err_descript = errs.split(',')
         err_code = int(err_code)
         if err_code == 0:
-            return
+            return err_code
         else:
             raise IOError(err_descript.strip())
 
@@ -279,37 +348,75 @@ class SRSCTC100(SCPIInstrument):
     # PROPERTIES ##
     @property
     def channel(self):
+        """
+        Gets a specific measurement channel on the SRS CTC100. This is accessed
+        like one would access a `dict`. Here you must use the actual channel
+        names to address a specific channel. This is different from most
+        other instruments in InstrumentKit because the CRC100 channel names
+        can change by the user.
+
+        The list of current valid channel names can be accessed by the
+        `SRSCTC100._channel_names()` function.
+
+        :type: `SRSCTC100.Channel`
+        """
         # Note that since the names can change, we need to query channel names
         # each time. This is inefficient, but alas.
         return ProxyList(self, self.Channel, self._channel_names())
 
     @property
     def display_figures(self):
+        """
+        Gets/sets the number of significant figures to display. Valid range
+        is 0-6 inclusive.
+
+        :type: `int`
+        """
         return int(self.query('system.display.figures?'))
 
     @display_figures.setter
     def display_figures(self, newval):
         if newval not in range(7):
-            raise ValueError(
-                "Number of display figures must be an integer from 0 to 6, inclusive.")
+            raise ValueError("Number of display figures must be an integer "
+                             "from 0 to 6, inclusive.")
         self.sendcmd('system.display.figures = {}'.format(newval))
 
-    # OVERRIDEN METHODS ##
+    @property
+    def error_check_toggle(self):
+        """
+        Gets/sets if errors should be checked for after every command.
+
+        :bool:
+        """
+        return self._do_errcheck
+
+    @error_check_toggle.setter
+    def error_check_toggle(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError
+        self._do_errcheck = newval
+
+    # OVERRIDEN METHODS #
 
     # We override sendcmd() and query() to do error checking after each
     # command.
     def sendcmd(self, cmd):
         super(SRSCTC100, self).sendcmd(cmd)
         if self._do_errcheck:
-            self._errcheck()
+            self.errcheck()
 
-    def query(self, cmd):
-        resp = super(SRSCTC100, self).query(cmd)
+    def query(self, cmd, size=-1):
+        resp = super(SRSCTC100, self).query(cmd, size)
         if self._do_errcheck:
-            self._errcheck()
+            self.errcheck()
         return resp
 
-    # LOGGING COMMANDS ##
+    # LOGGING COMMANDS #
 
     def clear_log(self):
-        self._ctc.sendcmd('System.Log.Clear yes')
+        """
+        Clears the SRS CTC100 log
+
+        Not sure if this works.
+        """
+        self.sendcmd('System.Log.Clear yes')
