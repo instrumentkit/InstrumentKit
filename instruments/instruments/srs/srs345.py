@@ -37,7 +37,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     # FIXME: need to add OUTX 1 here, but doing so seems to cause a syntax
     #        error on the instrument.
 
-    # CONSTANTS ##
+    # CONSTANTS #
 
     _UNIT_MNEMONICS = {
         FunctionGenerator.VoltageMode.peak_to_peak: "VP",
@@ -48,7 +48,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     _MNEMONIC_UNITS = dict((mnem, unit)
                            for unit, mnem in _UNIT_MNEMONICS.items())
 
-    # FunctionGenerator CONTRACT ##
+    # FunctionGenerator CONTRACT #
 
     def _get_amplitude_(self):
         resp = self.query("AMPL?").strip()
@@ -91,6 +91,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     function = enum_property(
         name="FUNC",
         enum=Function,
+        input_decoration=int,
         doc="""
         Gets/sets the output function of the function generator.
 
