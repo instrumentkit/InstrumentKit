@@ -38,13 +38,13 @@ def test_frequency():
         ik.srs.SRS830,
         [
             "FREQ?",
-            "FREQ {:.01f}".format(1000)
+            "FREQ {:e}".format(1000)
         ],
         [
-            "1234",
+            "12.34",
         ]
     ) as inst:
-        assert inst.frequency == 1234 * pq.Hz
+        assert inst.frequency == 12.34 * pq.Hz
         inst.frequency = 1 * pq.kHz
 
 
@@ -53,7 +53,7 @@ def test_phase():
         ik.srs.SRS830,
         [
             "PHAS?",
-            "PHAS {:.01f}".format(10)
+            "PHAS {:e}".format(10)
         ],
         [
             "-45",
@@ -68,7 +68,7 @@ def test_amplitude():
         ik.srs.SRS830,
         [
             "SLVL?",
-            "SLVL {:.01f}".format(1)
+            "SLVL {:e}".format(1)
         ],
         [
             "0.1",
