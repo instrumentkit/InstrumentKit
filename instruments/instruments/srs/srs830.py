@@ -51,7 +51,7 @@ class SRS830(SCPIInstrument):
     >>> data = srs.take_measurement(1, 10) # 1Hz sample rate, 10 samples total
     """
 
-    def __init__(self, filelike, outx_mode=None):
+    def __init__(self, filelike, outx_mode=None):  # pragma: no cover
         """
         Class initialization method.
 
@@ -61,7 +61,7 @@ class SRS830(SCPIInstrument):
             will be sent depending on what type of communicator self._file is.
         """
         super(SRS830, self).__init__(filelike)
-        if outx_mode is 1:  # pragma: no cover
+        if outx_mode is 1:
             self.sendcmd("OUTX 1")
         elif outx_mode is 2:
             self.sendcmd("OUTX 2")
@@ -221,8 +221,6 @@ class SRS830(SCPIInstrument):
     def sample_rate(self, newval):
         if isinstance(newval, str):
             newval = newval.lower()
-            if newval == 'trigger':
-                self.sendcmd('SRAT 14')
 
         if newval in VALID_SAMPLE_RATES:
             self.sendcmd('SRAT {}'.format(VALID_SAMPLE_RATES.index(newval)))
@@ -257,7 +255,7 @@ class SRS830(SCPIInstrument):
         while not resp and i < 10:
             resp = self.query('SPTS?').strip()
             i += 1
-        if not resp:
+        if not resp:  # pragma: no cover
             raise IOError(
                 "Expected integer response from instrument, got {}".format(
                     repr(resp))

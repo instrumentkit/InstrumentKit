@@ -114,7 +114,8 @@ def test_sample_rate():  # sends index of VALID_SAMPLE_RATES
         [
             "SRAT?",
             "SRAT?",
-            "SRAT {:d}".format(5)
+            "SRAT {:d}".format(5),
+            "SRAT 14"
         ],
         [
             "8",
@@ -124,6 +125,17 @@ def test_sample_rate():  # sends index of VALID_SAMPLE_RATES
         assert inst.sample_rate == 16 * pq.Hz
         assert inst.sample_rate == "trigger"
         inst.sample_rate = 2
+        inst.sample_rate = "trigger"
+
+
+@raises(ValueError)
+def test_sample_rate_invalid():
+    with expected_protocol(
+        ik.srs.SRS830,
+        [],
+        []
+    ) as inst:
+        inst.sample_rate = "foobar"
 
 
 def test_buffer_mode():
