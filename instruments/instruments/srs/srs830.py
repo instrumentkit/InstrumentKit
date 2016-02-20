@@ -11,6 +11,7 @@ from __future__ import division
 
 import math
 import time
+import warnings
 
 from builtins import range, map
 
@@ -21,13 +22,15 @@ import quantities as pq
 from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.comm import (
     GPIBCommunicator,
-    SerialCommunicator
+    SerialCommunicator,
+    LoopbackCommunicator
 )
 from instruments.util_fns import assume_units
 
 # CONSTANTS ###################################################################
 
 VALID_SAMPLE_RATES = [2.0**n for n in range(-4, 10)]
+VALID_SAMPLE_RATES += ["trigger"]
 
 # CLASSES #####################################################################
 
@@ -65,10 +68,12 @@ class SRS830(SCPIInstrument):
                 self.sendcmd("OUTX 1")
             elif isinstance(self._file, SerialCommunicator):
                 self.sendcmd("OUTX 2")
+            elif isinstance(self._file, LoopbackCommunicator):
+                pass
             else:
-                raise IOError("OUTX command has not been set. Instrument "
-                              "behavour is unknown.")
-    # ENUMS ##
+                warnings.warn("OUTX command has not been set. Instrument "
+                              "behavour is unknown.", UserWarning)
+    # ENUMS #
 
     class FreqSource(IntEnum):
 
@@ -126,7 +131,7 @@ class SRS830(SCPIInstrument):
 
         :type: `SRS830.FreqSource`
         """
-        return self.FreqSource[int(self.query("FMOD?"))]
+        return self.FreqSource(int(self.query("FMOD?")))
 
     @frequency_source.setter
     def frequency_source(self, newval):
@@ -235,7 +240,10 @@ class SRS830(SCPIInstrument):
 
         :type: `~quantities.Quantity` with units Hertz.
         """
-        return pq.Quantity(VALID_SAMPLE_RATES[int(self.query('SRAT?'))], pq.Hz)
+        value = int(self.query('SRAT?'))
+        if value == 14:
+            return "trigger"
+        return pq.Quantity(VALID_SAMPLE_RATES[value], pq.Hz)
 
     @sample_rate.setter
     def sample_rate(self, newval):
@@ -307,7 +315,7 @@ class SRS830(SCPIInstrument):
     def data_transfer(self, newval):
         self.sendcmd('FAST {}'.format(2 if newval else 0))
 
-    # AUTO- METHODS ##
+    # AUTO- METHODS #
 
     def auto_offset(self, mode):
         """
@@ -341,7 +349,7 @@ class SRS830(SCPIInstrument):
         """
         self.sendcmd('APHS')
 
-    # META-METHODS ##
+    # META-METHODS #
 
     def init(self, sample_rate, buffer_mode):
         r"""
