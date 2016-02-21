@@ -180,3 +180,38 @@ def test_data_transfer():
         assert inst.data_transfer is False
         inst.data_transfer = True
 
+
+def test_auto_offset():
+    with expected_protocol(
+        ik.srs.SRS830,
+        [
+            "AOFF 1",
+            "AOFF 1"
+        ],
+        []
+    ) as inst:
+        inst.auto_offset(inst.Mode.x)
+        inst.auto_offset("x")
+
+
+@raises(ValueError)
+def test_auto_offset_invalid():
+    with expected_protocol(
+        ik.srs.SRS830,
+        [
+            "AOFF 1",
+        ],
+        []
+    ) as inst:
+        inst.auto_offset(inst.Mode.theta)
+
+
+def test_auto_phase():
+    with expected_protocol(
+        ik.srs.SRS830,
+        [
+            "APHS"
+        ],
+        []
+    ) as inst:
+        inst.auto_phase()
