@@ -367,7 +367,8 @@ class SRS830(SCPIInstrument):
         self.init(sample_rate, SRS830.BufferMode['one_shot'])
         self.start_data_transfer()
 
-        time.sleep(sample_time + 0.1)
+        if not self._testing:
+            time.sleep(sample_time + 0.1)
 
         self.pause()
 
@@ -377,7 +378,7 @@ class SRS830(SCPIInstrument):
         # in future versions.
         try:
             self.num_data_points
-        except IOError:
+        except IOError:  # pragma: no cover
             pass
 
         ch1 = self.read_data_buffer('ch1')
@@ -412,9 +413,9 @@ class SRS830(SCPIInstrument):
 
         mode = self._XYR_MODE_MAP[mode]
 
-        if not isinstance(offset, int) or not isinstance(offset, float):
+        if not isinstance(offset, (int, float)):
             raise TypeError('Offset parameter must be an integer or a float.')
-        if not isinstance(expand, int) or not isinstance(expand, float):
+        if not isinstance(expand, (int, float)):
             raise TypeError('Expand parameter must be an integer or a float.')
 
         if (offset > 105) or (offset < -105):
@@ -426,7 +427,7 @@ class SRS830(SCPIInstrument):
         else:
             raise ValueError('Expand must be 1, 10, 100.')
 
-        self.sendcmd('OEXP {},{},{}'.format(mode, offset, expand))
+        self.sendcmd('OEXP {},{},{}'.format(mode, int(offset), expand))
 
     def start_scan(self):
         """
@@ -473,7 +474,7 @@ class SRS830(SCPIInstrument):
             mode1 = mode1.lower()
             mode1 = SRS830.Mode[mode1]
         if isinstance(mode2, str):
-            mode2 = mode1.lower()
+            mode2 = mode2.lower()
             mode2 = SRS830.Mode[mode2]
 
         if ((mode1 not in self._data_snap_modes) or
@@ -488,7 +489,7 @@ class SRS830(SCPIInstrument):
                              'same.')
 
         result = self.query('SNAP? {},{}'.format(mode1, mode2))
-        return map(float, result.split(','))
+        return list(map(float, result.split(',')))
 
     _valid_read_data_buffer = {Mode.ch1: 1, Mode.ch2: 2}
 
@@ -592,6 +593,6 @@ class SRS830(SCPIInstrument):
                              'function.')
 
         display = self._valid_channel_display[channel - 1][display]
-        ratio = self._valid_channel_ratio[channel - 1][display]
+        ratio = self._valid_channel_ratio[channel - 1][ratio]
 
         self.sendcmd('DDEF {},{},{}'.format(channel, display, ratio))
