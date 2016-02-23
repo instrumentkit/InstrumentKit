@@ -6,5 +6,6 @@ omit =
 exclude_lines =
     pragma: no cover
     if self._testing:
+    if not self._testing:
     raise NotImplementedError
     raise AssertionError

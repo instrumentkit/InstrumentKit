@@ -270,6 +270,16 @@ def test_take_measurement():
         np.testing.assert_array_equal(resp, [[1.234,5.678],[0.456,5.321]])
 
 
+@raises(ValueError)
+def test_take_measurement_invalid_num_samples():
+    with expected_protocol(
+        ik.srs.SRS830,
+        [],
+        []
+    ) as inst:
+        _ = inst.take_measurement(sample_rate=1, num_samples=16384)
+
+
 def test_set_offset_expand():
     with expected_protocol(
         ik.srs.SRS830,
@@ -320,6 +330,26 @@ def test_set_offset_expand_invalid_expand():
         []
     ) as inst:
         inst.set_offset_expand(mode=inst.Mode.x, offset=0, expand=5)
+
+
+@raises(TypeError)
+def test_set_offset_expand_invalid_type_offset():
+    with expected_protocol(
+        ik.srs.SRS830,
+        [],
+        []
+    ) as inst:
+        inst.set_offset_expand(mode=inst.Mode.x, offset="derp", expand=1)
+
+
+@raises(TypeError)
+def test_set_offset_expand_invalid_type_expand():
+    with expected_protocol(
+        ik.srs.SRS830,
+        [],
+        []
+    ) as inst:
+        inst.set_offset_expand(mode=inst.Mode.x, offset=0, expand="derp")
 
 
 def test_start_scan():
