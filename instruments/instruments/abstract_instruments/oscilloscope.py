@@ -36,8 +36,36 @@ from instruments.abstract_instruments import Instrument
 ## CLASSES #####################################################################
 
 class OscilloscopeDataSource(with_metaclass(abc.ABCMeta, object)):
+
+    def __enter__(self):
+        self._old_dsrc = self._tek.data_source
+        if self._old_dsrc != self:
+            # Set the new data source, and let __exit__ cleanup.
+            self._tek.data_source = self
+        else:
+            # There's nothing to do or undo in this case.
+            self._old_dsrc = None
+
+    def __exit__(self, type, value, traceback):
+        if self._old_dsrc is not None:
+            self._tek.data_source = self._old_dsrc
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        else:
+            return other.name == self.name
     
     ## PROPERTIES ##
+
+    @property
+    def name(self):
+        """
+        Gets the name of this data source, as identified over SCPI.
+
+        :type: `str`
+        """
+        return self._name
     
     @abc.abstractproperty
     def name(self):

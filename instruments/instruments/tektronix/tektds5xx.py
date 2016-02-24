@@ -102,34 +102,6 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
         self._name = name
         self._old_dsrc = None
 
-    @property
-    def name(self):
-        """
-        Gets the name of this data source, as identified over SCPI.
-
-        :type: `str`
-        """
-        return self._name
-
-    def __enter__(self):
-        self._old_dsrc = self._tek.data_source
-        if self._old_dsrc != self:
-            # Set the new data source, and let __exit__ cleanup.
-            self._tek.data_source = self
-        else:
-            # There's nothing to do or undo in this case.
-            self._old_dsrc = None
-
-    def __exit__(self, type, value, traceback):
-        if self._old_dsrc is not None:
-            self._tek.data_source = self._old_dsrc
-
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        else:
-            return other.name == self.name
-
     def read_waveform(self, bin_format=True):
         """
         Read waveform from the oscilloscope.
