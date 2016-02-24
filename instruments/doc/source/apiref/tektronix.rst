@@ -46,7 +46,7 @@ Tektronix
 :class:`TekDPO70000`
 ==========================
 
-.. autoclass:: TekDPO70000Series
+.. autoclass:: TekDPO70000
     :members:
     :undoc-members:
 
