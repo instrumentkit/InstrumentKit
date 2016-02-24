@@ -57,15 +57,6 @@ class OscilloscopeDataSource(with_metaclass(abc.ABCMeta, object)):
             return other.name == self.name
     
     ## PROPERTIES ##
-
-    @property
-    def name(self):
-        """
-        Gets the name of this data source, as identified over SCPI.
-
-        :type: `str`
-        """
-        return self._name
     
     @abc.abstractproperty
     def name(self):

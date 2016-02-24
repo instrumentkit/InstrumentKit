@@ -41,6 +41,15 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
         self._name = name
         self._old_dsrc = None
 
+    @property
+    def name(self):
+        """
+        Gets the name of this data source, as identified over SCPI.
+
+        :type: `str`
+        """
+        return self._name
+
     def read_waveform(self, bin_format=True):
         """
         Read waveform from the oscilloscope.
