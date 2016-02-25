@@ -1,26 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-# _cmds.py: Command mneonics for APT protocol.
-##
-# © 2013-2016 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-##
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+"""
+Contains command mneonics for the ThorLabs APT protocol
+
+Class originally contributed by Catherine Holloway.
+"""
 
 # IMPORTS #####################################################################
 
@@ -32,79 +16,82 @@ from enum import IntEnum
 
 
 class ThorLabsCommands(IntEnum):
+    """
+    Enum containing command mneonics for the ThorLabs APT protocol
+    """
     # General System Commands
-    MOD_IDENTIFY            = 0x0223
+    MOD_IDENTIFY = 0x0223
     MOD_SET_CHANENABLESTATE = 0x0210
     MOD_REQ_CHANENABLESTATE = 0x0211
     MOD_GET_CHANENABLESTATE = 0x0212
-    HW_DISCONNECT           = 0x0002
-    HW_RESPONSE             = 0x0080
-    HW_RICHRESPONSE         = 0x0081
-    HW_START_UPDATEMSGS     = 0x0011
-    HW_STOP_UPDATEMSGS      = 0x0012
-    HW_REQ_INFO             = 0x0005
-    HW_GET_INFO             = 0x0006
-    RACK_REQ_BAYUSED        = 0x0060
-    RACK_GET_BAYUSED        = 0x0061
-    HUB_REQ_BAYUSED         = 0x0065
-    HUB_GET_BAYUSED         = 0x0066
-    RACK_REQ_STATUSBITS     = 0x0226
-    RACK_GET_STATUSBITS     = 0x0227
-    RACK_SET_DIGOUTPUTS     = 0x0228
-    RACK_REQ_DIGOUTPUTS     = 0x0229
-    RACK_GET_DIGOUTPUTS     = 0x0230
-    MOD_SET_DIGOUTPUTS      = 0x0213
-    MOD_REQ_DIGOUTPUTS      = 0x0214
-    MOD_GET_DIGOUTPUTS      = 0x0215
+    HW_DISCONNECT = 0x0002
+    HW_RESPONSE = 0x0080
+    HW_RICHRESPONSE = 0x0081
+    HW_START_UPDATEMSGS = 0x0011
+    HW_STOP_UPDATEMSGS = 0x0012
+    HW_REQ_INFO = 0x0005
+    HW_GET_INFO = 0x0006
+    RACK_REQ_BAYUSED = 0x0060
+    RACK_GET_BAYUSED = 0x0061
+    HUB_REQ_BAYUSED = 0x0065
+    HUB_GET_BAYUSED = 0x0066
+    RACK_REQ_STATUSBITS = 0x0226
+    RACK_GET_STATUSBITS = 0x0227
+    RACK_SET_DIGOUTPUTS = 0x0228
+    RACK_REQ_DIGOUTPUTS = 0x0229
+    RACK_GET_DIGOUTPUTS = 0x0230
+    MOD_SET_DIGOUTPUTS = 0x0213
+    MOD_REQ_DIGOUTPUTS = 0x0214
+    MOD_GET_DIGOUTPUTS = 0x0215
 
     # Motor Control Messages
-    MOT_SET_POSCOUNTER      = 0x0410
-    MOT_REQ_POSCOUNTER      = 0x0411
-    MOT_GET_POSCOUNTER      = 0x0412
-    MOT_SET_ENCCOUNTER      = 0x0409
-    MOT_REQ_ENCCOUNTER      = 0x040A
-    MOT_GET_ENCCOUNTER      = 0x040B
-    MOT_SET_VELPARAMS       = 0x0413
-    MOT_REQ_VELPARAMS       = 0x0414
-    MOT_GET_VELPARAMS       = 0x0415
-    MOT_SET_JOGPARAMS       = 0x0416
-    MOT_REQ_JOGPARAMS       = 0x0417
-    MOT_GET_JOGPARAMS       = 0x0418
-    MOT_REQ_ADCINPUTS       = 0x042B
-    MOT_GET_ADCINPUTS       = 0x042C
-    MOT_SET_POWERPARAMS     = 0x0426
-    MOT_REQ_POWERPARAMS     = 0x0427
-    MOT_GET_POWERPARAMS     = 0x0428
-    MOT_SET_GENMOVEPARAMS   = 0x043A
-    MOT_REQ_GENMOVEPARAMS   = 0x043B
-    MOT_GET_GENMOVEPARAMS   = 0x043C
-    MOT_SET_MOVERELPARAMS   = 0x0445
-    MOT_REQ_MOVERELPARAMS   = 0x0446
-    MOT_GET_MOVERELPARAMS   = 0x0447
-    MOT_SET_MOVEABSPARAMS   = 0x0450
-    MOT_REQ_MOVEABSPARAMS   = 0x0451
-    MOT_GET_MOVEABSPARAMS   = 0x0452
-    MOT_SET_HOMEPARAMS      = 0x0440
-    MOT_REQ_HOMEPARAMS      = 0x0441
-    MOT_GET_HOMEPARAMS      = 0x0442
+    MOT_SET_POSCOUNTER = 0x0410
+    MOT_REQ_POSCOUNTER = 0x0411
+    MOT_GET_POSCOUNTER = 0x0412
+    MOT_SET_ENCCOUNTER = 0x0409
+    MOT_REQ_ENCCOUNTER = 0x040A
+    MOT_GET_ENCCOUNTER = 0x040B
+    MOT_SET_VELPARAMS = 0x0413
+    MOT_REQ_VELPARAMS = 0x0414
+    MOT_GET_VELPARAMS = 0x0415
+    MOT_SET_JOGPARAMS = 0x0416
+    MOT_REQ_JOGPARAMS = 0x0417
+    MOT_GET_JOGPARAMS = 0x0418
+    MOT_REQ_ADCINPUTS = 0x042B
+    MOT_GET_ADCINPUTS = 0x042C
+    MOT_SET_POWERPARAMS = 0x0426
+    MOT_REQ_POWERPARAMS = 0x0427
+    MOT_GET_POWERPARAMS = 0x0428
+    MOT_SET_GENMOVEPARAMS = 0x043A
+    MOT_REQ_GENMOVEPARAMS = 0x043B
+    MOT_GET_GENMOVEPARAMS = 0x043C
+    MOT_SET_MOVERELPARAMS = 0x0445
+    MOT_REQ_MOVERELPARAMS = 0x0446
+    MOT_GET_MOVERELPARAMS = 0x0447
+    MOT_SET_MOVEABSPARAMS = 0x0450
+    MOT_REQ_MOVEABSPARAMS = 0x0451
+    MOT_GET_MOVEABSPARAMS = 0x0452
+    MOT_SET_HOMEPARAMS = 0x0440
+    MOT_REQ_HOMEPARAMS = 0x0441
+    MOT_GET_HOMEPARAMS = 0x0442
     MOT_SET_LIMSWITCHPARAMS = 0x0423
     MOT_REQ_LIMSWITCHPARAMS = 0x0424
     MOT_GET_LIMSWITCHPARAMS = 0x0425
-    MOT_MOVE_HOME           = 0x0443
-    MOT_MOVE_HOMED          = 0x0444
-    MOT_MOVE_RELATIVE       = 0x0448
-    MOT_MOVE_COMPLETED      = 0x0464
-    MOT_MOVE_ABSOLUTE       = 0x0453
-    MOT_MOVE_JOG            = 0x046A
-    MOT_MOVE_VELOCITY       = 0x0457
-    MOT_MOVE_STOP           = 0x0465
-    MOT_MOVE_STOPPED        = 0x0466
-    MOT_SET_DCPIDPARAMS     = 0x04A0
-    MOT_REQ_DCPIDPARAMS     = 0x04A1
-    MOT_GET_DCPIDPARAMS     = 0x04A2
-    MOT_SET_AVMODES         = 0x04B3
-    MOT_REQ_AVMODES         = 0x04B4
-    MOT_GET_AVMODES         = 0x04B5
+    MOT_MOVE_HOME = 0x0443
+    MOT_MOVE_HOMED = 0x0444
+    MOT_MOVE_RELATIVE = 0x0448
+    MOT_MOVE_COMPLETED = 0x0464
+    MOT_MOVE_ABSOLUTE = 0x0453
+    MOT_MOVE_JOG = 0x046A
+    MOT_MOVE_VELOCITY = 0x0457
+    MOT_MOVE_STOP = 0x0465
+    MOT_MOVE_STOPPED = 0x0466
+    MOT_SET_DCPIDPARAMS = 0x04A0
+    MOT_REQ_DCPIDPARAMS = 0x04A1
+    MOT_GET_DCPIDPARAMS = 0x04A2
+    MOT_SET_AVMODES = 0x04B3
+    MOT_REQ_AVMODES = 0x04B4
+    MOT_GET_AVMODES = 0x04B5
     MOT_SET_POTPARAMS = 0x04B0
     MOT_REQ_POTPARAMS = 0x04B1
     MOT_GET_POTPARAMS = 0x04B2
@@ -277,4 +264,3 @@ class ThorLabsCommands(IntEnum):
     LA_REQ_STATUSUPDATE = 0x0820
     LA_GET_STATUSUPDATE = 0x0821
     LA_ACK_STATUSUPDATE = 0x0822
-
