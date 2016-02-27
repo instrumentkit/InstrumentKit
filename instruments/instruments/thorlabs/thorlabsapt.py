@@ -1,26 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# thorlabsapt.py: Driver for the Thorlabs APT Controller.
-#
-# © 2013-2016 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+"""
+Provides the support for the Thorlabs APT Controller.
+"""
 
 # IMPORTS #####################################################################
 
@@ -143,6 +125,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
 
             # Note that the fourth byte is padding, so we strip out the first
             # three bytes and format them.
+            # pylint: disable=invalid-format-index
             self._fw_version = "{0[0]}.{0[1]}.{0[2]}".format(
                 str(hw_info.data[14:18]).encode('hex')
             )
@@ -155,8 +138,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             self._n_channels = struct.unpack(
                 '<H', str(hw_info.data[82:84]))[0]
         except IOError as e:
-            logger.error(
-                "Exception occured while fetching hardware info: {}".format(e))
+            logger.error("Exception occured while fetching hardware info: %s", e)
 
         # Create a tuple of channels of length _n_channel_type
         if self._n_channels > 0:
@@ -298,7 +280,8 @@ class APTPiezoDevice(ThorLabsAPT):
             if resp is None:
                 return NotImplemented
 
-            chan, int_maxtrav = struct.unpack('<HH', resp.data)
+            # chan, int_maxtrav
+            _, int_maxtrav = struct.unpack('<HH', resp.data)
             return int_maxtrav * pq.Quantity(100, 'nm')
 
     @property
@@ -406,7 +389,8 @@ class APTPiezoStage(APTPiezoDevice):
             )
             resp = self._apt.querypacket(
                 pkt, expect=_cmds.ThorLabsCommands.PZ_GET_OUTPUTPOS)
-            chan, pos = struct.unpack('<HH', resp.data)
+            # chan, pos
+            _, pos = struct.unpack('<HH', resp.data)
             return pos
 
         @output_position.setter
@@ -532,8 +516,8 @@ class APTMotorController(ThorLabsAPT):
                         break
             # If we've made it down here, emit a warning that we didn't find the
             # model.
-            logger.warning("Scale factors for controller {} and motor {} are "
-                           "unknown".format(self._apt.model_number, motor_model))
+            logger.warning("Scale factors for controller %s and motor %s are "
+                           "unknown", self._apt.model_number, motor_model)
 
         # MOTOR COMMANDS #
 
@@ -557,7 +541,8 @@ class APTMotorController(ThorLabsAPT):
             # The documentation claims there are 14 data bytes, but it seems
             # there are sometimes some extra random ones...
             resp_data = self._apt.querypacket(pkt).data[:14]
-            ch_ident, position, enc_count, status_bits = struct.unpack(
+            # ch_ident, position, enc_count, status_bits
+            _, _, _, status_bits = struct.unpack(
                 '<HLLL', resp_data)
 
             status_dict = dict(
@@ -584,7 +569,8 @@ class APTMotorController(ThorLabsAPT):
             )
             response = self._apt.querypacket(
                 pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER)
-            chan, pos = struct.unpack('<Hl', response.data)
+            # chan, pos
+            _, pos = struct.unpack('<Hl', response.data)
             return pq.Quantity(pos, 'counts') / self.scale_factors[0]
 
         @property
@@ -605,7 +591,8 @@ class APTMotorController(ThorLabsAPT):
             )
             response = self._apt.querypacket(
                 pkt, expect=_cmds.ThorLabsCommands.MOT_GET_ENCCOUNTER)
-            chan, pos = struct.unpack('<Hl', response.data)
+            # chan, pos
+            _, pos = struct.unpack('<Hl', response.data)
             return pq.Quantity(pos, 'counts')
 
         def go_home(self):
@@ -668,8 +655,10 @@ class APTMotorController(ThorLabsAPT):
                 data=struct.pack('<Hl', self._idx_chan, pos_ec)
             )
 
-            response = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED)
+            _ = self._apt.querypacket(
+                pkt,
+                expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED
+            )
 
     _channel_type = MotorChannel
 
