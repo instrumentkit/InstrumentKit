@@ -63,6 +63,71 @@ ThorLabs APT packet:
     Data            {1}
 """.format(self, "{:x}".format(self._data) if self._has_data else "None")
 
+    @property
+    def message_id(self):
+        """
+        Gets/sets the message ID for the packet
+
+        :type: `str`
+        """
+        return self._message_id
+
+    @message_id.setter
+    def message_id(self, newval):
+        self._message_id = newval
+
+    @property
+    def parameters(self):
+        """
+        Gets/sets both parameters for the packet
+
+        :type: `tuple`
+        """
+        return self._param1, self._param2
+
+    @parameters.setter
+    def parameters(self, newval):
+        self._message_id = newval
+
+    @property
+    def destination(self):
+        """
+        Gets/sets the destination for the packet
+
+        :type: `str`
+        """
+        return self._dest
+
+    @destination.setter
+    def destination(self, newval):
+        self._dest = newval
+
+    @property
+    def source(self):
+        """
+        Gets/sets the source for the packet
+
+        :type: `str`
+        """
+        return self._source
+
+    @source.setter
+    def source(self, newval):
+        self._source = newval
+
+    @property
+    def data(self):
+        """
+        Gets/sets the data for the packet
+
+        :type: `str`
+        """
+        return self._data
+
+    @data.setter
+    def data(self, newval):
+        self._data = newval
+
     def pack(self):
         """
         Pack this `ThorLabsPacket` object into the byte string that can then
