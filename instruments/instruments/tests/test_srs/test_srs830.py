@@ -267,7 +267,7 @@ def test_take_measurement():
         ]
     ) as inst:
         resp = inst.take_measurement(sample_rate=1, num_samples=2)
-        np.testing.assert_array_equal(resp, [[1.234,5.678],[0.456,5.321]])
+        np.testing.assert_array_equal(resp, [[1.234, 5.678], [0.456, 5.321]])
 
 
 @raises(ValueError)

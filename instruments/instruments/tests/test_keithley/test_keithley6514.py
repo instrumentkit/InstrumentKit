@@ -23,7 +23,8 @@ def test_valid_range():
     inst = ik.keithley.Keithley6514.open_test()
     assert inst._valid_range(inst.Mode.voltage) == inst.ValidRange.voltage
     assert inst._valid_range(inst.Mode.current) == inst.ValidRange.current
-    assert inst._valid_range(inst.Mode.resistance) == inst.ValidRange.resistance
+    assert inst._valid_range(
+        inst.Mode.resistance) == inst.ValidRange.resistance
     assert inst._valid_range(inst.Mode.charge) == inst.ValidRange.charge
 
 

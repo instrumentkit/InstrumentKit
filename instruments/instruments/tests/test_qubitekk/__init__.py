@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # __init__.py: Tests for Qubitekk-brand instruments.
-##
+#
 # © 2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
 
-## IMPORTS ####################################################################
+# IMPORTS ####################################################################
 
 from __future__ import absolute_import
 
@@ -31,22 +31,21 @@ from nose.tools import raises
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
 
-## TESTS ######################################################################
+# TESTS ######################################################################
 
 test_cc1_name = make_name_test(ik.qubitekk.CC1)
-    
+
+
 @raises(IOError)
 def test_cc1_unknown_command():
     """
     CC1: Checks that invalid commands are properly turned into exceptions.
     """
     with expected_protocol(ik.qubitekk.CC1,
-            [
-                "FTN"
+                          [
+                           "FTN"
             ], [
                 "Unknown command"
             ]
     ) as cc1:
         cc1.sendcmd("FTN")
-
-        

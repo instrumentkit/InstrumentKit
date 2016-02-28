@@ -36,6 +36,7 @@ def test_channel_mode():
         channel = inst.channel[0]
         assert channel.mode == inst.Mode.voltage_dc
 
+
 def test_channel_measure_voltage():
     with expected_protocol(
         ik.keithley.Keithley2182,

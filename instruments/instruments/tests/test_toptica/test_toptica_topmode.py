@@ -73,8 +73,8 @@ def test_wavelength():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser[0].wavelength == 640*pq.nm
-        assert tm.laser[1].wavelength == 405.3*pq.nm
+        assert tm.laser[0].wavelength == 640 * pq.nm
+        assert tm.laser[1].wavelength == 405.3 * pq.nm
 
 
 def test_laser_enable():
@@ -222,7 +222,8 @@ def test_laser_correction_status():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser[0].correction_status == ik.toptica.TopMode.CharmStatus.un_initialized
+        assert tm.laser[
+            0].correction_status == ik.toptica.TopMode.CharmStatus.un_initialized
 
 
 def test_laser_correction():
@@ -280,7 +281,7 @@ def test_laser_ontime():
         ],
         sep="\n"
     ) as tm:
-        assert tm.laser[0].on_time == 10000*pq.s
+        assert tm.laser[0].on_time == 10000 * pq.s
 
 
 def test_laser_charm_status():

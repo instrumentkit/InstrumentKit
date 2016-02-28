@@ -451,6 +451,7 @@ def test_hp3456a_filter():
         dmm.filter = False
         dmm.filter = True
 
+
 @raises(TypeError)
 def test_hp3456a_register_read_bad_name():
     with expected_protocol(
