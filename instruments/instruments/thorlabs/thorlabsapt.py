@@ -20,10 +20,8 @@ from instruments.thorlabs import _abstract, _packets, _cmds
 
 # LOGGING #####################################################################
 
-from instruments.util_fns import NullHandler
-
 logger = logging.getLogger(__name__)
-logger.addHandler(NullHandler())
+logger.addHandler(logging.NullHandler())
 
 # CLASSES #####################################################################
 
