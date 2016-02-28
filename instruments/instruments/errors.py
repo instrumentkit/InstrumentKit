@@ -1,26 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-##
-# errors.py: Custom exception errors used by various instruments.
-##
-# © 2016 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-##
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+"""
+Module containing custom exception errors used by various instruments.
+"""
 
 # IMPORTS #####################################################################
 
@@ -30,8 +12,18 @@ from __future__ import absolute_import
 
 
 class AcknowledgementError(IOError):
+    """
+    This error is raised when an instrument fails to send the expected
+    acknowledgement string.
+    """
     pass
 
 
 class PromptError(IOError):
+    """
+    This error is raised when an instrument fails to send a "prompt"
+    character when one is expected. Typically most instruments do not send
+    these characters, but some do in a misguided attempt to be more "user
+    friendly".
+    """
     pass

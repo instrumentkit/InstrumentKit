@@ -34,11 +34,9 @@ import time
 from instruments.abstract_instruments.comm import AbstractCommunicator
 import os
 
-from instruments.util_fns import NullHandler
-
 import logging
 logger = logging.getLogger(__name__)
-logger.addHandler(NullHandler())
+logger.addHandler(logging.NullHandler())
 
 ## CLASSES #####################################################################
 
