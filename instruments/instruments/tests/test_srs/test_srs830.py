@@ -13,7 +13,7 @@ import numpy as np
 from nose.tools import raises
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol
 
 # TESTS #######################################################################
 
@@ -125,7 +125,7 @@ def test_sample_rate():  # sends index of VALID_SAMPLE_RATES
         assert inst.sample_rate == 16 * pq.Hz
         assert inst.sample_rate == "trigger"
         inst.sample_rate = 2
-        inst.sample_rate = "trigger"
+        inst.sample_rate = "trigger"  # pylint: disable=redefined-variable-type
 
 
 @raises(ValueError)

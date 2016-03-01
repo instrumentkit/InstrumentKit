@@ -8,8 +8,6 @@ Module containing tests for the enum property factories
 
 from __future__ import absolute_import
 
-from io import BytesIO
-
 from enum import Enum
 from nose.tools import raises, eq_
 

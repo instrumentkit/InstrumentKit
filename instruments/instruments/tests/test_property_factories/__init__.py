@@ -12,6 +12,7 @@ from io import BytesIO
 
 # CLASSES ####################################################################
 
+# pylint: disable=missing-docstring
 
 class MockInstrument(object):
 

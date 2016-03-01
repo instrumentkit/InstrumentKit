@@ -8,12 +8,11 @@ Module containing tests for the Thorlabs SC10
 
 from __future__ import absolute_import
 
-from enum import IntEnum
 from nose.tools import raises
 import quantities as pq
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol, unit_eq
 
 # TESTS ######################################################################
 
@@ -50,7 +49,7 @@ def test_sc10_enable():
         ],
         sep="\r"
     ) as sc:
-        assert sc.enable == False
+        assert sc.enable is False
         sc.enable = True
 
 
@@ -125,18 +124,6 @@ def test_sc10_mode_invalid():
         sep="\r"
     ) as sc:
         sc.mode = "blo"
-
-
-@raises(ValueError)
-def test_sc10_mode_invalid2():
-    with expected_protocol(
-        ik.thorlabs.SC10,
-        [],
-        [],
-        sep="\r"
-    ) as sc:
-        blo = IntEnum("blo", "beep boop bop")
-        sc.mode = blo(0)
 
 
 def test_sc10_trigger():

@@ -13,7 +13,7 @@ from nose.tools import raises
 import quantities as pq
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol
 
 # TESTS ######################################################################
 
@@ -79,7 +79,7 @@ def test_tc200_mode_error2():
         sep="\r"
     ) as tc:
         blo = IntEnum("blo", "beep boop bop")
-        tc.mode = blo.beep
+        tc.mode = blo.beep  # pylint: disable=no-member
 
 
 def test_tc200_enable():
@@ -449,7 +449,7 @@ def test_tc200_sensor_error2():
         []
     ) as tc:
         blo = IntEnum("blo", "beep boop bop")
-        tc.sensor = blo.beep
+        tc.sensor = blo.beep  # pylint: disable=no-member
 
 
 def test_tc200_beta():

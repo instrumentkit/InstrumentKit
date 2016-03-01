@@ -9,14 +9,14 @@ Unit tests for the Keithley 6514 electrometer
 from __future__ import absolute_import
 
 import quantities as pq
-import numpy as np
 from nose.tools import raises
-import mock
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol
 
 # TESTS #######################################################################
+
+# pylint: disable=protected-access
 
 
 def test_valid_range():

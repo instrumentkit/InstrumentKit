@@ -20,35 +20,35 @@ from . import MockInstrument
 
 def test_string_property_basics():
     class StringMock(MockInstrument):
-        string_property = string_property('MOCK')
+        mock_property = string_property('MOCK')
 
     mock_inst = StringMock({'MOCK?': '"foobar"'})
 
-    eq_(mock_inst.string_property, 'foobar')
+    eq_(mock_inst.mock_property, 'foobar')
 
-    mock_inst.string_property = 'foo'
+    mock_inst.mock_property = 'foo'
     eq_(mock_inst.value, 'MOCK?\nMOCK "foo"\n')
 
 
 def test_string_property_different_bookmark_symbol():
     class StringMock(MockInstrument):
-        string_property = string_property('MOCK', bookmark_symbol='%^')
+        mock_property = string_property('MOCK', bookmark_symbol='%^')
 
     mock_inst = StringMock({'MOCK?': '%^foobar%^'})
 
-    eq_(mock_inst.string_property, 'foobar')
+    eq_(mock_inst.mock_property, 'foobar')
 
-    mock_inst.string_property = 'foo'
+    mock_inst.mock_property = 'foo'
     eq_(mock_inst.value, 'MOCK?\nMOCK %^foo%^\n')
 
 
 def test_string_property_no_bookmark_symbol():
     class StringMock(MockInstrument):
-        string_property = string_property('MOCK', bookmark_symbol='')
+        mock_property = string_property('MOCK', bookmark_symbol='')
 
     mock_inst = StringMock({'MOCK?': 'foobar'})
 
-    eq_(mock_inst.string_property, 'foobar')
+    eq_(mock_inst.mock_property, 'foobar')
 
-    mock_inst.string_property = 'foo'
+    mock_inst.mock_property = 'foo'
     eq_(mock_inst.value, 'MOCK?\nMOCK foo\n')

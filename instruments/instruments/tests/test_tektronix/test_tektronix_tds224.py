@@ -11,9 +11,11 @@ from __future__ import absolute_import
 import numpy as np
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol, make_name_test
 
 # TESTS ######################################################################
+
+# pylint: disable=protected-access
 
 test_tektds224_name = make_name_test(ik.tektronix.TekTDS224)
 

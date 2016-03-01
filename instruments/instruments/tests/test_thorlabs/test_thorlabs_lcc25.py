@@ -8,12 +8,11 @@ Module containing tests for the Thorlabs LCC25
 
 from __future__ import absolute_import
 
-from enum import IntEnum
 from nose.tools import raises
 import quantities as pq
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol, unit_eq
 
 # TESTS ######################################################################
 
@@ -115,17 +114,6 @@ def test_lcc25_mode_invalid():
         []
     ) as lcc:
         lcc.mode = "blo"
-
-
-@raises(ValueError)
-def test_lcc25_mode_invalid2():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [],
-        []
-    ) as lcc:
-        blo = IntEnum("blo", "beep boop bop")
-        lcc.mode = blo(0)
 
 
 def test_lcc25_enable():

@@ -8,8 +8,6 @@ Module containing tests for the unitful property factories
 
 from __future__ import absolute_import
 
-from io import BytesIO
-
 from nose.tools import raises, eq_
 import quantities as pq
 
@@ -18,7 +16,7 @@ from . import MockInstrument
 
 # TEST CASES #################################################################
 
-# pylint: disable=missing-docstring
+# pylint: disable=missing-docstring,no-self-use
 
 
 def test_unitful_property_basics():

@@ -12,10 +12,12 @@ import quantities as pq
 import mock
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol
 from instruments.units import dBm
 
 # TEST CLASSES ################################################################
+
+# pylint: disable=protected-access
 
 
 def test_hs9000_name():
@@ -60,7 +62,7 @@ def test_channel_returns_inner_class():
         sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        assert isinstance(channel, hs.Channel) == True
+        assert isinstance(channel, hs.Channel) is True
         assert channel._ch_name == "CH1"
 
 
