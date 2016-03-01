@@ -1,16 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Module containing common code for testing the property factories
+"""
+
+# IMPORTS ####################################################################
+
 from __future__ import absolute_import
 
 from io import BytesIO
 
-from enum import Enum
-from nose.tools import raises, eq_
-import mock
-import quantities as pq
+# CLASSES ####################################################################
 
-from instruments.util_fns import (
-    rproperty, bool_property, enum_property, int_property, string_property,
-    unitful_property, unitless_property, bounded_unitful_property
-)
 
 class MockInstrument(object):
 
