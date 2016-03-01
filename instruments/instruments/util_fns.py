@@ -216,10 +216,18 @@ def enum_property(name, enum, doc=None, input_decoration=None,
         to "{}={}" an equals sign would instead be used as the separator.
     """
     def _in_decor_fcn(val):
-        return val if input_decoration is None else input_decoration(val)
+        if input_decoration is None:
+            return val
+        elif hasattr(input_decoration, "__get__"):
+            return input_decoration.__get__(None, object)(val)
+        return input_decoration(val)
 
     def _out_decor_fcn(val):
-        return val if output_decoration is None else output_decoration(val)
+        if output_decoration is None:
+            return val
+        elif hasattr(output_decoration, "__get__"):
+            return output_decoration.__get__(None, object)(val)
+        return output_decoration(val)
 
     def _getter(self):
         return enum(_in_decor_fcn(self.query("{}?".format(name)).strip()))
@@ -351,10 +359,18 @@ def unitful_property(name, units, format_code='{:e}', doc=None,
     :type valid_range: `tuple` or `list` of `int` or `float`
     """
     def _in_decor_fcn(val):
-        return val if input_decoration is None else input_decoration(val)
+        if input_decoration is None:
+            return val
+        elif hasattr(input_decoration, "__get__"):
+            return input_decoration.__get__(None, object)(val)
+        return input_decoration(val)
 
     def _out_decor_fcn(val):
-        return val if output_decoration is None else output_decoration(val)
+        if output_decoration is None:
+            return val
+        elif hasattr(output_decoration, "__get__"):
+            return output_decoration.__get__(None, object)(val)
+        return output_decoration(val)
 
     def _getter(self):
         raw = _in_decor_fcn(self.query("{}?".format(name)))

@@ -1,26 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# test_util_fns.py: Tests various utility functions.
-#
-# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+"""
+Module containing tests for the util_fns.split_unit_str utility function
+"""
 
 # IMPORTS ####################################################################
 
@@ -132,7 +114,7 @@ def test_split_unit_str_empty_string():
     split_unit_str: Given an empty string, I expect the function to raise
     a ValueError.
     """
-    mag, units = split_unit_str("")
+    _ = split_unit_str("")
 
 
 @raises(ValueError)
@@ -141,7 +123,7 @@ def test_split_unit_str_only_exponential():
     split_unit_str: Given a string with only an exponential, I expect the
     function to raise a ValueError.
     """
-    mag, units = split_unit_str("E3")
+    _ = split_unit_str("E3")
 
 
 def test_split_unit_str_magnitude_with_decimal():
@@ -165,4 +147,4 @@ def test_split_unit_str_only_units():
     split_unit_str: Given a bad string containing only units (ie, no numbers),
     I expect the function to raise a ValueError.
     """
-    mag, units = split_unit_str("foobars")
+    _ = split_unit_str("foobars")
