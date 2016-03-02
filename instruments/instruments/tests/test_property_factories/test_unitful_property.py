@@ -183,6 +183,20 @@ def test_unitful_property_input_decoration():
     eq_(mock_instrument.a, 1 * pq.Hz)
 
 
+def test_unitful_property_input_decoration_not_a_function():
+    class UnitfulMock(MockInstrument):
+
+        a = unitful_property(
+            'MOCK:A',
+            pq.hertz,
+            input_decoration=float
+        )
+
+    mock_instrument = UnitfulMock({'MOCK:A?': '.123'})
+
+    eq_(mock_instrument.a, 0.123 * pq.Hz)
+
+
 def test_unitful_property_output_decoration():
     class UnitfulMock(MockInstrument):
 
@@ -200,6 +214,22 @@ def test_unitful_property_output_decoration():
     mock_instrument.a = 345 * pq.hertz
 
     eq_(mock_instrument.value, 'MOCK:A 1\n')
+
+
+def test_unitful_property_output_decoration_not_a_function():
+    class UnitfulMock(MockInstrument):
+
+        a = unitful_property(
+            'MOCK:A',
+            pq.hertz,
+            output_decoration=bool
+        )
+
+    mock_instrument = UnitfulMock()
+
+    mock_instrument.a = 1 * pq.hertz
+
+    eq_(mock_instrument.value, 'MOCK:A True\n')
 
 
 def test_unitful_property_split_str():

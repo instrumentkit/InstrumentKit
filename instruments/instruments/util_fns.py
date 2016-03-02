@@ -107,7 +107,7 @@ def split_unit_str(s, default_units=pq.dimensionless, lookup=None):
     # scientific notation. General flow borrowed from:
     # http://www.regular-expressions.info/floatingpoint.html
     regex = r"([-+]?[0-9]*\.?[0-9]+)([eE][-+]?[0-9]+)?\s*([a-z]+)?"
-    match = re.match(regex, s.strip(), re.I)
+    match = re.match(regex, str(s).strip(), re.I)
     if match:
         if match.groups()[1] is None:
             val, _, units = match.groups()

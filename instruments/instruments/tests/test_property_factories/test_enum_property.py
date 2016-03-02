@@ -8,7 +8,7 @@ Module containing tests for the enum property factories
 
 from __future__ import absolute_import
 
-from enum import Enum
+from enum import Enum, IntEnum
 from nose.tools import raises, eq_
 
 from instruments.util_fns import enum_property
@@ -88,6 +88,23 @@ def test_enum_property_input_decoration():
     eq_(mock_instrument.a, SillyEnum.a)
 
 
+def test_enum_property_input_decoration_not_a_function():
+    class SillyEnum(IntEnum):
+        a = 1
+
+    class EnumMock(MockInstrument):
+
+        a = enum_property(
+            'MOCK:A',
+            SillyEnum,
+            input_decoration=int
+        )
+
+    mock_instrument = EnumMock({'MOCK:A?': '1'})
+
+    eq_(mock_instrument.a, SillyEnum.a)
+
+
 def test_enum_property_output_decoration():
     class SillyEnum(Enum):
         a = 'aa'
@@ -108,6 +125,25 @@ def test_enum_property_output_decoration():
     mock_instrument.a = SillyEnum.a
 
     eq_(mock_instrument.value, 'MOCK:A foobar\n')
+
+
+def test_enum_property_output_decoration_not_a_function():
+    class SillyEnum(Enum):
+        a = '.23'
+
+    class EnumMock(MockInstrument):
+
+        a = enum_property(
+            'MOCK:A',
+            SillyEnum,
+            output_decoration=float
+        )
+
+    mock_instrument = EnumMock()
+
+    mock_instrument.a = SillyEnum.a
+
+    eq_(mock_instrument.value, 'MOCK:A 0.23\n')
 
 
 @raises(AttributeError)
