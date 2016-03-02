@@ -12,10 +12,13 @@ import quantities as pq
 import mock
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol
 from instruments.units import dBm
 
 # TEST CLASSES ################################################################
+
+# pylint: disable=protected-access
+
 
 def test_hs9000_name():
     with expected_protocol(
@@ -31,6 +34,7 @@ def test_hs9000_name():
         sep="\n"
     ) as hs:
         assert hs.name == "Foobar name"
+
 
 def test_channel_idx_list():
     with expected_protocol(
@@ -58,7 +62,7 @@ def test_channel_returns_inner_class():
         sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        assert isinstance(channel, hs.Channel) == True
+        assert isinstance(channel, hs.Channel) is True
         assert channel._ch_name == "CH1"
 
 
@@ -245,6 +249,7 @@ def test_channel_phase_setter():
     ) as hs:
         channel = hs.channel[0]
         channel.phase = 0 * pq.degree
+
 
 def test_channel_output():
     with expected_protocol(

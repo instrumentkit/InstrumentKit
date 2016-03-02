@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Module containing tests for Topical util functions
+"""
 
 # IMPORTS #####################################################################
 
@@ -14,8 +17,8 @@ from instruments.toptica import toptica_utils
 
 
 def test_convert_boolean():
-    assert toptica_utils.convert_toptica_boolean("bloof") == False
-    assert toptica_utils.convert_toptica_boolean("boot") == True
+    assert toptica_utils.convert_toptica_boolean("bloof") is False
+    assert toptica_utils.convert_toptica_boolean("boot") is True
     assert toptica_utils.convert_toptica_boolean("Error: -3") is None
 
 

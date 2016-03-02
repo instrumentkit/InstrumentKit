@@ -11,8 +11,8 @@ from __future__ import absolute_import
 import quantities as pq
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
-from instruments.units import *
+from instruments.tests import expected_protocol
+from instruments.units import mHz, dBm, cBm
 
 # TESTS #######################################################################
 
@@ -26,7 +26,6 @@ def test_reset():
         []
     ) as inst:
         inst.reset()
-        # assert isinstance(axis, ik.newport.NewportESP301Axis) is True
 
 
 def test_frequency():

@@ -13,9 +13,11 @@ import mock
 from nose.tools import raises
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol
 
 # TESTS #######################################################################
+
+# pylint: disable=protected-access
 
 
 def test_channel_returns_inner_class():
@@ -26,7 +28,7 @@ def test_channel_returns_inner_class():
         sep="\n"
     ) as hp:
         channel = hp.channel[0]
-        assert isinstance(channel, hp.Channel) == True
+        assert isinstance(channel, hp.Channel) is True
         assert channel._idx == 1
 
 

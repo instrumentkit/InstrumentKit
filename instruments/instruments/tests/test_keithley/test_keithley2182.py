@@ -13,7 +13,7 @@ import numpy as np
 from nose.tools import raises
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol
 
 # TESTS #######################################################################
 
@@ -35,6 +35,7 @@ def test_channel_mode():
     ) as inst:
         channel = inst.channel[0]
         assert channel.mode == inst.Mode.voltage_dc
+
 
 def test_channel_measure_voltage():
     with expected_protocol(
