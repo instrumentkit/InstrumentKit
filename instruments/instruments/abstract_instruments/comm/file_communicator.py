@@ -1,14 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # file_communicator.py: Treats a file on the filesystem as a communicator
 #     (aka wrapper).
-##
+#
 # © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +21,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -38,13 +38,15 @@ import logging
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class FileCommunicator(io.IOBase, AbstractCommunicator):
+
     """
     Wraps a `file` object, providing ``sendcmd`` and ``query`` methods,
     while passing everything else through.
-    
+
     :param filelike: File or name of a file to be wrapped as a communicator.
         Any file-like object wrapped by this class **must** support both
         reading and writing. If using the `open` builtin function, the mode
@@ -52,79 +54,82 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         devices under Linux.
     :type filelike: `str` or `file`
     """
-    
+
     def __init__(self, filelike):
         AbstractCommunicator.__init__(self)
         if isinstance(filelike, str):
             filelike = open(filelike, 'r+')
-            
+
         self._filelike = filelike
-        self._terminator = "\n" # Use the system default line ending by default.
-    
-    ## PROPERTIES ##
-    
+        self._terminator = "\n"  # Use the system default line ending by default.
+
+    # PROPERTIES ##
+
     @property
     def address(self):
         if hasattr(self._filelike, 'name'):
             return self._filelike.name
         else:
             return None
+
     @address.setter
     def address(self, newval):
         raise NotImplementedError("Changing addresses of a file communicator"
-                                     " is not yet supported.")
-        
+                                  " is not yet supported.")
+
     @property
     def terminator(self):
         return self._terminator
+
     @terminator.setter
     def terminator(self, newval):
         self._terminator = str(newval)
-        
+
     @property
     def timeout(self):
         raise NotImplementedError
+
     @timeout.setter
     def timeout(self, newval):
         raise NotImplementedError
 
-    ## FILE-LIKE METHODS ##
-    
+    # FILE-LIKE METHODS ##
+
     def close(self):
         try:
             self._filelike.close()
         except:
             pass
-        
+
     def read(self, size):
         msg = self._filelike.read(size)
         return msg
-        
+
     def write(self, msg):
         self._filelike.write(msg)
-        
+
     def seek(self, offset):
         self._filelike.seek(offset)
-        
+
     def tell(self):
         return self._filelike.tell()
-        
+
     def flush(self):
         self._filelike.flush()
-        
-    ## METHODS ##
-    
+
+    # METHODS ##
+
     def _sendcmd(self, msg):
         msg = msg + self._terminator
         self.write(msg)
         try:
-            self.flush()        
+            self.flush()
         except Exception as e:
             logger.warn("Exception {} occured during flush().".format(e))
-        
+
     def _query(self, msg, size=-1):
         self.sendcmd(msg)
-        time.sleep(0.02) # Give the bus time to respond.
+        time.sleep(0.02)  # Give the bus time to respond.
         resp = ""
         try:
             # FIXME: this is slow, but we do it to avoid unreliable
@@ -143,8 +148,8 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
                 if not resp:
                     raise
             elif ex.errno != errno.EPIPE:
-                raise # Reraise the existing exception.
-            else: # Give a more helpful and specific exception.
+                raise  # Reraise the existing exception.
+            else:  # Give a more helpful and specific exception.
                 raise IOError(
                     "Pipe broken when reading from {}; this probably "
                     "indicates that the driver "
@@ -153,4 +158,3 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
                         self.address
                     ))
         return resp
-        

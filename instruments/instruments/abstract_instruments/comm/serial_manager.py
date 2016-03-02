@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # serial_manager.py: Manages open serial connections.
-##
+#
 # © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,19 +20,19 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
-##
+#
+#
 
 
 '''
 This module handles creating the serial objects for the instrument classes.
 
 This is needed for Windows because only 1 serial object can have an open
-connection to a serial port at a time. This is not needed on Linux, as multiple 
+connection to a serial port at a time. This is not needed on Linux, as multiple
 pyserial connections can be open at the same time to the same serial port.
 '''
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -45,7 +45,7 @@ from instruments.abstract_instruments.comm import SerialCommunicator
 # to be deleted and reopened as need be.
 import weakref
 
-## GLOBALS #####################################################################
+# GLOBALS #####################################################################
 
 # Note that a WeakValueDictionary *will* delete entries when their values
 # no longer exist. As a consequence, great care must be taken when iterating
@@ -54,24 +54,23 @@ import weakref
 # for more details about what "great care" implies.
 serialObjDict = weakref.WeakValueDictionary()
 
-## METHODS #####################################################################
+# METHODS #####################################################################
 
 
 def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3):
-    if not isinstance(port,str):
+    if not isinstance(port, str):
         raise TypeError('Serial port must be specified as a string.')
-    
+
     if port not in serialObjDict or serialObjDict[port] is None:
         conn = SerialCommunicator(serial.Serial(
-                                         port,
+            port,
                                          baudrate=baud,
                                          timeout=timeout,
                                          writeTimeout=write_timeout
-                                         ))
+        ))
         serialObjDict[port] = conn
            # raise  'Serial connection error. Connection not added to serial \
            #     manager. Error message:{}'.format(e.strerror)
     if not serialObjDict[port]._conn.isOpen():
         serialObjDict[port]._conn.open()
     return serialObjDict[port]
-    

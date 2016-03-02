@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # gi_gpib_communicator.py: Communication layer for Galvant Industries GPIB adapters.
-##
+#
 # © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,10 +20,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
-##
+#
+#
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -38,19 +38,22 @@ import quantities as pq
 from instruments.abstract_instruments.comm import serial_manager, AbstractCommunicator
 from instruments.util_fns import assume_units
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class GPIBCommunicator(io.IOBase, AbstractCommunicator):
+
     '''
-    Communicates with a SocketCommunicator or SerialCommunicator object for 
+    Communicates with a SocketCommunicator or SerialCommunicator object for
     use with Galvant Industries GPIBUSB or GPIBETHERNET adapters.
-    
+
     It essentially wraps those physical communication layers with the extra
-    overhead required by the Galvant GPIB adapters. 
+    overhead required by the Galvant GPIB adapters.
     '''
+
     def __init__(self, filelike, gpib_address):
         AbstractCommunicator.__init__(self)
-        
+
         self._file = filelike
         self._gpib_address = gpib_address
         self._file.terminator = '\r'
@@ -58,24 +61,25 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         self.terminator = 10
         self._eoi = True
         self._timeout = 1000 * pq.millisecond
-        
-    ## PROPERTIES ##
-    
+
+    # PROPERTIES ##
+
     @property
     def address(self):
         return (self._gpib_address, self._file.address)
+
     @address.setter
     def address(self, newval):
         '''
-        Change GPIB address and downstream address associated with 
+        Change GPIB address and downstream address associated with
         the instrument.
-        
+
         If specified as an integer, only changes the GPIB address. If specified
         as a list, the first element changes the GPIB address, while the second
         is passed downstream.
-        
+
         Example: [<int>gpib_address, downstream_address]
-        
+
         Where downstream_address needs to be formatted as appropriate for the
         connection (eg SerialCommunicator, SocketCommunicator, etc).
         '''
@@ -84,15 +88,15 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                 raise ValueError("GPIB address must be between 1 and 30.")
             self._gpib_address = newval
         elif isinstance(newval, list):
-            self.address = newval[0] # Set GPIB address
-            self._file.address = newval[1] # Send downstream address
+            self.address = newval[0]  # Set GPIB address
+            self._file.address = newval[1]  # Send downstream address
         else:
             raise TypeError("Not a valid input type for Instrument address.")
-        
-            
+
     @property
     def timeout(self):
         return self._timeout
+
     @timeout.setter
     def timeout(self, newval):
         newval = assume_units(newval, pq.second)
@@ -104,18 +108,19 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             self._file.sendcmd("++read_tmo_ms {}".format(newval.magnitude))
         self._file.timeout = newval.rescale(pq.second)
         self._timeout = newval.rescale(pq.second)
-    
+
     @property
     def terminator(self):
         if not self._eoi:
             return self._terminator
         else:
             return 'eoi'
+
     @terminator.setter
     def terminator(self, newval):
         if isinstance(newval, str):
             newval = newval.lower()
-        
+
         if self._version <= 4:
             if newval == 'eoi':
                 self._eoi = True
@@ -125,12 +130,12 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                 else:
                     raise TypeError('GPIB termination must be integer 0-255 '
                                     'represending decimal value of ASCII '
-                                    'termination character or a string' 
+                                    'termination character or a string'
                                     'containing "eoi".')
             elif (newval < 0) or (newval > 255):
                 raise ValueError('GPIB termination must be integer 0-255 '
-                                    'represending decimal value of ASCII '
-                                    'termination character.')
+                                 'represending decimal value of ASCII '
+                                 'termination character.')
             else:
                 self._eoi = False
                 self._terminator = str(newval)
@@ -143,10 +148,11 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                 self.eos = None
                 self._terminator = 'eoi'
                 self.eoi = True
-    
+
     @property
     def eoi(self):
         return self._eoi
+
     @eoi.setter
     def eoi(self, newval):
         if not isinstance(newval, bool):
@@ -156,10 +162,11 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             self._file.sendcmd("++eoi {}".format('1' if newval else '0'))
         else:
             self._file.sendcmd("+eoi:{}".format('1' if newval else '0'))
-            
+
     @property
     def eos(self):
         return self._eos
+
     @eos.setter
     def eos(self, newval):
         if self._version <= 4:
@@ -185,48 +192,48 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             else:
                 raise ValueError("EOS must be CRLF, CR, LF, or None")
             self._file.sendcmd("++eos {}".format(newval))
-    
-    ## FILE-LIKE METHODS ##
-    
+
+    # FILE-LIKE METHODS ##
+
     def close(self):
         self._file.close()
-        
+
     def read(self, size):
         '''
-        Read characters from wrapped class (ie SocketCommunicator or 
+        Read characters from wrapped class (ie SocketCommunicator or
         SerialCommunicator).
-        
+
         If size = -1, characters will be read until termination character
         is found.
-        
+
         GI GPIB adapters always terminate serial connections with a CR.
         Function will read until a CR is found.
         '''
         msg = self._file.read(size)
 
         # Check for extra terminators added by the GI-GPIB adapter.
-        #if msg[-1] == "\r":
+        # if msg[-1] == "\r":
         #    msg = msg[:-1]
 
         return msg
-    
+
     def write(self, msg):
         '''
         Write data string to GPIB connected instrument.
         This function sends all the necessary GI-GPIB adapter internal commands
-        that are required for the specified instrument.  
+        that are required for the specified instrument.
         '''
         self._file.write(msg)
-        
+
     def flush_input(self):
         '''
-        Instruct the communicator to flush the input buffer, discarding the 
+        Instruct the communicator to flush the input buffer, discarding the
         entirety of its contents.
         '''
         self._file.flush_input()
-        
-    ## METHODS ##
-    
+
+    # METHODS ##
+
     def _sendcmd(self, msg):
         '''
         '''
@@ -242,7 +249,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         time.sleep(0.01)
         self._file.sendcmd(msg)
         time.sleep(0.01)
-        
+
     def _query(self, msg, size=-1):
         '''
         '''
@@ -250,4 +257,3 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if '?' not in msg:
             self._file.sendcmd('+read')
         return self._file.read(size).strip()
-    

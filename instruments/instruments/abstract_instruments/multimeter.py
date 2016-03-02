@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # multimeter.py: Python class for multimeters
-##
+#
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,10 +20,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
-##
+#
+#
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,11 +33,12 @@ import abc
 
 from instruments.abstract_instruments import Instrument
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
-    ## PROPERTIES ##
+    # PROPERTIES ##
 
     @property
     @abc.abstractmethod
@@ -70,7 +71,7 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
     @abc.abstractmethod
     def trigger_mode(self, newval):
         pass
-    
+
     @property
     @abc.abstractmethod
     def relative(self):
@@ -103,8 +104,8 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
     def input_range(self, newval):
         pass
 
-    ## METHODS ##
-    
+    # METHODS ##
+
     @abc.abstractmethod
     def measure(self, mode):
         """

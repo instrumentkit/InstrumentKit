@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # power_supply.py: Python ABC for power supplies
-##
+#
 # © 2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,11 +32,12 @@ import abc
 
 from instruments.abstract_instruments import Instrument
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
-    
-    ## PROPERTIES ##
+
+    # PROPERTIES ##
 
     @property
     @abc.abstractmethod
@@ -101,12 +102,12 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def output(self, newval):
         pass
-    
+
 
 class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
-    
-    ## PROPERTIES ##
-    
+
+    # PROPERTIES ##
+
     @property
     @abc.abstractmethod
     def channel(self):
@@ -119,7 +120,7 @@ class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
         :rtype: `PowerSupplyChannel`
         """
         raise NotImplementedError
-    
+
     @property
     @abc.abstractmethod
     def voltage(self):

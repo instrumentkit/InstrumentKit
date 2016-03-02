@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # signal_generator.py: Python ABC for Signal Generators (eg microwave sources)
-##
+#
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,26 +32,27 @@ import abc
 
 from instruments.abstract_instruments import Instrument
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class SignalGenerator(with_metaclass(abc.ABCMeta, Instrument)):
+
     """
     Python abstract base class for signal generators (eg microwave sources).
-    
+
     This ABC is not for function generators, which have their own separate ABC.
-    
+
     .. seealso::
         `~instruments.FunctionGenerator`
     """
-    
-    ## PROPERTIES ##
-    
+
+    # PROPERTIES ##
+
     @abc.abstractproperty
     def channel(self):
         """
         Gets a specific channel object for the SignalGenerator.
-        
+
         :rtype: A class inherited from `~instruments.SGChannel`
         """
         raise NotImplementedError
-        

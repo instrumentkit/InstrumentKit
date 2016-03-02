@@ -16,4 +16,3 @@ from instruments.abstract_instruments.power_supply import (
     PowerSupplyChannel,
     PowerSupply,
 )
-

@@ -1,14 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
-# visa_communicator.py: Communicates with a VISA channel, turning it into a 
+#
+# visa_communicator.py: Communicates with a VISA channel, turning it into a
 #       filelike object.
-##
+#
 # © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -21,9 +21,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -47,21 +47,24 @@ import quantities as pq
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class VisaCommunicator(io.IOBase, AbstractCommunicator):
+
     """
-    Communicates a connection exposed by the VISA library and exposes it as a 
+    Communicates a connection exposed by the VISA library and exposes it as a
     file-like object.
     """
-    
+
     def __init__(self, conn):
         AbstractCommunicator.__init__(self)
-    
+
         if visa is None:
-            raise ImportError("PyVISA required for accessing VISA instruments.")
-            
-        if int(visa.__version__.replace('.',''))< 160 and isinstance(conn, visa.Instrument) or int(visa.__version__.replace('.',''))>= 160 and isinstance(conn, visa.Resource):
+            raise ImportError(
+                "PyVISA required for accessing VISA instruments.")
+
+        if int(visa.__version__.replace('.', '')) < 160 and isinstance(conn, visa.Instrument) or int(visa.__version__.replace('.', '')) >= 160 and isinstance(conn, visa.Resource):
             self._conn = conn
             self._terminator = '\n'
         else:
@@ -70,46 +73,49 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         # Make a bytearray for holding data read in from the device
         # so that we can buffer for two-argument read.
         self._buf = bytearray()
-        
-    ## PROPERTIES ##
-    
+
+    # PROPERTIES ##
+
     @property
     def address(self):
         return self._conn.resource_name
+
     @address.setter
     def address(self, newval):
         raise NotImplementedError("Changing addresses of a VISA Instrument "
-                                     "is not supported.")
-        
+                                  "is not supported.")
+
     @property
     def terminator(self):
         return self._terminator
+
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
             raise TypeError('Terminator for VisaCommunicator must be specified '
-                              'as a single character string.')
+                            'as a single character string.')
         if len(newval) > 1:
             raise ValueError('Terminator for VisaCommunicator must only be 1 '
-                                'character long.')
+                             'character long.')
         self._terminator = newval
-        
+
     @property
     def timeout(self):
         return self._conn.timeout * pq.second
+
     @timeout.setter
     def timeout(self, newval):
         newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
         self._conn.timeout = newval
 
-    ## FILE-LIKE METHODS ##
-    
+    # FILE-LIKE METHODS ##
+
     def close(self):
         try:
             self._conn.close()
         except:
             pass
-        
+
     def read(self, size):
         if (size >= 0):
             while len(self._buf) < size:
@@ -123,38 +129,38 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
             # Reset the contents of the buffer.
             self._buf = bytearray()
         else:
-            raise ValueError('Must read a positive value of characters, or -1 for all characters.')
+            raise ValueError(
+                'Must read a positive value of characters, or -1 for all characters.')
 
         return msg
-        
+
     def write(self, msg):
         self._conn.write(msg)
-        
+
     def seek(self, offset):
         return NotImplemented
-        
+
     def tell(self):
         return NotImplemented
-        
+
     def flush_input(self):
         '''
-        Instruct the communicator to flush the input buffer, discarding the 
+        Instruct the communicator to flush the input buffer, discarding the
         entirety of its contents.
         '''
-        #TODO: Find out how to flush with pyvisa
+        # TODO: Find out how to flush with pyvisa
         pass
-        
-    ## METHODS ##
-    
+
+    # METHODS ##
+
     def _sendcmd(self, msg):
         '''
         '''
         msg = msg + self._terminator
         self.write(msg)
-        
+
     def _query(self, msg, size=-1):
         '''
         '''
         msg += self._terminator
         return self._conn.ask(msg)
-        

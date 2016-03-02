@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # oscilloscope.py: Python ABC for oscilloscopes
-##
+#
 # © 2013 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,10 +20,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
-##
+#
+#
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,7 +33,8 @@ import abc
 
 from instruments.abstract_instruments import Instrument
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class OscilloscopeDataSource(with_metaclass(abc.ABCMeta, object)):
 
@@ -55,22 +56,23 @@ class OscilloscopeDataSource(with_metaclass(abc.ABCMeta, object)):
             return NotImplemented
         else:
             return other.name == self.name
-    
-    ## PROPERTIES ##
-    
+
+    # PROPERTIES ##
+
     @abc.abstractproperty
     def name(self):
         raise NotImplementedError
-    
-    ## METHODS ##
-    
+
+    # METHODS ##
+
     @abc.abstractmethod
     def read_waveform(self, bin_format=True):
         raise NotImplementedError
 
+
 class OscilloscopeChannel(with_metaclass(abc.ABCMeta, object)):
-    
-    ## PROPERTIES ##
+
+    # PROPERTIES ##
 
     @property
     @abc.abstractmethod
@@ -87,26 +89,26 @@ class OscilloscopeChannel(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def coupling(self, newval):
         raise NotImplementedError
-        
+
 
 class Oscilloscope(with_metaclass(abc.ABCMeta, Instrument)):
 
-    ## PROPERTIES ##
-    
+    # PROPERTIES ##
+
     @abc.abstractproperty
     def channel(self):
         raise NotImplementedError
-        
+
     @abc.abstractproperty
     def ref(self):
         raise NotImplementedError
-    
+
     @abc.abstractproperty
     def math(self):
         raise NotImplementedError
-    
-    ## METHODS ##
-    
+
+    # METHODS ##
+
     @abc.abstractmethod
     def force_trigger(self):
         '''

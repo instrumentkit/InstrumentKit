@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-##
+#
 # channel.py: Python ABC for Signal Generators output channels
-##
+#
 # © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,18 +30,20 @@ from future.utils import with_metaclass
 
 import abc
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class SGChannel(with_metaclass(abc.ABCMeta, object)):
+
     """
-    Python abstract base class representing a single channel for a signal 
-    generator. 
-    
-    .. warning:: This class should NOT be manually created by the user. It is 
+    Python abstract base class representing a single channel for a signal
+    generator.
+
+    .. warning:: This class should NOT be manually created by the user. It is
         designed to be initialized by the `~instruments.SignalGenerator` class.
     """
-    
-    ## PROPERTIES ##
+
+    # PROPERTIES ##
 
     @property
     @abc.abstractmethod
@@ -87,7 +89,7 @@ class SGChannel(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def phase(self, newval):
         pass
-    
+
     @property
     @abc.abstractmethod
     def output(self):
