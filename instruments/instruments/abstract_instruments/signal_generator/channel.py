@@ -1,34 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# channel.py: Python ABC for Signal Generators output channels
-#
-# © 2013-2014 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+"""
+Provides an abstract base class for signal generator output channels
+"""
 
 # IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
-from future.utils import with_metaclass
 
 import abc
+
+from future.utils import with_metaclass
 
 # CLASSES #####################################################################
 
@@ -43,7 +26,7 @@ class SGChannel(with_metaclass(abc.ABCMeta, object)):
         designed to be initialized by the `~instruments.SignalGenerator` class.
     """
 
-    # PROPERTIES ##
+    # PROPERTIES #
 
     @property
     @abc.abstractmethod
