@@ -37,9 +37,8 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
     """
 
     def __init__(self, tek, name):
-        self._tek = tek
-        self._name = name
-        self._old_dsrc = None
+        super(_TekTDS224DataSource, self).__init__(tek, name)
+        self._tek = self._parent
 
     @property
     def name(self):

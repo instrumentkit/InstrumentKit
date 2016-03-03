@@ -1,57 +1,51 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# function_generator.py: Python ABC class for function generators
-#
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-#
+"""
+Provides an abstract base class for function generator instruments
+"""
 
 # IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
-from future.utils import with_metaclass
 
 import abc
+
+from future.utils import with_metaclass
+from enum import Enum
+import quantities as pq
+
 
 from instruments.abstract_instruments import Instrument
 import instruments.units as u
 from instruments.util_fns import assume_units
-
-import quantities as pq
-
-from enum import Enum
 
 # CLASSES #####################################################################
 
 
 class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
 
-    # ENUMS ##
+    """
+    Abstract base class for function generator instruments.
+
+    All applicable concrete instruments should inherit from this ABC to
+    provide a consistent interface to the user.
+    """
+
+    # ENUMS #
 
     class VoltageMode(Enum):
+        """
+        Enum containing valid voltage modes for many function generators
+        """
         peak_to_peak = 'VPP'
         rms = 'VRMS'
         dBm = 'DBM'
 
     class Function(Enum):
+        """
+        Enum containg valid output function modes for many function generators
+        """
         sinusoid = 'SIN'
         square = 'SQU'
         triangle = 'TRI'
@@ -59,7 +53,7 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
         noise = 'NOIS'
         arbitrary = 'ARB'
 
-    # ABSTRACT METHODS ##
+    # ABSTRACT METHODS #
 
     @abc.abstractmethod
     def _get_amplitude_(self):
@@ -69,11 +63,17 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
     def _set_amplitude_(self, magnitude, units):
         pass
 
-    # ABSTRACT PROPERTIES ##
+    # ABSTRACT PROPERTIES #
 
     @property
     @abc.abstractmethod
     def frequency(self):
+        """
+        Gets/sets the the output frequency of the function generator. This is
+        an abstract property.
+
+        :type: `~quantities.Quantity`
+        """
         pass
 
     @frequency.setter
@@ -84,6 +84,12 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
     @property
     @abc.abstractmethod
     def function(self):
+        """
+        Gets/sets the output function mode of the function generator. This is
+        an abstract property.
+
+        :type: `~enum.Enum`
+        """
         pass
 
     @function.setter
@@ -94,6 +100,12 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
     @property
     @abc.abstractmethod
     def offset(self):
+        """
+        Gets/sets the output offset voltage of the function generator. This is
+        an abstract property.
+
+        :type: `~quantities.Quantity`
+        """
         pass
 
     @offset.setter
@@ -104,6 +116,12 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
     @property
     @abc.abstractmethod
     def phase(self):
+        """
+        Gets/sets the output phase of the function generator. This is an
+        abstract property.
+
+        :type: `~quantities.Quantity`
+        """
         pass
 
     @phase.setter
@@ -111,11 +129,11 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
     def phase(self, newval):
         pass
 
-    # CONCRETE PROPERTIES ##
+    # CONCRETE PROPERTIES #
 
     @property
     def amplitude(self):
-        '''
+        """
         Gets/sets the output amplitude of the function generator.
 
         If set with units of :math:`\\text{dBm}`, then no voltage mode can
@@ -130,7 +148,7 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
         :type: Either a `tuple` of a `~quantities.Quantity` and a
             `FunctionGenerator.VoltageMode`, or a `~quantities.Quantity`
             if no voltage mode applies.
-        '''
+        """
         mag, units = self._get_amplitude_()
 
         if units == self.VoltageMode.dBm:
@@ -143,13 +161,14 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
         # Try and rescale to dBm... if it succeeds, set the magnitude
         # and units accordingly, otherwise handle as a voltage.
         try:
-            newval_dBm = newval.rescale(u.dBm)
-            mag = float(newval_dBm.magnitude)
+            newval_dbm = newval.rescale(u.dBm)
+            mag = float(newval_dbm.magnitude)
             units = self.VoltageMode.dBm
         except (AttributeError, ValueError):
             # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
             if not isinstance(newval, tuple):
                 mag = newval
+                # pylint: disable=redefined-variable-type
                 units = self.VoltageMode.peak_to_peak
             else:
                 mag, units = newval

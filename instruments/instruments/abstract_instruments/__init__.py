@@ -1,18 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Module containing instrument abstract base classes and communication layers
+"""
 
 from __future__ import absolute_import
 
-from instruments.abstract_instruments.instrument import Instrument
-from instruments.abstract_instruments.multimeter import Multimeter
-from instruments.abstract_instruments.electrometer import Electrometer
-from instruments.abstract_instruments.function_generator import FunctionGenerator
-from instruments.abstract_instruments.oscilloscope import (
+from .instrument import Instrument
+from .multimeter import Multimeter
+from .electrometer import Electrometer
+from .function_generator import FunctionGenerator
+from .oscilloscope import (
     OscilloscopeChannel,
     OscilloscopeDataSource,
     Oscilloscope,
 )
-from instruments.abstract_instruments.power_supply import (
+from .power_supply import (
     PowerSupplyChannel,
     PowerSupply,
 )

@@ -56,13 +56,8 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
     """
 
     def __init__(self, tek, name):
-        self._tek = tek
-        # Zero-based for pythonic convienence, so we need to convert to
-        # Tektronix"s one-based notation here.
-        self._name = name
-
-        # Remember what the old data source was for use as a context manager.
-        self._old_dsrc = None
+        super(_TekDPO4104DataSource, self).__init__(tek, name)
+        self._tek = self._parent
 
     @property
     def name(self):
