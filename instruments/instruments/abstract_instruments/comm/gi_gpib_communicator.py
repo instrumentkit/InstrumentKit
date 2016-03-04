@@ -22,6 +22,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Provides a communication layer for an instrument connected via a Galvant
+Industries GPIB adapter.
+"""
 
 # IMPORTS #####################################################################
 
@@ -32,10 +38,9 @@ from builtins import chr
 import io
 import time
 
-import numpy as np
 import quantities as pq
 
-from instruments.abstract_instruments.comm import serial_manager, AbstractCommunicator
+from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
@@ -43,13 +48,13 @@ from instruments.util_fns import assume_units
 
 class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
-    '''
+    """
     Communicates with a SocketCommunicator or SerialCommunicator object for
     use with Galvant Industries GPIBUSB or GPIBETHERNET adapters.
 
     It essentially wraps those physical communication layers with the extra
     overhead required by the Galvant GPIB adapters.
-    '''
+    """
 
     def __init__(self, filelike, gpib_address):
         AbstractCommunicator.__init__(self)
@@ -61,28 +66,32 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         self.terminator = 10
         self._eoi = True
         self._timeout = 1000 * pq.millisecond
+        if self._version <= 4:
+            self._eos = 10
+        else:
+            self._eos = 2
 
-    # PROPERTIES ##
+    # PROPERTIES #
 
     @property
     def address(self):
-        return (self._gpib_address, self._file.address)
-
-    @address.setter
-    def address(self, newval):
-        '''
-        Change GPIB address and downstream address associated with
+        """
+        Gets/sets the GPIB address and downstream address associated with
         the instrument.
 
-        If specified as an integer, only changes the GPIB address. If specified
-        as a list, the first element changes the GPIB address, while the second
-        is passed downstream.
+        When setting, if specified as an integer, only changes the GPIB
+        address. If specified as a list, the first element changes the GPIB
+        address, while the second is passed downstream.
 
         Example: [<int>gpib_address, downstream_address]
 
         Where downstream_address needs to be formatted as appropriate for the
         connection (eg SerialCommunicator, SocketCommunicator, etc).
-        '''
+        """
+        return self._gpib_address, self._file.address
+
+    @address.setter
+    def address(self, newval):
         if isinstance(newval, int):
             if (newval < 1) or (newval > 30):
                 raise ValueError("GPIB address must be between 1 and 30.")
@@ -95,6 +104,13 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @property
     def timeout(self):
+        """
+        Gets/sets the timeeout of both the GPIB bus and the connection
+        channel between the PC and the GPIB adapter.
+
+        :type: `~quantities.Quantity`
+        :units: As specified, or assumed to be of units ``seconds``
+        """
         return self._timeout
 
     @timeout.setter
@@ -111,6 +127,15 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @property
     def terminator(self):
+        """
+        Gets/sets the GPIB termination character. This can be set to
+        ``\n``, ``\r``, ``\r\n``, or ``eoi``.
+
+        .. seealso:: `eos` and `eoi` for direct manipulation of these
+            parameters.
+
+        :type: `str`
+        """
         if not self._eoi:
             return self._terminator
         else:
@@ -151,6 +176,21 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @property
     def eoi(self):
+        """
+        Gets/sets the EOI usage status.
+
+        EOI is a dedicated line on the GPIB bus. When used, it is used by
+        instruments to signal that the current byte being transmitted is the
+        last in the message. This avoids the need to use a dedicated
+        termination character such as ``\n``. Frequently, instruments will
+        use both EOI-signalling and append an end-of-string (EOS) character.
+        Some will only use one or the other.
+
+        .. seealso:: `terminator`, `eos` for more communication termination
+            related properties.
+
+        :type: `bool`
+        """
         return self._eoi
 
     @eoi.setter
@@ -165,6 +205,16 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @property
     def eos(self):
+        """
+        Gets/sets the end-of-string (EOS) character.
+
+        Valid EOS settings are ``\n``, ``\r``, ``\r\n`` and `None`.
+
+        .. seealso:: `terminator`, `eoi` for more communication termination
+            related properties.
+
+        :type: `str` or `None`
+        """
         return self._eos
 
     @eos.setter
@@ -186,20 +236,25 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             elif newval == "\n":
                 self._eos = newval
                 newval = 2
-            elif newval == None:
+            elif newval is None:
                 self._eos = newval
                 newval = 3
             else:
                 raise ValueError("EOS must be CRLF, CR, LF, or None")
             self._file.sendcmd("++eos {}".format(newval))
 
-    # FILE-LIKE METHODS ##
+    # FILE-LIKE METHODS #
 
     def close(self):
+        """
+        Close connection to the underlying physical connection channel
+        of the GPIB connection. This is typically a serial connection that
+        is then closed.
+        """
         self._file.close()
 
     def read(self, size):
-        '''
+        """
         Read characters from wrapped class (ie SocketCommunicator or
         SerialCommunicator).
 
@@ -208,51 +263,76 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
         GI GPIB adapters always terminate serial connections with a CR.
         Function will read until a CR is found.
-        '''
-        msg = self._file.read(size)
 
-        # Check for extra terminators added by the GI-GPIB adapter.
-        # if msg[-1] == "\r":
-        #    msg = msg[:-1]
+        :param int size: Number of bytes to read
+
+        :return: Data read from the GPIB adapter
+        :rtype: `str`
+        """
+        msg = self._file.read(size)
 
         return msg
 
     def write(self, msg):
-        '''
+        """
         Write data string to GPIB connected instrument.
         This function sends all the necessary GI-GPIB adapter internal commands
         that are required for the specified instrument.
-        '''
+
+        :param str msg: String to write to the instrument
+        """
         self._file.write(msg)
 
     def flush_input(self):
-        '''
+        """
         Instruct the communicator to flush the input buffer, discarding the
         entirety of its contents.
-        '''
+        """
         self._file.flush_input()
 
     # METHODS ##
 
     def _sendcmd(self, msg):
-        '''
-        '''
+        """
+        This is the implementation of ``sendcmd`` for communicating with
+        the Galvant Industries GPIB adapter. This function is in turn wrapped by
+        the concrete method `AbstractCommunicator.sendcmd` to provide consistent
+        logging functionality across all communication layers.
+
+        :param str msg: The command message to send to the instrument
+        """
+        sleep_time = 0.01
+
         if msg == '':
             return
         self._file.sendcmd('+a:' + str(self._gpib_address))
-        time.sleep(0.01)
+        time.sleep(sleep_time)
         self.eoi = self.eoi
-        time.sleep(0.01)
+        time.sleep(sleep_time)
         self.timeout = self.timeout
-        time.sleep(0.01)
+        time.sleep(sleep_time)
         self.eos = self.eos
-        time.sleep(0.01)
+        time.sleep(sleep_time)
         self._file.sendcmd(msg)
-        time.sleep(0.01)
+        time.sleep(sleep_time)
 
     def _query(self, msg, size=-1):
-        '''
-        '''
+        """
+        This is the implementation of ``query`` for communicating with
+        the Galvant Industries GPIB adapter. This function is in turn wrapped by
+        the concrete method `AbstractCommunicator.query` to provide consistent
+        logging functionality across all communication layers.
+
+        If a ``?`` is not present in ``msg`` then the adapter will be
+        instructed to get the response from the instrument via the ``+read``
+        command.
+
+        :param str msg: The query message to send to the instrument
+        :param int size: The number of bytes to read back from the instrument
+            response.
+        :return: The instrument response to the query
+        :rtype: `str`
+        """
         self.sendcmd(msg)
         if '?' not in msg:
             self._file.sendcmd('+read')
