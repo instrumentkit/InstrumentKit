@@ -1,27 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-#
-# gi_gpib_communicator.py: Communication layer for Galvant Industries GPIB adapters.
-#
-# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-#
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
@@ -33,11 +9,11 @@ Industries GPIB adapter.
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import chr
 
 import io
 import time
 
+from builtins import chr
 import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
@@ -56,6 +32,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     overhead required by the Galvant GPIB adapters.
     """
 
+    # pylint: disable=too-many-instance-attributes
     def __init__(self, filelike, gpib_address):
         AbstractCommunicator.__init__(self)
 
@@ -63,7 +40,8 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         self._gpib_address = gpib_address
         self._file.terminator = '\r'
         self._version = int(self._file.query("+ver"))
-        self.terminator = 10
+        self._terminator = "\n"
+        self.terminator = "\n"
         self._eoi = True
         self._timeout = 1000 * pq.millisecond
         if self._version <= 4:
@@ -148,10 +126,12 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
         if self._version <= 4:
             if newval == 'eoi':
-                self._eoi = True
+                self.eoi = True
             elif not isinstance(newval, int):
                 if len(newval) == 1:
                     newval = ord(newval)
+                    self.eoi = False
+                    self.eos = newval
                 else:
                     raise TypeError('GPIB termination must be integer 0-255 '
                                     'represending decimal value of ASCII '
@@ -162,7 +142,8 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                                  'represending decimal value of ASCII '
                                  'termination character.')
             else:
-                self._eoi = False
+                self.eoi = False
+                self.eos = newval
                 self._terminator = str(newval)
         elif self._version >= 5:
             if newval != "eoi":
@@ -219,6 +200,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @eos.setter
     def eos(self, newval):
+        # pylint: disable=redefined-variable-type
         if self._version <= 4:
             if isinstance(newval, str):
                 newval = ord(newval)
