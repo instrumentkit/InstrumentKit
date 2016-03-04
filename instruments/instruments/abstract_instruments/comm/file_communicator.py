@@ -129,9 +129,19 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         self._filelike.seek(offset)
 
     def tell(self):
+        """
+        Gets the file's current position.
+
+        :rtype: `int`
+        """
         return self._filelike.tell()
 
     def flush(self):
+        """
+        Flush the internal buffer to make sure everything has actually been
+        written to the file. This can be equivalent to a no-op on some
+        filelike objects.
+        """
         self._filelike.flush()
 
     # METHODS #
