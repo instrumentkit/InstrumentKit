@@ -272,7 +272,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         """
         self._file.flush_input()
 
-    # METHODS ##
+    # METHODS #
 
     def _sendcmd(self, msg):
         """
