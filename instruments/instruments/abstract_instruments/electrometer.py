@@ -16,6 +16,8 @@ from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
+# pylint: disable=duplicate-code
+
 
 class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 

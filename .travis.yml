@@ -9,7 +9,7 @@ install:
   - pip install coverage
 script:
   - nosetests --with-coverage -w instruments
-  - cd instruments && pylint --py3k instruments/ && cd ../
-  - cd instruments && pylint instruments/ && cd ../
+  - pylint --rcfile=instruments/.pylintrc --py3k instruments/instruments/
+  - pylint --rcfile=instruments/.pylintrc instruments/instruments/
 after_success:
   - coveralls

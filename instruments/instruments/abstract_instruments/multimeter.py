@@ -17,6 +17,8 @@ from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
+# pylint: disable=duplicate-code
+
 
 class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 

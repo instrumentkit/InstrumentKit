@@ -8,13 +8,14 @@ Provides support for SCPI compliant instruments
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import map
 
-from instruments.abstract_instruments import Instrument
-from instruments.util_fns import assume_units
+from builtins import map
 
 from enum import IntEnum
 import quantities as pq
+
+from instruments.abstract_instruments import Instrument
+from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
 
