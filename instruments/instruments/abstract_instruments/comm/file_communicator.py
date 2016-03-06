@@ -42,7 +42,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
             filelike = open(filelike, 'r+')
 
         self._filelike = filelike
-        self._terminator = "\n"  # Use the system default line ending by default.
+        self._terminator = "\n"
 
     # PROPERTIES #
 
@@ -136,7 +136,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         """
         return self._filelike.tell()
 
-    def flush(self):
+    def flush_input(self):
         """
         Flush the internal buffer to make sure everything has actually been
         written to the file. This can be equivalent to a no-op on some

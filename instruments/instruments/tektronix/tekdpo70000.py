@@ -206,7 +206,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
                 if hasattr(self._parent._file, 'flush_input'):
                     self._parent._file.flush_input()
                 else:
-                    self._parent._file.readline()
+                    self._parent._file.read()
 
                 return self._scale_raw_data(raw)
 
