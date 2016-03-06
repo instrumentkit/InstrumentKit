@@ -8,11 +8,12 @@ Provides support for the Tektronix DPO 4104 oscilloscope
 
 from __future__ import absolute_import
 from __future__ import division
+
 from time import sleep
 from builtins import range, map
 
-
 from enum import Enum
+import numpy as np
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
@@ -21,8 +22,6 @@ from instruments.abstract_instruments import (
 )
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList
-
-import numpy as np
 
 # FUNCTIONS ###################################################################
 

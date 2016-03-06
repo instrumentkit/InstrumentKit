@@ -1,5 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Module containing references to classes that use to be in instruments.other
+"""
 
 from __future__ import absolute_import
 
@@ -15,4 +18,3 @@ from instruments.newport import (
 )
 from instruments.phasematrix import PhaseMatrixFSW0020
 from instruments.holzworth import HS9000
-

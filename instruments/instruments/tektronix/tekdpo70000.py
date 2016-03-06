@@ -160,7 +160,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             TekDPO70000.BinaryFormat.float: "f"
         }[binary_format], n_bytes)
 
-    # CLASSES ##
+    # CLASSES #
 
     class DataSource(OscilloscopeDataSource):
 
@@ -173,9 +173,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         """
 
         def __init__(self, parent, name):
-            self._parent = parent
-            self._name = name
-            self._old_dsrc = None
+            super(TekDPO70000.DataSource, self).__init__(parent, name)
 
         @property
         def name(self):

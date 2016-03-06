@@ -7,18 +7,17 @@ Module containing tests for util_fns.py
 # IMPORTS ####################################################################
 
 from __future__ import absolute_import
+
 from builtins import range
 
+from enum import Enum
 import quantities as pq
-
 from nose.tools import raises, eq_
 
 from instruments.util_fns import (
     ProxyList,
     assume_units, convert_temperature
 )
-
-from enum import Enum
 
 # TEST CASES #################################################################
 

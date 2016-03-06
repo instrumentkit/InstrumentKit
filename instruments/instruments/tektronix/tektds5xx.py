@@ -97,10 +97,8 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
         designed to be initialized by the `TekTDS5xx` class.
     """
 
-    def __init__(self, tek, name):
-        self._tek = tek
-        self._name = name
-        self._old_dsrc = None
+    def __init__(self, parent, name):
+        super(_TekTDS5xxDataSource, self).__init__(parent, name)
 
     @property
     def name(self):
@@ -133,35 +131,35 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
 
             if not bin_format:
                 # Set the data encoding format to ASCII
-                self._tek.sendcmd('DAT:ENC ASCI')
-                raw = self._tek.query('CURVE?')
+                self._parent.sendcmd('DAT:ENC ASCI')
+                raw = self._parent.query('CURVE?')
                 raw = raw.split(',')  # Break up comma delimited string
                 raw = map(float, raw)  # Convert each list element to int
                 raw = np.array(raw)  # Convert into numpy array
             else:
                 # Set encoding to signed, big-endian
-                self._tek.sendcmd('DAT:ENC RIB')
-                data_width = self._tek.data_width
-                self._tek.sendcmd('CURVE?')
+                self._parent.sendcmd('DAT:ENC RIB')
+                data_width = self._parent.data_width
+                self._parent.sendcmd('CURVE?')
                 # Read in the binary block, data width of 2 bytes
-                raw = self._tek.binblockread(data_width)
+                raw = self._parent.binblockread(data_width)
 
                 # pylint: disable=protected-access
-                self._tek._file.flush_input()  # Flush input buffer
+                self._parent._file.flush_input()  # Flush input buffer
 
             # Retrieve Y offset
-            yoffs = self._tek.query('WFMP:{}:YOF?'.format(self.name))
+            yoffs = self._parent.query('WFMP:{}:YOF?'.format(self.name))
             # Retrieve Y multiply
-            ymult = self._tek.query('WFMP:{}:YMU?'.format(self.name))
+            ymult = self._parent.query('WFMP:{}:YMU?'.format(self.name))
             # Retrieve Y zero
-            yzero = self._tek.query('WFMP:{}:YZE?'.format(self.name))
+            yzero = self._parent.query('WFMP:{}:YZE?'.format(self.name))
 
             y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
 
             # Retrieve X incr
-            xincr = self._tek.query('WFMP:{}:XIN?'.format(self.name))
+            xincr = self._parent.query('WFMP:{}:XIN?'.format(self.name))
             # Retrieve number of data points
-            ptcnt = self._tek.query('WFMP:{}:NR_P?'.format(self.name))
+            ptcnt = self._parent.query('WFMP:{}:NR_P?'.format(self.name))
 
             x = np.arange(float(ptcnt)) * float(xincr)
 
@@ -191,7 +189,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
         :type: `TekTDS5xx.Coupling`
         """
         return TekTDS5xx.Coupling(
-            self._tek.query("CH{}:COUPL?".format(self._idx))
+            self._parent.query("CH{}:COUPL?".format(self._idx))
         )
 
     @coupling.setter
@@ -200,7 +198,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
             raise TypeError("Coupling setting must be a `TekTDS5xx.Coupling`"
                             " value, got {} instead.".format(type(newval)))
 
-        self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
+        self._parent.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
 
     @property
     def bandwidth(self):
@@ -210,7 +208,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
         :type: `TekTDS5xx.Bandwidth`
         """
         return TekTDS5xx.Bandwidth(
-            self._tek.query("CH{}:BAND?".format(self._idx))
+            self._parent.query("CH{}:BAND?".format(self._idx))
         )
 
     @bandwidth.setter
@@ -219,7 +217,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
             raise TypeError("Bandwidth setting must be a `TekTDS5xx.Bandwidth`"
                             " value, got {} instead.".format(type(newval)))
 
-        self._tek.sendcmd("CH{}:BAND {}".format(self._idx, newval.value))
+        self._parent.sendcmd("CH{}:BAND {}".format(self._idx, newval.value))
 
     @property
     def impedance(self):
@@ -229,7 +227,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
         :type: `TekTDS5xx.Impedance`
         """
         return TekTDS5xx.Impedance(
-            self._tek.query("CH{}:IMP?".format(self._idx))
+            self._parent.query("CH{}:IMP?".format(self._idx))
         )
 
     @impedance.setter
@@ -238,7 +236,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
             raise TypeError("Impedance setting must be a `TekTDS5xx.Impedance`"
                             " value, got {} instead.".format(type(newval)))
 
-        self._tek.sendcmd("CH{}:IMP {}".format(self._idx, newval.value))
+        self._parent.sendcmd("CH{}:IMP {}".format(self._idx, newval.value))
 
     @property
     def probe(self):
@@ -247,7 +245,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `float`
         """
-        return round(1 / float(self._tek.query("CH{}:PRO?".format(self._idx))), 0)
+        return round(1 / float(self._parent.query("CH{}:PRO?".format(self._idx))), 0)
 
     @property
     def scale(self):
@@ -256,12 +254,12 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `TekTDS5xx.Impedance`
         """
-        return float(self._tek.query("CH{}:SCA?".format(self._idx)))
+        return float(self._parent.query("CH{}:SCA?".format(self._idx)))
 
     @scale.setter
     def scale(self, newval):
-        self._tek.sendcmd("CH{0}:SCA {1:.3E}".format(self._idx, newval))
-        resp = float(self._tek.query("CH{}:SCA?".format(self._idx)))
+        self._parent.sendcmd("CH{0}:SCA {1:.3E}".format(self._idx, newval))
+        resp = float(self._parent.query("CH{}:SCA?".format(self._idx)))
         if newval != resp:
             raise ValueError("Tried to set CH{0} Scale to {1} but got {2}"
                              " instead".format(self._idx, newval, resp))

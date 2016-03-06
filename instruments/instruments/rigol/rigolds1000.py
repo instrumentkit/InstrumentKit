@@ -61,8 +61,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
         """
 
         def __init__(self, parent, name):
-            self._parent = parent
-            self._name = name
+            super(RigolDS1000Series.DataSource, self).__init__(parent, name)
 
         @property
         def name(self):
