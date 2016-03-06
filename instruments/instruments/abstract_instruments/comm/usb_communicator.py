@@ -1,26 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# usb_communicator.py: Wraps USB connections into a filelike object.
-#
-# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+"""
+Provides a USB communicator for connecting with instruments over raw usb
+connections.
+"""
 
 # IMPORTS #####################################################################
 
@@ -29,8 +12,6 @@ from __future__ import division
 
 import io
 
-import numpy as np
-
 from instruments.abstract_instruments.comm import AbstractCommunicator
 
 # CLASSES #####################################################################
@@ -38,41 +19,50 @@ from instruments.abstract_instruments.comm import AbstractCommunicator
 
 class USBCommunicator(io.IOBase, AbstractCommunicator):
 
-    '''
+    """
+    This communicator is used to wrap a pyusb connection object. This is
+    typically *not* the suggested way to interact with a USB-connected
+    instrument. Most USB instruments can be interfaced through other
+    communicators such as `FileCommunicator` (usbtmc on Linux),
+    `VisaCommunicator`, or `USBTMCCommunicator`.
 
-    '''
+    .. warning:: The operational status of this communicator is unknown,
+        and it is suggested that it is not relied on.
+    """
 
     def __init__(self, conn):
         AbstractCommunicator.__init__(self)
         # TODO: Check to make sure this is a USB connection
         self._conn = conn
-        self._terminator = '\n'
+        self._terminator = "\n"
 
-    # PROPERTIES ##
+    # PROPERTIES #
 
     @property
     def address(self):
-        '''
-
-        '''
         raise NotImplementedError
 
     @address.setter
-    def address(self, newval):
-        raise ValueError('Unable to change USB target address.')
+    def address(self, _):
+        raise ValueError("Unable to change USB target address.")
 
     @property
     def terminator(self):
+        """
+        Gets/sets the termination character used for communicating with raw
+        USB objects.
+        :return:
+        """
         return self._terminator
 
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError('Terminator for USBCommunicator must be specified '
-                            'as a single character string.')
+            raise TypeError("Terminator for USBCommunicator must be specified "
+                            "as a single character string.")
         if len(newval) > 1:
-            raise ValueError('Terminator for USBCommunicator must only be 1 '
-                             'character long.')
+            raise ValueError("Terminator for USBCommunicator must only be 1 "
+                             "character long.")
         self._terminator = newval
 
     @property
@@ -83,9 +73,12 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     def timeout(self, newval):
         raise NotImplementedError
 
-    # FILE-LIKE METHODS ##
+    # FILE-LIKE METHODS #
 
     def close(self):
+        """
+        Shutdown and close the USB connection
+        """
         try:
             self._conn.shutdown()
         finally:
@@ -94,32 +87,56 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     def read(self, size):
         raise NotImplementedError
 
-    def write(self, string):
-        self._conn.write(string)
+    def write(self, msg):
+        """
+        Write bytes to the raw usb connection object.
 
-    def seek(self, offset):
+        :param str msg: Bytes to be sent to the instrument over the usb
+            connection.
+        """
+        self._conn.write(msg)
+
+    def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
         return NotImplemented
 
-    def tell(self):
+    def tell(self):  # pylint: disable=no-self-use
         return NotImplemented
 
     def flush_input(self):
-        '''
+        """
         Instruct the communicator to flush the input buffer, discarding the
         entirety of its contents.
-        '''
+
+        Not implemented for usb communicator
+        """
         raise NotImplementedError
 
-    # METHODS ##
+    # METHODS #
 
     def _sendcmd(self, msg):
-        '''
-        '''
-        msg = msg + self._terminator
+        """
+        This is the implementation of ``sendcmd`` for communicating with
+        raw usb connections. This function is in turn wrapped by the concrete
+        method `AbstractCommunicator.sendcmd` to provide consistent logging
+        functionality across all communication layers.
+
+        :param str msg: The command message to send to the instrument
+        """
+        msg += self._terminator
         self._conn.sendall(msg)
 
     def _query(self, msg, size=-1):
-        '''
-        '''
+        """
+        This is the implementation of ``query`` for communicating with
+        raw usb connections. This function is in turn wrapped by the concrete
+        method `AbstractCommunicator.query` to provide consistent logging
+        functionality across all communication layers.
+
+        :param str msg: The query message to send to the instrument
+        :param int size: The number of bytes to read back from the instrument
+            response.
+        :return: The instrument response to the query
+        :rtype: `str`
+        """
         self.sendcmd(msg)
         return self.read(size)
