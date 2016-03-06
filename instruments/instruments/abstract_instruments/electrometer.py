@@ -16,8 +16,6 @@ from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
-# pylint: disable=duplicate-code
-
 
 class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
@@ -50,7 +48,7 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
     @abc.abstractmethod
     def unit(self):
         """
-        Gets/sets the measurement mode for the multimeter. This is an
+        Gets/sets the measurement mode for the electrometer. This is an
         abstract method.
 
         :type: `~quantities.UnitQuantity`
