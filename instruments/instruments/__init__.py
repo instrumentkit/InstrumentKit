@@ -41,27 +41,6 @@ import instruments.other as _other
 
 __version__ = '1.0a1'
 
-# VERSION CHECKING ###########################################################
-
-# We hide version checking in a function so that imports from here don't
-# "leak" out to the __all__ of this package.
-
-
-def __check_versions():
-    from distutils.version import StrictVersion
-
-    _versions_needed = {
-        # 'flufl.enum': StrictVersion('4.0')
-    }
-
-    for module_name, version in _versions_needed.items():
-        module = __import__(module_name, fromlist=['__version__'])
-        if StrictVersion(module.__version__) < version:
-            raise ImportError("Module {} is version {}, but we need version {}.".format(
-                module_name, module.__version__, version))
-
-__check_versions()
-
 
 class _Other(object):
 
