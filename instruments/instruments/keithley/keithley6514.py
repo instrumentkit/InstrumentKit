@@ -220,7 +220,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
         reading, timestamp, _ = self._parse_measurement(raw)
         return reading, timestamp
 
-    def read(self):
+    def read_measurements(self):
         """
         Trigger and acquire readings using the current mode.
         Returns a tuple of the form (reading, timestamp)

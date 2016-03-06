@@ -230,6 +230,6 @@ def test_read():
             '"VOLT:DC"'
         ]
     ) as inst:
-        reading, timestamp = inst.read()
+        reading, timestamp = inst.read_measurements()
         assert reading == 1.0 * pq.volt
         assert timestamp == 1234

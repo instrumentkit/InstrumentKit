@@ -1,109 +1,137 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-##
-# usbtmc_communicator.py: Communicator that uses Python-USBTMC to interface 
-#     with TMC devices.
-##
-# © 2013-2015 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-##
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+"""
+Provides a communicator that uses Python-USBTMC for connecting with TMC
+instruments.
+"""
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
 
 import io
 
-from instruments.abstract_instruments.comm.abstract_comm import AbstractCommunicator
-
 try:
     import usbtmc
 except ImportError:
     usbtmc = None
 
-## CLASSES #####################################################################
+from instruments.abstract_instruments.comm import AbstractCommunicator
+
+# CLASSES #####################################################################
+
 
 class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
+
     """
     Wraps a USBTMC device. Arguments are passed to `usbtmc.Instrument`.
     """
-    
+
     def __init__(self, *args, **kwargs):
         if usbtmc is None:
             raise ImportError("usbtmc is required for TMC instruments.")
         AbstractCommunicator.__init__(self)
-            
+
         self._inst = usbtmc.Instrument(*args, **kwargs)
-        self._terminator = "\n" # Use the system default line ending by default.
-    
-    ## PROPERTIES ##
-    
+        self._terminator = "\n"  # Use the system default line ending by default.
+
+    # PROPERTIES ##
+
     @property
     def address(self):
         if hasattr(self._filelike, 'name'):
-            return id(self._inst) # TODO: replace with something more useful.
+            return id(self._inst)  # TODO: replace with something more useful.
         else:
             return None
-        
+
     @property
     def terminator(self):
+        """
+        Gets/sets the termination character used for communicating with the
+        USBTMC instrument.
+
+        :type: `str`
+        """
         return self._terminator
+
     @terminator.setter
     def terminator(self, newval):
         self._terminator = str(newval)
-        
+
     @property
     def timeout(self):
         raise NotImplementedError
+
     @timeout.setter
     def timeout(self, newval):
         raise NotImplementedError
 
-    ## FILE-LIKE METHODS ##
-    
+    # FILE-LIKE METHODS #
+
     def close(self):
+        """
+        Close the USBTMC connection object
+        """
         try:
             self._filelike.close()
-        except:
+        except IOError:
             pass
-        
+
     def read(self, size):
+        """
+        Read bytes in from the usbtmc connection.
+
+        :param int size: The number of bytes to read in from the usbtmc
+            connection.
+        :return: The read bytes
+        :rtype: `str`
+        """
         msg = self._inst.read_raw(size)
         return msg
-        
+
     def write(self, msg):
+        """
+        Write bytes to the usbtmc connection.
+
+        :param str msg: Bytes to be sent to the instrument over the usbtmc
+            connection.
+        """
         self._inst.write(msg)
-        
+
     def seek(self, offset):
         raise NotImplementedError
-        
+
     def tell(self):
         raise NotImplementedError
-        
-    def flush(self):
+
+    def flush_input(self):
         raise NotImplementedError
-        
-    ## METHODS ##
-    
+
+    # METHODS #
+
     def _sendcmd(self, msg):
+        """
+        This is the implementation of ``sendcmd`` for communicating with
+        usbtmc connections. This function is in turn wrapped by the concrete
+        method `AbstractCommunicator.sendcmd` to provide consistent logging
+        functionality across all communication layers.
+
+        :param str msg: The command message to send to the instrument
+        """
         self._inst.write("{}{}".format(msg, self.terminator))
-        
+
     def _query(self, msg, size=-1):
+        """
+        This is the implementation of ``query`` for communicating with
+        usbtmc connections. This function is in turn wrapped by the concrete
+        method `AbstractCommunicator.query` to provide consistent logging
+        functionality across all communication layers.
+
+        :param str msg: The query message to send to the instrument
+        :param int size: The number of bytes to read back from the instrument
+            response.
+        :return: The instrument response to the query
+        :rtype: `str`
+        """
         return self._inst.ask(msg)
-        
