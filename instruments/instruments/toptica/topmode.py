@@ -44,9 +44,14 @@ class TopMode(Instrument):
         self.prompt = ">"
         self.terminator = "\n"
 
-    def _ack_expected(self, msg=""):
+    def return_msg(self, msg=""):
         return msg
 
+    def return_none(self, msg=""):
+        return None
+
+    def return_prompt_msg(self, msg=""):
+        return self.prompt+" "+msg
     # ENUMS #
 
     class CharmStatus(IntEnum):
@@ -274,6 +279,8 @@ class TopMode(Instrument):
 
         :param str command: The command to be executed.
         """
+        self._ack_expected = self.return_msg
+        self.prompt = ">"
         self.sendcmd("(exec '" + command + ")")
 
     def set(self, param, value):
@@ -286,6 +293,9 @@ class TopMode(Instrument):
         :param value: Value that the parameter will be set to
         :type value: `str`, `tuple`, `list`, or `bool`
         """
+        self._ack_expected = self.return_msg
+        self.prompt = ">"
+
         if isinstance(value, str):
             self.sendcmd("(param-set! '{} \"{}\")".format(param, value))
         elif isinstance(value, tuple) or isinstance(value, list):
@@ -293,7 +303,7 @@ class TopMode(Instrument):
                 "(param-set! '{} '({}))".format(param, " ".join(value)))
         elif isinstance(value, bool):
             value = "t" if value else "f"
-            self.sendcmd("(param-set! '{} #{})".format(param, value))
+            response = self.query("(param-set! '{} #{})".format(param, value))
 
     def reference(self, param):
         """
@@ -304,6 +314,8 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
+        self.prompt = ">"
+        self._ack_expected = self.return_msg
         return self.query("(param-ref '{})".format(param))
 
     def display(self, param):
@@ -313,6 +325,8 @@ class TopMode(Instrument):
         :param str param: Parameter that will be sent with a display request
         :return: Response to the display request
         """
+        self.prompt = ">"
+        self._ack_expected = self.return_msg
         return self.query("(param-disp '{})".format(param))
 
     # PROPERTIES #
