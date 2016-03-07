@@ -44,8 +44,8 @@ class TopMode(Instrument):
         self.prompt = ">"
         self.terminator = "\n"
 
-#    def _ack_expected(self, msg=""):
-#        return msg
+    def _ack_expected(self, msg=""):
+        return msg
 
     # ENUMS #
 
@@ -378,7 +378,10 @@ class TopMode(Instrument):
             `True` otherwise
         :type: `bool`
         """
-        response = int(self.reference("system-health"))
+        response = self.reference("system-health")
+        if response.find("#f") >= 0:
+            return False
+        response = int(response)
         return False if response % 2 else True
 
     @property

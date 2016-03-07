@@ -6,8 +6,11 @@ Toptica Topmode example
 
 import instruments as ik
 import quantities as pq
-
-tm = ik.toptica.TopMode.open_serial('/dev/ttyACM0', 115200)
+from platform import system
+if system() == 'Windows':
+      tm = ik.toptica.TopMode.open_serial('COM14', 115200)
+else:
+      tm = ik.toptica.TopMode.open_serial('/dev/ttyACM0', 115200)
 
 
 print("The current emission state is: ", tm.enable)
