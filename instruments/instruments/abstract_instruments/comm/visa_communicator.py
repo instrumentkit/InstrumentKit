@@ -7,27 +7,25 @@ library.
 
 # IMPORTS #####################################################################
 
+# pylint: disable=wrong-import-position
+
 from __future__ import absolute_import
 from __future__ import division
 
 import io
 
-# pylint: disable=wrong-import-position
-# Trick to conditionally ignore the NameError caused by catching WindowsError.
-# Needed as PyVISA causes a WindowsError on Windows when VISA is not installed.
-try:
-    WindowsError
-except NameError:
-    WindowsError = None
-try:
-    import visa
-except (ImportError, WindowsError, OSError):
-    visa = None
-
 import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
+
+if not getattr(__builtins__, "WindowsError", None):
+    class WindowsError(OSError):
+        pass
+try:
+    import visa
+except (ImportError, WindowsError, OSError):
+    visa = None
 
 # CLASSES #####################################################################
 

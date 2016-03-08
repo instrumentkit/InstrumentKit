@@ -6,27 +6,31 @@ Provides the base Instrument class for all instruments.
 
 # IMPORTS #####################################################################
 
+# pylint: disable=wrong-import-position
+
 from __future__ import absolute_import
 from __future__ import division
 
 import os
 import collections
-import urlparse
-
 import socket
+
+from future.standard_library import install_aliases
 import numpy as np
 
-# pylint: disable=wrong-import-position
+install_aliases()
+from urllib.parse import urlparse  # pylint: disable=wrong-import-order,import-error
+
 try:
     import usb
     import usb.core
     import usb.util
 except ImportError:
     usb = None
-try:
-    WindowsError
-except NameError:
-    WindowsError = None
+
+if not getattr(__builtins__, "WindowsError", None):
+    class WindowsError(OSError):
+        pass
 try:
     import visa
 except (ImportError, WindowsError, OSError):
