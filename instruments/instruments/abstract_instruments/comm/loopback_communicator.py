@@ -10,6 +10,7 @@ test connections to explore the InstrumentKit API.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import io
 import sys
@@ -64,9 +65,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
-        if not isinstance(newval, str):
-            raise TypeError("Terminator must be specified "
-                            "as a single character string.")
+        newval = str(newval)
         if len(newval) > 1:
             raise ValueError("Terminator for LoopbackCommunicator must only be "
                              "1 character long.")
@@ -98,6 +97,9 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
             pass
 
     def read(self, size=-1):
+        return self.read_raw(size).decode('utf-8')
+
+    def read_raw(self, size=-1):
         """
         Gets desired response command from stdin. If ``stdin`` is `None`, then
         the user will be prompted to enter a mock response in the Python
@@ -110,15 +112,15 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         if self._stdin is not None:
             if size >= 0:
                 input_var = self._stdin.read(size)
-                return input_var
+                return bytes(input_var)
             elif size == -1:
                 result = bytearray()
-                c = 0
-                while c != self._terminator:
+                c = b''
+                while c != self._terminator.encode('utf-8'):
                     c = self._stdin.read(1)
-                    if c == '':
+                    if c == b'':
                         break
-                    if c != self._terminator:
+                    if c != self._terminator.encode('utf-8'):
                         result += c
                 return bytes(result)
             else:
@@ -128,6 +130,9 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         return input_var
 
     def write(self, msg):
+        self.write_raw(str(msg).encode('utf-8'))
+
+    def write_raw(self, msg):
         """
         Write message to the loopback communicator's stdout. If ``stdout`` is
         `None` then it will be simply printed to the Python interpreter
@@ -175,7 +180,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
-        if msg is not '':
+        if msg is not '' and msg is not b'':
             msg = "{}{}".format(msg, self._terminator)
             self.write(msg)
 

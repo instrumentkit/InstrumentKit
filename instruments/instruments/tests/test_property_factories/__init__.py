@@ -7,12 +7,14 @@ Module containing common code for testing the property factories
 # IMPORTS ####################################################################
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
-from io import BytesIO
+from io import StringIO
 
 # CLASSES ####################################################################
 
 # pylint: disable=missing-docstring
+
 
 class MockInstrument(object):
 
@@ -22,7 +24,7 @@ class MockInstrument(object):
     """
 
     def __init__(self, responses=None):
-        self._buf = BytesIO()
+        self._buf = StringIO()
         self._responses = responses if responses is not None else {}
 
     @property

@@ -7,6 +7,7 @@ Module containing tests for the Tektronix TDS224
 # IMPORTS ####################################################################
 
 from __future__ import absolute_import
+from builtins import bytes
 
 import numpy as np
 
@@ -77,21 +78,21 @@ def test_tektds224_data_source_read_waveform():
         ik.tektronix.TekTDS224,
         [
             "DAT:SOU?",
-            "DAT:SOU CH1",
+            "DAT:SOU CH2",
             "DAT:ENC RIB",
             "DATA:WIDTH?",
             "CURVE?",
-            "WFMP:CH1:YOF?",
-            "WFMP:CH1:YMU?",
-            "WFMP:CH1:YZE?",
+            "WFMP:CH2:YOF?",
+            "WFMP:CH2:YMU?",
+            "WFMP:CH2:YZE?",
             "WFMP:XZE?",
             "WFMP:XIN?",
-            "WFMP:CH1:NR_P?",
+            "WFMP:CH2:NR_P?",
             "DAT:SOU CH1"
         ], [
             "CH1",
             "2",
-            "#210" + "00000001000200030004".decode("hex") + "0",  # CURVE + YOF
+            "#210" + bytes.fromhex("00000001000200030004").decode("utf-8") + "0",  # CURVE + YOF
             "1",
             "0",
             "0",
@@ -100,6 +101,6 @@ def test_tektds224_data_source_read_waveform():
         ]
     ) as tek:
         data = np.array([0, 1, 2, 3, 4])
-        (x, y) = tek.channel[0].read_waveform()
+        (x, y) = tek.channel[1].read_waveform()
         assert (x == data).all()
         assert (y == data).all()

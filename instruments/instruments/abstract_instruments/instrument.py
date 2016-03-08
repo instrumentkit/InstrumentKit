@@ -10,6 +10,7 @@ Provides the base Instrument class for all instruments.
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import os
 import collections
@@ -133,7 +134,7 @@ class Instrument(object):
             value = self._file.query(cmd, size)
         if self.prompt is not None:
             prompt = self.read()
-            if prompt is not self.prompt:
+            if prompt != self.prompt:
                 raise PromptError(
                     "Incorrect prompt message received: got {} "
                     "expected {}".format(prompt, self.prompt)
@@ -269,7 +270,7 @@ class Instrument(object):
                           "require the first character to be #.")
         else:
             # Read in the num of digits for next part
-            digits = int(self._file.read(1))
+            digits = int(self._file.read_raw(1))
 
             # Read in the num of bytes to be read
             num_of_bytes = int(self._file.read(digits))
@@ -280,7 +281,7 @@ class Instrument(object):
 
             # Read in the data bytes, and pass them to numpy using the specified
             # data type (format).
-            return np.frombuffer(self._file.read(num_of_bytes), dtype=fmt)
+            return np.frombuffer(self._file.read_raw(num_of_bytes), dtype=fmt)
 
     # CLASS METHODS #
 
