@@ -55,6 +55,7 @@ def test_agilent34410a_r():
             "R? 1"
         ], [
             "VOLT +1.000000E+01,+3.000000E-06",
+            # pylint: disable=no-member
             b"#18" + bytes.fromhex("3FF0000000000000")
         ]
     ) as dmm:

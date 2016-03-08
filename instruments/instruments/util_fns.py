@@ -276,9 +276,6 @@ def unitless_property(name, format_code='{:e}', doc=None, readonly=False,
                 newval = float(newval.magnitude)
             else:
                 raise ValueError
-        print(newval)
-        print(type(newval))
-
         strval = format_code.format(newval)
         self.sendcmd(set_fmt.format(name, strval))
 
