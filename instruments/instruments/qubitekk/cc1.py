@@ -83,7 +83,6 @@ class CC1(SCPIInstrument):
     def __init__(self, filelike):
         super(CC1, self).__init__(filelike)
         self.terminator = "\n"
-        self.end_terminator = "\n"
         self.channel_count = 3
         self._firmware = None
 
@@ -129,6 +128,12 @@ class CC1(SCPIInstrument):
                 count = int(count)
             except ValueError:
                 count = None
+                while count is None:
+                    # try to read again
+                    try:
+                        count = int(self._file.read(-1))
+                    except ValueError:
+                        count = None
             self._count = count
             return self._count
 
@@ -148,9 +153,10 @@ class CC1(SCPIInstrument):
 
     @window.setter
     def window(self, new_val):
-        new_val_mag = assume_units(new_val, pq.ns).rescale(pq.ns).magnitude
+        new_val_mag = int(assume_units(new_val, pq.ns).rescale(pq.ns).magnitude)
         if new_val_mag < 0 or new_val_mag > 7:
             raise ValueError("Window is out of range.")
+        # window must be an integer!
         self.sendcmd(":WIND {}".format(new_val_mag))
 
     @property
@@ -210,6 +216,8 @@ class CC1(SCPIInstrument):
                     self._firmware = None
         return self._firmware
 
+
+
     @property
     def channel(self):
         """
@@ -222,9 +230,10 @@ class CC1(SCPIInstrument):
         >>> print cc.channel[0].count
 
         :rtype: `CC1.Channel`
-
         """
+
         return ProxyList(self, CC1.Channel, range(self.channel_count))
+
 
     # METHODS #
     def clear_counts(self):

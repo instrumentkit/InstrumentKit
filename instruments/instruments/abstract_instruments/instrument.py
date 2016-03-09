@@ -106,14 +106,14 @@ class Instrument(object):
         self._file.sendcmd(str(cmd))
         ack_expected = self._ack_expected(cmd)
         if ack_expected is not None:
-            ack = self.read()
+            ack = self.read().strip()
             if ack != ack_expected:
                 raise AcknowledgementError(
                         "Incorrect ACK message received: got {} "
                         "expected {}".format(ack, ack_expected)
                 )
         if self.prompt is not None:
-            prompt = self.read()
+            prompt = self.read(len(self.prompt)).strip()
             if prompt != self.prompt:
                 raise PromptError(
                         "Incorrect prompt message received: got {} "
@@ -134,18 +134,20 @@ class Instrument(object):
         """
         ack_expected = self._ack_expected(cmd)
         if ack_expected is not None:
-            ack = self._file.query(cmd)
+
+            ack = self._file.query(cmd).strip()
             if ack != ack_expected:
                 raise AcknowledgementError(
                         "Incorrect ACK message received: got {} "
                         "expected {}".format(ack, ack_expected)
                 )
-            value = self.read(size)
+
+            value = self.read(size).strip()
         else:
             value = self._file.query(cmd, size)
 
         if self.prompt is not None:
-            prompt = self.read()
+            prompt = self.read(len(self.prompt)).strip()
             if prompt is not self.prompt:
                 raise PromptError(
                         "Incorrect prompt message received: got {} "

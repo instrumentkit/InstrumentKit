@@ -103,7 +103,7 @@ class TC200(Instrument):
 
         :type: `TC200.Mode`
         """
-        response = self.query("stat?")
+        response = self.status
         response_code = (int(response) >> 1) % 2
         return TC200.Mode(response_code)
 
@@ -113,7 +113,15 @@ class TC200(Instrument):
             raise TypeError("Mode setting must be a `TC200.Mode` value, "
                             "got {} instead.".format(type(newval)))
         out_query = "mode={}".format(newval.name)
-        self.sendcmd(out_query)
+        # there is an issue with the TC200; it responds with a spurious Command Error on mode=normal.
+        # thus, the sendcmd() method cannot be used.
+        if newval == TC200.Mode.normal:
+
+            self._file.query(out_query).strip()
+            response1 = self.read(-1)
+            response2 = self.read(len(self.prompt))
+        else:
+            self.sendcmd(out_query)
 
     @property
     def enable(self):
@@ -124,7 +132,7 @@ class TC200(Instrument):
 
         :type: `bool`
         """
-        response = self.query("stat?")
+        response = self.status
         return True if int(response) % 2 is 1 else False
 
     @enable.setter
@@ -135,10 +143,24 @@ class TC200(Instrument):
         # the "ens" command is a toggle, we need to track two different cases,
         # when it should be on and it is off, and when it is off and
         # should be on
+
+        # if no sensor is attached, the unit will respond with an error. There is no current error handling in the way
+        # that thorlabs responds with errors
         if newval and not self.enable:
-            self.sendcmd("ens")
+            response1 = self._file.query("ens")
+            while response1 != ">":
+                response1 = self._file.read(1)
+
         elif not newval and self.enable:
-            self.sendcmd("ens")
+            response1 = self._file.query("ens")
+            while response1 != ">":
+                response1 = self._file.read(1)
+
+    @property
+    def status(self):
+        ack = self._file.query(str("stat?"))
+        response = self.read(4)
+        return int(response.split(" ")[0])
 
     temperature = unitful_property(
         "tact",
@@ -162,7 +184,7 @@ class TC200(Instrument):
         units=pq.degC,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(20, 205),
+        valid_range=(20*pq.degC, 205*pq.degC),
         doc="""
         Gets/sets the maximum temperature
 
@@ -278,8 +300,7 @@ class TC200(Instrument):
         :return: The temperature units (degC/F/K) the TC200 is measuring in
         :type: `~quantities.unitquantity.UnitTemperature`
         """
-        response = self.query("stat?")
-        response = int(response)
+        response = self.status
         if (response >> 4) % 2 and (response >> 5) % 2:
             return pq.degC
         elif (response >> 5) % 2:
@@ -332,7 +353,7 @@ class TC200(Instrument):
         units=pq.W,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(0.1, 18.0),
+        valid_range=(0.1*pq.W, 18.0*pq.W),
         doc="""
         Gets/sets the maximum power
 
