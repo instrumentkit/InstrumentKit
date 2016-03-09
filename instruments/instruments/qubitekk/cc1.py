@@ -69,6 +69,7 @@ class CC1(SCPIInstrument):
         self.terminator = "\n"
         self.end_terminator = "\n"
         self.channel_count = 3
+        self._firmware = None
 
     # INNER CLASSES ##
 
@@ -135,8 +136,7 @@ class CC1(SCPIInstrument):
         :rtype: quantities.ns
         :return: the delay value
         """
-        response = self.query("DELA?")
-        return int(response)*pq.ns
+        return pq.Quantity(*split_unit_str(self.query("DELA?"), "ns"))
 
     @delay.setter
     def delay(self, new_val):
@@ -160,7 +160,13 @@ class CC1(SCPIInstrument):
             of units seconds.
         :type: `~quantities.Quantity`
         """
-        return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
+        # the older versions of the firmware erroneously report the units of the
+        # dwell time as being seconds rather than ms
+        dwell_time = pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
+        if self.firmware.find("v2.001") >= 0:
+            return dwell_time/1000.0
+        else:
+            return dwell_time
 
     @dwell_time.setter
     def dwell_time(self, new_val):
@@ -171,7 +177,11 @@ class CC1(SCPIInstrument):
 
     @property
     def firmware(self):
-        return self.query("FIRM?")
+        # the firmware is assumed not to change while the device is active
+        # firmware is stored locally as it will be gotten often
+        if self._firmware is None:
+            self._firmware = self.query("FIRM?")
+        return self._firmware
 
     @property
     def gate(self):
@@ -197,12 +207,7 @@ class CC1(SCPIInstrument):
         elif not isinstance(new_val, bool):
             raise TypeError("CC1 gate_enable must be specified as a boolean.")
         
-        if new_val is False:
-            if not qubitekk_check_unknown(self.query(":GATE:OFF")):
-                self.sendcmd(":GATE 0")
-        else:
-            if not qubitekk_check_unknown(self.query(":GATE:ON")):
-                self.sendcmd(":GATE 1")
+        self.scpi_bool(new_val, "GATE")
 
     @property
     def channel(self):
@@ -243,13 +248,7 @@ class CC1(SCPIInstrument):
             new_val = bool(new_val)
         elif not isinstance(new_val, bool):
             raise TypeError("CC1 subtract must be specified as a boolean.")
-
-        if new_val is False:
-            if not qubitekk_check_unknown(self.query(":SUBT:OFF")):
-                self.sendcmd(":SUBT 0")
-        else:
-            if not qubitekk_check_unknown(self.query(":SUBT:ON")):
-                self.sendcmd(":SUBT 1")
+        self.scpi_bool(new_val, "SUBT")
 
     @property
     def trigger(self):
@@ -266,16 +265,11 @@ class CC1(SCPIInstrument):
         return self.TriggerMode(int(response))
 
     @trigger.setter
-    def trigger(self, newval):
-        if not isinstance(newval, self.TriggerMode):
+    def trigger(self, new_val):
+        if not isinstance(new_val, self.TriggerMode):
             raise TypeError("The new trigger setting must be a CC1.TriggerMode.")
-        newval = newval.value
-        if newval == 0:
-            if not qubitekk_check_unknown(self.query(":TRIG:MODE CONT")):
-                self.sendcmd(":TRIG 0")
-        else:
-            if not qubitekk_check_unknown(self.query(":TRIG:MODE STOP")):
-                self.sendcmd(":TRIG 1")
+        new_val = new_val.value
+        self.scpi_bool(new_val, "TRIG")
 
     # METHODS #
     
@@ -284,3 +278,26 @@ class CC1(SCPIInstrument):
         Clears the current total counts on the counters.
         """
         self.sendcmd("CLEA")
+
+    def scpi_bool(self, new_val, component):
+        """
+        This method handles how different versions of the firmware handle
+        boolean SCPI settings
+        :param component: the variable in the SCPI component to be set. It
+        should be a string where the first four characters are uppercase
+        :type component: basestring
+        :param new_val: the boolean value to set the component to. True is
+        On, False is off
+        :type new_val: bool
+        :return:
+        """
+        if new_val is False:
+            if self.firmware.find("v2.001") >= 0:
+                self.sendcmd(":"+component+" 0")
+            else:
+                self.sendcmd(":"+component+":OFF")
+        else:
+            if self.firmware.find("v2.001") >= 0:
+                self.sendcmd(":"+component+" 1")
+            else:
+                self.sendcmd(":"+component+":ON")
