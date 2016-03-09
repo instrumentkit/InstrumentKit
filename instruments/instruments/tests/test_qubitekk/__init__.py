@@ -132,10 +132,12 @@ def test_cc1_dwell():
         ik.qubitekk.CC1,
         [
             "DWEL?",
+            "FIRM?",
             ":DWEL 2"
         ],
         [
             "8",
+            "v2.01"
             ""
         ],
         sep="\n"
@@ -173,25 +175,19 @@ def test_cc1_firmware():
         assert cc.firmware == "blo"
 
 
-def test_cc1_gate():
+def test_cc1_gate_new_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
             "GATE?",
             ":GATE:ON",
-            ":GATE:OFF",
-            ":GATE:ON",
-            ":GATE 1",
-            ":GATE:OFF",
-            ":GATE 0"
+            ":GATE:OFF"
 
         ],
         [
-            "1",
+            "ON",
+            "v2.10",
             "",
-            "",
-            "Unknown command",
-            "Unknown command",
             ""
         ],
         sep="\n"
@@ -199,27 +195,33 @@ def test_cc1_gate():
         assert cc.gate is True
         cc.gate = True
         cc.gate = False
-        cc.gate = True
-        cc.gate = False
 
 
-@raises(ValueError)
-def test_cc1_gate_error1():
+def test_cc1_gate_old_firmware():
     with expected_protocol(
-        ik.qubitekk.CC1,
+        ik.qubitekk.CC1v2001,
         [
-            ":GATE 2"
+            "GATE?",
+            ":GATE 1",
+            ":GATE 0"
+
         ],
         [
+            "1",
+            "v2.001",
+            "",
             ""
         ],
         sep="\n"
     ) as cc:
-        cc.gate = 2
+        assert cc.gate is True
+        cc.gate = True
+        cc.gate = False
+
 
 
 @raises(TypeError)
-def test_cc1_gate_error2():
+def test_cc1_gate_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -233,25 +235,19 @@ def test_cc1_gate_error2():
         cc.gate = "blo"
 
 
-def test_cc1_subtract():
+def test_cc1_subtract_new_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
             "SUBT?",
             ":SUBT:ON",
-            ":SUBT:OFF",
-            ":SUBT:ON",
-            ":SUBT 1",
-            ":SUBT:OFF",
-            ":SUBT 0"
+            ":SUBT:OFF"
 
         ],
         [
-            "1",
+            "ON",
+            "v2.010",
             "",
-            "",
-            "Unknown command",
-            "Unknown command",
             ""
         ],
         sep="\n"
@@ -259,28 +255,10 @@ def test_cc1_subtract():
         assert cc.subtract is True
         cc.subtract = True
         cc.subtract = False
-        cc.subtract = True
-        cc.subtract = False
-
-
-@raises(ValueError)
-def test_cc1_subtract_error1():
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":SUBT -1"
-
-        ],
-        [
-            ""
-        ],
-        sep="\n"
-    ) as cc:
-        cc.subtract = -1
 
 
 @raises(TypeError)
-def test_cc1_subtract_error2():
+def test_cc1_subtract_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -301,31 +279,21 @@ def test_cc1_trigger():
         [
             "TRIG?",
             ":TRIG:MODE CONT",
-            ":TRIG:MODE STOP",
-            ":TRIG:MODE CONT",
-            ":TRIG 0",
-            ":TRIG:MODE STOP",
-            ":TRIG 1"
-
+            ":TRIG:MODE STOP"
         ],
         [
-            "1",
+            "MODE STOP",
             "",
-            "",
-            "Unknown command",
-            "Unknown command",
             ""
         ],
         sep="\n"
     ) as cc:
-        assert cc.trigger is cc.TriggerMode.start_stop
-        cc.trigger = cc.TriggerMode.continuous
-        cc.trigger = cc.TriggerMode.start_stop
-        cc.trigger = cc.TriggerMode.continuous
-        cc.trigger = cc.TriggerMode.start_stop
+        assert cc.trigger is ik.qubitekk.TriggerMode.start_stop
+        cc.trigger = ik.qubitekk.TriggerMode.continuous
+        cc.trigger = ik.qubitekk.TriggerMode.start_stop
 
 
-@raises(TypeError)
+@raises(ValueError)
 def test_cc1_trigger_error():
     with expected_protocol(
         ik.qubitekk.CC1,

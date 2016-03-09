@@ -31,10 +31,11 @@ from __future__ import division
 from builtins import range
 
 import quantities as pq
-from enum import IntEnum
+from enum import IntEnum, Enum
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
-from instruments.util_fns import ProxyList, assume_units, split_unit_str
+from instruments.util_fns import ProxyList, assume_units, split_unit_str, \
+    bool_property, enum_property
 
 
 def qubitekk_check_unknown(response):
@@ -48,6 +49,16 @@ def qubitekk_check_unknown(response):
         return False
     else:
         return True
+
+
+class TriggerModeInt(Enum):
+    continuous = "0"
+    start_stop = "1"
+
+
+class TriggerMode(Enum):
+    continuous = "MODE CONT"
+    start_stop = "MODE STOP"
 
 
 # CLASSES #####################################################################
@@ -64,6 +75,11 @@ class CC1(SCPIInstrument):
     More information can be found at :
     http://www.qubitekk.com
     """
+
+    _sep = ":"
+    _bool = ("ON", "OFF")
+    _trig_bool = TriggerMode
+
     def __init__(self, filelike):
         super(CC1, self).__init__(filelike)
         self.terminator = "\n"
@@ -71,6 +87,12 @@ class CC1(SCPIInstrument):
         self.channel_count = 3
         self._firmware = None
 
+    gate = bool_property("GATE", inst_true=_bool[0], inst_false=_bool[1],
+                             set_fmt=":{}"+_sep+"{}")
+    subtract = bool_property("SUBT", inst_true=_bool[0], inst_false=_bool[1],
+                                 set_fmt=":{}"+_sep+"{}")
+    trigger = enum_property("TRIG", enum=_trig_bool,
+                                set_fmt=":{}"+_sep+"{}")
     # INNER CLASSES ##
 
     class Channel(object):
@@ -91,6 +113,7 @@ class CC1(SCPIInstrument):
             self._idx = idx + 1
             self._chan = self.__CHANNEL_NAMES[self._idx]
             self._count = 0
+
             
         # PROPERTIES ##
         
@@ -102,13 +125,14 @@ class CC1(SCPIInstrument):
             :rtype: `int`
             """
             count = self._cc1.query("COUN:{0}?".format(self._chan))
-            count = int(count)
+            try:
+                count = int(count)
+            except ValueError:
+                count = None
             self._count = count
             return self._count
 
-    class TriggerMode(IntEnum):
-        continuous = 0
-        start_stop = 1
+
 
     # PROPERTIES #
     @property
@@ -180,124 +204,49 @@ class CC1(SCPIInstrument):
         # the firmware is assumed not to change while the device is active
         # firmware is stored locally as it will be gotten often
         if self._firmware is None:
-            self._firmware = self.query("FIRM?")
+            while self._firmware is None:
+                self._firmware = self.query("FIRM?")
+                if self._firmware.find("Unknown") >= 0:
+                    self._firmware = None
         return self._firmware
-
-    @property
-    def gate(self):
-        """
-        Gets/sets the Gate mode of the CC1.
-        
-        A setting of `True` means the input signals are anded with the gate 
-        signal and `False` means the input signals are not anded with the gate 
-        signal.
-        
-        :type: `bool`
-        """
-        response = self.query("GATE?")
-        response = int(response)
-        return True if response is 1 else False
-
-    @gate.setter
-    def gate(self, new_val):
-        if isinstance(new_val, int):
-            if new_val != 0 and new_val != 1:
-                raise ValueError("Not a valid gate_enable mode.")
-            new_val = bool(new_val)
-        elif not isinstance(new_val, bool):
-            raise TypeError("CC1 gate_enable must be specified as a boolean.")
-        
-        self.scpi_bool(new_val, "GATE")
 
     @property
     def channel(self):
         """
-        Gets a specific channel object. The desired channel is specified like 
+        Gets a specific channel object. The desired channel is specified like
         one would access a list.
-        
+
         For instance, this would print the counts of the first channel::
-        
+
         >>> cc = ik.qubitekk.CC1.open_serial('COM8', 19200, timeout=1)
         >>> print cc.channel[0].count
-        
+
         :rtype: `CC1.Channel`
-        
+
         """
         return ProxyList(self, CC1.Channel, range(self.channel_count))
 
-    @property
-    def subtract(self):
-        """
-        Gets/sets the accidental subtraction mode of the CC1.
-
-        A setting of `True` means the reported coincidences have the estimated accidentals subtracted
-        signal and `False` means the raw coincidences are reported
-        signal.
-
-        :type: `bool`
-        """
-        response = self.query("SUBT?")
-        response = int(response)
-        return True if response is 1 else False
-
-    @subtract.setter
-    def subtract(self, new_val):
-        if isinstance(new_val, int):
-            if new_val != 0 and new_val != 1:
-                raise ValueError("Not a valid subtract mode.")
-            new_val = bool(new_val)
-        elif not isinstance(new_val, bool):
-            raise TypeError("CC1 subtract must be specified as a boolean.")
-        self.scpi_bool(new_val, "SUBT")
-
-    @property
-    def trigger(self):
-        """
-        Gets the current trigger mode, meaning, whether the coincidence
-        counter is tallying counts every dwell time over and over - continuous,
-        or start/stop, meaning the coincidence counter is tallying counts
-        between start and stop triggers.
-
-        :rtype: ik.qubitekk.CC1.TriggerMode
-        :return: the current trigger mode
-        """
-        response = self.query("TRIG?")
-        return self.TriggerMode(int(response))
-
-    @trigger.setter
-    def trigger(self, new_val):
-        if not isinstance(new_val, self.TriggerMode):
-            raise TypeError("The new trigger setting must be a CC1.TriggerMode.")
-        new_val = new_val.value
-        self.scpi_bool(new_val, "TRIG")
-
     # METHODS #
-    
     def clear_counts(self):
         """
         Clears the current total counts on the counters.
         """
         self.sendcmd("CLEA")
 
-    def scpi_bool(self, new_val, component):
-        """
-        This method handles how different versions of the firmware handle
-        boolean SCPI settings
-        :param component: the variable in the SCPI component to be set. It
-        should be a string where the first four characters are uppercase
-        :type component: basestring
-        :param new_val: the boolean value to set the component to. True is
-        On, False is off
-        :type new_val: bool
-        :return:
-        """
-        if new_val is False:
-            if self.firmware.find("v2.001") >= 0:
-                self.sendcmd(":"+component+" 0")
-            else:
-                self.sendcmd(":"+component+":OFF")
-        else:
-            if self.firmware.find("v2.001") >= 0:
-                self.sendcmd(":"+component+" 1")
-            else:
-                self.sendcmd(":"+component+":ON")
+
+class CC1v2001(CC1):
+    """
+    Use this class for older versions of the CC1 firmware
+    """
+    _sep = " "
+    _bool = ("1", "0")
+    _trig_bool = TriggerModeInt
+
+    def __init__(self, filelike):
+        super(CC1v2001, self).__init__(filelike)
+
+    gate = bool_property("GATE", inst_true=_bool[0], inst_false=_bool[1],
+                             set_fmt=":{}"+_sep+"{}")
+    subtract = bool_property("SUBT", inst_true=_bool[0], inst_false=_bool[1],
+                                 set_fmt=":{}"+_sep+"{}")
+    trigger = enum_property("TRIG", enum=_trig_bool, set_fmt=":{}"+_sep+"{}")

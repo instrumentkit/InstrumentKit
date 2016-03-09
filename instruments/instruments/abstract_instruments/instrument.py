@@ -143,6 +143,7 @@ class Instrument(object):
             value = self.read(size)
         else:
             value = self._file.query(cmd, size)
+
         if self.prompt is not None:
             prompt = self.read()
             if prompt is not self.prompt:
