@@ -45,27 +45,28 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n"):
         concatenated with the separator given by ``sep``.
     """
     if isinstance(sep, bytes):
-        sep = sep.encode('utf-8')
+        sep = sep.encode("utf-8")
+        
     # Normalize assertion and playback strings.
     if isinstance(ins_to_host, list):
         ins_to_host = [
-            item.encode('utf-8') if isinstance(item, str) else item
+            item.encode("utf-8") if isinstance(item, str) else item
             for item in ins_to_host
         ]
-        ins_to_host = sep.encode('utf-8').join(ins_to_host) + \
-                      (sep.encode('utf-8') if ins_to_host else b"")
+        ins_to_host = sep.encode("utf-8").join(ins_to_host) + \
+                      (sep.encode("utf-8") if ins_to_host else b"")
     elif isinstance(ins_to_host, str):
-        ins_to_host = ins_to_host.encode('utf-8')
+        ins_to_host = ins_to_host.encode("utf-8")
 
     if isinstance(host_to_ins, list):
         host_to_ins = [
-            item.encode('utf-8') if isinstance(item, str) else item
+            item.encode("utf-8") if isinstance(item, str) else item
             for item in host_to_ins
         ]
-        host_to_ins = sep.encode('utf-8').join(host_to_ins) + \
-                      (sep.encode('utf-8') if host_to_ins else b"")
+        host_to_ins = sep.encode("utf-8").join(host_to_ins) + \
+                      (sep.encode("utf-8") if host_to_ins else b"")
     elif isinstance(host_to_ins, str):
-        host_to_ins = host_to_ins.encode('utf-8')
+        host_to_ins = host_to_ins.encode("utf-8")
 
     stdin = BytesIO(ins_to_host)
     stdout = BytesIO()

@@ -15,7 +15,7 @@ from __future__ import unicode_literals
 import io
 import sys
 
-from builtins import input
+from builtins import input, bytes, str
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 
@@ -33,7 +33,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
     def __init__(self, stdin=None, stdout=None):
         AbstractCommunicator.__init__(self)
-        self._terminator = '\n'
+        self._terminator = "\n"
         self._stdout = stdout
         self._stdin = stdin
 
@@ -96,8 +96,18 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         except IOError:
             pass
 
-    def read(self, size=-1):
-        return self.read_raw(size).decode('utf-8')
+    def read(self, size=-1, encoding="utf-8"):
+        """
+        Gets desired response command from stdin. If ``stdin`` is `None`, then
+        the user will be prompted to enter a mock response in the Python
+        interpreter.
+
+        :param int size: Number of characters to read. Default value of -1
+            will read until termination character is found.
+        :param str encoding: Encoding that will be applied to the read bytes
+        :rtype: `str`
+        """
+        return self.read_raw(size).decode(encoding)
 
     def read_raw(self, size=-1):
         """
@@ -107,38 +117,46 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         :param int size: Number of characters to read. Default value of -1
             will read until termination character is found.
-        :rtype: `str`
+        :rtype: `bytes`
         """
         if self._stdin is not None:
             if size >= 0:
                 input_var = self._stdin.read(size)
                 return bytes(input_var)
             elif size == -1:
-                result = bytearray()
+                result = bytes()
                 c = b''
-                while c != self._terminator.encode('utf-8'):
+                while c != self._terminator.encode("utf-8"):
                     c = self._stdin.read(1)
-                    if c == b'':
-                        break
-                    if c != self._terminator.encode('utf-8'):
+                    if c != self._terminator.encode("utf-8"):
                         result += c
-                return bytes(result)
+                return result
             else:
-                raise ValueError('Must read a positive value of characters.')
+                raise ValueError("Must read a positive value of characters.")
         else:
             input_var = input("Desired Response: ")
         return input_var
 
-    def write(self, msg):
-        self.write_raw(str(msg).encode('utf-8'))
-
-    def write_raw(self, msg):
+    def write(self, msg, encoding="utf-8"):
         """
         Write message to the loopback communicator's stdout. If ``stdout`` is
         `None` then it will be simply printed to the Python interpreter
         console.
 
-        :param str msg: The string to be written
+        .. seealso:: To send `bytes` in Python 3, see `write_raw`.
+
+        :param str msg: The unicode string to be written
+        :param str encoding: Encoding to apply on msg to convert it into bytes
+        """
+        self.write_raw(msg.encode(encoding))
+
+    def write_raw(self, msg):
+        """
+        Write raw bytes to the loopback communicator's stdout. If ``stdout`` is
+        `None` then it will be simply printed to the Python interpreter
+        console.
+
+        :param bytes msg: The bytes to be written
         """
         if self._stdout is not None:
             self._stdout.write(msg)
@@ -180,7 +198,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
-        if msg is not '' and msg is not b'':
+        if msg != '':
             msg = "{}{}".format(msg, self._terminator)
             self.write(msg)
 

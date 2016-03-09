@@ -9,9 +9,12 @@ connections.
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import io
 import serial
+
+from builtins import bytes, str
 
 import quantities as pq
 
@@ -70,9 +73,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
-        if not isinstance(newval, str):
-            raise TypeError("Terminator for SerialCommunicator must be "
-                            "specified as a single character string.")
+        newval = str(newval)
         if len(newval) > 1:
             raise ValueError("Terminator for SerialCommunicator must only be 1 "
                              "character long.")
@@ -104,32 +105,55 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
         finally:
             self._conn.close()
 
-    def read(self, size=-1):
+    def read(self, size=-1, encoding="utf-8"):
         """
-        Read bytes in from the file.
+        Reads bytes in from the serial port and then decodes it into a `str`
+        using the specified encoding.
 
-        :param int size: The number of bytes to be read in from the file
+        :param int size: Number of characters to read. Default value of -1
+            will read until termination character is found.
+        :param str encoding: The encoding with which the bytes read in will
+            be decoded with.
         :rtype: `str`
+        """
+        return self.read_raw(size).decode(encoding)
+
+    def read_raw(self, size=-1):
+        """
+        Read bytes in from the serial port.
+
+        :param int size: The number of bytes to be read in from the serial port
+        :rtype: `bytes`
         """
         if size >= 0:
             resp = self._conn.read(size)
             return resp
         elif size == -1:
-            result = bytearray()
-            c = 0
-            while c != self._terminator:
+            result = bytes()
+            c = b''
+            while c != self._terminator.encode("utf-8"):
                 c = self._conn.read(1)
-                if c != self._terminator:
+                if c != self._terminator.encode("utf-8"):
                     result += c
-            return bytes(result)
+            return result
         else:
             raise ValueError("Must read a positive value of characters.")
 
-    def write(self, msg):
+    def write(self, msg, encoding="utf-8"):
+        """
+        Write a string to the `pyserial.Serial` object.
+
+        :param str msg: String to be written to the serial port
+        :param str encoding: Encoding to apply to ``msg`` to convert it to
+            bytes
+        """
+        self.write_raw(msg.encode(encoding))
+
+    def write_raw(self, msg):
         """
         Write bytes to the `pyserial.Serial` object.
 
-        :param str msg: Bytes to be written to file
+        :param bytes msg: Bytes to be written to the serial port
         """
         self._conn.write(msg)
 

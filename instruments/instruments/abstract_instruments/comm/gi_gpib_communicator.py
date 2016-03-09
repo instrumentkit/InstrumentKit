@@ -9,11 +9,12 @@ Industries GPIB adapter.
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import io
 import time
 
-from builtins import chr
+from builtins import chr, str
 import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
@@ -38,7 +39,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
         self._file = filelike
         self._gpib_address = gpib_address
-        self._file.terminator = '\r'
+        self._file.terminator = "\r"
         self._version = int(self._file.query("+ver"))
         self._terminator = "\n"
         self.terminator = "\n"
@@ -235,7 +236,10 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         """
         self._file.close()
 
-    def read(self, size):
+    def read_raw(self, size):
+        return self._file.read_raw(size)
+
+    def read(self, size, encoding="utf-8"):
         """
         Read characters from wrapped class (ie SocketCommunicator or
         SerialCommunicator).
@@ -251,11 +255,14 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         :return: Data read from the GPIB adapter
         :rtype: `str`
         """
-        msg = self._file.read(size)
+        msg = self._file.read(size, encoding)
 
         return msg
 
-    def write(self, msg):
+    def write_raw(self, msg):
+        self._file.write_raw(msg)
+
+    def write(self, msg, encoding="utf-8"):
         """
         Write data string to GPIB connected instrument.
         This function sends all the necessary GI-GPIB adapter internal commands
@@ -263,7 +270,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: String to write to the instrument
         """
-        self._file.write(msg)
+        self._file.write(msg, encoding)
 
     def flush_input(self):
         """

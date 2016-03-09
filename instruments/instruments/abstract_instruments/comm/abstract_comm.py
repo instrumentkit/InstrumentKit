@@ -113,6 +113,22 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
     # ABSTRACT METHODS #
 
     @abc.abstractmethod
+    def read_raw(self, size):
+        pass
+
+    @abc.abstractmethod
+    def read(self, size, encoding):
+        pass
+
+    @abc.abstractmethod
+    def write_raw(self, msg):
+        pass
+
+    @abc.abstractmethod
+    def write(self, msg, encoding):
+        pass
+
+    @abc.abstractmethod
     def _sendcmd(self, msg):
         """
         Sends a message to the connected device, handling all proper
