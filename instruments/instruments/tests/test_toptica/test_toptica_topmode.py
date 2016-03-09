@@ -87,8 +87,7 @@ def test_laser_enable():
         [
             "(param-ref 'laser1:emission)",
             "#f",
-            ">",
-            "(param-set! 'laser1:enable-emission #t)",
+            ">(param-set! 'laser1:enable-emission #t)>",
             ">"
         ],
         sep="\n"
@@ -236,14 +235,10 @@ def test_laser_correction():
         ],
         [
             "(param-ref 'laser1:charm:correction-status)",
-            "0",
-            ">",
-            "(exec 'laser1:charm:start-correction-initial)",
-            ">",
-            "(param-ref 'laser1:charm:correction-status)",
+            "0\n>(exec 'laser1:charm:start-correction-initial)",
+            ">(param-ref 'laser1:charm:correction-status)",
             "1",
-            ">",
-            "(exec 'laser1:charm:start-correction)",
+            ">(exec 'laser1:charm:start-correction)",
             ">"
         ],
         sep="\n"
@@ -397,15 +392,11 @@ def test_enable():
     with expected_protocol(
         ik.toptica.TopMode,
         [
-            "(param-ref 'emission)",
-            "(param-set! 'enable-emission #f)"
+            "(param-ref 'emission)", "(param-set! 'enable-emission #f)"
         ],
         [
             "(param-ref 'emission)",
-            "#f",
-            ">",
-            "(param-set! 'enable-emission #f)",
-            ">"
+            "#f", ">(param-set! 'enable-emission #f)\n", ">"
         ],
         sep="\n"
     ) as tm:
