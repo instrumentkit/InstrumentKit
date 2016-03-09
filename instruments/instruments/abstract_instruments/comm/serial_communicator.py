@@ -73,10 +73,11 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
-        newval = str(newval)
-        if len(newval) > 1:
-            raise ValueError("Terminator for SerialCommunicator must only be 1 "
-                             "character long.")
+        if isinstance(newval, bytes):
+            newval = newval.decode("utf-8")
+        if not isinstance(newval, str) or len(newval) > 1:
+            raise TypeError("Terminator for serial communicator must be "
+                            "specified as a single character string.")
         self._terminator = newval
 
     @property
@@ -112,7 +113,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
 
         :param int size: Number of characters to read. Default value of -1
             will read until termination character is found.
-        :param str encoding: The encoding with which the bytes read in will
+        :param str encoding: The encoding with which the read in bytes will
             be decoded with.
         :rtype: `str`
         """

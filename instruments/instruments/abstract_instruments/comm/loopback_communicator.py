@@ -65,10 +65,11 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
-        newval = str(newval)
-        if len(newval) > 1:
-            raise ValueError("Terminator for LoopbackCommunicator must only be "
-                             "1 character long.")
+        if isinstance(newval, bytes):
+            newval = newval.decode("utf-8")
+        if not isinstance(newval, str) or len(newval) > 1:
+            raise TypeError("Terminator for loopback communicator must be "
+                            "specified as a single character string.")
         self._terminator = newval
 
     @property
