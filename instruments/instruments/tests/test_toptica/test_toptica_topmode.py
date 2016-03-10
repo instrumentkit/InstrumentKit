@@ -27,8 +27,7 @@ def test_serial_number():
         [
             "(param-ref 'laser1:serial-number)",
             "bloop1",
-            ">",
-            "(param-ref 'laser2:serial-number)",
+            ">(param-ref 'laser2:serial-number)",
             "bloop2",
             ">"
         ],
@@ -48,8 +47,7 @@ def test_model():
         [
             "(param-ref 'laser1:model)",
             "bloop1",
-            ">",
-            "(param-ref 'laser2:model)",
+            ">(param-ref 'laser2:model)",
             "bloop2",
             ">"
         ],
@@ -69,8 +67,7 @@ def test_wavelength():
         [
             "(param-ref 'laser1:wavelength)",
             "640",
-            ">",
-            "(param-ref 'laser2:wavelength)",
+            ">(param-ref 'laser2:wavelength)",
             "405.3",
             ">"
         ],
@@ -90,7 +87,7 @@ def test_laser_enable():
         [
             "(param-ref 'laser1:emission)",
             "#f",
-            ">(param-set! 'laser1:enable-emission #t)>",
+            ">(param-set! 'laser1:enable-emission #t)",
             ">"
         ],
         sep="\n"
@@ -396,11 +393,14 @@ def test_enable():
     with expected_protocol(
         ik.toptica.TopMode,
         [
-            "(param-ref 'emission)", "(param-set! 'enable-emission #f)"
+            "(param-ref 'emission)",
+            "(param-set! 'enable-emission #f)"
         ],
         [
             "(param-ref 'emission)",
-            "#f", ">(param-set! 'enable-emission #f)\n", ">"
+            "#f",
+            ">(param-set! 'enable-emission #f)",
+            ">"
         ],
         sep="\n"
     ) as tm:

@@ -52,6 +52,7 @@ class TopMode(Instrument):
 
     def return_prompt_msg(self, msg=""):
         return self.prompt+" "+msg
+
     # ENUMS #
 
     class CharmStatus(IntEnum):
@@ -303,7 +304,7 @@ class TopMode(Instrument):
                 "(param-set! '{} '({}))".format(param, " ".join(value)))
         elif isinstance(value, bool):
             value = "t" if value else "f"
-            response = self.query("(param-set! '{} #{})".format(param, value))
+            self.sendcmd("(param-set! '{} #{})".format(param, value))
 
     def reference(self, param):
         """
