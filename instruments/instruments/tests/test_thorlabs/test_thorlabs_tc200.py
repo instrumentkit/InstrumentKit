@@ -74,10 +74,10 @@ def test_tc200_mode_error2():
         [],
         sep="\r"
     ) as tc:
-        class Blo(IntEnum):
+        class TestEnum(IntEnum):
             blo = 1
             beep = 2
-        tc.mode = Blo.blo
+        tc.mode = TestEnum.blo
 
 
 def test_tc200_enable():
@@ -420,10 +420,10 @@ def test_tc200_sensor_error2():
         [],
         []
     ) as tc:
-        class Blo(IntEnum):
+        class TestEnum(IntEnum):
             blo = 1
             beep = 2
-        tc.sensor = Blo.blo
+        tc.sensor = TestEnum.blo
 
 
 def test_tc200_beta():

@@ -13,39 +13,16 @@ from __future__ import division
 from builtins import range
 
 import quantities as pq
-from enum import IntEnum, Enum
+from enum import Enum
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
-from instruments.util_fns import ProxyList, assume_units, split_unit_str, \
-    bool_property, enum_property
+from instruments.util_fns import (
+    ProxyList, assume_units, split_unit_str, bool_property, enum_property
+)
 
 # CLASSES #####################################################################
 
 
-def qubitekk_check_unknown(response):
-    """
-    Check whether the command was understood by the CC1
-    :param response: the string received from the device
-    :type response: str
-    :return: True if the command was understood
-    """
-    if "Unknown command" == response.strip():
-        return False
-    else:
-        return True
-
-
-class TriggerModeInt(Enum):
-    continuous = "0"
-    start_stop = "1"
-
-
-class TriggerMode(Enum):
-    continuous = "MODE CONT"
-    start_stop = "MODE STOP"
-
-
-# CLASSES #####################################################################
 class CC1(SCPIInstrument):
 
     """
@@ -61,10 +38,8 @@ class CC1(SCPIInstrument):
     http://www.qubitekk.com
     """
 
-
     _sep = ":"
     _bool = ("ON", "OFF")
-    _trig_bool = TriggerMode
 
     def __init__(self, filelike):
         super(CC1, self).__init__(filelike)
@@ -72,13 +47,36 @@ class CC1(SCPIInstrument):
         self._channel_count = 3
         self._firmware = None
 
-    # INNER CLASSES #
-    gate = bool_property("GATE", inst_true=_bool[0], inst_false=_bool[1],
-                             set_fmt=":{}"+_sep+"{}")
-    subtract = bool_property("SUBT", inst_true=_bool[0], inst_false=_bool[1],
-                                 set_fmt=":{}"+_sep+"{}")
-    trigger = enum_property("TRIG", enum=_trig_bool,
-                                set_fmt=":{}"+_sep+"{}")
+    # ENUMS #
+
+    class TriggerMode(Enum):
+        """
+        Enum containing valid trigger modes for the CC1
+        """
+        continuous = "MODE CONT"
+        start_stop = "MODE STOP"
+
+    # PROPERTIES #
+
+    gate = bool_property(
+        "GATE",
+        inst_true=_bool[0],
+        inst_false=_bool[1],
+        set_fmt=":{}"+_sep+"{}"
+    )
+
+    subtract = bool_property(
+        "SUBT",
+        inst_true=_bool[0],
+        inst_false=_bool[1],
+        set_fmt=":{}"+_sep+"{}"
+    )
+
+    trigger = enum_property(
+        "TRIG",
+        enum=TriggerMode,
+        set_fmt=":{}"+_sep+"{}"
+    )
 
     # INNER CLASSES #
 
@@ -121,16 +119,14 @@ class CC1(SCPIInstrument):
                 while count is None:
                     # try to read again
                     try:
-                        count = int(self._file.read(-1))
+                        count = int(self._cc1.read(-1))
                     except ValueError:
                         count = None
             self._count = count
             return self._count
 
-    # METHOD OVERRIDES #
-
-
     # PROPERTIES #
+
     @property
     def window(self):
         """
@@ -198,6 +194,11 @@ class CC1(SCPIInstrument):
 
     @property
     def firmware(self):
+        """
+        Gets the firmware version
+
+        :rtype: `str`
+        """
         # the firmware is assumed not to change while the device is active
         # firmware is stored locally as it will be gotten often
         if self._firmware is None:
@@ -206,8 +207,6 @@ class CC1(SCPIInstrument):
                 if self._firmware.find("Unknown") >= 0:
                     self._firmware = None
         return self._firmware
-
-
 
     @property
     def channel(self):
@@ -239,13 +238,37 @@ class CC1v2001(CC1):
     """
     _sep = " "
     _bool = ("1", "0")
-    _trig_bool = TriggerModeInt
 
     def __init__(self, filelike):
         super(CC1v2001, self).__init__(filelike)
 
-    gate = bool_property("GATE", inst_true=_bool[0], inst_false=_bool[1],
-                             set_fmt=":{}"+_sep+"{}")
-    subtract = bool_property("SUBT", inst_true=_bool[0], inst_false=_bool[1],
-                                 set_fmt=":{}"+_sep+"{}")
-    trigger = enum_property("TRIG", enum=_trig_bool, set_fmt=":{}"+_sep+"{}")
+    # ENUMS #
+
+    class TriggerMode(Enum):
+        """
+        Enum containing valid trigger modes for the CC1
+        """
+        continuous = "0"
+        start_stop = "1"
+
+    # PROPERTIES #
+
+    gate = bool_property(
+        "GATE",
+        inst_true=_bool[0],
+        inst_false=_bool[1],
+        set_fmt=":{}"+_sep+"{}"
+    )
+
+    subtract = bool_property(
+        "SUBT",
+        inst_true=_bool[0],
+        inst_false=_bool[1],
+        set_fmt=":{}"+_sep+"{}"
+    )
+
+    trigger = enum_property(
+        "TRIG",
+        enum=TriggerMode,
+        set_fmt=":{}"+_sep+"{}"
+    )

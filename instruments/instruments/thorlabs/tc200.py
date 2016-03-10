@@ -90,13 +90,14 @@ class TC200(Instrument):
             raise TypeError("Mode setting must be a `TC200.Mode` value, "
                             "got {} instead.".format(type(newval)))
         out_query = "mode={}".format(newval.name)
-        # there is an issue with the TC200; it responds with a spurious Command Error on mode=normal.
-        # thus, the sendcmd() method cannot be used.
+        # there is an issue with the TC200; it responds with a spurious
+        # Command Error on mode=normal. Thus, the sendcmd() method cannot
+        # be used.
         if newval == TC200.Mode.normal:
 
             self._file.query(out_query).strip()
-            response1 = self.read(-1)
-            response2 = self.read(len(self.prompt))
+            _ = self.read(-1)
+            _ = self.read(len(self.prompt))
         else:
             self.sendcmd(out_query)
 
@@ -121,8 +122,9 @@ class TC200(Instrument):
         # when it should be on and it is off, and when it is off and
         # should be on
 
-        # if no sensor is attached, the unit will respond with an error. There is no current error handling in the way
-        # that thorlabs responds with errors
+        # if no sensor is attached, the unit will respond with an error.
+        # There is no current error handling in the way that thorlabs
+        # responds with errors
         if newval and not self.enable:
             response1 = self._file.query("ens")
             while response1 != ">":
@@ -135,7 +137,12 @@ class TC200(Instrument):
 
     @property
     def status(self):
-        ack = self._file.query(str("stat?"))
+        """
+        Gets the the status code of the TC200
+
+        :rtype: `int`
+        """
+        _ = self._file.query(str("stat?"))
         response = self.read(4)
         return int(response.split(" ")[0])
 

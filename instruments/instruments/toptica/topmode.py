@@ -34,7 +34,6 @@ class TopMode(Instrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
     >>> tm = ik.toptica.TopMode.open_serial('/dev/ttyUSB0', 115200)
     >>> print(tm.laser[0].wavelength)
     """
@@ -44,13 +43,13 @@ class TopMode(Instrument):
         self.prompt = ">"
         self.terminator = "\n"
 
-    def return_msg(self, msg=""):
+    def _return_msg(self, msg=""): # pylint: disable=no-self-use
         return msg
 
-    def return_none(self, msg=""):
+    def _return_none(self, _):  # pylint: disable=no-self-use
         return None
 
-    def return_prompt_msg(self, msg=""):
+    def _return_prompt_msg(self, msg=""):
         return self.prompt+" "+msg
 
     # ENUMS #
@@ -280,7 +279,7 @@ class TopMode(Instrument):
 
         :param str command: The command to be executed.
         """
-        self._ack_expected = self.return_msg
+        self._ack_expected = self._return_msg
         self.prompt = ">"
         self.sendcmd("(exec '" + command + ")")
 
@@ -294,7 +293,7 @@ class TopMode(Instrument):
         :param value: Value that the parameter will be set to
         :type value: `str`, `tuple`, `list`, or `bool`
         """
-        self._ack_expected = self.return_msg
+        self._ack_expected = self._return_msg
         self.prompt = ">"
 
         if isinstance(value, str):
@@ -316,7 +315,7 @@ class TopMode(Instrument):
         :rtype: `str`
         """
         self.prompt = ">"
-        self._ack_expected = self.return_msg
+        self._ack_expected = self._return_msg
         return self.query("(param-ref '{})".format(param))
 
     def display(self, param):
@@ -327,7 +326,7 @@ class TopMode(Instrument):
         :return: Response to the display request
         """
         self.prompt = ">"
-        self._ack_expected = self.return_msg
+        self._ack_expected = self._return_msg
         return self.query("(param-disp '{})".format(param))
 
     # PROPERTIES #

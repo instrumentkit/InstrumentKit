@@ -12,7 +12,7 @@ from nose.tools import raises
 import quantities as pq
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.tests import expected_protocol, unit_eq
 
 # TESTS ######################################################################
 
@@ -256,7 +256,7 @@ def test_cc1_subtract_error():
         cc.subtract = "blo"
 
 
-def test_cc1_trigger():
+def test_cc1_trigger():  # pylint: disable=redefined-variable-type
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -271,9 +271,9 @@ def test_cc1_trigger():
         ],
         sep="\n"
     ) as cc:
-        assert cc.trigger is ik.qubitekk.TriggerMode.start_stop
-        cc.trigger = ik.qubitekk.TriggerMode.continuous
-        cc.trigger = ik.qubitekk.TriggerMode.start_stop
+        assert cc.trigger is cc.TriggerMode.start_stop
+        cc.trigger = cc.TriggerMode.continuous
+        cc.trigger = cc.TriggerMode.start_stop
 
 
 @raises(ValueError)
