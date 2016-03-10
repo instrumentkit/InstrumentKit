@@ -1,58 +1,28 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# instrument.py: Provides base class for all instruments.
-#
-# © 2013-2016 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-#
+"""
+Provides the base Instrument class for all instruments.
+"""
 
 # IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
 
-import socket
+import os
+import collections
 import urlparse
 
-from instruments.abstract_instruments.comm import (
-    SocketCommunicator,
-    USBCommunicator,
-    VisaCommunicator,
-    FileCommunicator,
-    LoopbackCommunicator,
-    GPIBCommunicator,
-    AbstractCommunicator,
-    USBTMCCommunicator,
-    serial_manager
-)
-from instruments.errors import AcknowledgementError, PromptError
+import socket
+import numpy as np
 
-import os
-
+# pylint: disable=wrong-import-position
 try:
     import usb
     import usb.core
     import usb.util
 except ImportError:
     usb = None
-
 try:
     WindowsError
 except NameError:
@@ -62,17 +32,20 @@ try:
 except (ImportError, WindowsError, OSError):
     visa = None
 
-import numpy as np
-
-import collections
+from instruments.abstract_instruments.comm import (
+    SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
+    LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,
+    USBTMCCommunicator, serial_manager
+)
+from instruments.errors import AcknowledgementError, PromptError
 
 # CONSTANTS ###################################################################
 
-_DEFAULT_FORMATS = collections.defaultdict(lambda: '>b')
+_DEFAULT_FORMATS = collections.defaultdict(lambda: ">b")
 _DEFAULT_FORMATS.update({
-    1: '>b',
-    2: '>h',
-    4: '>i'
+    1: ">b",
+    2: ">h",
+    4: ">i"
 })
 
 # CLASSES #####################################################################
@@ -80,20 +53,31 @@ _DEFAULT_FORMATS.update({
 
 class Instrument(object):
 
+    """
+    This is the base instrument class from which all others are derived from.
+    It provides the basic implementation for all communication related
+    tasks. In addition, it also contains several class methods for opening
+    connections via the supported hardware channels.
+    """
+
     def __init__(self, filelike):
         # Check to make sure filelike is a subclass of AbstractCommunicator
         if isinstance(filelike, AbstractCommunicator):
             self._file = filelike
         else:
-            raise TypeError('Instrument must be initialized with a filelike '
-                            'object that is a subclass of '
-                            'AbstractCommunicator.')
+            raise TypeError("Instrument must be initialized with a filelike "
+                            "object that is a subclass of "
+                            "AbstractCommunicator.")
+        # Record if we're using the Loopback Communicator and put class in
+        # testing mode so we can disable sleeps in class implementations
+        self._testing = isinstance(self._file, LoopbackCommunicator)
+
         self._prompt = None
         self._terminator = "\n"
 
     # COMMAND-HANDLING METHODS #
 
-    def _ack_expected(self, msg=""):
+    def _ack_expected(self, msg=""):  # pylint: disable=unused-argument,no-self-use
         return None
 
     def sendcmd(self, cmd):
@@ -109,15 +93,15 @@ class Instrument(object):
             ack = self.read().strip()
             if ack != ack_expected:
                 raise AcknowledgementError(
-                        "Incorrect ACK message received: got {} "
-                        "expected {}".format(ack, ack_expected)
+                    "Incorrect ACK message received: got {} "
+                    "expected {}".format(ack, ack_expected)
                 )
         if self.prompt is not None:
             prompt = self.read(len(self.prompt)).strip()
             if prompt != self.prompt:
                 raise PromptError(
-                        "Incorrect prompt message received: got {} "
-                        "expected {}".format(prompt, self.prompt)
+                    "Incorrect prompt message received: got {} "
+                    "expected {}".format(prompt, self.prompt)
                 )
 
     def query(self, cmd, size=-1):
@@ -138,8 +122,8 @@ class Instrument(object):
             ack = self._file.query(cmd).strip()
             if ack != ack_expected:
                 raise AcknowledgementError(
-                        "Incorrect ACK message received: got {} "
-                        "expected {}".format(ack, ack_expected)
+                    "Incorrect ACK message received: got {} "
+                    "expected {}".format(ack, ack_expected)
                 )
 
             value = self.read(size).strip()
@@ -150,8 +134,8 @@ class Instrument(object):
             prompt = self.read(len(self.prompt)).strip()
             if prompt is not self.prompt:
                 raise PromptError(
-                        "Incorrect prompt message received: got {} "
-                        "expected {}".format(prompt, self.prompt)
+                    "Incorrect prompt message received: got {} "
+                    "expected {}".format(prompt, self.prompt)
                 )
         return value
 
@@ -166,15 +150,6 @@ class Instrument(object):
         :rtype: `str`
         """
         return self._file.read(size)
-
-    def readline(self):
-        """
-        Read a full line
-
-        :return: the read line
-        :rtype: `str`
-        """
-        return self._file.readline()
 
     # PROPERTIES #
 
@@ -288,9 +263,9 @@ class Instrument(object):
         """
         # This needs to be a # symbol for valid binary block
         symbol = self._file.read(1)
-        if symbol != '#':  # Check to make sure block is valid
-            raise IOError('Not a valid binary block start. Binary blocks '
-                          'require the first character to be #.')
+        if symbol != "#":  # Check to make sure block is valid
+            raise IOError("Not a valid binary block start. Binary blocks "
+                          "require the first character to be #.")
         else:
             # Read in the num of digits for next part
             digits = int(self._file.read(1))
@@ -308,8 +283,8 @@ class Instrument(object):
 
     # CLASS METHODS #
 
-    URI_SCHEMES = ['serial', 'tcpip', 'gpib+usb',
-                   'gpib+serial', 'visa', 'file', 'usbtmc']
+    URI_SCHEMES = ["serial", "tcpip", "gpib+usb",
+                   "gpib+serial", "visa", "file", "usbtmc"]
 
     @classmethod
     def open_from_uri(cls, uri):
@@ -369,9 +344,9 @@ class Instrument(object):
             # that the default is set correctly and that the type is `int`,
             # as expected.
             if "baud" in kwargs:
-                kwargs['baud'] = int(kwargs['baud'][0])
+                kwargs["baud"] = int(kwargs["baud"][0])
             else:
-                kwargs['baud'] = 115200
+                kwargs["baud"] = 115200
 
             return cls.open_serial(
                 dev_name,
@@ -403,7 +378,7 @@ class Instrument(object):
             # TODO: check for other kinds of usbtmc URLs.
             # Ex: usbtmc can take URIs exactly like visa://.
             return cls.open_visa(parsed_uri.netloc, **kwargs)
-        elif parsed_uri.scheme == 'file':
+        elif parsed_uri.scheme == "file":
             return cls.open_file(os.path.join(
                 parsed_uri.netloc,
                 parsed_uri.path
@@ -497,6 +472,11 @@ class Instrument(object):
 
     @classmethod
     def open_gpibethernet(cls, host, port, gpib_address):
+        """
+        .. warning:: The GPIB-Ethernet adapter that this connection would
+            use does not actually exist, and thus this class method should
+            not be used.
+        """
         conn = socket.socket()
         conn.connect((host, port))
         return cls(GPIBCommunicator(conn, gpib_address))
@@ -523,7 +503,7 @@ class Instrument(object):
         if visa is None:
             raise ImportError("PyVISA is required for loading VISA "
                               "instruments.")
-        if int(visa.__version__.replace('.', '')) >= 160:
+        if int(visa.__version__.replace(".", "")) >= 160:
             ins = visa.ResourceManager().open_resource(resource_name)
         else:
             ins = visa.instrument(resource_name)
@@ -531,11 +511,38 @@ class Instrument(object):
 
     @classmethod
     def open_test(cls, stdin=None, stdout=None):
+        """
+        Opens an instrument using a loopback communicator for a test
+        connection. The primary use case of this is to instantiate a specific
+        instrument class without requiring an actual physical connection
+        of any kind. This is also very useful for creating unit tests through
+        the parameters of this class method.
+
+        :param stdin: The stream of data coming from the instrument
+        :type stdin: `io.BytesIO` or `None`
+        :param stdout: Empty data stream that will hold data sent from the
+            Python class to the loopback communicator. This can then be checked
+            for the contents.
+        :type stdout: `io.BytesIO` or `None`
+        :return: Object representing the virtually-connected instrument
+        """
         return cls(LoopbackCommunicator(stdin, stdout))
 
     @classmethod
     def open_usbtmc(cls, *args, **kwargs):
-        # TODO: docstring
+        """
+        Opens an instrument, connecting to a USB-TMC device using the Python
+        `usbtmc` library.
+
+        .. warning:: The operational status of this is unknown. It is suggested
+            that you connect via the other provided class methods. For Linux,
+            if you have the ``usbtmc`` kernel module, the
+            `~instruments.Instrument.open_file` class method will work. On
+            Windows, using the `~instruments.Instrument.open_visa` class
+            method along with having the VISA libraries installed will work.
+
+        :return: Object representing the connected instrument
+        """
         usbtmc_comm = USBTMCCommunicator(*args, **kwargs)
         return cls(usbtmc_comm)
 
@@ -585,8 +592,8 @@ class Instrument(object):
         ep = usb.util.find_descriptor(
             intf,
             custom_match=lambda e:
-                usb.util.endpoint_direction(e.bEndpointAddress) ==
-                usb.util.ENDPOINT_OUT
+            usb.util.endpoint_direction(e.bEndpointAddress) ==
+            usb.util.ENDPOINT_OUT
         )
         if ep is None:
             raise IOError("USB descriptor not found.")

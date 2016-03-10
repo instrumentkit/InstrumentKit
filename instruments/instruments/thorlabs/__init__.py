@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Module containing Thorlabs instruments
+"""
 
 from __future__ import absolute_import
 
-from instruments.thorlabs.thorlabsapt import (
+from .thorlabsapt import (
     ThorLabsAPT, APTPiezoStage, APTStrainGaugeReader, APTMotorController
 )
-from instruments.thorlabs.pm100usb import PM100USB
-from instruments.thorlabs.lcc25 import LCC25
-from instruments.thorlabs.sc10 import SC10
-from instruments.thorlabs.tc200 import TC200
+from .pm100usb import PM100USB
+from .lcc25 import LCC25
+from .sc10 import SC10
+from .tc200 import TC200

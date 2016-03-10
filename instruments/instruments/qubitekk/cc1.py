@@ -1,28 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-##
-# cc1.py: Class for the Qubitekk Coincidence Counter instrument
-##
-# © 2014 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-##
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
-# CC1 Class contributed by Catherine Holloway.
-##
+"""
+Provides support for the Qubitekk CC1 Coincidence Counter instrument.
+
+CC1 Class originally contributed by Catherine Holloway.
+"""
 
 # IMPORTS #####################################################################
 
@@ -36,6 +18,8 @@ from enum import IntEnum, Enum
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.util_fns import ProxyList, assume_units, split_unit_str, \
     bool_property, enum_property
+
+# CLASSES #####################################################################
 
 
 def qubitekk_check_unknown(response):
@@ -63,18 +47,20 @@ class TriggerMode(Enum):
 
 # CLASSES #####################################################################
 class CC1(SCPIInstrument):
+
     """
     The CC1 is a hand-held coincidence counter.
-    
-    It has two setting values, the dwell time and the coincidence window. The 
-    coincidence window determines the amount of time (in ns) that the two 
-    detections may be from each other and still be considered a coincidence. 
-    The dwell time is the amount of time that passes before the counter will 
+
+    It has two setting values, the dwell time and the coincidence window. The
+    coincidence window determines the amount of time (in ns) that the two
+    detections may be from each other and still be considered a coincidence.
+    The dwell time is the amount of time that passes before the counter will
     send the clear signal.
-    
+
     More information can be found at :
     http://www.qubitekk.com
     """
+
 
     _sep = ":"
     _bool = ("ON", "OFF")
@@ -83,18 +69,21 @@ class CC1(SCPIInstrument):
     def __init__(self, filelike):
         super(CC1, self).__init__(filelike)
         self.terminator = "\n"
-        self.channel_count = 3
+        self._channel_count = 3
         self._firmware = None
 
+    # INNER CLASSES #
     gate = bool_property("GATE", inst_true=_bool[0], inst_false=_bool[1],
                              set_fmt=":{}"+_sep+"{}")
     subtract = bool_property("SUBT", inst_true=_bool[0], inst_false=_bool[1],
                                  set_fmt=":{}"+_sep+"{}")
     trigger = enum_property("TRIG", enum=_trig_bool,
                                 set_fmt=":{}"+_sep+"{}")
-    # INNER CLASSES ##
+
+    # INNER CLASSES #
 
     class Channel(object):
+
         """
         Class representing a channel on the Qubitekk CC1.
         """
@@ -113,17 +102,18 @@ class CC1(SCPIInstrument):
             self._chan = self.__CHANNEL_NAMES[self._idx]
             self._count = 0
 
-            
-        # PROPERTIES ##
-        
+        # PROPERTIES #
+
         @property
         def count(self):
             """
             Gets the counts of this channel.
-            
+
             :rtype: `int`
             """
             count = self._cc1.query("COUN:{0}?".format(self._chan))
+            # FIXME: Does this property actually work? The try block seems
+            # wrong.
             try:
                 count = int(count)
             except ValueError:
@@ -137,6 +127,7 @@ class CC1(SCPIInstrument):
             self._count = count
             return self._count
 
+    # METHOD OVERRIDES #
 
 
     # PROPERTIES #
@@ -144,7 +135,7 @@ class CC1(SCPIInstrument):
     def window(self):
         """
         Gets/sets the length of the coincidence window between the two signals.
-        
+
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units nanoseconds.
         :type: `~quantities.Quantity`
@@ -183,9 +174,9 @@ class CC1(SCPIInstrument):
     @property
     def dwell_time(self):
         """
-        Gets/sets the length of time before a clear signal is sent to the 
+        Gets/sets the length of time before a clear signal is sent to the
         counters.
-        
+
         :units: As specified (if a `~quantities.Quantity`) or assumed to be
             of units seconds.
         :type: `~quantities.Quantity`
@@ -227,15 +218,14 @@ class CC1(SCPIInstrument):
         For instance, this would print the counts of the first channel::
 
         >>> cc = ik.qubitekk.CC1.open_serial('COM8', 19200, timeout=1)
-        >>> print cc.channel[0].count
+        >>> print(cc.channel[0].count)
 
         :rtype: `CC1.Channel`
         """
-
-        return ProxyList(self, CC1.Channel, range(self.channel_count))
-
+        return ProxyList(self, CC1.Channel, range(self._channel_count))
 
     # METHODS #
+
     def clear_counts(self):
         """
         Clears the current total counts on the counters.

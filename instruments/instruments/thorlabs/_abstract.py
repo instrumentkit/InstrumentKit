@@ -1,26 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-##
-# _packets.py: Module for working with ThorLabs packets.
-##
-# © 2013-2016 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-##
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+"""
+Defines a generic Thorlabs instrument to define some common functionality.
+"""
 
 # IMPORTS #####################################################################
 
@@ -32,20 +14,47 @@ from instruments.abstract_instruments.instrument import Instrument
 
 # CLASSES #####################################################################
 
+
 class ThorLabsInstrument(Instrument):
+
+    """
+    Generic class for ThorLabs instruments which require wrapping of
+    commands and queries in packets.
+    """
 
     def __init__(self, filelike):
         super(ThorLabsInstrument, self).__init__(filelike)
         self.terminator = ''
-    
+
     def sendpacket(self, packet):
+        """
+        Sends a packet to the connected APT instrument, and waits for a packet
+        in response. Optionally, checks whether the received packet type is
+        matches that the caller expects.
+
+        :param packet: The thorlabs data packet that will be queried
+        :type packet: `ThorLabsPacket`
+        """
         self.sendcmd(packet.pack())
-        
+
+    # pylint: disable=protected-access
     def querypacket(self, packet, expect=None):
         """
         Sends a packet to the connected APT instrument, and waits for a packet
         in response. Optionally, checks whether the received packet type is
         matches that the caller expects.
+
+        :param packet: The thorlabs data packet that will be queried
+        :type packet: `ThorLabsPacket`
+
+        :param expect: The expected message id from the response. If an
+            an incorrect id is received then an `IOError` is raised. If left
+            with the default value of `None` then no checking occurs.
+        :type expect: `str` or `None`
+
+        :return: Returns the response back from the instrument wrapped up in
+            a thorlabs packet
+        :rtype: `ThorLabsPacket`
         """
         resp = self.query(packet.pack())
         if not resp:
@@ -63,4 +72,3 @@ class ThorLabsInstrument(Instrument):
                 pkt._message_id, expect
             ))
         return pkt
-      

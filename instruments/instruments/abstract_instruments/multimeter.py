@@ -1,100 +1,103 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-##
-# multimeter.py: Python class for multimeters
-##
-# © 2013 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-##
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
-##
+"""
+Provides an abstract base class for multimeter instruments
+"""
 
-## IMPORTS #####################################################################
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
-from future.utils import with_metaclass
 
 import abc
 
+from future.utils import with_metaclass
+
 from instruments.abstract_instruments import Instrument
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
-    ## PROPERTIES ##
-    
-    def getmode(self):
+    """
+    Abstract base class for multimeter instruments.
+
+    All applicable concrete instruments should inherit from this ABC to
+    provide a consistent interface to the user.
+    """
+
+    # PROPERTIES #
+
+    @property
+    @abc.abstractmethod
+    def mode(self):
         """
-        Read measurement mode the multimeter is currently in.
+        Gets/sets the measurement mode for the multimeter. This is an
+        abstract method.
+
+        :type: `~enum.Enum`
         """
-        raise NotImplementedError
-    def setmode(self, newval):
+        pass
+
+    @mode.setter
+    @abc.abstractmethod
+    def mode(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def trigger_mode(self):
         """
-        Change the mode the multimeter is in.
+        Gets/sets the trigger mode for the multimeter. This is an
+        abstract method.
+
+        :type: `~enum.Enum`
         """
-        raise NotImplementedError
-    mode = abc.abstractproperty(getmode, setmode)
-    
-    def gettrigger_mode(self):
+        pass
+
+    @trigger_mode.setter
+    @abc.abstractmethod
+    def trigger_mode(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def relative(self):
         """
-        Get the current trigger mode the multimeter is set to.
+        Gets/sets the status of relative measuring mode for the multimeter.
+        This is an abstract method.
+
+        :type: `bool`
         """
-        raise NotImplementedError
-    def settrigger_mode(self, newval):
+        pass
+
+    @relative.setter
+    @abc.abstractmethod
+    def relative(self, newval):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def input_range(self):
         """
-        Set the multimeter triggering mode.
+        Gets/sets the current input range setting of the multimeter.
+        This is an abstract method.
+
+        :type: `~quantities.quantity.Quantity` or `~enum.Enum`
         """
-        raise NotImplementedError
-    trigger_mode = abc.abstractproperty(gettrigger_mode, settrigger_mode)
-    
-    def getrelative(self):
-        """
-        Get the status of relative measuring mode (usually on or off).
-        """
-        raise NotImplementedError
-    def setrelative(self, newval):
-        """
-        Set (enable/disable) the relative measuring mode of the multimeter.
-        """
-        raise NotImplementedError
-    relative = abc.abstractproperty(getrelative, setrelative)
-    
-    def getinput_range(self):
-        """
-        Get the current input range setting of the multimeter.
-        """
-        raise NotImplementedError
-    def setinput_range(self, newval):
-        """
-        Set the input range setting of the multimeter.
-        """
-        raise NotImplementedError
-    input_range = abc.abstractproperty(getinput_range, setinput_range)
-    
-    
-    
-    ## METHODS ##
-    
+        pass
+
+    @input_range.setter
+    @abc.abstractmethod
+    def input_range(self, newval):
+        pass
+
+    # METHODS ##
+
     @abc.abstractmethod
     def measure(self, mode):
-        '''
+        """
         Perform a measurement as specified by mode parameter.
-        '''
-        raise NotImplementedError
-        
+        """
+        pass

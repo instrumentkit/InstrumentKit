@@ -1,14 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-##
+#
 # keithley580.py: Driver for the Keithley 580 micro-ohmmeter.
-##
+#
 # © 2013 Willem Dijkstra (wpd@xs4all.nl).
 #   2014 Steven Casagrande (scasagrande@galvant.ca)
 #
 # This file is a part of the InstrumentKit project.
 # Licensed under the AGPL version 3.
-##
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -21,53 +21,70 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
-##
+#
+"""
+Driver for the HP6632b DC power supply
 
-## IMPORTS #####################################################################
+Originally contributed and copyright held by Willem Dijkstra (wpd@xs4all.nl)
+
+An unrestricted license has been provided to the maintainers of the Instrument
+Kit project.
+"""
+
+# IMPORTS #####################################################################
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import range, map
-
 import time
 import struct
+
 from enum import IntEnum
 
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument
 
-## CLASSES #####################################################################
+# CLASSES #####################################################################
+
 
 class Keithley580(Instrument):
-    '''
+
+    """
     The Keithley Model 580 is a 4 1/2 digit resolution autoranging
     micro-ohmmeter with a +- 20,000 count LCD. It is designed for low
     resistance measurement requirements from 10uΩ to 200kΩ.
 
     The device needs some processing time (manual reports 300-500ms) after a
     command has been transmitted.
-    '''
+    """
 
     def __init__(self, filelike):
-        '''
+        """
         Initialise the instrument and remove CRLF line termination
-        '''
+        """
         super(Keithley580, self).__init__(filelike)
-        self.sendcmd('Y:X') # Removes the termination CRLF characters
-                            # from the instruments
+        self.sendcmd('Y:X')  # Removes the termination CRLF characters
 
-    ## ENUMS ##
+    # ENUMS #
 
     class Polarity(IntEnum):
+        """
+        Enum containing valid polarity modes for the Keithley 580
+        """
         positive = 0
         negative = 1
 
     class Drive(IntEnum):
+        """
+        Enum containing valid drive modes for the Keithley 580
+        """
         pulsed = 0
         dc = 1
 
     class TriggerMode(IntEnum):
+        """
+        Enum containing valid trigger modes for the Keithley 580
+        """
         talk_continuous = 0
         talk_one_shot = 1
         get_continuous = 2
@@ -75,7 +92,7 @@ class Keithley580(Instrument):
         trigger_continuous = 4
         trigger_one_shot = 5
 
-    ## PROPERTIES ##
+    # PROPERTIES #
 
     @property
     def polarity(self):
@@ -98,6 +115,7 @@ class Keithley580(Instrument):
         else:
             raise ValueError('Not a valid polarity returned from '
                              'instrument, got {}'.format(value))
+
     @polarity.setter
     def polarity(self, newval):
         if isinstance(newval, str):
@@ -110,7 +128,7 @@ class Keithley580(Instrument):
         self.sendcmd('P{}X'.format(newval.value))
 
     @property
-    def drive(self, func):
+    def drive(self):
         """
         Gets/sets the instrument drive to either pulsed or DC.
 
@@ -124,6 +142,7 @@ class Keithley580(Instrument):
         """
         value = self.parse_status_word(self.get_status_word())['drive']
         return Keithley580.Drive[value]
+
     @drive.setter
     def drive(self, newval):
         if isinstance(newval, str):
@@ -151,6 +170,7 @@ class Keithley580(Instrument):
         :type: `bool`
         """
         return self.parse_status_word(self.get_status_word())['drycircuit']
+
     @dry_circuit_test.setter
     def dry_circuit_test(self, newval):
         if not isinstance(newval, bool):
@@ -167,6 +187,7 @@ class Keithley580(Instrument):
         :type: `bool`
         """
         return self.parse_status_word(self.get_status_word())['operate']
+
     @operate.setter
     def operate(self, newval):
         if not isinstance(newval, bool):
@@ -194,6 +215,7 @@ class Keithley580(Instrument):
         :type: `bool`
         """
         return self.parse_status_word(self.get_status_word())['relative']
+
     @relative.setter
     def relative(self, newval):
         if not isinstance(newval, bool):
@@ -223,9 +245,10 @@ class Keithley580(Instrument):
         :type: `Keithley580.TriggerMode`
         """
         raise NotImplementedError
+
     @trigger_mode.setter
     def trigger_mode(self, newval):
-        if  isinstance(newval, str):
+        if isinstance(newval, str):
             newval = Keithley580.TriggerMode[newval]
         if newval not in Keithley580.TriggerMode:
             raise TypeError('Drive must be specified as a '
@@ -243,6 +266,7 @@ class Keithley580(Instrument):
         """
         value = float(self.parse_status_word(self.get_status_word())['range'])
         return value * pq.ohm
+
     @input_range.setter
     def input_range(self, newval):
         valid = ('auto', 2e-1, 2e0, 2e1, 2e2, 2e3, 2e4, 2e5)
@@ -267,15 +291,15 @@ class Keithley580(Instrument):
                             'or the string "auto", got {}'.format(type(newval)))
         self.sendcmd('R{}X'.format(newval))
 
-    ## METHODS ##
+    # METHODS #
 
     def trigger(self):
-        '''
+        """
         Tell the Keithley 580 to execute all commands that it has received.
 
-        Do note that this is different from the standard SCPI \*TRG command
+        Do note that this is different from the standard SCPI ``*TRG`` command
         (which is not supported by the 580 anyways).
-        '''
+        """
         self.sendcmd('X')
 
     def auto_range(self):
@@ -288,10 +312,19 @@ class Keithley580(Instrument):
         self.sendcmd('R0X')
 
     def set_calibration_value(self, value):
+        """
+        Sets the calibration value. This is not currently implemented.
+
+        :param value: Calibration value to write
+        """
         # self.write('V+n.nnnnE+nn')
         raise NotImplementedError('setCalibrationValue not implemented')
 
     def store_calibration_constants(self):
+        """
+        Instructs the instrument to store the calibration constants. This is
+        not currently implemented.
+        """
         # self.write('L0X')
         raise NotImplementedError('setCalibrationConstants not implemented')
 
@@ -311,7 +344,7 @@ class Keithley580(Instrument):
             time.sleep(1)
             statusword = self.query('')
 
-        if statusword == None:
+        if statusword is None:
             raise IOError('could not retrieve status word')
 
         return statusword[:-1]
@@ -334,24 +367,24 @@ class Keithley580(Instrument):
             raise ValueError('Status word starts with wrong '
                              'prefix: {}'.format(statusword))
 
-        (drive, polarity, drycircuit, operate, rng, \
-         relative, eoi, trigger, sqrondata, sqronerror, \
+        (drive, polarity, drycircuit, operate, rng,
+         relative, eoi, trigger, sqrondata, sqronerror,
          linefreq) = struct.unpack('@8c2s2s2', statusword[3:])
 
-        valid = { 'drive'      : { '0': 'pulsed',
-                                   '1': 'dc' },
-                  'polarity'   : { '0': '+',
-                                   '1': '-' },
-                  'range'      : { '0': 'auto',
-                                   '1': 0.2,
-                                   '2': 2,
-                                   '3': 20,
-                                   '4': 2e2,
-                                   '5': 2e3,
-                                   '6': 2e4,
-                                   '7': 2e5 },
-                  'linefreq'   : { '0': '60Hz',
-                                   '1': '50Hz' }}
+        valid = {'drive': {'0': 'pulsed',
+                           '1': 'dc'},
+                 'polarity': {'0': '+',
+                              '1': '-'},
+                 'range': {'0': 'auto',
+                           '1': 0.2,
+                           '2': 2,
+                           '3': 20,
+                           '4': 2e2,
+                           '5': 2e3,
+                           '6': 2e4,
+                           '7': 2e5},
+                 'linefreq': {'0': '60Hz',
+                              '1': '50Hz'}}
 
         try:
             drive = valid['drive'][drive]
@@ -362,32 +395,33 @@ class Keithley580(Instrument):
             raise RuntimeError('Cannot parse status '
                                'word: {}'.format(statusword))
 
-        return { 'drive': drive,
-                 'polarity': polarity,
-                 'drycircuit': (drycircuit == '1'),
-                 'operate': (operate == '1'),
-                 'range': rng,
-                 'relative': (relative == '1'),
-                 'eoi': eoi,
-                 'trigger': (trigger == '1'),
-                 'sqrondata': sqrondata,
-                 'sqronerror': sqronerror,
-                 'linefreq' : linefreq,
-                 'terminator' : terminator }
+        return {'drive': drive,
+                'polarity': polarity,
+                'drycircuit': (drycircuit == '1'),
+                'operate': (operate == '1'),
+                'range': rng,
+                'relative': (relative == '1'),
+                'eoi': eoi,
+                'trigger': (trigger == '1'),
+                'sqrondata': sqrondata,
+                'sqronerror': sqronerror,
+                'linefreq': linefreq,
+                'terminator': self.terminator}
 
-    def measure(self, mode = None):
+    def measure(self):
         """
         Perform a measurement with the Keithley 580.
 
-        :param mode: This parameter is ignored for the Keithley 580 as the only
-            valid mode is resistance.
+        The usual mode parameter is ignored for the Keithley 580 as the only
+        valid mode is resistance.
 
         :rtype: `~quantities.quantity.Quantity`
         """
         self.trigger()
         return self.parse_measurement(self.query(''))['resistance']
 
-    def parse_measurement(self, measurement):
+    @staticmethod
+    def parse_measurement(measurement):
         """
         Parse the measurement string returned by the instrument.
 
@@ -402,16 +436,16 @@ class Keithley580(Instrument):
         (status, polarity, drycircuit, drive, resistance) = \
             struct.unpack('@4c11s', measurement)
 
-        valid = { 'status'     : { 'S' : 'standby',
-                                   'N' : 'normal',
-                                   'O' : 'overflow',
-                                   'Z' : 'relative' },
-                  'polarity'   : { '+' : '+',
-                                   '-' : '-' },
-                  'drycircuit' : { 'N' : False,
-                                   'D' : True },
-                  'drive'      : { 'P' : 'pulsed',
-                                   'D' : 'dc' }}
+        valid = {'status': {'S': 'standby',
+                            'N': 'normal',
+                            'O': 'overflow',
+                            'Z': 'relative'},
+                 'polarity': {'+': '+',
+                              '-': '-'},
+                 'drycircuit': {'N': False,
+                                'D': True},
+                 'drive': {'P': 'pulsed',
+                           'D': 'dc'}}
         try:
             status = valid['status'][status]
             polarity = valid['polarity'][polarity]
@@ -421,13 +455,13 @@ class Keithley580(Instrument):
         except:
             raise Exception('Cannot parse measurement: {}'.format(measurement))
 
-        return { 'status': status,
-                 'polarity': polarity,
-                 'drycircuit': drycircuit,
-                 'drive': drive,
-                 'resistance': resistance }
+        return {'status': status,
+                'polarity': polarity,
+                'drycircuit': drycircuit,
+                'drive': drive,
+                'resistance': resistance}
 
-    ## COMMUNICATOR METHODS ##
+    # COMMUNICATOR METHODS #
 
     def sendcmd(self, msg):
         super(Keithley580, self).sendcmd(msg + ':')
