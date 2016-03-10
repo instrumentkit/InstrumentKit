@@ -38,7 +38,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        AbstractCommunicator.__init__(self)
+        super(VisaCommunicator, self).__init__(self)
 
         if visa is None:
             raise ImportError("PyVISA required for accessing VISA instruments.")

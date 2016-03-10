@@ -31,7 +31,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        AbstractCommunicator.__init__(self)
+        super(USBCommunicator, self).__init__(self)
         # TODO: Check to make sure this is a USB connection
         self._conn = conn
         self._terminator = "\n"

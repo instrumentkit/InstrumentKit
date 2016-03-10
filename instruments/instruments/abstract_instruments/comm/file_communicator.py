@@ -40,7 +40,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, filelike):
-        AbstractCommunicator.__init__(self)
+        super(FileCommunicator, self).__init__(self)
         if isinstance(filelike, str):
             filelike = open(filelike, 'br+')
 

@@ -28,7 +28,7 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
 
     # INITIALIZER #
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self._debug = False
 
         # Create a new logger for the module containing the concrete

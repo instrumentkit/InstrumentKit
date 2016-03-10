@@ -31,7 +31,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, *args, **kwargs):
         if usbtmc is None:
             raise ImportError("usbtmc is required for TMC instruments.")
-        AbstractCommunicator.__init__(self)
+        super(USBTMCCommunicator, self).__init__(self)
 
         self._inst = usbtmc.Instrument(*args, **kwargs)
         self._terminator = "\n"  # Use the system default line ending by default.

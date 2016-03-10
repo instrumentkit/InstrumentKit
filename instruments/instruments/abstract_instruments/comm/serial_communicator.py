@@ -32,7 +32,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        AbstractCommunicator.__init__(self)
+        super(SerialCommunicator, self).__init__(self)
 
         if isinstance(conn, serial.Serial):
             self._conn = conn

@@ -35,7 +35,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, filelike, gpib_address):
-        AbstractCommunicator.__init__(self)
+        super(GPIBCommunicator, self).__init__(self)
 
         self._file = filelike
         self._gpib_address = gpib_address

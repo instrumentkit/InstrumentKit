@@ -33,7 +33,8 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        AbstractCommunicator.__init__(self)
+        super(SocketCommunicator, self).__init__(self)
+
         if isinstance(conn, socket.socket):
             self._conn = conn
             self._terminator = "\n"

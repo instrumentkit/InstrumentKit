@@ -32,7 +32,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, stdin=None, stdout=None):
-        AbstractCommunicator.__init__(self)
+        super(LoopbackCommunicator, self).__init__(self)
         self._terminator = "\n"
         self._stdout = stdout
         self._stdin = stdin
