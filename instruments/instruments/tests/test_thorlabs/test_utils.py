@@ -6,6 +6,8 @@ Module containing tests for the Thorlabs util functions
 
 # IMPORTS ####################################################################
 
+from __future__ import absolute_import
+
 import instruments as ik
 
 # TESTS ######################################################################
