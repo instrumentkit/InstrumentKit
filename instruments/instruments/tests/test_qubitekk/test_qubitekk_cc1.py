@@ -12,7 +12,7 @@ from nose.tools import raises
 import quantities as pq
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test
+from instruments.tests import expected_protocol, make_name_test, unit_eq
 
 # TESTS ######################################################################
 
