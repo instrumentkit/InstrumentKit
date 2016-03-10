@@ -151,11 +151,25 @@ def test_cc1_firmware():
             "FIRM?"
         ],
         [
-            "blo"
+            "1.2.3"
         ],
         sep="\n"
     ) as cc:
-        assert cc.firmware == "blo"
+        assert cc.firmware == (1, 2, 3)
+
+
+def test_cc1_firmware_2():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?"
+        ],
+        [
+            "v1"
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.firmware == (1, 0, 0)
 
 
 def test_cc1_gate_new_firmware():

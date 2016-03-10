@@ -10,7 +10,7 @@ CC1 Class originally contributed by Catherine Holloway.
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import range
+from builtins import range, map
 
 import quantities as pq
 from enum import Enum
@@ -180,7 +180,7 @@ class CC1(SCPIInstrument):
         # the older versions of the firmware erroneously report the units of the
         # dwell time as being seconds rather than ms
         dwell_time = pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
-        if self.firmware.find("v2.001") >= 0:
+        if self.firmware[0] >= 2 and self.firmware[1] > 1:
             return dwell_time/1000.0
         else:
             return dwell_time
@@ -197,15 +197,23 @@ class CC1(SCPIInstrument):
         """
         Gets the firmware version
 
-        :rtype: `str`
+        :rtype: `tuple`(Major:`int`, Minor:`int`, Patch`int`)
         """
         # the firmware is assumed not to change while the device is active
         # firmware is stored locally as it will be gotten often
+        # pylint: disable=no-member
         if self._firmware is None:
             while self._firmware is None:
                 self._firmware = self.query("FIRM?")
                 if self._firmware.find("Unknown") >= 0:
                     self._firmware = None
+                else:
+                    value = self._firmware.replace("v", "").split(".")
+                    if len(value) < 3:
+                        for _ in range(3-len(value)):
+                            value.append(0)
+                    value = tuple(map(int, value))
+                    self._firmware = value
         return self._firmware
 
     @property
