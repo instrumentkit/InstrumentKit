@@ -74,8 +74,10 @@ def test_tc200_mode_error2():
         [],
         sep="\r"
     ) as tc:
-        blo = IntEnum("blo", "beep boop bop")
-        tc.mode = blo.beep
+        class Blo(IntEnum):
+            blo = 1
+            beep = 2
+        tc.mode = Blo.blo
 
 
 def test_tc200_enable():
@@ -141,9 +143,9 @@ def test_tc200_temperature_set():
         [
             "tset?",
             "30 C",
-            "> tmax?",
+            ">tmax?",
             "250",
-            "> tset=40.0",
+            ">tset=40.0",
             ">"
         ],
         sep="\r"
@@ -179,7 +181,7 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            "> pgain=2",
+            ">pgain=2",
             ">"
         ],
         sep="\r"
@@ -196,7 +198,7 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            "> igain=0",
+            ">igain=0",
             ">"
         ],
         sep="\r"
@@ -213,7 +215,7 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            "> dgain=220",
+            ">dgain=220",
             ">"
         ],
         sep="\r"
@@ -232,9 +234,9 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            "> pgain=2",
-            "> igain=0",
-            "> dgain=220",
+            ">pgain=2",
+            ">igain=0",
+            ">dgain=220",
             ">"
         ],
         sep="\r"
@@ -392,7 +394,7 @@ def test_tc200_sensor():
         [
             "sns?",
             "Sensor = NTC10K, Beta = 5600",
-            "> sns=ptc100",
+            ">sns=ptc100",
             ">"
         ],
         sep="\r"
@@ -415,11 +417,13 @@ def test_tc200_sensor_error():
 def test_tc200_sensor_error2():
     with expected_protocol(
         ik.thorlabs.TC200,
-            [],
-            []
+        [],
+        []
     ) as tc:
-        blo = IntEnum("blo", "beep boop bop")
-        tc.sensor = blo.beep
+        class Blo(IntEnum):
+            blo = 1
+            beep = 2
+        tc.sensor = Blo.blo
 
 
 def test_tc200_beta():
@@ -432,7 +436,7 @@ def test_tc200_beta():
         [
             "beta?",
             "5600",
-            "> beta=2000",
+            ">beta=2000",
             ">"
         ],
         sep="\r"
@@ -483,7 +487,7 @@ def test_tc200_max_power():
         [
             "pmax?",
             "15.0",
-            "> pmax=12.0",
+            ">pmax=12.0",
             ">"
         ],
         sep="\r"

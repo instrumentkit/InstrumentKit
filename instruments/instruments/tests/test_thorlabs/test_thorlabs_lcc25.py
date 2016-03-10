@@ -44,8 +44,7 @@ def test_lcc25_frequency():
         [
             "freq?",
             "20",
-            ">",
-            "freq=10.0",
+            ">freq=10.0",
             ">"
         ],
         sep="\r"
@@ -96,8 +95,7 @@ def test_lcc25_mode():
         [
             "mode?",
             "2",
-            ">",
-            "mode=1",
+            ">mode=1",
             ">"
         ],
         sep="\r"
@@ -126,8 +124,7 @@ def test_lcc25_enable():
         [
             "enable?",
             "0",
-            ">",
-            "enable=1",
+            ">enable=1",
             ">"
         ],
         sep="\r"
@@ -156,8 +153,7 @@ def test_lcc25_extern():
         [
             "extern?",
             "0",
-            ">",
-            "extern=1",
+            ">extern=1",
             ">"
         ],
         sep="\r"
@@ -186,8 +182,7 @@ def test_lcc25_remote():
         [
             "remote?",
             "0",
-            ">",
-            "remote=1",
+            ">remote=1",
             ">"
         ],
         sep="\r"
@@ -216,8 +211,7 @@ def test_lcc25_voltage1():
         [
             "volt1?",
             "20",
-            ">",
-            "volt1=10.0",
+            ">volt1=10.0",
             ">"
         ],
         sep="\r"
@@ -242,8 +236,7 @@ def test_lcc25_voltage2():
         [
             "volt2?",
             "20",
-            ">",
-            "volt2=10.0",
+            ">volt2=10.0",
             ">"
         ],
         sep="\r"
@@ -262,8 +255,7 @@ def test_lcc25_minvoltage():
         [
             "min?",
             "20",
-            ">",
-            "min=10.0",
+            ">min=10.0",
             ">"
         ],
         sep="\r"
@@ -282,8 +274,7 @@ def test_lcc25_maxvoltage():
         [
             "max?",
             "20",
-            ">",
-            "max=10.0",
+            ">max=10.0",
             ">"
         ],
         sep="\r"
@@ -302,8 +293,7 @@ def test_lcc25_dwell():
         [
             "dwell?",
             "20",
-            ">",
-            "dwell=10",
+            ">dwell=10",
             ">"
         ],
         sep="\r"
@@ -338,8 +328,7 @@ def test_lcc25_increment():
         [
             "increment?",
             "20",
-            ">",
-            "increment=10.0",
+            ">increment=10.0",
             ">"
         ],
         sep="\r"
