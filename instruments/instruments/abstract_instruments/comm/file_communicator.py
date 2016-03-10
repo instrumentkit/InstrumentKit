@@ -8,11 +8,14 @@ Provides a communication layer for an instrument with a file on the filesystem
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import errno
 import io
 import time
 import logging
+
+from builtins import str, bytes
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 
@@ -39,7 +42,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, filelike):
         AbstractCommunicator.__init__(self)
         if isinstance(filelike, str):
-            filelike = open(filelike, 'r+')
+            filelike = open(filelike, 'br+')
 
         self._filelike = filelike
         self._terminator = "\n"
@@ -75,7 +78,12 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
-        self._terminator = str(newval)
+        if isinstance(newval, bytes):
+            newval = newval.decode("utf-8")
+        if not isinstance(newval, str) or len(newval) > 1:
+            raise TypeError("Terminator for socket communicator must be "
+                            "specified as a single character string.")
+        self._terminator = newval
 
     @property
     def timeout(self):
@@ -100,21 +108,56 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         except IOError as e:
             logger.warn("Failed to close file, exception: %s", repr(e))
 
-    def read(self, size):
+    def read(self, size=-1, encoding="utf-8"):
+        """
+        Read bytes in from the file, then decode it to a string using the
+        specified encoding.
+
+        :param int size: The number of bytes to be read in from the file
+        :param str encoding: The encoding with which the read in bytes will
+            be decoded with.
+        :rtype: `str`
+        """
+        return self.read_raw(size).decode(encoding)
+
+    def read_raw(self, size=-1):
         """
         Read bytes in from the file.
 
         :param int size: The number of bytes to be read in from the file
-        :rtype: `str`
+        :rtype: `bytes`
         """
-        msg = self._filelike.read(size)
-        return msg
+        if size >= 0:
+            return self._filelike.read(size)
+        elif size == -1:
+            result = bytes()
+            c = b''
+            while c != self._terminator.encode("utf-8"):
+                c = self._filelike.read(1)
+                if c == b'':
+                    break
+                if c != self._terminator.encode("utf-8"):
+                    result += c
+            return result
+        else:
+            raise ValueError("Must read a positive value of characters.")
 
-    def write(self, msg):
+    def write(self, msg, encoding="utf-8"):
+        """
+        Write a string to the file. The string will be encoded into bytes
+        using the specified encoding scheme.
+
+        :param str msg: String to be written to file
+        :param str encoding: Encoding to apply to ``msg`` to convert it to
+            bytes
+        """
+        self.write_raw(msg.encode(encoding))
+
+    def write_raw(self, msg):
         """
         Write bytes to the file.
 
-        :param str msg: Bytes to be written to file
+        :param bytes msg: Bytes to be written to file
         """
         self._filelike.write(msg)
 

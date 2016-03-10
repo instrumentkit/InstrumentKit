@@ -93,7 +93,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         finally:
             self._conn.close()
 
-    def read(self, size, encoding="utf-8"):
+    def read(self, size=-1, encoding="utf-8"):
         """
         Read bytes in from the socket connection and decode them into a
         string.
@@ -107,7 +107,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         """
         return self.read_raw(size).decode(encoding)
 
-    def read_raw(self, size):
+    def read_raw(self, size=-1):
         """
         Read bytes in from the socket connection.
 
