@@ -465,3 +465,22 @@ def test_lcc25_test_mode():
     ) as lcc:
         lcc.test_mode()
 
+
+@raises(TypeError)
+def test_lcc25_remote_invalid_type():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        [],
+        []
+    ) as lcc:
+        lcc.remote = "blo"
+
+
+@raises(TypeError)
+def test_lcc25_extern_invalid_type():
+    with expected_protocol(
+        ik.thorlabs.LCC25,
+        [],
+        []
+    ) as lcc:
+        lcc.extern = "blo"

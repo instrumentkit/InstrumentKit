@@ -44,12 +44,8 @@ def test_tc200_mode():
         ],
         [
             "stat?",
-            "0",
-            ">",
-            "stat?",
-            "2",
-            ">",
-            "mode=cycle",
+            "0 > stat?",
+            "2 > mode=cycle",
             ">"
         ],
         sep="\r"
@@ -79,7 +75,7 @@ def test_tc200_mode_error2():
         sep="\r"
     ) as tc:
         blo = IntEnum("blo", "beep boop bop")
-        tc.mode = blo.beep  # pylint: disable=no-member
+        tc.mode = blo.beep
 
 
 def test_tc200_enable():
@@ -94,19 +90,10 @@ def test_tc200_enable():
         ],
         [
             "stat?",
-            "54",
-            ">",
-
-            "stat?",
-            "54",
-            ">",
-            "ens",
-            ">",
-
-            "stat?",
-            "55",
-            ">",
-            "ens",
+            "54 > stat?",
+            "54 > ens",
+            "> stat?",
+            "55 > ens",
             ">"
         ],
         sep="\r"
@@ -154,11 +141,9 @@ def test_tc200_temperature_set():
         [
             "tset?",
             "30 C",
-            ">",
-            "tmax?",
+            "> tmax?",
             "250",
-            ">",
-            "tset=40.0",
+            "> tset=40.0",
             ">"
         ],
         sep="\r"
@@ -194,8 +179,7 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            ">",
-            "pgain=2",
+            "> pgain=2",
             ">"
         ],
         sep="\r"
@@ -212,8 +196,7 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            ">",
-            "igain=0",
+            "> igain=0",
             ">"
         ],
         sep="\r"
@@ -230,8 +213,7 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            ">",
-            "dgain=220",
+            "> dgain=220",
             ">"
         ],
         sep="\r"
@@ -250,12 +232,9 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            ">",
-            "pgain=2",
-            ">",
-            "igain=0",
-            ">",
-            "dgain=220",
+            "> pgain=2",
+            "> igain=0",
+            "> dgain=220",
             ">"
         ],
         sep="\r"
@@ -373,19 +352,11 @@ def test_tc200_degrees():
         ],
         [
             "stat?",
-            "44",
-            ">",
-            "stat?",
-            "54",
-            ">",
-            "stat?",
-            "0",
-            ">",
-            "unit=c",
-            ">",
-            "unit=f",
-            ">",
-            "unit=k",
+            "44 > stat?",
+            "54 > stat?",
+            "0 > unit=c",
+            ">unit=f",
+            ">unit=k",
             ">"
         ],
         sep="\r"
@@ -421,8 +392,7 @@ def test_tc200_sensor():
         [
             "sns?",
             "Sensor = NTC10K, Beta = 5600",
-            ">",
-            "sns=ptc100",
+            "> sns=ptc100",
             ">"
         ],
         sep="\r"
@@ -445,11 +415,11 @@ def test_tc200_sensor_error():
 def test_tc200_sensor_error2():
     with expected_protocol(
         ik.thorlabs.TC200,
-        [],
-        []
+            [],
+            []
     ) as tc:
         blo = IntEnum("blo", "beep boop bop")
-        tc.sensor = blo.beep  # pylint: disable=no-member
+        tc.sensor = blo.beep
 
 
 def test_tc200_beta():
@@ -462,8 +432,7 @@ def test_tc200_beta():
         [
             "beta?",
             "5600",
-            ">",
-            "beta=2000",
+            "> beta=2000",
             ">"
         ],
         sep="\r"
@@ -514,8 +483,7 @@ def test_tc200_max_power():
         [
             "pmax?",
             "15.0",
-            ">",
-            "pmax=12.0",
+            "> pmax=12.0",
             ">"
         ],
         sep="\r"
@@ -566,8 +534,7 @@ def test_tc200_max_temperature():
         [
             "tmax?",
             "200.0",
-            ">",
-            "tmax=180.0",
+            ">tmax=180.0",
             ">"
         ],
         sep="\r"
