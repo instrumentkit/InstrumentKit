@@ -106,19 +106,6 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
         finally:
             self._conn.close()
 
-    def read(self, size=-1, encoding="utf-8"):
-        """
-        Reads bytes in from the serial port and then decodes it into a `str`
-        using the specified encoding.
-
-        :param int size: Number of characters to read. Default value of -1
-            will read until termination character is found.
-        :param str encoding: The encoding with which the read in bytes will
-            be decoded with.
-        :rtype: `str`
-        """
-        return self.read_raw(size).decode(encoding)
-
     def read_raw(self, size=-1):
         """
         Read bytes in from the serial port.
@@ -139,16 +126,6 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
             return result
         else:
             raise ValueError("Must read a positive value of characters.")
-
-    def write(self, msg, encoding="utf-8"):
-        """
-        Write a string to the `pyserial.Serial` object.
-
-        :param str msg: String to be written to the serial port
-        :param str encoding: Encoding to apply to ``msg`` to convert it to
-            bytes
-        """
-        self.write_raw(msg.encode(encoding))
 
     def write_raw(self, msg):
         """

@@ -8,6 +8,7 @@ Provides an abstract base class for file-like communication layer classes
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import abc
 import logging
@@ -113,19 +114,26 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
     # ABSTRACT METHODS #
 
     @abc.abstractmethod
-    def read_raw(self, size):
-        pass
+    def read_raw(self, size=-1):
+        """
+        Read bytes in from the connection.
 
-    @abc.abstractmethod
-    def read(self, size, encoding):
+        :param int size: The number of bytes to read in from the
+            connection.
+
+        :return: The read bytes
+        :rtype: `bytes`
+        """
         pass
 
     @abc.abstractmethod
     def write_raw(self, msg):
-        pass
+        """
+        Write bytes to the connection.
 
-    @abc.abstractmethod
-    def write(self, msg, encoding):
+        :param bytes msg: Bytes to be sent to the instrument over the
+            connection.
+        """
         pass
 
     @abc.abstractmethod
@@ -165,6 +173,36 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
         raise NotImplementedError
 
     # CONCRETE METHODS #
+
+    def write(self, msg, encoding="utf-8"):
+        """
+        Write a string to the connection. This string will be converted
+        to `bytes` using the provided encoding method.
+
+        .. seealso:: To send `bytes` in Python 3, see `write_raw`.
+
+        :param str msg: String to be sent to the instrument over the
+            connection.
+        :param str encoding: Encoding to apply on msg to convert the message
+            into bytes
+        """
+        self.write_raw(msg.encode(encoding))
+
+    def read(self, size=-1, encoding="utf-8"):
+        """
+        Read bytes in from the connection, returning a decoded string
+        using the provided encoding method.
+
+        .. seealso:: To read `bytes` in Python 3, see `read_raw`.
+
+        :param int size: The number of bytes to read in from the
+            connection.
+        :param str encoding: Encoding that will be applied to the read bytes
+
+        :return: The read string from the connection
+        :rtype: `str`
+        """
+        return self.read_raw(size).decode(encoding)
 
     def sendcmd(self, msg):
         """

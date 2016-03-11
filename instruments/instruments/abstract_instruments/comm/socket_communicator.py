@@ -94,20 +94,6 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         finally:
             self._conn.close()
 
-    def read(self, size=-1, encoding="utf-8"):
-        """
-        Read bytes in from the socket connection and decode them into a
-        string.
-
-        :param int size: The number of bytes to read in from the socket
-            connection.
-        :param str encoding: The encoding with which the read in bytes will
-            be decoded with.
-        :return: The read bytes
-        :rtype: `str`
-        """
-        return self.read_raw(size).decode(encoding)
-
     def read_raw(self, size=-1):
         """
         Read bytes in from the socket connection.
@@ -129,18 +115,6 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
             return result
         else:
             raise ValueError("Must read a positive value of characters.")
-
-    def write(self, msg, encoding="utf-8"):
-        """
-        Write a string to the `socket.socket` connection object. This message
-        will be encoded into `bytes` before being sent.
-
-        :param str msg: String to be sent to the instrument over the socket
-            connection.
-        :param str encoding: Encoding to apply to ``msg`` to convert it to
-            bytes
-        """
-        self.write(msg.encode(encoding))
 
     def write_raw(self, msg):
         """

@@ -238,10 +238,19 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         """
         self._file.close()
 
-    def read_raw(self, size):
+    def read_raw(self, size=-1):
+        """
+        Read bytes in from the gpibusb connection.
+
+        :param int size: The number of bytes to read in from the
+            connection.
+
+        :return: The read bytes from the connection
+        :rtype: `bytes`
+        """
         return self._file.read_raw(size)
 
-    def read(self, size, encoding="utf-8"):
+    def read(self, size=-1, encoding="utf-8"):
         """
         Read characters from wrapped class (ie SocketCommunicator or
         SerialCommunicator).
@@ -253,24 +262,29 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         Function will read until a CR is found.
 
         :param int size: Number of bytes to read
+        :param str encoding: Encoding that will be applied to the read bytes
 
         :return: Data read from the GPIB adapter
         :rtype: `str`
         """
-        msg = self._file.read(size, encoding)
-
-        return msg
+        return self._file.read(size, encoding)
 
     def write_raw(self, msg):
+        """
+        Write bytes to the gpibusb connection.
+
+        :param bytes msg: Bytes to be sent to the instrument over the
+            connection.
+        """
         self._file.write_raw(msg)
 
     def write(self, msg, encoding="utf-8"):
         """
         Write data string to GPIB connected instrument.
-        This function sends all the necessary GI-GPIB adapter internal commands
-        that are required for the specified instrument.
 
         :param str msg: String to write to the instrument
+        :param str encoding: Encoding to apply on msg to convert the message
+            into bytes
         """
         self._file.write(msg, encoding)
 

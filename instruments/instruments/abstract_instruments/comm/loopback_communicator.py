@@ -97,19 +97,6 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         except IOError:
             pass
 
-    def read(self, size=-1, encoding="utf-8"):
-        """
-        Gets desired response command from stdin. If ``stdin`` is `None`, then
-        the user will be prompted to enter a mock response in the Python
-        interpreter.
-
-        :param int size: Number of characters to read. Default value of -1
-            will read until termination character is found.
-        :param str encoding: Encoding that will be applied to the read bytes
-        :rtype: `str`
-        """
-        return self.read_raw(size).decode(encoding)
-
     def read_raw(self, size=-1):
         """
         Gets desired response command from stdin. If ``stdin`` is `None`, then
@@ -137,19 +124,6 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         else:
             input_var = input("Desired Response: ")
         return input_var
-
-    def write(self, msg, encoding="utf-8"):
-        """
-        Write message to the loopback communicator's stdout. If ``stdout`` is
-        `None` then it will be simply printed to the Python interpreter
-        console.
-
-        .. seealso:: To send `bytes` in Python 3, see `write_raw`.
-
-        :param str msg: The unicode string to be written
-        :param str encoding: Encoding to apply on msg to convert it into bytes
-        """
-        self.write_raw(msg.encode(encoding))
 
     def write_raw(self, msg):
         """
