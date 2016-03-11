@@ -113,6 +113,17 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
             pass
 
     def read(self, size=-1, encoding="utf-8"):
+        """
+        Read bytes in from the pyVISA connection and return a decoded string
+        using the provided encoding method.
+
+        :param int size: The number of bytes to read in from the VISA
+            connection.
+        :param str encoding: Encoding that will be applied to the read bytes
+
+        :return: The read string from the ocnnection
+        :rtype: `str`
+        """
         return self.read_raw(size=size).decode(encoding)
 
     def read_raw(self, size=-1):
@@ -121,8 +132,9 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
 
         :param int size: The number of bytes to read in from the VISA
             connection.
-        :return: The read bytes
-        :rtype: `str`
+
+        :return: The read bytes from the VISA connection
+        :rtype: `bytes`
         """
         if size >= 0:
             while len(self._buf) < size:
@@ -138,17 +150,25 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         else:
             raise ValueError("Must read a positive value of characters, or "
                              "-1 for all characters.")
-
         return msg
 
     def write(self, msg, encoding="utf-8"):
+        """
+        Write a string to the VISA connection. The string is converted to
+        `bytes` using the provided encoding.
+
+        :param str msg: String to be sent to the instrument over the VISA
+            connection
+        :param str encoding: Encoding to apply on msg to convert the message
+            into bytes
+        """
         self.write_raw(msg.encode(encoding))
 
     def write_raw(self, msg):
         """
         Write bytes to the VISA connection.
 
-        :param str msg: Bytes to be sent to the instrument over the VISA
+        :param bytes msg: Bytes to be sent to the instrument over the VISA
             connection.
         """
         self._conn.write(msg)

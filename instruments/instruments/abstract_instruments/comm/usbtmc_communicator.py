@@ -65,6 +65,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
             raise TypeError("Terminator for loopback communicator must be "
                             "specified as a single character string.")
         self._terminator = newval
+        self._inst.term_char = newval
 
     @property
     def timeout(self):
@@ -86,6 +87,17 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
             pass
 
     def read(self, size=-1, encoding="utf-8"):
+        """
+        Read bytes in from the usbtmc connection, returning a decoded string
+        using the provided encoding method.
+
+        :param int size: The number of bytes to read in from the usbtmc
+            connection.
+        :param str encoding: Encoding that will be applied to the read bytes
+
+        :return: The read string from the connection
+        :rtype: `str`
+        """
         return self._inst.read(num=size, encoding=encoding)
 
     def read_raw(self, size=-1):
@@ -94,21 +106,31 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
         :param int size: The number of bytes to read in from the usbtmc
             connection.
+
         :return: The read bytes
-        :rtype: `str`
+        :rtype: `bytes`
         """
         return self._inst.read_raw(num=size)
 
     def write(self, msg, encoding="utf-8"):
         """
-        Write bytes to the usbtmc connection.
+        Write a string to the usbtmc connection. This string will be converted
+        to `bytes` using the provided encoding method.
 
-        :param str msg: Bytes to be sent to the instrument over the usbtmc
+        :param str msg: String to be sent to the instrument over the usbtmc
             connection.
+        :param str encoding: Encoding to apply on msg to convert the message
+            into bytes
         """
         self._inst.write(msg, encoding=encoding)
 
     def write_raw(self, msg):
+        """
+        Write bytes to the usbtmc connection.
+
+        :param bytes msg: Bytes to be sent to the instrument over the usbtmc
+            connection.
+        """
         self._inst.write_raw(msg)
 
     def seek(self, offset):

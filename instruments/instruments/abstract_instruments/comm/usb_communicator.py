@@ -93,13 +93,22 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         raise NotImplementedError
 
     def write(self, msg, encoding="utf-8"):
+        """
+        Write a string to hte raw USB connection object. The string is
+        converted to bytes using the provided encoding method.
+
+        :param str msg: String to be sent to the instrument over the raw USB
+            connection
+        :param str encoding: Encoding to apply on msg to convert the message
+            into bytes
+        """
         self.write_raw(msg.encode(encoding))
 
     def write_raw(self, msg):
         """
         Write bytes to the raw usb connection object.
 
-        :param str msg: Bytes to be sent to the instrument over the usb
+        :param bytes msg: Bytes to be sent to the instrument over the usb
             connection.
         """
         self._conn.write(msg)
