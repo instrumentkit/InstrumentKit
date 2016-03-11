@@ -25,11 +25,11 @@ def test_serial_number():
             "(param-ref 'laser2:serial-number)"
         ],
         [
-            "(param-ref 'laser1:serial-number)",
+            "(param-ref 'laser1:serial-number)\r",
             "bloop1",
-            ">(param-ref 'laser2:serial-number)",
+            "> (param-ref 'laser2:serial-number)\r",
             "bloop2",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -45,11 +45,11 @@ def test_model():
             "(param-ref 'laser2:model)"
         ],
         [
-            "(param-ref 'laser1:model)",
+            "(param-ref 'laser1:model)\r",
             "bloop1",
-            ">(param-ref 'laser2:model)",
+            "> (param-ref 'laser2:model)\r",
             "bloop2",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -65,11 +65,11 @@ def test_wavelength():
             "(param-ref 'laser2:wavelength)"
         ],
         [
-            "(param-ref 'laser1:wavelength)",
+            "(param-ref 'laser1:wavelength)\r",
             "640",
-            ">(param-ref 'laser2:wavelength)",
+            "> (param-ref 'laser2:wavelength)\r",
             "405.3",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -85,10 +85,11 @@ def test_laser_enable():
             "(param-set! 'laser1:enable-emission #t)"
         ],
         [
-            "(param-ref 'laser1:emission)",
+            "(param-ref 'laser1:emission)\r",
             "#f",
-            ">(param-set! 'laser1:enable-emission #t)",
-            ">"
+            "> (param-set! 'laser1:enable-emission #t)\r",
+            "0",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -104,8 +105,9 @@ def test_laser_enable_error():
             "(param-set! 'laser1:enable-emission #t)"
         ],
         [
-            "(param-set! 'laser1:enable-emission #t)",
-            ">"
+            "(param-set! 'laser1:enable-emission #t)\r",
+            "0",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -119,9 +121,9 @@ def test_laser_tec_status():
             "(param-ref 'laser1:tec:ready)"
         ],
         [
-            "(param-ref 'laser1:tec:ready)",
+            "(param-ref 'laser1:tec:ready)\r",
             "#f",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -135,9 +137,9 @@ def test_laser_intensity():
             "(param-ref 'laser1:intensity)"
         ],
         [
-            "(param-ref 'laser1:intensity)",
+            "(param-ref 'laser1:intensity)\r",
             "0.666",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -151,9 +153,9 @@ def test_laser_mode_hop():
             "(param-ref 'laser1:charm:reg:mh-occured)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:mh-occured)",
+            "(param-ref 'laser1:charm:reg:mh-occured)\r",
             "#f",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -167,9 +169,9 @@ def test_laser_lock_start():
             "(param-ref 'laser1:charm:reg:started)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:started)",
-            "\"\"\r",
-            ">"
+            "(param-ref 'laser1:charm:reg:started)\r",
+            "\"\"",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -183,9 +185,9 @@ def test_laser_first_mode_hop_time():
             "(param-ref 'laser1:charm:reg:first-mh)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:first-mh)",
-            "\"\"\r",
-            ">"
+            "(param-ref 'laser1:charm:reg:first-mh)\r",
+            "\"\"",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -199,9 +201,9 @@ def test_laser_latest_mode_hop_time():
             "(param-ref 'laser1:charm:reg:latest-mh)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:latest-mh)",
-            "\"\"\r",
-            ">"
+            "(param-ref 'laser1:charm:reg:latest-mh)\r",
+            "\"\"",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -215,9 +217,9 @@ def test_laser_correction_status():
             "(param-ref 'laser1:charm:correction-status)"
         ],
         [
-            "(param-ref 'laser1:charm:correction-status)",
+            "(param-ref 'laser1:charm:correction-status)\r",
             "0",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -235,12 +237,13 @@ def test_laser_correction():
             "(exec 'laser1:charm:start-correction)"
         ],
         [
-            "(param-ref 'laser1:charm:correction-status)",
-            "0\n>(exec 'laser1:charm:start-correction-initial)",
-            ">(param-ref 'laser1:charm:correction-status)",
+            "(param-ref 'laser1:charm:correction-status)\r",
+            "0",
+            "> (exec 'laser1:charm:start-correction-initial)\r",
+            "> (param-ref 'laser1:charm:correction-status)\r",
             "1",
-            ">(exec 'laser1:charm:start-correction)",
-            ">"
+            "> (exec 'laser1:charm:start-correction)\r",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -255,8 +258,8 @@ def test_reboot_system():
             "(exec 'reboot-system)"
         ],
         [
-            "(exec 'reboot-system)",
-            ">"
+            "(exec 'reboot-system)\r",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -270,9 +273,9 @@ def test_laser_ontime():
             "(param-ref 'laser1:ontime)"
         ],
         [
-            "(param-ref 'laser1:ontime)",
+            "(param-ref 'laser1:ontime)\r",
             "10000",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -286,9 +289,9 @@ def test_laser_charm_status():
             "(param-ref 'laser1:health)"
         ],
         [
-            "(param-ref 'laser1:health)",
+            "(param-ref 'laser1:health)\r",
             "230",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -302,9 +305,9 @@ def test_laser_temperature_control_status():
             "(param-ref 'laser1:health)"
         ],
         [
-            "(param-ref 'laser1:health)",
+            "(param-ref 'laser1:health)\r",
             "230",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -318,9 +321,9 @@ def test_laser_current_control_status():
             "(param-ref 'laser1:health)"
         ],
         [
-            "(param-ref 'laser1:health)",
+            "(param-ref 'laser1:health)\r",
             "230",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -334,9 +337,9 @@ def test_laser_production_date():
             "(param-ref 'laser1:production-date)"
         ],
         [
-            "(param-ref 'laser1:production-date)",
+            "(param-ref 'laser1:production-date)\r",
             "2016-01-16",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -350,8 +353,9 @@ def test_set_str():
             "(param-set! 'blo \"blee\")"
         ],
         [
-            "(param-set! 'blo \"blee\")",
-            ">"
+            "(param-set! 'blo \"blee\")\r",
+            "0",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -365,8 +369,9 @@ def test_set_list():
             "(param-set! 'blo '(blee blo))"
         ],
         [
-            "(param-set! 'blo '(blee blo))",
-            ">"
+            "(param-set! 'blo '(blee blo))\r",
+            "0",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -380,9 +385,9 @@ def test_display():
             "(param-disp 'blo)"
         ],
         [
-            "(param-disp 'blo)",
+            "(param-disp 'blo)\r",
             "bloop",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -397,10 +402,11 @@ def test_enable():
             "(param-set! 'enable-emission #f)"
         ],
         [
-            "(param-ref 'emission)",
+            "(param-ref 'emission)\r",
             "#f",
-            ">(param-set! 'enable-emission #f)",
-            ">"
+            "> (param-set! 'enable-emission #f)\r",
+            "0",
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -431,9 +437,9 @@ def test_front_key():
             "(param-ref 'front-key-locked)"
         ],
         [
-            "(param-ref 'front-key-locked)",
+            "(param-ref 'front-key-locked)\r",
             "#f",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -447,9 +453,9 @@ def test_interlock():
             "(param-ref 'interlock-open)"
         ],
         [
-            "(param-ref 'interlock-open)",
+            "(param-ref 'interlock-open)\r",
             "#f",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -463,9 +469,9 @@ def test_fpga_status():
             "(param-ref 'system-health)"
         ],
         [
-            "(param-ref 'system-health)",
+            "(param-ref 'system-health)\r",
             "0",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -479,9 +485,9 @@ def test_temperature_status():
             "(param-ref 'system-health)"
         ],
         [
-            "(param-ref 'system-health)",
+            "(param-ref 'system-health)\r",
             "2",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
@@ -495,9 +501,9 @@ def test_current_status():
             "(param-ref 'system-health)"
         ],
         [
-            "(param-ref 'system-health)",
+            "(param-ref 'system-health)\r",
             "4",
-            ">"
+            "> "
         ],
         sep="\n"
     ) as tm:
