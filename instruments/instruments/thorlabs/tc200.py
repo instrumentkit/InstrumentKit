@@ -36,7 +36,7 @@ class TC200(Instrument):
     def __init__(self, filelike):
         super(TC200, self).__init__(filelike)
         self.terminator = "\r"
-        self.prompt = ">"
+        self.prompt = "> "
 
     def _ack_expected(self, msg=""):
         return msg
@@ -94,9 +94,10 @@ class TC200(Instrument):
         # Command Error on mode=normal. Thus, the sendcmd() method cannot
         # be used.
         if newval == TC200.Mode.normal:
-
-            self._file.query(out_query).strip()
+            self.prompt = "Command error"
+            self.sendcmd(out_query)
             _ = self.read(-1)
+            self.prompt ="> "
             _ = self.read(len(self.prompt))
         else:
             self.sendcmd(out_query)
@@ -126,14 +127,17 @@ class TC200(Instrument):
         # There is no current error handling in the way that thorlabs
         # responds with errors
         if newval and not self.enable:
+
             response1 = self._file.query("ens")
             while response1 != ">":
                 response1 = self._file.read(1)
+            self._file.read(1)
 
         elif not newval and self.enable:
             response1 = self._file.query("ens")
             while response1 != ">":
                 response1 = self._file.read(1)
+            self._file.read(1)
 
     @property
     def status(self):
@@ -143,7 +147,7 @@ class TC200(Instrument):
         :rtype: `int`
         """
         _ = self._file.query(str("stat?"))
-        response = self.read(4)
+        response = self.read(5)
         return int(response.split(" ")[0])
 
     temperature = unitful_property(
