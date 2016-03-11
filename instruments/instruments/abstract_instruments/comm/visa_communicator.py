@@ -11,8 +11,10 @@ library.
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import io
+from builtins import str
 
 import quantities as pq
 
@@ -110,7 +112,10 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         except IOError:
             pass
 
-    def read(self, size):
+    def read(self, size=-1, encoding="utf-8"):
+        return self.read_raw(size=size).decode(encoding)
+
+    def read_raw(self, size=-1):
         """
         Read bytes in from the pyVISA connection.
 
@@ -136,7 +141,10 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
 
         return msg
 
-    def write(self, msg):
+    def write(self, msg, encoding="utf-8"):
+        self.write_raw(msg.encode(encoding))
+
+    def write_raw(self, msg):
         """
         Write bytes to the VISA connection.
 

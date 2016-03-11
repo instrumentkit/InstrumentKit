@@ -42,7 +42,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, filelike):
         super(FileCommunicator, self).__init__(self)
         if isinstance(filelike, str):
-            filelike = open(filelike, 'br+')
+            filelike = open(filelike, 'rb+')
 
         self._filelike = filelike
         self._terminator = "\n"

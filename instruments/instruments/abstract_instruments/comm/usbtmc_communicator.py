@@ -9,8 +9,10 @@ instruments.
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import io
+from builtins import str, bytes
 
 try:
     import usbtmc
@@ -34,13 +36,13 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         super(USBTMCCommunicator, self).__init__(self)
 
         self._inst = usbtmc.Instrument(*args, **kwargs)
-        self._terminator = "\n"  # Use the system default line ending by default.
+        self._terminator = "\n"
 
-    # PROPERTIES ##
+    # PROPERTIES #
 
     @property
     def address(self):
-        if hasattr(self._filelike, 'name'):
+        if hasattr(self._filelike, "name"):
             return id(self._inst)  # TODO: replace with something more useful.
         else:
             return None
@@ -53,11 +55,16 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
         :type: `str`
         """
-        return self._terminator
+        return self._inst.term_char
 
     @terminator.setter
     def terminator(self, newval):
-        self._terminator = str(newval)
+        if isinstance(newval, bytes):
+            newval = newval.decode("utf-8")
+        if not isinstance(newval, str) or len(newval) > 1:
+            raise TypeError("Terminator for loopback communicator must be "
+                            "specified as a single character string.")
+        self._terminator = newval
 
     @property
     def timeout(self):
@@ -78,7 +85,10 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         except IOError:
             pass
 
-    def read(self, size):
+    def read(self, size=-1, encoding="utf-8"):
+        return self._inst.read(num=size, encoding=encoding)
+
+    def read_raw(self, size=-1):
         """
         Read bytes in from the usbtmc connection.
 
@@ -87,17 +97,19 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         :return: The read bytes
         :rtype: `str`
         """
-        msg = self._inst.read_raw(size)
-        return msg
+        return self._inst.read_raw(num=size)
 
-    def write(self, msg):
+    def write(self, msg, encoding="utf-8"):
         """
         Write bytes to the usbtmc connection.
 
         :param str msg: Bytes to be sent to the instrument over the usbtmc
             connection.
         """
-        self._inst.write(msg)
+        self._inst.write(msg, encoding=encoding)
+
+    def write_raw(self, msg):
+        self._inst.write_raw(msg)
 
     def seek(self, offset):
         raise NotImplementedError
@@ -134,4 +146,4 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         :return: The instrument response to the query
         :rtype: `str`
         """
-        return self._inst.ask(msg)
+        return self._inst.ask(msg, num=size, encoding="utf-8")

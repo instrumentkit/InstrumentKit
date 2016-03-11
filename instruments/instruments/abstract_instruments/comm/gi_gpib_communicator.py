@@ -14,7 +14,7 @@ from __future__ import unicode_literals
 import io
 import time
 
-from builtins import chr, str
+from builtins import chr, str, bytes
 import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
@@ -41,7 +41,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         self._gpib_address = gpib_address
         self._file.terminator = "\r"
         self._version = int(self._file.query("+ver"))
-        self._terminator = "\n"
+        self._terminator = None
         self.terminator = "\n"
         self._eoi = True
         self._timeout = 1000 * pq.millisecond
@@ -122,6 +122,8 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
+        if isinstance(newval, bytes):
+            newval = newval.decode("utf-8")
         if isinstance(newval, str):
             newval = newval.lower()
 
@@ -145,7 +147,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             else:
                 self.eoi = False
                 self.eos = newval
-                self._terminator = str(newval)
+                self._terminator = chr(newval)
         elif self._version >= 5:
             if newval != "eoi":
                 self.eos = newval
@@ -153,7 +155,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                 self._terminator = self.eos
             elif newval == "eoi":
                 self.eos = None
-                self._terminator = 'eoi'
+                self._terminator = "eoi"
                 self.eoi = True
 
     @property

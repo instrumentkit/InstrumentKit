@@ -46,7 +46,7 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n"):
     """
     if isinstance(sep, bytes):
         sep = sep.encode("utf-8")
-        
+
     # Normalize assertion and playback strings.
     if isinstance(ins_to_host, list):
         ins_to_host = [
