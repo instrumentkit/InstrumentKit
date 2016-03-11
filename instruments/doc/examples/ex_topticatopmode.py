@@ -13,7 +13,6 @@ else:
       tm = ik.toptica.TopMode.open_serial('/dev/ttyACM0', 115200)
 
 
-print("The current emission state is: ", tm.enable)
 print("The current lock state is: ", tm.locked)
 print("The current interlock state is: ", tm.interlock)
 print("The current fpga state is: ", tm.fpga_status)
@@ -38,6 +37,7 @@ print("The laser1's lock start time is: ", tm.laser[0].lock_start)
 print("The laser1's first mode hop time is: ", tm.laser[0].first_mode_hop_time)
 print("The laser1's latest mode hop time is: ",
       tm.laser[0].latest_mode_hop_time)
+print("The current emission state is: ", tm.enable)
 
 tm.laser[0].enable = True
 print("The laser1's correction status is: ", tm.laser[0].correction_status)

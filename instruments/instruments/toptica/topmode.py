@@ -40,17 +40,12 @@ class TopMode(Instrument):
 
     def __init__(self, filelike):
         super(TopMode, self).__init__(filelike)
-        self.prompt = ">"
+        self.prompt = "> "
+        self._ack_expected = self._return_msg
         self.terminator = "\n"
 
     def _return_msg(self, msg=""): # pylint: disable=no-self-use
-        return msg
-
-    def _return_none(self, _):  # pylint: disable=no-self-use
-        return None
-
-    def _return_prompt_msg(self, msg=""):
-        return self.prompt+" "+msg
+        return msg+"\r"
 
     # ENUMS #
 
@@ -279,8 +274,6 @@ class TopMode(Instrument):
 
         :param str command: The command to be executed.
         """
-        self._ack_expected = self._return_msg
-        self.prompt = ">"
         self.sendcmd("(exec '" + command + ")")
 
     def set(self, param, value):
@@ -293,17 +286,15 @@ class TopMode(Instrument):
         :param value: Value that the parameter will be set to
         :type value: `str`, `tuple`, `list`, or `bool`
         """
-        self._ack_expected = self._return_msg
-        self.prompt = ">"
 
         if isinstance(value, str):
-            self.sendcmd("(param-set! '{} \"{}\")".format(param, value))
+            self.query("(param-set! '{} \"{}\")".format(param, value))
         elif isinstance(value, tuple) or isinstance(value, list):
-            self.sendcmd(
+            self.query(
                 "(param-set! '{} '({}))".format(param, " ".join(value)))
         elif isinstance(value, bool):
             value = "t" if value else "f"
-            self.sendcmd("(param-set! '{} #{})".format(param, value))
+            self.query("(param-set! '{} #{})".format(param, value))
 
     def reference(self, param):
         """
@@ -314,8 +305,6 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        self.prompt = ">"
-        self._ack_expected = self._return_msg
         return self.query("(param-ref '{})".format(param))
 
     def display(self, param):
@@ -325,8 +314,6 @@ class TopMode(Instrument):
         :param str param: Parameter that will be sent with a display request
         :return: Response to the display request
         """
-        self.prompt = ">"
-        self._ack_expected = self._return_msg
         return self.query("(param-disp '{})".format(param))
 
     # PROPERTIES #
