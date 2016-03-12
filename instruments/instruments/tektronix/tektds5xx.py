@@ -43,8 +43,8 @@ from datetime import datetime
 import operator
 import struct
 
-from enum import Enum
 from builtins import range, map, round
+from enum import Enum
 
 import numpy as np
 
