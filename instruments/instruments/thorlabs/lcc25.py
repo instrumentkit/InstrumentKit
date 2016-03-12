@@ -10,10 +10,11 @@ Class originally contributed by Catherine Holloway.
 
 from __future__ import absolute_import
 from __future__ import division
+
 from builtins import range
+from enum import IntEnum
 
 import quantities as pq
-from enum import IntEnum
 
 from instruments.thorlabs.thorlabs_utils import check_cmd
 

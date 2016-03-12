@@ -12,9 +12,9 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import io
-import serial
 
 from builtins import bytes, str
+import serial
 
 import quantities as pq
 

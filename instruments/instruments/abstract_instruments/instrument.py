@@ -20,7 +20,7 @@ from future.standard_library import install_aliases
 import numpy as np
 
 install_aliases()
-from urllib.parse import urlparse  # pylint: disable=wrong-import-order,import-error
+import urllib.parse as parse  # pylint: disable=wrong-import-order,import-error
 
 try:
     import usb
@@ -321,18 +321,18 @@ class Instrument(object):
         """
         # Make sure that urlparse knows that we want query strings.
         for scheme in cls.URI_SCHEMES:
-            if scheme not in urlparse.uses_query:
-                urlparse.uses_query.append(scheme)
+            if scheme not in parse.uses_query:
+                parse.uses_query.append(scheme)
 
         # Break apart the URI using urlparse. This returns a named tuple whose
         # parts describe the incoming URI.
-        parsed_uri = urlparse.urlparse(uri)
+        parsed_uri = parse.urlparse(uri)
 
         # We always want the query string to provide keyword args to the
         # class method.
         # FIXME: This currently won't work, as everything is strings,
         #        but the other class methods expect ints or floats, depending.
-        kwargs = urlparse.parse_qs(parsed_uri.query)
+        kwargs = parse.parse_qs(parsed_uri.query)
         if parsed_uri.scheme == "serial":
             # Ex: serial:///dev/ttyACM0
             # We want to pass just the netloc and the path to PySerial,

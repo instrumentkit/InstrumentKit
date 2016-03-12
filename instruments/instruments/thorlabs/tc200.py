@@ -10,10 +10,11 @@ Class originally contributed by Catherine Holloway.
 
 from __future__ import absolute_import
 from __future__ import division
+
 from builtins import range, map
+from enum import IntEnum, Enum
 
 import quantities as pq
-from enum import IntEnum, Enum
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import convert_temperature

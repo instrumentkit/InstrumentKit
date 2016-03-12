@@ -106,7 +106,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         try:
             self._filelike.close()
         except IOError as e:
-            logger.warn("Failed to close file, exception: %s", repr(e))
+            logger.warning("Failed to close file, exception: %s", repr(e))
 
     def read_raw(self, size=-1):
         """
@@ -180,7 +180,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         try:
             self.flush()
         except IOError as e:
-            logger.warn("Exception %s occured during flush().", repr(e))
+            logger.warning("Exception %s occured during flush().", repr(e))
 
     def _query(self, msg, size=-1):
         """

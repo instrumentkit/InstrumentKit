@@ -8,10 +8,11 @@ Provides support for the HP6624a power supply
 
 from __future__ import absolute_import
 from __future__ import division
+
 from builtins import range
+from enum import Enum
 
 import quantities as pq
-from enum import Enum
 
 from instruments.abstract_instruments import (
     PowerSupply,
