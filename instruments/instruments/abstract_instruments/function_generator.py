@@ -10,9 +10,9 @@ from __future__ import absolute_import
 from __future__ import division
 
 import abc
+from enum import Enum
 
 from future.utils import with_metaclass
-from enum import Enum
 import quantities as pq
 
 

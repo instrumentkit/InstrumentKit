@@ -14,9 +14,9 @@ import time
 import warnings
 
 from builtins import range, map
+from enum import Enum, IntEnum
 
 import numpy as np
-from enum import Enum, IntEnum
 import quantities as pq
 
 from instruments.generic_scpi import SCPIInstrument

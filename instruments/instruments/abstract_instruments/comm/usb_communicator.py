@@ -9,8 +9,10 @@ connections.
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import io
+from builtins import str
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 
@@ -31,7 +33,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        AbstractCommunicator.__init__(self)
+        super(USBCommunicator, self).__init__(self)
         # TODO: Check to make sure this is a USB connection
         self._conn = conn
         self._terminator = "\n"
@@ -84,14 +86,17 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         finally:
             self._conn.close()
 
-    def read(self, size):
+    def read_raw(self, size=-1):
         raise NotImplementedError
 
-    def write(self, msg):
+    def read(self, size=-1, encoding="utf-8"):
+        raise NotImplementedError
+
+    def write_raw(self, msg):
         """
         Write bytes to the raw usb connection object.
 
-        :param str msg: Bytes to be sent to the instrument over the usb
+        :param bytes msg: Bytes to be sent to the instrument over the usb
             connection.
         """
         self._conn.write(msg)

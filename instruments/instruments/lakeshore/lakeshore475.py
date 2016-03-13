@@ -8,10 +8,11 @@ Provides support for the Lakeshore 475 Gaussmeter.
 
 from __future__ import absolute_import
 from __future__ import division
+
 from builtins import range
+from enum import IntEnum
 
 import quantities as pq
-from enum import IntEnum
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units, bool_property

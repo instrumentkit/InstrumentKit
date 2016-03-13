@@ -9,8 +9,9 @@ Provides support for the Yokogawa 7651 power supply.
 from __future__ import absolute_import
 from __future__ import division
 
-import quantities as pq
 from enum import IntEnum
+
+import quantities as pq
 
 from instruments.abstract_instruments import (
     PowerSupply,

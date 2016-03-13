@@ -10,8 +10,8 @@ from __future__ import absolute_import
 from __future__ import division
 import time
 
-from enum import Enum
 from builtins import range, map
+from enum import Enum
 
 import numpy as np
 

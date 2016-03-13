@@ -7,27 +7,27 @@ library.
 
 # IMPORTS #####################################################################
 
+# pylint: disable=wrong-import-position
+
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import io
-
-# pylint: disable=wrong-import-position
-# Trick to conditionally ignore the NameError caused by catching WindowsError.
-# Needed as PyVISA causes a WindowsError on Windows when VISA is not installed.
-try:
-    WindowsError
-except NameError:
-    WindowsError = None
-try:
-    import visa
-except (ImportError, WindowsError, OSError):
-    visa = None
+from builtins import str
 
 import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
+
+if not getattr(__builtins__, "WindowsError", None):
+    class WindowsError(OSError):
+        pass
+try:
+    import visa
+except (ImportError, WindowsError, OSError):
+    visa = None
 
 # CLASSES #####################################################################
 
@@ -40,7 +40,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        AbstractCommunicator.__init__(self)
+        super(VisaCommunicator, self).__init__(self)
 
         if visa is None:
             raise ImportError("PyVISA required for accessing VISA instruments.")
@@ -112,14 +112,15 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         except IOError:
             pass
 
-    def read(self, size):
+    def read_raw(self, size=-1):
         """
         Read bytes in from the pyVISA connection.
 
         :param int size: The number of bytes to read in from the VISA
             connection.
-        :return: The read bytes
-        :rtype: `str`
+
+        :return: The read bytes from the VISA connection
+        :rtype: `bytes`
         """
         if size >= 0:
             while len(self._buf) < size:
@@ -135,14 +136,13 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         else:
             raise ValueError("Must read a positive value of characters, or "
                              "-1 for all characters.")
-
         return msg
 
-    def write(self, msg):
+    def write_raw(self, msg):
         """
         Write bytes to the VISA connection.
 
-        :param str msg: Bytes to be sent to the instrument over the VISA
+        :param bytes msg: Bytes to be sent to the instrument over the VISA
             connection.
         """
         self._conn.write(msg)

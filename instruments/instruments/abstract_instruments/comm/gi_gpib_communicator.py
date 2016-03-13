@@ -9,11 +9,12 @@ Industries GPIB adapter.
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import io
 import time
 
-from builtins import chr
+from builtins import chr, str, bytes
 import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
@@ -34,13 +35,13 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, filelike, gpib_address):
-        AbstractCommunicator.__init__(self)
+        super(GPIBCommunicator, self).__init__(self)
 
         self._file = filelike
         self._gpib_address = gpib_address
-        self._file.terminator = '\r'
+        self._file.terminator = "\r"
         self._version = int(self._file.query("+ver"))
-        self._terminator = "\n"
+        self._terminator = None
         self.terminator = "\n"
         self._eoi = True
         self._timeout = 1000 * pq.millisecond
@@ -121,6 +122,8 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
+        if isinstance(newval, bytes):
+            newval = newval.decode("utf-8")
         if isinstance(newval, str):
             newval = newval.lower()
 
@@ -144,7 +147,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             else:
                 self.eoi = False
                 self.eos = newval
-                self._terminator = str(newval)
+                self._terminator = chr(newval)
         elif self._version >= 5:
             if newval != "eoi":
                 self.eos = newval
@@ -152,7 +155,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                 self._terminator = self.eos
             elif newval == "eoi":
                 self.eos = None
-                self._terminator = 'eoi'
+                self._terminator = "eoi"
                 self.eoi = True
 
     @property
@@ -235,7 +238,19 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         """
         self._file.close()
 
-    def read(self, size):
+    def read_raw(self, size=-1):
+        """
+        Read bytes in from the gpibusb connection.
+
+        :param int size: The number of bytes to read in from the
+            connection.
+
+        :return: The read bytes from the connection
+        :rtype: `bytes`
+        """
+        return self._file.read_raw(size)
+
+    def read(self, size=-1, encoding="utf-8"):
         """
         Read characters from wrapped class (ie SocketCommunicator or
         SerialCommunicator).
@@ -247,23 +262,31 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         Function will read until a CR is found.
 
         :param int size: Number of bytes to read
+        :param str encoding: Encoding that will be applied to the read bytes
 
         :return: Data read from the GPIB adapter
         :rtype: `str`
         """
-        msg = self._file.read(size)
+        return self._file.read(size, encoding)
 
-        return msg
+    def write_raw(self, msg):
+        """
+        Write bytes to the gpibusb connection.
 
-    def write(self, msg):
+        :param bytes msg: Bytes to be sent to the instrument over the
+            connection.
+        """
+        self._file.write_raw(msg)
+
+    def write(self, msg, encoding="utf-8"):
         """
         Write data string to GPIB connected instrument.
-        This function sends all the necessary GI-GPIB adapter internal commands
-        that are required for the specified instrument.
 
         :param str msg: String to write to the instrument
+        :param str encoding: Encoding to apply on msg to convert the message
+            into bytes
         """
-        self._file.write(msg)
+        self._file.write(msg, encoding)
 
     def flush_input(self):
         """
