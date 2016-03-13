@@ -12,8 +12,8 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import range, map
 
-import quantities as pq
 from enum import Enum
+import quantities as pq
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.util_fns import (

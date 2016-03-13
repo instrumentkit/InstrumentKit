@@ -98,7 +98,7 @@ class TC200(Instrument):
             self.prompt = "Command error"
             self.sendcmd(out_query)
             _ = self.read(-1)
-            self.prompt ="> "
+            self.prompt = "> "
             _ = self.read(len(self.prompt))
         else:
             self.sendcmd(out_query)
