@@ -10,11 +10,12 @@ test connections to explore the InstrumentKit API.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import io
 import sys
 
-from builtins import input
+from builtins import input, bytes, str
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 
@@ -31,8 +32,8 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, stdin=None, stdout=None):
-        AbstractCommunicator.__init__(self)
-        self._terminator = '\n'
+        super(LoopbackCommunicator, self).__init__(self)
+        self._terminator = "\n"
         self._stdout = stdout
         self._stdin = stdin
 
@@ -64,12 +65,11 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
-        if not isinstance(newval, str):
-            raise TypeError("Terminator must be specified "
-                            "as a single character string.")
-        if len(newval) > 1:
-            raise ValueError("Terminator for LoopbackCommunicator must only be "
-                             "1 character long.")
+        if isinstance(newval, bytes):
+            newval = newval.decode("utf-8")
+        if not isinstance(newval, str) or len(newval) > 1:
+            raise TypeError("Terminator for loopback communicator must be "
+                            "specified as a single character string.")
         self._terminator = newval
 
     @property
@@ -97,7 +97,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         except IOError:
             pass
 
-    def read(self, size=-1):
+    def read_raw(self, size=-1):
         """
         Gets desired response command from stdin. If ``stdin`` is `None`, then
         the user will be prompted to enter a mock response in the Python
@@ -105,35 +105,33 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         :param int size: Number of characters to read. Default value of -1
             will read until termination character is found.
-        :rtype: `str`
+        :rtype: `bytes`
         """
         if self._stdin is not None:
             if size >= 0:
                 input_var = self._stdin.read(size)
-                return input_var
+                return bytes(input_var)
             elif size == -1:
-                result = bytearray()
-                c = 0
-                while c != self._terminator:
+                result = bytes()
+                c = b''
+                while c != self._terminator.encode("utf-8"):
                     c = self._stdin.read(1)
-                    if c == '':
-                        break
-                    if c != self._terminator:
+                    if c != self._terminator.encode("utf-8"):
                         result += c
-                return bytes(result)
+                return result
             else:
-                raise ValueError('Must read a positive value of characters.')
+                raise ValueError("Must read a positive value of characters.")
         else:
             input_var = input("Desired Response: ")
         return input_var
 
-    def write(self, msg):
+    def write_raw(self, msg):
         """
-        Write message to the loopback communicator's stdout. If ``stdout`` is
+        Write raw bytes to the loopback communicator's stdout. If ``stdout`` is
         `None` then it will be simply printed to the Python interpreter
         console.
 
-        :param str msg: The string to be written
+        :param bytes msg: The bytes to be written
         """
         if self._stdout is not None:
             self._stdout.write(msg)
@@ -175,7 +173,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
-        if msg is not '':
+        if msg != '':
             msg = "{}{}".format(msg, self._terminator)
             self.write(msg)
 

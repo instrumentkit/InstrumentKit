@@ -6,27 +6,32 @@ Provides the base Instrument class for all instruments.
 
 # IMPORTS #####################################################################
 
+# pylint: disable=wrong-import-position
+
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import os
 import collections
-import urlparse
-
 import socket
+
+from future.standard_library import install_aliases
 import numpy as np
 
-# pylint: disable=wrong-import-position
+install_aliases()
+import urllib.parse as parse  # pylint: disable=wrong-import-order,import-error
+
 try:
     import usb
     import usb.core
     import usb.util
 except ImportError:
     usb = None
-try:
-    WindowsError
-except NameError:
-    WindowsError = None
+
+if not getattr(__builtins__, "WindowsError", None):
+    class WindowsError(OSError):
+        pass
 try:
     import visa
 except (ImportError, WindowsError, OSError):
@@ -118,18 +123,15 @@ class Instrument(object):
         """
         ack_expected = self._ack_expected(cmd)
         if ack_expected is not None:
-
             ack = self._file.query(cmd)
             if ack != ack_expected:
                 raise AcknowledgementError(
                     "Incorrect ACK message received: got {} "
                     "expected {}".format(ack, ack_expected)
                 )
-
             value = self.read(size)
         else:
             value = self._file.query(cmd, size)
-
         if self.prompt is not None:
             prompt = self.read(len(self.prompt))
             if prompt != self.prompt:
@@ -268,7 +270,7 @@ class Instrument(object):
                           "require the first character to be #.")
         else:
             # Read in the num of digits for next part
-            digits = int(self._file.read(1))
+            digits = int(self._file.read_raw(1))
 
             # Read in the num of bytes to be read
             num_of_bytes = int(self._file.read(digits))
@@ -279,7 +281,7 @@ class Instrument(object):
 
             # Read in the data bytes, and pass them to numpy using the specified
             # data type (format).
-            return np.frombuffer(self._file.read(num_of_bytes), dtype=fmt)
+            return np.frombuffer(self._file.read_raw(num_of_bytes), dtype=fmt)
 
     # CLASS METHODS #
 
@@ -319,18 +321,18 @@ class Instrument(object):
         """
         # Make sure that urlparse knows that we want query strings.
         for scheme in cls.URI_SCHEMES:
-            if scheme not in urlparse.uses_query:
-                urlparse.uses_query.append(scheme)
+            if scheme not in parse.uses_query:
+                parse.uses_query.append(scheme)
 
         # Break apart the URI using urlparse. This returns a named tuple whose
         # parts describe the incoming URI.
-        parsed_uri = urlparse.urlparse(uri)
+        parsed_uri = parse.urlparse(uri)
 
         # We always want the query string to provide keyword args to the
         # class method.
         # FIXME: This currently won't work, as everything is strings,
         #        but the other class methods expect ints or floats, depending.
-        kwargs = urlparse.parse_qs(parsed_uri.query)
+        kwargs = parse.parse_qs(parsed_uri.query)
         if parsed_uri.scheme == "serial":
             # Ex: serial:///dev/ttyACM0
             # We want to pass just the netloc and the path to PySerial,

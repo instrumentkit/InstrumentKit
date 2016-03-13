@@ -10,10 +10,12 @@ Class originally contributed by Catherine Holloway.
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
+
 from builtins import range
+from enum import IntEnum
 
 import quantities as pq
-from enum import IntEnum
 
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
 from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate

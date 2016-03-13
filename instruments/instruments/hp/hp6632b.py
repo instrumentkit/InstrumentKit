@@ -151,7 +151,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         expression_error = -170
         invalid_expression = -171
         expression_not_allowed = -178
-        macro_error = -180
+        macro_error_180 = -180
         invalid_outside_macro_definition = -181
         invalid_inside_macro_definition = -183
         macro_parameter_error = -184
@@ -177,7 +177,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         too_much_data = -223
         illegal_parameter_value = -224
         out_of_memory = -225
-        macro_error = -270
+        macro_error_270 = -270
         macro_execution_error = -272
         illegal_macro_label = -273
         macro_recursion_error = -276
@@ -192,7 +192,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         query_interrupted = -410
         query_unterminated = -420
         query_deadlocked = -430
-        query_unterminated = -440
+        query_unterminated_after_indefinite_response = -440
 
         # DEVICE ERRORS
         ram_rd0_checksum_failed = 1

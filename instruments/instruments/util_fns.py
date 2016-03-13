@@ -271,6 +271,11 @@ def unitless_property(name, format_code='{:e}', doc=None, readonly=False,
         return float(raw)
 
     def _setter(self, newval):
+        if isinstance(newval, pq.Quantity):
+            if newval.units == pq.dimensionless:
+                newval = float(newval.magnitude)
+            else:
+                raise ValueError
         strval = format_code.format(newval)
         self.sendcmd(set_fmt.format(name, strval))
 

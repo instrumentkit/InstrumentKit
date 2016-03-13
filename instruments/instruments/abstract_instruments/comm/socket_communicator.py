@@ -9,10 +9,12 @@ raw ethernet connections.
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
 
 import io
 import socket
 
+from builtins import str, bytes
 import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
@@ -31,7 +33,8 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        AbstractCommunicator.__init__(self)
+        super(SocketCommunicator, self).__init__(self)
+
         if isinstance(conn, socket.socket):
             self._conn = conn
             self._terminator = "\n"
@@ -58,12 +61,11 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
-        if not isinstance(newval, str):
-            raise TypeError("Terminator for SocketCommunicator must be "
+        if isinstance(newval, bytes):
+            newval = newval.decode("utf-8")
+        if not isinstance(newval, str) or len(newval) > 1:
+            raise TypeError("Terminator for socket communicator must be "
                             "specified as a single character string.")
-        if len(newval) > 1:
-            raise ValueError("Terminator for SocketCommunicator must only be 1 "
-                             "character long.")
         self._terminator = newval
 
     @property
@@ -92,32 +94,33 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         finally:
             self._conn.close()
 
-    def read(self, size):
+    def read_raw(self, size=-1):
         """
         Read bytes in from the socket connection.
 
         :param int size: The number of bytes to read in from the socket
             connection.
         :return: The read bytes
-        :rtype: `str`
+        :rtype: `bytes`
         """
         if size >= 0:
             return self._conn.recv(size)
         elif size == -1:
-            result = bytearray()
-            c = 0
-            while c != self._terminator:
+            result = bytes()
+            c = b''
+            while c != self._terminator.encode("utf-8"):
                 c = self._conn.recv(1)
-                result += c
-            return bytes(result)
+                if c != self._terminator.encode("utf-8"):
+                    result += c
+            return result
         else:
             raise ValueError("Must read a positive value of characters.")
 
-    def write(self, msg):
+    def write_raw(self, msg):
         """
         Write bytes to the `socket.socket` connection object.
 
-        :param str msg: Bytes to be sent to the instrument over the socket
+        :param bytes msg: Bytes to be sent to the instrument over the socket
             connection.
         """
         self._conn.sendall(msg)

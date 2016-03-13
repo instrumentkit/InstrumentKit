@@ -7,6 +7,7 @@ Module containing tests for Agilent 34410a
 # IMPORTS ####################################################################
 
 from __future__ import absolute_import
+from builtins import bytes
 
 import quantities as pq
 import numpy as np
@@ -54,7 +55,8 @@ def test_agilent34410a_r():
             "R? 1"
         ], [
             "VOLT +1.000000E+01,+3.000000E-06",
-            "#18" + "3FF0000000000000".decode("hex")
+            # pylint: disable=no-member
+            b"#18" + bytes.fromhex("3FF0000000000000")
         ]
     ) as dmm:
         unit_eq(dmm.r(1), np.array([1]) * pq.volt)

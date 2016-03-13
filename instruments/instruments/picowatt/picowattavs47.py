@@ -8,10 +8,11 @@ Provides support for the Picowatt AVS 47 resistance bridge
 
 from __future__ import absolute_import
 from __future__ import division
+
 from builtins import range
+from enum import IntEnum
 
 import quantities as pq
-from enum import IntEnum
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import (enum_property, bool_property, int_property,
