@@ -120,7 +120,7 @@ def test_cc1_dwell():
         ],
         [
             "8",
-            "v2.01"
+            "Firmware v2.001"
             ""
         ],
         sep="\n"
@@ -151,11 +151,11 @@ def test_cc1_firmware():
             "FIRM?"
         ],
         [
-            "1.2.3"
+            "Firmware v2.001"
         ],
         sep="\n"
     ) as cc:
-        assert cc.firmware == (1, 2, 3)
+        assert cc.firmware == (2, 1, 0)
 
 
 def test_cc1_firmware_2():
@@ -165,11 +165,11 @@ def test_cc1_firmware_2():
             "FIRM?"
         ],
         [
-            "v1"
+            "Firmware v2"
         ],
         sep="\n"
     ) as cc:
-        assert cc.firmware == (1, 0, 0)
+        assert cc.firmware == (2, 0, 0)
 
 
 def test_cc1_gate_new_firmware():

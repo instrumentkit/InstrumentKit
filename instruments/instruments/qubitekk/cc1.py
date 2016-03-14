@@ -208,7 +208,7 @@ class CC1(SCPIInstrument):
                 if self._firmware.find("Unknown") >= 0:
                     self._firmware = None
                 else:
-                    value = self._firmware.replace("v", "").split(".")
+                    value = self._firmware.replace("Firmware v", "").split(".")
                     if len(value) < 3:
                         for _ in range(3-len(value)):
                             value.append(0)
