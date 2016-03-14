@@ -21,9 +21,11 @@ def test_cc1_count():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             "COUN:C1?"
         ],
         [
+            "v2.10",
             "20"
         ],
         sep="\n"
@@ -35,10 +37,12 @@ def test_cc1_window():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             "WIND?",
             ":WIND 7"
         ],
         [
+            "v2.10",
             "2",
             ""
         ],
@@ -53,10 +57,11 @@ def test_cc1_window_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             ":WIND 10"
         ],
         [
-            ""
+            "v2.10"
         ],
         sep="\n"
     ) as cc:
@@ -67,10 +72,12 @@ def test_cc1_delay():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             "DELA?",
             ":DELA 2"
         ],
         [
+            "v2.10",
             "8",
             ""
         ],
@@ -85,10 +92,11 @@ def test_cc1_delay_error1():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             ":DELA -1"
         ],
         [
-            ""
+            "v2.10"
         ],
         sep="\n"
     ) as cc:
@@ -100,10 +108,11 @@ def test_cc1_delay_error2():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             ":DELA 1"
         ],
         [
-            ""
+            "v2.10"
         ],
         sep="\n"
     ) as cc:
@@ -114,13 +123,13 @@ def test_cc1_dwell():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
-            "DWEL?",
             "FIRM?",
+            "DWEL?",
             ":DWEL 2"
         ],
         [
+            "v2.01",
             "8",
-            "v2.01"
             ""
         ],
         sep="\n"
@@ -134,10 +143,11 @@ def test_cc1_dwell_time_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             ":DWEL -1"
         ],
         [
-            ""
+            "v2.10"
         ],
         sep="\n"
     ) as cc:
@@ -176,14 +186,15 @@ def test_cc1_gate_new_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             "GATE?",
             ":GATE:ON",
             ":GATE:OFF"
 
         ],
         [
-            "ON",
             "v2.10",
+            "ON",
             "",
             ""
         ],
@@ -196,16 +207,17 @@ def test_cc1_gate_new_firmware():
 
 def test_cc1_gate_old_firmware():
     with expected_protocol(
-        ik.qubitekk.CC1v2001,
+        ik.qubitekk.CC1,
         [
+            "FIRM?",
             "GATE?",
             ":GATE 1",
             ":GATE 0"
 
         ],
         [
-            "1",
             "v2.001",
+            "1",
             "",
             ""
         ],
@@ -216,16 +228,16 @@ def test_cc1_gate_old_firmware():
         cc.gate = False
 
 
-
 @raises(TypeError)
 def test_cc1_gate_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             ":GATE blo"
         ],
         [
-            ""
+            "v2.10"
         ],
         sep="\n"
     ) as cc:
@@ -236,14 +248,15 @@ def test_cc1_subtract_new_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             "SUBT?",
             ":SUBT:ON",
             ":SUBT:OFF"
 
         ],
         [
-            "ON",
             "v2.010",
+            "ON",
             "",
             ""
         ],
@@ -259,11 +272,12 @@ def test_cc1_subtract_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             ":SUBT blo"
 
         ],
         [
-            ""
+            "v2.10"
         ],
         sep="\n"
     ) as cc:
@@ -274,18 +288,42 @@ def test_cc1_trigger():  # pylint: disable=redefined-variable-type
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             "TRIG?",
             ":TRIG:MODE CONT",
             ":TRIG:MODE STOP"
         ],
         [
+            "v2.10",
             "MODE STOP",
             "",
             ""
         ],
         sep="\n"
     ) as cc:
-        assert cc.trigger is cc.TriggerMode.start_stop
+        assert cc.trigger == cc.TriggerMode.start_stop
+        cc.trigger = cc.TriggerMode.continuous
+        cc.trigger = cc.TriggerMode.start_stop
+
+
+def test_cc1_trigger_old_firmware():  # pylint: disable=redefined-variable-type
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?",
+            "TRIG?",
+            ":TRIG 0",
+            ":TRIG 1"
+        ],
+        [
+            "v2.001",
+            "1",
+            "",
+            ""
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.trigger == cc.TriggerMode.start_stop
         cc.trigger = cc.TriggerMode.continuous
         cc.trigger = cc.TriggerMode.start_stop
 
@@ -295,11 +333,10 @@ def test_cc1_trigger_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
-            ":TRIG blo"
-
+            "FIRM?"
         ],
         [
-            ""
+            "v2.10"
         ],
         sep="\n"
     ) as cc:
@@ -310,11 +347,11 @@ def test_cc1_clear():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            "FIRM?",
             "CLEA"
-
         ],
         [
-            ""
+            "v2.10"
         ],
         sep="\n"
     ) as cc:
