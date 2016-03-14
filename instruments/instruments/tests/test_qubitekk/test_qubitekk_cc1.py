@@ -25,7 +25,7 @@ def test_cc1_count():
             "COUN:C1?"
         ],
         [
-            "v2.10",
+            "Firmware v2.010",
             "20"
         ],
         sep="\n"
@@ -42,7 +42,7 @@ def test_cc1_window():
             ":WIND 7"
         ],
         [
-            "v2.10",
+            "Firmware v2.010",
             "2",
             ""
         ],
@@ -61,7 +61,7 @@ def test_cc1_window_error():
             ":WIND 10"
         ],
         [
-            "v2.10"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -77,7 +77,7 @@ def test_cc1_delay():
             ":DELA 2"
         ],
         [
-            "v2.10",
+            "Firmware v2.010",
             "8",
             ""
         ],
@@ -96,7 +96,7 @@ def test_cc1_delay_error1():
             ":DELA -1"
         ],
         [
-            "v2.10"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -112,7 +112,7 @@ def test_cc1_delay_error2():
             ":DELA 1"
         ],
         [
-            "v2.10"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -147,7 +147,7 @@ def test_cc1_dwell_time_error():
             ":DWEL -1"
         ],
         [
-            "v2.10"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -236,7 +236,7 @@ def test_cc1_gate_error():
             ":GATE blo"
         ],
         [
-            "v2.10"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -254,7 +254,7 @@ def test_cc1_subtract_new_firmware():
 
         ],
         [
-            "v2.010",
+            "Firmware v2.010",
             "ON",
             "",
             ""
@@ -276,7 +276,7 @@ def test_cc1_subtract_error():
 
         ],
         [
-            "v2.10"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -293,7 +293,7 @@ def test_cc1_trigger_mode():  # pylint: disable=redefined-variable-type
             ":TRIG:MODE STOP"
         ],
         [
-            "v2.10",
+            "Firmware v2.010",
             "MODE STOP",
             "",
             ""
@@ -315,16 +315,16 @@ def test_cc1_trigger_mode_old_firmware():  # pylint: disable=redefined-variable-
             ":TRIG 1"
         ],
         [
-            "v2.001",
+            "Firmware v2.001",
             "1",
             "",
             ""
         ],
         sep="\n"
     ) as cc:
-        assert cc.trigger == cc.TriggerMode.start_stop
-        cc.trigger = cc.TriggerMode.continuous
-        cc.trigger = cc.TriggerMode.start_stop
+        assert cc.trigger_mode == cc.TriggerMode.start_stop
+        cc.trigger_mode = cc.TriggerMode.continuous
+        cc.trigger_mode = cc.TriggerMode.start_stop
 
 
 @raises(ValueError)
@@ -335,7 +335,7 @@ def test_cc1_trigger_mode_error():
             "FIRM?"
         ],
         [
-            "v2.10"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -350,7 +350,7 @@ def test_cc1_clear():
             "CLEA"
         ],
         [
-            "v2.10"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:

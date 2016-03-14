@@ -165,8 +165,8 @@ class CC1(SCPIInstrument):
         """
         return self.TriggerMode(self.query("TRIG?").strip())
 
-    @trigger.setter
-    def trigger(self, newval):
+    @trigger_mode.setter
+    def trigger_mode(self, newval):
         try:  # First assume newval is Enum.value
             newval = self.TriggerMode[newval]
         except KeyError:  # Check if newval is Enum.name instead
