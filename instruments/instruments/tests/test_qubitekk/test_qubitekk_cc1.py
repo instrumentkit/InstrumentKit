@@ -119,7 +119,7 @@ def test_cc1_dwell():
             ":DWEL 2"
         ],
         [
-            "8",
+            "8000",
             "Firmware v2.001"
             ""
         ],
@@ -151,11 +151,11 @@ def test_cc1_firmware():
             "FIRM?"
         ],
         [
-            "Firmware v2.001"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
-        assert cc.firmware == (2, 1, 0)
+        assert cc.firmware == (2, 10, 0)
 
 
 def test_cc1_firmware_2():
@@ -183,11 +183,10 @@ def test_cc1_gate_new_firmware():
         ],
         [
             "ON",
-            "v2.10",
+            "Firmware v2.010",
             "",
             ""
         ],
-        sep="\n"
     ) as cc:
         assert cc.gate is True
         cc.gate = True
@@ -205,7 +204,7 @@ def test_cc1_gate_old_firmware():
         ],
         [
             "1",
-            "v2.001",
+            "Firmware v2.001",
             "",
             ""
         ],
