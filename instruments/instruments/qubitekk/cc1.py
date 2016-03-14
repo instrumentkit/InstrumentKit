@@ -72,7 +72,7 @@ class CC1(SCPIInstrument):
         set_fmt=":{}"+_sep+"{}"
     )
 
-    trigger = enum_property(
+    trigger_mode = enum_property(
         "TRIG",
         enum=TriggerMode,
         set_fmt=":{}"+_sep+"{}"
@@ -275,7 +275,7 @@ class CC1v2001(CC1):
         set_fmt=":{}"+_sep+"{}"
     )
 
-    trigger = enum_property(
+    trigger_mode = enum_property(
         "TRIG",
         enum=TriggerMode,
         set_fmt=":{}"+_sep+"{}"

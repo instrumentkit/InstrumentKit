@@ -270,7 +270,7 @@ def test_cc1_subtract_error():
         cc.subtract = "blo"
 
 
-def test_cc1_trigger():  # pylint: disable=redefined-variable-type
+def test_cc1_trigger_mode():  # pylint: disable=redefined-variable-type
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -285,13 +285,13 @@ def test_cc1_trigger():  # pylint: disable=redefined-variable-type
         ],
         sep="\n"
     ) as cc:
-        assert cc.trigger is cc.TriggerMode.start_stop
-        cc.trigger = cc.TriggerMode.continuous
-        cc.trigger = cc.TriggerMode.start_stop
+        assert cc.trigger_mode is cc.TriggerMode.start_stop
+        cc.trigger_mode = cc.TriggerMode.continuous
+        cc.trigger_mode = cc.TriggerMode.start_stop
 
 
 @raises(ValueError)
-def test_cc1_trigger_error():
+def test_cc1_trigger_mode_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -303,7 +303,7 @@ def test_cc1_trigger_error():
         ],
         sep="\n"
     ) as cc:
-        cc.trigger = "blo"
+        cc.trigger_mode = "blo"
 
 
 def test_cc1_clear():
