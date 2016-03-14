@@ -128,8 +128,8 @@ def test_cc1_dwell():
             ":DWEL 2"
         ],
         [
-            "v2.01",
-            "8",
+            "Firmware v2.001",
+            "8000",
             ""
         ],
         sep="\n"
@@ -161,11 +161,11 @@ def test_cc1_firmware():
             "FIRM?"
         ],
         [
-            "1.2.3"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
-        assert cc.firmware == (1, 2, 3)
+        assert cc.firmware == (2, 10, 0)
 
 
 def test_cc1_firmware_2():
@@ -175,11 +175,11 @@ def test_cc1_firmware_2():
             "FIRM?"
         ],
         [
-            "v1"
+            "Firmware v2"
         ],
         sep="\n"
     ) as cc:
-        assert cc.firmware == (1, 0, 0)
+        assert cc.firmware == (2, 0, 0)
 
 
 def test_cc1_gate_new_firmware():
@@ -193,12 +193,11 @@ def test_cc1_gate_new_firmware():
 
         ],
         [
-            "v2.10",
+            "Firmware v2.010",
             "ON",
             "",
             ""
         ],
-        sep="\n"
     ) as cc:
         assert cc.gate is True
         cc.gate = True
@@ -216,7 +215,7 @@ def test_cc1_gate_old_firmware():
 
         ],
         [
-            "v2.001",
+            "Firmware v2.001",
             "1",
             "",
             ""
@@ -284,7 +283,7 @@ def test_cc1_subtract_error():
         cc.subtract = "blo"
 
 
-def test_cc1_trigger():  # pylint: disable=redefined-variable-type
+def test_cc1_trigger_mode():  # pylint: disable=redefined-variable-type
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -301,12 +300,12 @@ def test_cc1_trigger():  # pylint: disable=redefined-variable-type
         ],
         sep="\n"
     ) as cc:
-        assert cc.trigger == cc.TriggerMode.start_stop
-        cc.trigger = cc.TriggerMode.continuous
-        cc.trigger = cc.TriggerMode.start_stop
+        assert cc.trigger_mode is cc.TriggerMode.start_stop
+        cc.trigger_mode = cc.TriggerMode.continuous
+        cc.trigger_mode = cc.TriggerMode.start_stop
 
 
-def test_cc1_trigger_old_firmware():  # pylint: disable=redefined-variable-type
+def test_cc1_trigger_mode_old_firmware():  # pylint: disable=redefined-variable-type
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -329,7 +328,7 @@ def test_cc1_trigger_old_firmware():  # pylint: disable=redefined-variable-type
 
 
 @raises(ValueError)
-def test_cc1_trigger_error():
+def test_cc1_trigger_mode_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -340,7 +339,7 @@ def test_cc1_trigger_error():
         ],
         sep="\n"
     ) as cc:
-        cc.trigger = "blo"
+        cc.trigger_mode = "blo"
 
 
 def test_cc1_clear():
