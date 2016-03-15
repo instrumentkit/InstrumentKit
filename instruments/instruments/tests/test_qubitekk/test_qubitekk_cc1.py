@@ -119,7 +119,7 @@ def test_cc1_delay_error2():
         cc.delay = 1
 
 
-def test_cc1_dwell():
+def test_cc1_dwell_old_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -131,6 +131,24 @@ def test_cc1_dwell():
             "Firmware v2.001",
             "8000",
             ""
+        ],
+        sep="\n"
+    ) as cc:
+        unit_eq(cc.dwell_time, pq.Quantity(8, "s"))
+        cc.dwell_time = 2
+
+
+def test_cc1_dwell_new_firmware():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?",
+            "DWEL?",
+            ":DWEL 2"
+        ],
+        [
+            "Firmware v2.010",
+            "8"
         ],
         sep="\n"
     ) as cc:
@@ -180,6 +198,36 @@ def test_cc1_firmware_2():
         sep="\n"
     ) as cc:
         assert cc.firmware == (2, 0, 0)
+
+
+def test_cc1_firmware_3():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?"
+        ],
+        [
+            "Firmware v2.010.1"
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.firmware == (2, 10, 1)
+
+
+def test_cc1_firmware_repeat_query():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?",
+            "FIRM?"
+        ],
+        [
+            "Unknown",
+            "Firmware v2.010"
+        ],
+        sep="\n"
+    ) as cc:
+        assert cc.firmware == (2, 10, 0)
 
 
 def test_cc1_gate_new_firmware():

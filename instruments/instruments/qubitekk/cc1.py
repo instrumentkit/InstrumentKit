@@ -106,7 +106,7 @@ class CC1(SCPIInstrument):
             # wrong.
             try:
                 count = int(count)
-            except ValueError:
+            except ValueError:  # pragma: no cover
                 count = None
                 while count is None:
                     # try to read again
