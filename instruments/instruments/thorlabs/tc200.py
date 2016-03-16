@@ -95,11 +95,9 @@ class TC200(Instrument):
         # Command Error on mode=normal. Thus, the sendcmd() method cannot
         # be used.
         if newval == TC200.Mode.normal:
-            self.prompt = "Command error"
+            self.prompt = "Command error CMD_ARG_RANGE_ERR\n\r> "
             self.sendcmd(out_query)
-            _ = self.read(-1)
             self.prompt = "> "
-            _ = self.read(len(self.prompt))
         else:
             self.sendcmd(out_query)
 
