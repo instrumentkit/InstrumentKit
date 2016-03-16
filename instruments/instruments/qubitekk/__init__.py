@@ -6,4 +6,4 @@ Module containing Qubitekk instruments
 
 from __future__ import absolute_import
 
-from .cc1 import CC1, CC1v2001
+from .cc1 import CC1

@@ -55,6 +55,22 @@ def test_tc200_mode():
         tc.mode = ik.thorlabs.TC200.Mode.cycle
 
 
+def test_tc200_mode_2():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        [
+            "mode=normal"
+        ],
+        [
+            "mode=normal",
+            "Command error CMD_ARG_RANGE_ERR\n",
+            "> "
+        ],
+        sep="\r"
+    ) as tc:
+        tc.mode = ik.thorlabs.TC200.Mode.normal
+
+
 @raises(TypeError)
 def test_tc200_mode_error():
     with expected_protocol(
@@ -243,6 +259,17 @@ def test_tc200_pid():
     ) as tc:
         assert tc.pid == [2, 0, 220]
         tc.pid = (2, 0, 220)
+
+
+@raises(TypeError)
+def test_tc200_pid_invalid_type():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        [],
+        [],
+        sep="\r"
+    ) as tc:
+        tc.pid = "foo"
 
 
 @raises(ValueError)

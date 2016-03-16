@@ -17,7 +17,7 @@ import quantities as pq
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.util_fns import (
-    ProxyList, assume_units, split_unit_str, bool_property, enum_property
+    ProxyList, assume_units, split_unit_str
 )
 
 # CLASSES #####################################################################
@@ -38,45 +38,37 @@ class CC1(SCPIInstrument):
     http://www.qubitekk.com
     """
 
-    _sep = ":"
-    _bool = ("ON", "OFF")
-
     def __init__(self, filelike):
         super(CC1, self).__init__(filelike)
         self.terminator = "\n"
         self._channel_count = 3
         self._firmware = None
+        _ = self.firmware  # prime the firmware
+
+        if self.firmware[0] >= 2 and self.firmware[1] > 1:
+            self._bool = ("ON", "OFF")
+            self._set_fmt = ":{}:{}"
+            self.TriggerMode = self._TriggerModeNew
+        else:
+            self._bool = ("1", "0")
+            self._set_fmt = ":{} {}"
+            self.TriggerMode = self._TriggerModeOld
 
     # ENUMS #
 
-    class TriggerMode(Enum):
+    class _TriggerModeNew(Enum):
         """
         Enum containing valid trigger modes for the CC1
         """
         continuous = "MODE CONT"
         start_stop = "MODE STOP"
 
-    # PROPERTIES #
-
-    gate = bool_property(
-        "GATE",
-        inst_true=_bool[0],
-        inst_false=_bool[1],
-        set_fmt=":{}"+_sep+"{}"
-    )
-
-    subtract = bool_property(
-        "SUBT",
-        inst_true=_bool[0],
-        inst_false=_bool[1],
-        set_fmt=":{}"+_sep+"{}"
-    )
-
-    trigger_mode = enum_property(
-        "TRIG",
-        enum=TriggerMode,
-        set_fmt=":{}"+_sep+"{}"
-    )
+    class _TriggerModeOld(Enum):
+        """
+        Enum containing valid trigger modes for the CC1
+        """
+        continuous = "0"
+        start_stop = "1"
 
     # INNER CLASSES #
 
@@ -114,7 +106,7 @@ class CC1(SCPIInstrument):
             # wrong.
             try:
                 count = int(count)
-            except ValueError:
+            except ValueError:  # pragma: no cover
                 count = None
                 while count is None:
                     # try to read again
@@ -126,6 +118,63 @@ class CC1(SCPIInstrument):
             return self._count
 
     # PROPERTIES #
+
+    @property
+    def gate(self):
+        """
+        Gets/sets the gate enable status
+
+        :type: `bool`
+        """
+        return self.query("GATE?").strip() == self._bool[0]
+
+    @gate.setter
+    def gate(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError("Bool properties must be specified with a "
+                            "boolean value")
+        self.sendcmd(
+            self._set_fmt.format("GATE", self._bool[0] if newval else self._bool[1])
+        )
+
+    @property
+    def subtract(self):
+        """
+        Gets/sets the subtract enable status
+
+        :type: `bool`
+        """
+        return self.query("SUBT?").strip() == self._bool[0]
+
+    @subtract.setter
+    def subtract(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError("Bool properties must be specified with a "
+                            "boolean value")
+        self.sendcmd(
+            self._set_fmt.format("SUBT", self._bool[0] if newval else self._bool[1])
+        )
+
+    @property
+    def trigger_mode(self):
+        """
+        Gets/sets the trigger mode setting for the CC1. This can be set to
+        ``continuous`` or ``start/stop`` modes.
+
+        :type: `CC1.TriggerMode`
+        """
+        return self.TriggerMode(self.query("TRIG?").strip())
+
+    @trigger_mode.setter
+    def trigger_mode(self, newval):
+        try:  # First assume newval is Enum.value
+            newval = self.TriggerMode[newval]
+        except KeyError:  # Check if newval is Enum.name instead
+            try:
+                newval = self.TriggerMode(newval)
+            except ValueError:
+                raise ValueError("Enum property new value not in enum.")
+        self.sendcmd(self._set_fmt.format("TRIG", self.TriggerMode(newval).value))
 
     @property
     def window(self):
@@ -149,7 +198,10 @@ class CC1(SCPIInstrument):
     @property
     def delay(self):
         """
-        Get the delay value (in nanoseconds) on Channel 1. N may be 0, 2, 4, 6, 8, 10, 12, or 14ns.
+        Get/sets the delay value (in nanoseconds) on Channel 1.
+
+        When setting, ``N`` may be ``0, 2, 4, 6, 8, 10, 12, or 14ns``.
+
         :rtype: quantities.ns
         :return: the delay value
         """
@@ -157,9 +209,6 @@ class CC1(SCPIInstrument):
 
     @delay.setter
     def delay(self, new_val):
-        """
-        Set the delay value (in nanoseconds) on Channel 1. N may be 0, 2, 4, 6, 8, 10, 12, or 14ns.
-        """
         new_val = assume_units(new_val, pq.ns).rescale(pq.ns)
         if new_val < 0*pq.ns or new_val > 14*pq.ns:
             raise ValueError("New delay value is out of bounds.")
@@ -238,45 +287,3 @@ class CC1(SCPIInstrument):
         Clears the current total counts on the counters.
         """
         self.sendcmd("CLEA")
-
-
-class CC1v2001(CC1):
-    """
-    Use this class for older versions of the CC1 firmware
-    """
-    _sep = " "
-    _bool = ("1", "0")
-
-    def __init__(self, filelike):
-        super(CC1v2001, self).__init__(filelike)
-
-    # ENUMS #
-
-    class TriggerMode(Enum):
-        """
-        Enum containing valid trigger modes for the CC1
-        """
-        continuous = "0"
-        start_stop = "1"
-
-    # PROPERTIES #
-
-    gate = bool_property(
-        "GATE",
-        inst_true=_bool[0],
-        inst_false=_bool[1],
-        set_fmt=":{}"+_sep+"{}"
-    )
-
-    subtract = bool_property(
-        "SUBT",
-        inst_true=_bool[0],
-        inst_false=_bool[1],
-        set_fmt=":{}"+_sep+"{}"
-    )
-
-    trigger_mode = enum_property(
-        "TRIG",
-        enum=TriggerMode,
-        set_fmt=":{}"+_sep+"{}"
-    )

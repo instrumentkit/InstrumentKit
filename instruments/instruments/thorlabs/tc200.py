@@ -270,7 +270,7 @@ class TC200(Instrument):
 
     @pid.setter
     def pid(self, newval):
-        if not isinstance(newval, list) and not isinstance(newval, tuple):
+        if not isinstance(newval, (list, tuple)):
             raise TypeError("Setting PID must be specified as a list or tuple")
         if newval[0] is not None:
             self.p = newval[0]
