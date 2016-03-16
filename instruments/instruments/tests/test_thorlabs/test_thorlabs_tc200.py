@@ -64,7 +64,7 @@ def test_tc200_mode_2():
         [
             "mode=normal",
             "Command error",
-            "Command error",
+            "CMD_ARG_RANGE_ERR",
             "> "
         ],
         sep="\r"
