@@ -97,9 +97,10 @@ class TC200(Instrument):
         if newval == TC200.Mode.normal:
             self.prompt = "Command error"
             self.sendcmd(out_query)
-            _ = self.read(-1)
+            _ = self.read(1)  # Read a CR that may or may not be in the buffer
+            _ = self.read(-1)  # Read the follow up CMD_ARG_RANGE_ERR\r msg
             self.prompt = "> "
-            _ = self.read(len(self.prompt))
+            _ = self.read(len(self.prompt))  # Read final "> " msg
         else:
             self.sendcmd(out_query)
 
