@@ -27,7 +27,7 @@ def test_tc200_name():
         [
             "*idn?",
             "bloopbloop",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -44,19 +44,31 @@ def test_tc200_mode():
         ],
         [
             "stat?",
-            "0",
-            ">",
-            "stat?",
-            "2",
-            ">",
-            "mode=cycle",
-            ">"
+            "0 > stat?",
+            "2 >  mode=cycle",
+            "> "
         ],
         sep="\r"
     ) as tc:
         assert tc.mode == tc.Mode.normal
         assert tc.mode == tc.Mode.cycle
         tc.mode = ik.thorlabs.TC200.Mode.cycle
+
+
+def test_tc200_mode_2():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        [
+            "mode=normal"
+        ],
+        [
+            "mode=normal",
+            "Command error CMD_ARG_RANGE_ERR\n",
+            "> "
+        ],
+        sep="\r"
+    ) as tc:
+        tc.mode = ik.thorlabs.TC200.Mode.normal
 
 
 @raises(TypeError)
@@ -78,8 +90,10 @@ def test_tc200_mode_error2():
         [],
         sep="\r"
     ) as tc:
-        blo = IntEnum("blo", "beep boop bop")
-        tc.mode = blo.beep  # pylint: disable=no-member
+        class TestEnum(IntEnum):
+            blo = 1
+            beep = 2
+        tc.mode = TestEnum.blo
 
 
 def test_tc200_enable():
@@ -94,20 +108,11 @@ def test_tc200_enable():
         ],
         [
             "stat?",
-            "54",
-            ">",
-
-            "stat?",
-            "54",
-            ">",
-            "ens",
-            ">",
-
-            "stat?",
-            "55",
-            ">",
-            "ens",
-            ">"
+            "54 > stat?",
+            "54 > ens",
+            "> stat?",
+            "55 > ens",
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -136,7 +141,7 @@ def test_tc200_temperature():
         [
             "tact?",
             "30 C",
-            ">",
+            "> ",
         ],
         sep="\r"
     ) as tc:
@@ -154,12 +159,10 @@ def test_tc200_temperature_set():
         [
             "tset?",
             "30 C",
-            ">",
-            "tmax?",
+            "> tmax?",
             "250",
-            ">",
-            "tset=40.0",
-            ">"
+            "> tset=40.0",
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -177,7 +180,7 @@ def test_tc200_temperature_range():
         [
             "tmax?",
             "40",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -194,9 +197,8 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            ">",
-            "pgain=2",
-            ">"
+            "> pgain=2",
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -212,9 +214,8 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            ">",
-            "igain=0",
-            ">"
+            "> igain=0",
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -230,9 +231,8 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            ">",
-            "dgain=220",
-            ">"
+            "> dgain=220",
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -250,18 +250,26 @@ def test_tc200_pid():
         [
             "pid?",
             "2 0 220",
-            ">",
-            "pgain=2",
-            ">",
-            "igain=0",
-            ">",
-            "dgain=220",
-            ">"
+            "> pgain=2",
+            "> igain=0",
+            "> dgain=220",
+            "> "
         ],
         sep="\r"
     ) as tc:
         assert tc.pid == [2, 0, 220]
         tc.pid = (2, 0, 220)
+
+
+@raises(TypeError)
+def test_tc200_pid_invalid_type():
+    with expected_protocol(
+        ik.thorlabs.TC200,
+        [],
+        [],
+        sep="\r"
+    ) as tc:
+        tc.pid = "foo"
 
 
 @raises(ValueError)
@@ -273,7 +281,7 @@ def test_tc200_pmin():
         ],
         [
             "pgain=-1",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -289,7 +297,7 @@ def test_tc200_pmax():
         ],
         [
             "pgain=260",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -305,7 +313,7 @@ def test_tc200_imin():
         ],
         [
             "igain=-1",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -321,7 +329,7 @@ def test_tc200_imax():
         ],
         [
             "igain=260",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -337,7 +345,7 @@ def test_tc200_dmin():
         ],
         [
             "dgain=-1",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -353,7 +361,7 @@ def test_tc200_dmax():
         ],
         [
             "dgain=260",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -373,20 +381,12 @@ def test_tc200_degrees():
         ],
         [
             "stat?",
-            "44",
-            ">",
-            "stat?",
-            "54",
-            ">",
-            "stat?",
-            "0",
-            ">",
-            "unit=c",
-            ">",
-            "unit=f",
-            ">",
-            "unit=k",
-            ">"
+            "44 > stat?",
+            "54 > stat?",
+            "0 >  unit=c",
+            "> unit=f",
+            "> unit=k",
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -421,9 +421,8 @@ def test_tc200_sensor():
         [
             "sns?",
             "Sensor = NTC10K, Beta = 5600",
-            ">",
-            "sns=ptc100",
-            ">"
+            "> sns=ptc100",
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -448,8 +447,10 @@ def test_tc200_sensor_error2():
         [],
         []
     ) as tc:
-        blo = IntEnum("blo", "beep boop bop")
-        tc.sensor = blo.beep  # pylint: disable=no-member
+        class TestEnum(IntEnum):
+            blo = 1
+            beep = 2
+        tc.sensor = TestEnum.blo
 
 
 def test_tc200_beta():
@@ -462,9 +463,8 @@ def test_tc200_beta():
         [
             "beta?",
             "5600",
-            ">",
-            "beta=2000",
-            ">"
+            "> beta=2000",
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -481,7 +481,7 @@ def test_tc200_beta_min():
         ],
         [
             "beta=200",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -497,7 +497,7 @@ def test_tc200_beta_max():
         ],
         [
             "beta=20000",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -514,9 +514,8 @@ def test_tc200_max_power():
         [
             "pmax?",
             "15.0",
-            ">",
-            "pmax=12.0",
-            ">"
+            "> pmax=12.0",
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -533,7 +532,7 @@ def test_tc200_power_min():
         ],
         [
             "PMAX=-2",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -549,7 +548,7 @@ def test_tc200_power_max():
         ],
         [
             "PMAX=20000",
-            ">"
+            "> "
         ],
         sep="\r"
     ) as tc:
@@ -566,9 +565,8 @@ def test_tc200_max_temperature():
         [
             "tmax?",
             "200.0",
-            ">",
-            "tmax=180.0",
-            ">"
+            "> tmax=180.0",
+            "> "
         ],
         sep="\r"
     ) as tc:

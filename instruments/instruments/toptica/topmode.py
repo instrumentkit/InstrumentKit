@@ -36,18 +36,18 @@ class TopMode(Instrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
     >>> tm = ik.toptica.TopMode.open_serial('/dev/ttyUSB0', 115200)
     >>> print(tm.laser[0].wavelength)
     """
 
     def __init__(self, filelike):
         super(TopMode, self).__init__(filelike)
-        self.prompt = ">"
+        self.prompt = "> "
+        self._ack_expected = self._return_msg
         self.terminator = "\n"
 
-    def _ack_expected(self, msg=""):
-        return msg
+    def _return_msg(self, msg=""): # pylint: disable=no-self-use
+        return msg+"\r"
 
     # ENUMS #
 
@@ -288,14 +288,15 @@ class TopMode(Instrument):
         :param value: Value that the parameter will be set to
         :type value: `str`, `tuple`, `list`, or `bool`
         """
+
         if isinstance(value, str):
-            self.sendcmd("(param-set! '{} \"{}\")".format(param, value))
+            self.query("(param-set! '{} \"{}\")".format(param, value))
         elif isinstance(value, tuple) or isinstance(value, list):
-            self.sendcmd(
+            self.query(
                 "(param-set! '{} '({}))".format(param, " ".join(value)))
         elif isinstance(value, bool):
             value = "t" if value else "f"
-            self.sendcmd("(param-set! '{} #{})".format(param, value))
+            self.query("(param-set! '{} #{})".format(param, value))
 
     def reference(self, param):
         """
@@ -380,7 +381,10 @@ class TopMode(Instrument):
             `True` otherwise
         :type: `bool`
         """
-        response = int(self.reference("system-health"))
+        response = self.reference("system-health")
+        if response.find("#f") >= 0:
+            return False
+        response = int(response)
         return False if response % 2 else True
 
     @property

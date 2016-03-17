@@ -10,12 +10,15 @@ CC1 Class originally contributed by Catherine Holloway.
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import range
+from builtins import range, map
 
+from enum import Enum
 import quantities as pq
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
-from instruments.util_fns import ProxyList, assume_units, split_unit_str
+from instruments.util_fns import (
+    ProxyList, assume_units, split_unit_str
+)
 
 # CLASSES #####################################################################
 
@@ -39,6 +42,33 @@ class CC1(SCPIInstrument):
         super(CC1, self).__init__(filelike)
         self.terminator = "\n"
         self._channel_count = 3
+        self._firmware = None
+        _ = self.firmware  # prime the firmware
+
+        if self.firmware[0] >= 2 and self.firmware[1] > 1:
+            self._bool = ("ON", "OFF")
+            self._set_fmt = ":{}:{}"
+            self.TriggerMode = self._TriggerModeNew
+        else:
+            self._bool = ("1", "0")
+            self._set_fmt = ":{} {}"
+            self.TriggerMode = self._TriggerModeOld
+
+    # ENUMS #
+
+    class _TriggerModeNew(Enum):
+        """
+        Enum containing valid trigger modes for the CC1
+        """
+        continuous = "MODE CONT"
+        start_stop = "MODE STOP"
+
+    class _TriggerModeOld(Enum):
+        """
+        Enum containing valid trigger modes for the CC1
+        """
+        continuous = "0"
+        start_stop = "1"
 
     # INNER CLASSES #
 
@@ -51,7 +81,7 @@ class CC1(SCPIInstrument):
         __CHANNEL_NAMES = {
             1: 'C1',
             2: 'C2',
-            3: 'C0'
+            3: 'CO'
         }
 
         def __init__(self, cc1, idx):
@@ -76,42 +106,75 @@ class CC1(SCPIInstrument):
             # wrong.
             try:
                 count = int(count)
-                self.count = count
-                return self.count
-            except ValueError:
-                self.count = self.count
-
-    # METHOD OVERRIDES ##
-
-    def sendcmd(self, cmd):
-        # We override sendcmd here to check for the response
-        # "Unknown command", so that property factories not aware
-        # of this response can blindly call sendcmd() and rely on
-        # exception handling to get us the rest of the way there.
-        #
-        # Note that we call the superclass *query* and not *sendcmd*;
-        # this is so we can get the error message out!
-        resp = super(CC1, self).query(cmd)
-
-        if resp.strip() == "Unknown command":
-            raise IOError("CC1 reported that command {0} is "
-                          "unknown: {1}".format(cmd, resp))
-
-    def query(self, cmd, size=-1):
-        # We override query for the same reason as
-        # above.
-        resp = super(CC1, self).query(cmd, size)
-
-        if resp.strip() == "Unknown command":
-            raise IOError("CC1 reported that command {0} is "
-                          "unknown: {1}".format(cmd, resp))
-
-        # If we survived, then the command was not marked as unknown.
-        # Something else may have gone wrong, but since we don't know that,
-        # we should return what we believe to be a successful response.
-        return resp
+            except ValueError:  # pragma: no cover
+                count = None
+                while count is None:
+                    # try to read again
+                    try:
+                        count = int(self._cc1.read(-1))
+                    except ValueError:
+                        count = None
+            self._count = count
+            return self._count
 
     # PROPERTIES #
+
+    @property
+    def gate(self):
+        """
+        Gets/sets the gate enable status
+
+        :type: `bool`
+        """
+        return self.query("GATE?").strip() == self._bool[0]
+
+    @gate.setter
+    def gate(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError("Bool properties must be specified with a "
+                            "boolean value")
+        self.sendcmd(
+            self._set_fmt.format("GATE", self._bool[0] if newval else self._bool[1])
+        )
+
+    @property
+    def subtract(self):
+        """
+        Gets/sets the subtract enable status
+
+        :type: `bool`
+        """
+        return self.query("SUBT?").strip() == self._bool[0]
+
+    @subtract.setter
+    def subtract(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError("Bool properties must be specified with a "
+                            "boolean value")
+        self.sendcmd(
+            self._set_fmt.format("SUBT", self._bool[0] if newval else self._bool[1])
+        )
+
+    @property
+    def trigger_mode(self):
+        """
+        Gets/sets the trigger mode setting for the CC1. This can be set to
+        ``continuous`` or ``start/stop`` modes.
+
+        :type: `CC1.TriggerMode`
+        """
+        return self.TriggerMode(self.query("TRIG?").strip())
+
+    @trigger_mode.setter
+    def trigger_mode(self, newval):
+        try:  # First assume newval is Enum.value
+            newval = self.TriggerMode[newval]
+        except KeyError:  # Check if newval is Enum.name instead
+            try:
+                newval = self.TriggerMode(newval)
+            except ValueError:
+                raise ValueError("Enum property new value not in enum.")
+        self.sendcmd(self._set_fmt.format("TRIG", self.TriggerMode(newval).value))
 
     @property
     def window(self):
@@ -122,16 +185,36 @@ class CC1(SCPIInstrument):
             of units nanoseconds.
         :type: `~quantities.Quantity`
         """
-        return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
+        return pq.Quantity(*split_unit_str(self.query("WIND?"), "ns"))
 
     @window.setter
-    def window(self, newval):
-        newval_mag = assume_units(newval, pq.ns).rescale(pq.ns).magnitude
-        if newval_mag < 0:
-            raise ValueError("Window is too small.")
-        if newval_mag > 7:
-            raise ValueError("Window is too big")
-        self.sendcmd(":WIND {}".format(newval_mag))
+    def window(self, new_val):
+        new_val_mag = int(assume_units(new_val, pq.ns).rescale(pq.ns).magnitude)
+        if new_val_mag < 0 or new_val_mag > 7:
+            raise ValueError("Window is out of range.")
+        # window must be an integer!
+        self.sendcmd(":WIND {}".format(new_val_mag))
+
+    @property
+    def delay(self):
+        """
+        Get/sets the delay value (in nanoseconds) on Channel 1.
+
+        When setting, ``N`` may be ``0, 2, 4, 6, 8, 10, 12, or 14ns``.
+
+        :rtype: quantities.ns
+        :return: the delay value
+        """
+        return pq.Quantity(*split_unit_str(self.query("DELA?"), "ns"))
+
+    @delay.setter
+    def delay(self, new_val):
+        new_val = assume_units(new_val, pq.ns).rescale(pq.ns)
+        if new_val < 0*pq.ns or new_val > 14*pq.ns:
+            raise ValueError("New delay value is out of bounds.")
+        if new_val.magnitude % 2 != 0:
+            raise ValueError("New magnitude must be an even number")
+        self.sendcmd(":DELA "+str(int(new_val.magnitude)))
 
     @property
     def dwell_time(self):
@@ -143,71 +226,44 @@ class CC1(SCPIInstrument):
             of units seconds.
         :type: `~quantities.Quantity`
         """
-        return pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
+        # the older versions of the firmware erroneously report the units of the
+        # dwell time as being seconds rather than ms
+        dwell_time = pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
+        if self.firmware[0] <= 2 and self.firmware[1] <= 1:
+            return dwell_time/1000.0
+        else:
+            return dwell_time
 
     @dwell_time.setter
-    def dwell_time(self, newval):
-        newval_mag = assume_units(newval, pq.s).rescale(pq.s).magnitude
-        if newval_mag < 0:
+    def dwell_time(self, new_val):
+        new_val_mag = assume_units(new_val, pq.s).rescale(pq.s).magnitude
+        if new_val_mag < 0:
             raise ValueError("Dwell time cannot be negative.")
-        self.sendcmd(":DWEL {}".format(newval_mag))
+        self.sendcmd(":DWEL {}".format(new_val_mag))
 
     @property
-    def gate_enable(self):
+    def firmware(self):
         """
-        Gets/sets the Gate mode of the CC1.
+        Gets the firmware version
 
-        A setting of `True` means the input signals are anded with the gate
-        signal and `False` means the input signals are not anded with the gate
-        signal.
-
-        :type: `bool`
+        :rtype: `tuple`(Major:`int`, Minor:`int`, Patch`int`)
         """
-        response = self.query("GATE?")
-        response = int(response)
-        return True if response is 1 else False
-
-    @gate_enable.setter
-    def gate_enable(self, newval):
-        if isinstance(newval, int):
-            if newval != 0 and newval != 1:
-                raise ValueError("Not a valid gate_enable mode.")
-            newval = bool(newval)
-        elif not isinstance(newval, bool):
-            raise TypeError("CC1 gate_enable must be specified as a boolean.")
-
-        if newval is False:
-            self.sendcmd(":GATE:OFF")
-        else:
-            self.sendcmd(":GATE:ON")
-
-    @property
-    def count_enable(self):
-        """
-        The count mode of the CC1.
-
-        A setting of `True` means the dwell time passes before the counters are
-        cleared and `False` means the counters are cleared every 0.1 seconds.
-
-        :type: `bool`
-        """
-        response = self.query("COUN?")
-        response = int(response)
-        return True if response is 1 else False
-
-    @count_enable.setter
-    def count_enable(self, newval):
-        if isinstance(newval, int):
-            if newval != 0 and newval != 1:
-                raise ValueError("Not a valid count_enable mode.")
-            newval = bool(newval)
-        elif not isinstance(newval, bool):
-            raise TypeError("CC1 count_enable must be specified as a boolean.")
-
-        if newval is False:
-            self.sendcmd(":COUN:OFF")
-        else:
-            self.sendcmd(":COUN:ON")
+        # the firmware is assumed not to change while the device is active
+        # firmware is stored locally as it will be gotten often
+        # pylint: disable=no-member
+        if self._firmware is None:
+            while self._firmware is None:
+                self._firmware = self.query("FIRM?")
+                if self._firmware.find("Unknown") >= 0:
+                    self._firmware = None
+                else:
+                    value = self._firmware.replace("Firmware v", "").split(".")
+                    if len(value) < 3:
+                        for _ in range(3-len(value)):
+                            value.append(0)
+                    value = tuple(map(int, value))
+                    self._firmware = value
+        return self._firmware
 
     @property
     def channel(self):
@@ -224,7 +280,7 @@ class CC1(SCPIInstrument):
         """
         return ProxyList(self, CC1.Channel, range(self._channel_count))
 
-    # METHODS ##
+    # METHODS #
 
     def clear_counts(self):
         """

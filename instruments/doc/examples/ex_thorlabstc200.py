@@ -4,8 +4,7 @@ import instruments as ik
 import quantities
 tc = ik.thorlabs.TC200.open_serial('/dev/tc200', 115200)
 
-
-tc.temperature = 70*quantities.degF
+tc.temperature_set = 70*quantities.degF
 print("The current temperature is: ", tc.temperature)
 
 tc.mode = tc.Mode.normal

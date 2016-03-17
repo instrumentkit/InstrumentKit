@@ -35,7 +35,7 @@ def convert_toptica_datetime(response):
     :return: the converted date
     :rtype: 'datetime.datetime'
     """
-    if response == '""\r':
+    if response.find('""') >= 0:
         return None
     else:
         return datetime.strptime(response, '%b %d %Y %I:%M%p')

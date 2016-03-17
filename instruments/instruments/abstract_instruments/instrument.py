@@ -102,7 +102,7 @@ class Instrument(object):
                     "expected {}".format(ack, ack_expected)
                 )
         if self.prompt is not None:
-            prompt = self.read()
+            prompt = self.read(len(self.prompt))
             if prompt != self.prompt:
                 raise PromptError(
                     "Incorrect prompt message received: got {} "
@@ -133,7 +133,7 @@ class Instrument(object):
         else:
             value = self._file.query(cmd, size)
         if self.prompt is not None:
-            prompt = self.read()
+            prompt = self.read(len(self.prompt))
             if prompt != self.prompt:
                 raise PromptError(
                     "Incorrect prompt message received: got {} "
