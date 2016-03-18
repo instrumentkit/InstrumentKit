@@ -6,13 +6,13 @@ python:
   - "3.4"
   - "3.5"
 install:
-  - "pip install -r instruments/requirements.txt"
-  - "pip install -r instruments/dev-requirements.txt"
+  - "pip install -r requirements.txt"
+  - "pip install -r dev-requirements.txt"
   - pip install python-coveralls
   - pip install coverage
 script:
   - nosetests --with-coverage -w instruments
-  - pylint --rcfile=instruments/.pylintrc --py3k instruments/instruments/
-  - pylint --rcfile=instruments/.pylintrc instruments/instruments/
+  - pylint --py3k instruments/
+  - pylint instruments/
 after_success:
   - coveralls

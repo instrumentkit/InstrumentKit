@@ -82,6 +82,13 @@ Got:
 
 {}""".format(repr(host_to_ins), repr(stdout.getvalue()))
 
+    # current = stdin.tell()
+    # stdin.seek(0, 2)
+    # end = stdin.tell()
+    #
+    # assert current == end, \
+    #     """Only read {} bytes out of {}""".format(current, end)
+
 
 @nottest
 def unit_eq(a, b, msg=None, thresh=1e-5):
