@@ -39,7 +39,17 @@ import instruments.other as _other
 # In keeping with PEP-396, we define a version number of the form
 # {major}.{minor}[.{postrelease}]{prerelease-tag}
 
-__version__ = '1.0a1'
+__version__ = "0.0.1"
+
+__title__ = "instruments"
+__description__ = "Test and measurement communication library"
+__uri__ = "https://instrumentkit.readthedocs.org/"
+
+__author__ = "Steven Casagrande"
+__email__ = "scasagrande@galvant.ca"
+
+__license__ = "AGPLv3"
+__copyright__ = "Copyright (c) 2012-2016 Steven Casagrande"
 
 
 class _Other(object):
