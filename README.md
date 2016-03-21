@@ -35,7 +35,7 @@ $ python setup.py install
 
 From Github using pip:
 ``` bash
-$ pip install -e git@github.com:Galvant/InstrumentKit.git
+$ pip install -e git+https://www.github.com/Galvant/InstrumentKit.git#egg=instruments
 ```
 
 From pypi using pip (planned, not yet implemented):
