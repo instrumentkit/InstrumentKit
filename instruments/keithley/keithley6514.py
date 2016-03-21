@@ -165,11 +165,13 @@ class Keithley6514(SCPIInstrument, Electrometer):
 
         :type: `bool`
         """
+        # pylint: disable=no-member
         out = self.query('{}:RANGE:AUTO?'.format(self.mode.value))
         return True if out == '1' else False
 
     @auto_range.setter
     def auto_range(self, newval):
+        # pylint: disable=no-member
         self.sendcmd('{}:RANGE:AUTO {}'.format(
             self.mode.value, '1' if newval else '0'))
 
@@ -180,12 +182,14 @@ class Keithley6514(SCPIInstrument, Electrometer):
 
         :type: `~quantities.Quantity`
         """
+        # pylint: disable=no-member
         mode = self.mode
         out = self.query('{}:RANGE:UPPER?'.format(mode.value))
         return float(out) * self._MODE_UNITS[mode]
 
     @input_range.setter
     def input_range(self, newval):
+        # pylint: disable=no-member
         mode = self.mode
         val = newval.rescale(self._MODE_UNITS[mode]).item()
         if val not in self._valid_range(mode).value:
