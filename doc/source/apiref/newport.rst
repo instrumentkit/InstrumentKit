@@ -7,8 +7,8 @@
 Newport
 =======
 
-:class:`NewportESP301`
-======================
+:class:`NewportESP301` Motor Controller
+=======================================
 
 .. autoclass:: NewportESP301
     :members:

@@ -7,22 +7,22 @@
 Lakeshore
 =========
 
-:class:`Lakeshore340`
-=====================
+:class:`Lakeshore340` Cryogenic Temperature Controller
+======================================================
 
 .. autoclass:: Lakeshore340
     :members:
     :undoc-members:
     
-:class:`Lakeshore370`
-=====================
+:class:`Lakeshore370` AC Resistance Bridge
+==========================================
 
 .. autoclass:: Lakeshore370
     :members:
     :undoc-members:
 
-:class:`Lakeshore475`
-=====================
+:class:`Lakeshore475` Gaussmeter
+================================
 
 .. autoclass:: Lakeshore475
     :members:

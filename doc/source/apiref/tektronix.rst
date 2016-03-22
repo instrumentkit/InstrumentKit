@@ -7,15 +7,15 @@
 Tektronix
 =========
 
-:class:`TekAWG2000`
-===================
+:class:`TekAWG2000` Arbitrary Wave Generator
+============================================
 
 .. autoclass:: TekAWG2000
     :members:
     :undoc-members:
     
-:class:`TekDPO4104`
-===================
+:class:`TekDPO4104` Oscilloscope
+================================
 
 .. autoclass:: TekDPO4104
     :members:
@@ -29,24 +29,23 @@ Tektronix
     :members:
     :undoc-members:
 
-:class:`TekTDS224`
-==================
-
-.. autoclass:: TekTDS224
-    :members:
-    :undoc-members:
-
-:class:`TekTDS5xx`
-==================
-
-.. autoclass:: TekTDS5xx
-    :members:
-    :undoc-members:
-    
-:class:`TekDPO70000`
-==========================
+:class:`TekDPO70000` Oscilloscope
+=================================
 
 .. autoclass:: TekDPO70000
     :members:
     :undoc-members:
 
+:class:`TekTDS224` Oscilloscope
+===============================
+
+.. autoclass:: TekTDS224
+    :members:
+    :undoc-members:
+
+:class:`TekTDS5xx` Oscilloscope
+===============================
+
+.. autoclass:: TekTDS5xx
+    :members:
+    :undoc-members:

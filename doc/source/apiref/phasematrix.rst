@@ -7,8 +7,8 @@
 PhaseMatrix
 ===========
 
-:class:`PhaseMatrixFSW0020`
-===========================
+:class:`PhaseMatrixFSW0020` Signal Generator
+============================================
 
 .. autoclass:: PhaseMatrixFSW0020
     :members:

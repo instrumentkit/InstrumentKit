@@ -7,14 +7,9 @@
 Oxford
 ======
     
-:class:`OxfordITC503`
-=====================
+:class:`OxfordITC503` Temperature Controller
+============================================
 
 .. autoclass:: OxfordITC503
     :members:
     :undoc-members:
-    
-.. autoclass:: _OxfordITC503Sensor
-    :members:
-    :undoc-members:
-

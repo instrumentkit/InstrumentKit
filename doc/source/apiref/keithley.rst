@@ -7,37 +7,37 @@
 Keithley
 ========
 
-:class:`Keithley195`
-====================
+:class:`Keithley195` Digital Multimeter
+=======================================
 
 .. autoclass:: Keithley195
     :members:
     :undoc-members:
     
-:class:`Keithley580`
-====================
+:class:`Keithley580` Microohm Meter
+===================================
 
 .. autoclass:: Keithley580
     :members:
     :undoc-members:
 
-:class:`Keithley2182`
-=====================
+:class:`Keithley2182` Nano-voltmeter
+====================================
 
 .. autoclass:: Keithley2182
     :members:
     :undoc-members:
 .. _user's guide: http://www.keithley.com/products/dcac/sensitive/lowvoltage/?mn=2182A
 
-:class:`Keithley6220`
-=====================
+:class:`Keithley6220` Constant Current Supply
+=============================================
 
 .. autoclass:: Keithley6220
     :members:
     :undoc-members:
 
-:class:`Keithley6514`
-=====================
+:class:`Keithley6514` Electrometer
+==================================
 
 .. autoclass:: Keithley6514
     :members:

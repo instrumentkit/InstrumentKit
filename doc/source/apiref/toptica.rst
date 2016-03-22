@@ -7,8 +7,8 @@
 Toptica
 =======
 
-:class:`TopMode` - Diode Laser
-==============================
+:class:`TopMode` Diode Laser
+============================
 
 .. autoclass:: TopMode
     :members:

@@ -7,29 +7,29 @@
 Hewlett-Packard
 ===============
 
-:class:`HP3456a`
-================
+:class:`HP3456a` Digital Voltmeter
+==================================
 
 .. autoclass:: HP3456a
     :members:
     :undoc-members:
 
-:class:`HP6624a`
-================
+:class:`HP6624a` Power Supply
+=============================
 
 .. autoclass:: HP6624a
     :members:
     :undoc-members:
 
-:class:`HP6632b`
-================
+:class:`HP6632b` Power Supply
+=============================
 
 .. autoclass:: HP6632b
     :members:
     :undoc-members:
 
-:class:`HP6652a`
-================
+:class:`HP6652a` Single Output Power Supply
+===========================================
 
 .. autoclass:: HP6652a
     :members:
