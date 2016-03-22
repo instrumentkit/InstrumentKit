@@ -1,14 +1,6 @@
 ===============================
 InstrumentKit Development Guide
 ===============================
-
-.. toctree::
-    :maxdepth: 2
-    
-    design_philosophy
-    code_style
-    testing
-    util_fns
     
 Introduction
 ============
@@ -49,6 +41,8 @@ $ tox
 
 More details on running tests can be found in :ref:`testing`.
 
+.. _tox: https://tox.readthedocs.org/en/latest/
+
 Contributing Code
 =================
 
@@ -70,3 +64,12 @@ We can help with any and all of these, so please ask, and thank you for helping
 make InstrumentKit even better.
 
 .. _PEP 8: http://legacy.python.org/dev/peps/pep-0008/
+
+
+.. toctree::
+    :maxdepth: 2
+
+    design_philosophy
+    code_style
+    testing
+    util_fns
