@@ -10,7 +10,7 @@ Data Types
 Numeric Data
 ------------
 
-When appropriate, use :class:`pq.Quantity` objects to track units.
+When appropriate, use :class:`quantities.Quantity` objects to track units.
 If this is not possible or appropriate, use a bare `float` for scalars
 and `np.ndarray` for array-valued data.
 
@@ -28,8 +28,9 @@ the `if` statement.
 If a property has more than two permissible values, or the two allowable
 values are not naturally interpreted as a Boolean (e.g.: positive/negative,
 AC/DC coupling, etc.), then consider using an `~enum.Enum` or `~enum.IntEnum` as
-provided by `enum`. The latter is useful in Python 2.6 and 2.7 for
-wrapping integer values that are meaningful to the device.
+provided by `enum`. The latter is useful in for wrapping integer values that
+are meaningful to the device.
+
 For example, if an instrument can operate in AC or DC mode, use an enumeration
 like the following::
 
@@ -48,9 +49,15 @@ like the following::
 
 		# For SCPI-like instruments, enum_property
 		# works well to expose the enumeration.
-		# This will generate commands like ":MODE AC"
-		# and ":MODE DC".
-		mode = enum_property(":MODE", SomeInstrument.Mode)
+		# This will generate commands like "MODE AC"
+		# and "MODE DC".
+		mode = enum_property(
+		    name=":MODE",
+		    enum=SomeInstrument.Mode,
+		    doc="""
+		    And here is the docstring for this property
+		    """
+        )
 
 	# To set the mode is now straightforward.
 	ins = SomeInstrument.open_somehow()

@@ -46,6 +46,8 @@ a command protocol that at least resembles the SCPI style::
 
 .. autofunction:: unitful_property
 
+.. autofunction:: bounded_unitful_property
+
 .. autofunction:: string_property
 
 

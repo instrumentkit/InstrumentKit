@@ -17,14 +17,13 @@ Installing
 Dependencies
 ------------
 
-Most of the required and optional dependencies can be obtained using
-``easy_install`` or ``pip`` (preferred).
+Most of the required and optional dependencies can be obtained using  ``pip``.
 
 Required Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
-If you're using ``pip``, these requirements can be obtained automatically
-by using the provided ``requirements.txt``::
+Using ``pip``, these requirements can be obtained automatically by using the
+provided ``requirements.txt``::
 
 $ pip install -r requirements.txt
 
@@ -32,6 +31,7 @@ $ pip install -r requirements.txt
 - `PySerial`_
 - `quantities`_
 - `enum34`_
+- `future`_
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
@@ -43,6 +43,7 @@ Optional Dependencies
 .. _PySerial: http://pyserial.sourceforge.net/
 .. _quantities: http://pythonhosted.org/quantities/
 .. _enum34: https://pypi.python.org/pypi/enum34
+.. _future: https://pypi.python.org/pypi/future
 .. _PyYAML: https://bitbucket.org/xi/pyyaml
 .. _PyUSB: http://sourceforge.net/apps/trac/pyusb/
 .. _PyVISA: http://pyvisa.sourceforge.net/
