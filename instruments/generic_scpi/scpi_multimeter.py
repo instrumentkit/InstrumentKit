@@ -393,6 +393,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         if not isinstance(mode, SCPIMultimeter.Mode):
             raise TypeError("Mode must be specified as a SCPIMultimeter.Mode "
                             "value, got {} instead.".format(type(mode)))
+        # pylint: disable=no-member
         value = float(self.query('MEAS:{}?'.format(mode.value)))
         return value * UNITS[mode]
 
