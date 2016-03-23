@@ -11,6 +11,8 @@ Unit Handling
 
 .. autofunction:: split_unit_str
 
+.. autofunction:: convert_temperature
+
 Enumerating Instrument Functionality
 ====================================
 

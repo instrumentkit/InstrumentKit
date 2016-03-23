@@ -81,7 +81,7 @@ For instance, to connect to a generic SCPI-compliant multimeter using a
 `~instruments.Instrument.open_gpibusb` method can be used::
 
 >>> import instruments as ik
->>> inst = ik.generic_scpi.SCPIMultimeter.open_gpibusb('/dev/ttyUSB0', 1)
+>>> inst = ik.generic_scpi.SCPIMultimeter.open_gpibusb("/dev/ttyUSB0", 1)
 
 Similarly, many instruments connected by USB use an FTDI or similar chip to
 emulate serial ports, and can be connected using the
@@ -89,12 +89,12 @@ emulate serial ports, and can be connected using the
 device file (on Linux) or name (on Windows) along with the baud rate of the
 emulated port::
 
->>> inst = ik.generic_scpi.SCPIMultimeter.open_serial('COM10', 115200)
+>>> inst = ik.generic_scpi.SCPIMultimeter.open_serial("COM10", 115200)
 
 As a convienence, an instrument connection can also be specified using a
 uniform resource identifier (URI) string::
 
->>> inst = ik.generic_scpi.SCPIMultimeter.open_from_uri('tcpip://192.168.0.10:4100')
+>>> inst = ik.generic_scpi.SCPIMultimeter.open_from_uri("tcpip://192.168.0.10:4100:)
 
 Instrument connection URIs of this kind are useful for storing in configuration
 files, as the same method, `~instruments.Instrument.open_from_uri`, is used,
@@ -113,7 +113,7 @@ Once connected, functionality of each instrument is exposed by methods and
 properties of the instrument object. For instance, the name of an instrument
 can be queried by getting the ``name`` property::
 
->>> print inst.name
+>>> print(inst.name)
 
 For details of how to use each instrument, please see the :ref:`apiref` entry
 for that instrument's class. If that class does not implement a given command,
@@ -121,8 +121,8 @@ raw commands and queries can be issued by using the
 `~instruments.Instrument.sendcmd` and `~instruments.Instrument.query` methods,
 respectively::
 
->>> inst.sendcmd('DATA') # Send command with no response
->>> resp = inst.query('*IDN?') # Send command and retrieve response
+>>> inst.sendcmd("DATA") # Send command with no response
+>>> resp = inst.query("*IDN?") # Send command and retrieve response
 
 OS-Specific Instructions
 ========================
