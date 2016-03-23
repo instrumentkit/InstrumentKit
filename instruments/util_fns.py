@@ -40,12 +40,16 @@ def assume_units(value, units):
 
 def convert_temperature(temperature, base):
     """
-    convert the temperature to the specified base
-    :param temperature: a quantity with units of Kelvin, Celsius, or Fahrenheit
+    Convert the temperature to the specified base. This is needed because
+    the package `quantities` does not differentiate between ``degC`` and
+    ``degK``.
+
+    :param temperature: A quantity with units of Kelvin, Celsius, or Fahrenheit
     :type temperature: `quantities.Quantity`
-    :param base: a temperature unit to convert to
+    :param base: A temperature unit to convert to
     :type base: `unitquantity.UnitTemperature`
-    :return: the converted temperature
+
+    :return: The converted temperature
     :rtype: `quantities.Quantity`
     """
     # quantities reports equivalence between degC and degK, so a string
