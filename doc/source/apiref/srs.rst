@@ -7,22 +7,29 @@
 Stanford Research Systems
 =========================
 
-:class:`SRS345`
-===============
+:class:`SRS345` Function Generator
+==================================
 
 .. autoclass:: SRS345
     :members:
     :undoc-members:
     
-:class:`SRS830`
-===============
+:class:`SRS830` Lock-In Amplifier
+=================================
 
 .. autoclass:: SRS830
     :members:
     :undoc-members:
 
-:class:`SRSDG645`
-=================
+:class:`SRSCTC100` Cryogenic Temperature Controller
+===================================================
+
+.. autoclass:: SRSCTC100
+    :members:
+    :undoc-members:
+
+:class:`SRSDG645` Digital Delay Generator
+=========================================
 
 .. autoclass:: SRSDG645
     :members:

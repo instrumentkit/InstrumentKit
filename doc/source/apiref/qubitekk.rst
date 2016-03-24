@@ -7,8 +7,8 @@
 Qubitekk
 ========
 
-:class:`CC1`
-=====================
+:class:`CC1` Coincidence Counter
+================================
 
 .. autoclass:: CC1
     :members:

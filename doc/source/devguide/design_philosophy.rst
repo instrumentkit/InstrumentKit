@@ -49,12 +49,12 @@ Robust
 
 Communications with instruments should be handled in such a way that errors
 are reported in a natural and Python-ic way, such that incorrect or unsafe
-operation is avoided, and such that all communications are correct.
+operations are avoided, and such that all communications are correct.
 
 An important consequence of this is that all quantities communicated to or from
 the instrument should be *unitful*. In this way, users can specify the
 dimensionality of values to be sent to the device without regards for what the
 instrument expects; the unit conversions will be handled by InstrumentKit in a
 way that ensures that the expectations of the instrument are properly met,
-irrespective of the user.
+irrespective of what the user knows.
 

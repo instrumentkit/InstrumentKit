@@ -7,8 +7,8 @@
 Yokogawa
 ========
 
-:class:`Yokogawa7651`
-=====================
+:class:`Yokogawa7651` Power Supply
+==================================
 
 .. autoclass:: Yokogawa7651
     :members:

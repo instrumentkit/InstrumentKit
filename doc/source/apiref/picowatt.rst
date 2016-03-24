@@ -7,8 +7,8 @@
 Picowatt
 ========
 
-:class:`PicowattAVS47`
-======================
+:class:`PicowattAVS47` Resistance Bridge
+========================================
 
 .. autoclass:: PicowattAVS47
     :members:

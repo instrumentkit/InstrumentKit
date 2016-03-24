@@ -29,9 +29,10 @@ see the `nose`_ documentation for full details, as this is not intended
 to be a guide to nose so much as a guide to how we use it in IK.)
 Because of this, we keep all test cases in the ``instruments.tests``
 package, under a subpackage named for the particular manufacturer,
-such as ``instruments.tests.test_srs``. If there's enough tests for
-a given manufacturer, please consider making modules within a manufacturer
-test subpackage for each particular device.
+such as ``instruments.tests.test_srs``. The tests for each instrument should
+be contained within its own file. Please see current tests as an example. If
+the number of tests for a given instrument is numerous, please consider making
+modules within a manufacturer test subpackage for each particular device.
 
 Below, we discuss two distinct kinds of unit tests: those that check
 that InstrumentKit functionality such as :ref:`property_factories` work correctly
@@ -59,7 +60,8 @@ a simple test case for :class:`instruments.srs.SRSDG645``::
 	                "LAMP 1,4.0",
 	            ], [
 	                "3.2"
-	            ]
+	            ],
+	            sep="\n"
 	    ) as ddg:
 	        unit_eq(ddg.output['AB'].level_amplitude, pq.Quantity(3.2, "V"))
 	        ddg.output['AB'].level_amplitude = 4.0
@@ -75,7 +77,11 @@ at the end of the indented block, assert the correct operation of the contents o
 that block. In this example, the second argument to :func:`expected_protocol`
 specifies that the instrument class should have sent out two strings,
 ``"LAMP? 1"`` and ``LAMP 1,4.0``, during the block, and should act correctly
-when given an answer of ``"3.2"`` back from the instrument.
+when given an answer of ``"3.2"`` back from the instrument. The third parameter,
+``sep`` specifies what will be appended to the end of each lines in the
+previous parameters. This lets you specify the termination character that
+will be used in the communication without having to write it out each and
+every time.
 
 Protocol Assertion Functions
 ----------------------------

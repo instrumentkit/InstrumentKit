@@ -7,8 +7,8 @@
 Rigol
 =====
     
-:class:`RigolDS1000Series`
-==========================
+:class:`RigolDS1000Series` Oscilloscope
+=======================================
 
 .. autoclass:: RigolDS1000Series
     :members:

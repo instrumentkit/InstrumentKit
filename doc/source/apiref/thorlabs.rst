@@ -7,15 +7,15 @@
 ThorLabs
 ========
 
-:class:`PM100USB` - USB Power Meter
-===================================
+:class:`PM100USB` USB Power Meter
+=================================
 
 .. autoclass:: PM100USB
     :members:
     :undoc-members:
 
-:class:`ThorLabsAPT` - ThorLabs APT Controller
-==============================================
+:class:`ThorLabsAPT` ThorLabs APT Controller
+============================================
 
 .. autoclass:: ThorLabsAPT
     :members:
@@ -33,22 +33,22 @@ ThorLabs
     :members:
     :undoc-members:
 
-:class:`SC10` - Optical Beam Shutter Controller
-===============================================
+:class:`SC10` Optical Beam Shutter Controller
+=============================================
 
 .. autoclass:: SC10
     :members:
     :undoc-members:
 
-:class:`LCC25` - Liquid Crystal Controller
-==========================================
+:class:`LCC25` Liquid Crystal Controller
+========================================
 
 .. autoclass:: LCC25
     :members:
     :undoc-members:
 
-:class:`TC200` - Temperature Controller
-=======================================
+:class:`TC200` Temperature Controller
+=====================================
 
 .. autoclass:: TC200
     :members:

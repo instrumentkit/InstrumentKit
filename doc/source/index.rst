@@ -7,7 +7,7 @@ Welcome to InstrumentKit Library's documentation!
 Contents:
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     intro
     apiref/index
