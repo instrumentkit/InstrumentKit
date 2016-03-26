@@ -8,6 +8,8 @@ VXI11 devices.
 # IMPORTS #####################################################################
 
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
 import io
 
@@ -74,15 +76,14 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
     def close(self):
         try:
             self._inst.close()
-        except:
+        except IOError:
             pass
 
-    def read(self, size=-1):
-        msg = self._inst.read(num=size)
-        return msg
+    def read_raw(self, size=-1):
+        return self._inst.read_raw(num=size)
 
-    def write(self, msg):
-        self._inst.write(msg)
+    def write_raw(self, msg):
+        self._inst.write_raw(msg)
 
     def seek(self, offset):
         raise NotImplementedError
@@ -90,7 +91,7 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
     def tell(self):
         raise NotImplementedError
 
-    def flush(self):
+    def flush_input(self):
         raise NotImplementedError
 
     # METHODS #

@@ -1,26 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-# test_vxi11.py: Tests VXI11Communicator
-#
-# © 2016 Steven Casagrande (scasagrande@galvant.ca).
-#
-# This file is a part of the InstrumentKit project.
-# Licensed under the AGPL version 3.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
+"""
+Unit tests for the VXI11 communication layer
+"""
 
 # IMPORTS ####################################################################
 
@@ -33,7 +15,7 @@ from instruments.abstract_instruments.comm import VXI11Communicator
 
 # TEST CASES #################################################################
 
-import_base = 'instruments.abstract_instruments.comm.vxi11_communicator.vxi11'
+import_base = "instruments.abstract_instruments.comm.vxi11_communicator.vxi11"
 
 
 @mock.patch(import_base)
@@ -114,21 +96,21 @@ def test_vxi11comm_close_fail(mock_vxi11):
 @mock.patch(import_base)
 def test_vxi11comm_read(mock_vxi11):
     comm = VXI11Communicator()
-    comm._inst.read.return_value = "mock"
+    comm._inst.read_raw.return_value = b"mock"
 
-    eq_(comm.read(), "mock")
-    comm._inst.read.assert_called_with(num=-1)
+    eq_(comm.read_raw(), b"mock")
+    comm._inst.read_raw.assert_called_with(num=-1)
 
     comm.read(10)
-    comm._inst.read.assert_called_with(num=10)
+    comm._inst.read_raw.assert_called_with(num=10)
 
 
 @mock.patch(import_base)
 def test_vxi11comm_write(mock_vxi11):
     comm = VXI11Communicator()
 
-    comm.write("mock")
-    comm._inst.write.assert_called_with("mock")
+    comm.write_raw(b"mock")
+    comm._inst.write_raw.assert_called_with(b"mock")
 
 
 @mock.patch(import_base)
@@ -136,7 +118,7 @@ def test_vxi11comm_sendcmd(mock_vxi11):
     comm = VXI11Communicator()
 
     comm._sendcmd("mock")
-    comm._inst.write.assert_called_with("mock")
+    comm._inst.write_raw.assert_called_with(b"mock")
 
 
 @mock.patch(import_base)
@@ -169,4 +151,4 @@ def test_vxi11comm_tell(mock_vxi11):
 @mock.patch(import_base)
 def test_vxi11comm_flush(mock_vxi11):
     comm = VXI11Communicator()
-    comm.flush()
+    comm.flush_input()
