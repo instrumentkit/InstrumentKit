@@ -42,6 +42,7 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, *args, **kwargs):
+        super(VXI11Communicator, self).__init__(self)
         if vxi11 is None:
             raise ImportError("Package python-vxi11 is required for XVI11 "
                               "connected instruments.")
