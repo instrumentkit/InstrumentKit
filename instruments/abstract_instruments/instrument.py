@@ -290,6 +290,7 @@ class Instrument(object):
 
     @classmethod
     def open_from_uri(cls, uri):
+        # pylint: disable=too-many-return-statements,too-many-branches
         """
         Given an instrument URI, opens the instrument named by that URI.
         Instrument URIs are formatted with a scheme, such as ``serial://``,

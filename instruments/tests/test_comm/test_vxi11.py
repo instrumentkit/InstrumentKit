@@ -15,19 +15,21 @@ from instruments.abstract_instruments.comm import VXI11Communicator
 
 # TEST CASES #################################################################
 
+# pylint: disable=protected-access,unused-argument
+
 import_base = "instruments.abstract_instruments.comm.vxi11_communicator.vxi11"
 
 
 @mock.patch(import_base)
 def test_vxi11comm_init(mock_vxi11):
-    comm = VXI11Communicator("host")
+    _ = VXI11Communicator("host")
     mock_vxi11.Instrument.assert_called_with("host")
 
 
 @raises(ImportError)
 @mock.patch(import_base, new=None)
 def test_vxi11comm_init_no_vxi11():
-    comm = VXI11Communicator("host")
+    _ = VXI11Communicator("host")
 
 
 @mock.patch(import_base)
