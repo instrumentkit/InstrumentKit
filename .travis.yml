@@ -1,20 +1,18 @@
 sudo: false
 language: python
 python:
-# FIXME: reenable once 2.6 support is added.
-#  - "2.6"
   - "2.7"
-# command to install dependencies
+  - "3.3"
+  - "3.4"
+  - "3.5"
 install:
-  - "pip install -r instruments/requirements.txt"
-  - "pip install -r instruments/dev-requirements.txt"
+  - "pip install -r requirements.txt"
+  - "pip install -r dev-requirements.txt"
   - pip install python-coveralls
   - pip install coverage
-  - pip install nose
-  - pip install pylint
-# command to run tests
 script:
   - nosetests --with-coverage -w instruments
-  - cd instruments && pylint --py3k instruments/ && cd ../
+  - pylint --py3k instruments/
+  - pylint instruments/
 after_success:
   - coveralls
