@@ -13,6 +13,8 @@ from __future__ import unicode_literals
 
 import io
 
+from builtins import str, bytes
+
 from instruments.abstract_instruments.comm import AbstractCommunicator
 
 try:
