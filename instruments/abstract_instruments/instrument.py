@@ -40,7 +40,7 @@ except (ImportError, WindowsError, OSError):
 from instruments.abstract_instruments.comm import (
     SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
     LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,
-    USBTMCCommunicator, serial_manager
+    USBTMCCommunicator, VXI11Communicator, serial_manager
 )
 from instruments.errors import AcknowledgementError, PromptError
 
@@ -286,10 +286,11 @@ class Instrument(object):
     # CLASS METHODS #
 
     URI_SCHEMES = ["serial", "tcpip", "gpib+usb",
-                   "gpib+serial", "visa", "file", "usbtmc"]
+                   "gpib+serial", "visa", "file", "usbtmc", "vxi11"]
 
     @classmethod
     def open_from_uri(cls, uri):
+        # pylint: disable=too-many-return-statements,too-many-branches
         """
         Given an instrument URI, opens the instrument named by that URI.
         Instrument URIs are formatted with a scheme, such as ``serial://``,
@@ -385,6 +386,11 @@ class Instrument(object):
                 parsed_uri.netloc,
                 parsed_uri.path
             ), **kwargs)
+        elif parsed_uri.scheme == "vxi11":
+            # Examples:
+            #   vxi11://192.168.1.104
+            #   vxi11://TCPIP::192.168.1.105::gpib,5::INSTR
+            return cls.open_vxi11(parsed_uri.netloc, **kwargs)
         else:
             raise NotImplementedError("Invalid scheme or not yet "
                                       "implemented.")
@@ -547,6 +553,21 @@ class Instrument(object):
         """
         usbtmc_comm = USBTMCCommunicator(*args, **kwargs)
         return cls(usbtmc_comm)
+
+    @classmethod
+    def open_vxi11(cls, *args, **kwargs):
+        """
+        Opens a vxi11 enabled instrument, connecting using the python
+        library `python-vxi11`_. This package must be present and installed
+        for this method to function.
+
+        :rtype: `Instrument`
+        :return: Object representing the connected instrument.
+
+        .. _python-vxi11: https://github.com/python-ivi/python-vxi11
+        """
+        vxi11_comm = VXI11Communicator(*args, **kwargs)
+        return cls(vxi11_comm)
 
     @classmethod
     def open_usb(cls, vid, pid):

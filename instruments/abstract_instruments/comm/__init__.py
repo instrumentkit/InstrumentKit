@@ -16,3 +16,4 @@ from .loopback_communicator import LoopbackCommunicator
 from .gi_gpib_communicator import GPIBCommunicator
 from .file_communicator import FileCommunicator
 from .usbtmc_communicator import USBTMCCommunicator
+from .vxi11_communicator import VXI11Communicator

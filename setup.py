@@ -44,7 +44,8 @@ INSTALL_REQUIRES = [
 EXTRAS_REQUIRE = {
     'USBTMC': ["python-usbtmc"],
     'VISA': ["pyvisa"],
-    'USB': ["pyusb"]
+    'USB': ["pyusb"],
+    "VXI11": ["python-vxi11"]
 }
 LONG_DESCRIPTION = """
     InstrumentKit

@@ -13,6 +13,7 @@ Supported means of communication are:
 - VISA (`open_visa`)
 - Read/write from unix files (`open_file`)
 - USBTMC (`open_usbtmc`)
+- VXI11 over Ethernet (`open_vxi11`)
 
 There is planned support for VXI11 (current under development) and eventually
 HiSLIP.
