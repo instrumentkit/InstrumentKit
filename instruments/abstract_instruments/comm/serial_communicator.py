@@ -141,7 +141,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for serial communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def tell(self):  # pylint: disable=no-self-use
         """
@@ -149,7 +149,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for serial communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def flush_input(self):
         """
