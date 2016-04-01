@@ -8,7 +8,7 @@ Unit tests for the GI GPIBUSB communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
 import mock
 import serial
 import quantities as pq
