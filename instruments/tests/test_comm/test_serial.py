@@ -20,8 +20,6 @@ from instruments.tests import unit_eq
 
 # pylint: disable=protected-access,unused-argument
 
-import_base = "instruments.abstract_instruments.comm.vxi11_communicator.vxi11"
-
 
 def test_serialcomm_init():
     comm = SerialCommunicator(serial.Serial())
@@ -29,7 +27,6 @@ def test_serialcomm_init():
 
 
 @raises(TypeError)
-@mock.patch(import_base, new=None)
 def test_serialcomm_init_wrong_filelike():
     _ = SerialCommunicator("derp")
 
@@ -39,8 +36,6 @@ def test_serialcomm_address():
     comm = SerialCommunicator(serial.Serial())
     comm._conn = mock.MagicMock()
 
-    # Add in the host and name properties which are usually
-    # done in vxi11.Instrument.__init__
     port_name = mock.PropertyMock(return_value="/dev/address")
     type(comm._conn).port = port_name
 
