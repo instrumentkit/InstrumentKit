@@ -25,7 +25,7 @@ import_base = "instruments.abstract_instruments.comm.vxi11_communicator.vxi11"
 
 def test_serialcomm_init():
     comm = SerialCommunicator(serial.Serial())
-    assert isinstance(comm._conn, serial.Serial)
+    assert isinstance(comm._conn, serial.Serial) is True
 
 
 @raises(TypeError)
@@ -34,7 +34,6 @@ def test_serialcomm_init_wrong_filelike():
     _ = SerialCommunicator("derp")
 
 
-# @mock.patch(import_base)
 def test_serialcomm_address():
     # Create our communicator
     comm = SerialCommunicator(serial.Serial())
