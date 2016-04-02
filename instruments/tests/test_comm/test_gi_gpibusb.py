@@ -8,7 +8,7 @@ Unit tests for the GI GPIBUSB communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import eq_
+from nose.tools import raises, eq_
 import mock
 import serial
 import quantities as pq
@@ -39,6 +39,29 @@ def test_gpibusbcomm_address():
     # Check that our address function is working
     eq_(comm.address, (1, "/dev/address"))
     port_name.assert_called_with()
+
+    # Able to set GPIB address
+    comm.address = 5
+    eq_(comm._gpib_address, 5)
+
+    # Able to set address with a list
+    comm.address = [6, "/dev/foobar"]
+    eq_(comm._gpib_address, 6)
+    port_name.assert_called_with("/dev/foobar")
+
+
+@raises(ValueError)
+def test_gpibusbcomm_address_out_of_range():
+    # Create our communicator
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+
+    comm.address = 31
+
+
+@raises(TypeError)
+def test_gpibusbcomm_address_wrong_type():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm.address = "derp"
 
 
 def test_gpibusbcomm_terminator():
@@ -110,6 +133,15 @@ def test_gpibusbcomm_sendcmd():
     ])
 
 
+def test_gpibusbcomm_sendcmd_empty_string():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 5
+    comm._file.sendcmd = mock.MagicMock()  # Refreshed because init makes calls
+
+    comm._sendcmd("")
+    comm._file.sendcmd.assert_not_called()
+
+
 def test_gpibusbcomm_query():
     comm = GPIBCommunicator(mock.MagicMock(), 1)
     comm._version = 5
@@ -123,6 +155,20 @@ def test_gpibusbcomm_query():
 
     comm._query("mock?", size=10)
     comm._file.read.assert_called_with(10)
+
+
+def test_gpibusbcomm_query_no_question_mark():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 5
+    comm._file.sendcmd = mock.MagicMock()  # Refreshed because init makes calls
+
+    comm._file.read = mock.MagicMock(return_value="answer")
+    comm.sendcmd = mock.MagicMock()
+
+    eq_(comm._query("mock"), "answer")
+    comm.sendcmd.assert_called_with("mock")
+    comm._file.read.assert_called_with(-1)
+    comm._file.sendcmd.assert_has_calls([mock.call("+read")])
 
 
 def test_serialcomm_flush_input():
