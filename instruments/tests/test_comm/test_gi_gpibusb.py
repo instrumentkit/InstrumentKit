@@ -45,7 +45,7 @@ def test_gpibusbcomm_address():
     eq_(comm._gpib_address, 5)
 
     # Able to set address with a list
-    comm.address = [6, "/dev/foobar"]
+    comm.address = [6, "/dev/foobar"]  # pylint: disable=redefined-variable-type
     eq_(comm._gpib_address, 6)
     port_name.assert_called_with("/dev/foobar")
 
