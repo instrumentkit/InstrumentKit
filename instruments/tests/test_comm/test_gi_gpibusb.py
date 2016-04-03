@@ -52,7 +52,6 @@ def test_gpibusbcomm_address():
 
 @raises(ValueError)
 def test_gpibusbcomm_address_out_of_range():
-    # Create our communicator
     comm = GPIBCommunicator(mock.MagicMock(), 1)
 
     comm.address = 31
@@ -62,6 +61,97 @@ def test_gpibusbcomm_address_out_of_range():
 def test_gpibusbcomm_address_wrong_type():
     comm = GPIBCommunicator(mock.MagicMock(), 1)
     comm.address = "derp"
+
+
+def test_gpibusbcomm_eoi():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 5
+
+    comm._file.sendcmd = mock.MagicMock()
+    comm.eoi = True
+    eq_(comm.eoi, True)
+    eq_(comm._eoi, True)
+    comm._file.sendcmd.assert_called_with("++eoi 1")
+
+    comm._file.sendcmd = mock.MagicMock()
+    comm.eoi = False
+    eq_(comm.eoi, False)
+    eq_(comm._eoi, False)
+    comm._file.sendcmd.assert_called_with("++eoi 0")
+
+
+def test_gpibusbcomm_eoi_old_firmware():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 4
+
+    comm._file.sendcmd = mock.MagicMock()
+    comm.eoi = True
+    eq_(comm.eoi, True)
+    eq_(comm._eoi, True)
+    comm._file.sendcmd.assert_called_with("+eoi:1")
+
+    comm._file.sendcmd = mock.MagicMock()
+    comm.eoi = False
+    eq_(comm.eoi, False)
+    eq_(comm._eoi, False)
+    comm._file.sendcmd.assert_called_with("+eoi:0")
+
+
+@raises(TypeError)
+def test_gpibusbcomm_eoi_bad_type():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 5
+    comm.eoi = "abc"
+
+
+def test_gpibusbcomm_eos_rn():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 5
+
+    comm._file.sendcmd = mock.MagicMock()
+    comm.eos = "\r\n"
+    eq_(comm.eos, "\r\n")
+    eq_(comm._eos, "\r\n")
+    comm._file.sendcmd.assert_called_with("++eos 0")
+
+
+def test_gpibusbcomm_eos_r():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 5
+
+    comm._file.sendcmd = mock.MagicMock()
+    comm.eos = "\r"
+    eq_(comm.eos, "\r")
+    eq_(comm._eos, "\r")
+    comm._file.sendcmd.assert_called_with("++eos 1")
+
+
+def test_gpibusbcomm_eos_n():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 5
+
+    comm._file.sendcmd = mock.MagicMock()
+    comm.eos = "\n"
+    eq_(comm.eos, "\n")
+    eq_(comm._eos, "\n")
+    comm._file.sendcmd.assert_called_with("++eos 2")
+
+
+@raises(ValueError)
+def test_gpibusbcomm_eos_invalid():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 5
+    comm.eos = "*"
+
+
+def test_gpibusbcomm_old_firmware():
+    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    comm._version = 4
+
+    comm._file.sendcmd = mock.MagicMock()
+    comm.eos = "\n"
+    eq_(comm._eos, 10)
+    comm._file.sendcmd.assert_called_with("+eos:10")
 
 
 def test_gpibusbcomm_terminator():
@@ -84,9 +174,6 @@ def test_gpibusbcomm_terminator():
 def test_gpibusbcomm_timeout():
     comm = GPIBCommunicator(mock.MagicMock(), 1)
     comm._version = 5
-
-    # timeout = mock.PropertyMock(return_value=30)
-    # type(comm._conn).timeout = timeout
 
     unit_eq(comm.timeout, 1000 * pq.millisecond)
 
