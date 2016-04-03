@@ -144,7 +144,7 @@ def test_gpibusbcomm_eos_invalid():
     comm.eos = "*"
 
 
-def test_gpibusbcomm_old_firmware():
+def test_gpibusbcomm_eos_old_firmware():
     comm = GPIBCommunicator(mock.MagicMock(), 1)
     comm._version = 4
 
