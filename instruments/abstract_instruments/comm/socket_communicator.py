@@ -131,7 +131,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for socket communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def tell(self):  # pylint: disable=no-self-use
         """
@@ -139,7 +139,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for socket communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def flush_input(self):
         """
@@ -160,7 +160,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         :param str msg: The command message to send to the instrument
         """
         msg += self._terminator
-        self._conn.sendall(msg)
+        self.write(msg)
 
     def _query(self, msg, size=-1):
         """
