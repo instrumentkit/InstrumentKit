@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Unit tests for the serial communication layer
+Unit tests for the socket communication layer
 """
 
 # IMPORTS ####################################################################
