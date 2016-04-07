@@ -34,18 +34,19 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
     :param filelike: File or name of a file to be wrapped as a communicator.
         Any file-like object wrapped by this class **must** support both
         reading and writing. If using the `open` builtin function, the mode
-        ``r+`` is recommended, and has been tested to work with character
+        ``rb+`` is recommended, and has been tested to work with character
         devices under Linux.
     :type filelike: `str` or `file`
     """
 
     def __init__(self, filelike):
         super(FileCommunicator, self).__init__(self)
-        if isinstance(filelike, str):
+        if isinstance(filelike, str):  # pragma: no cover
             filelike = open(filelike, 'rb+')
 
         self._filelike = filelike
         self._terminator = "\n"
+        self._testing = False
 
     # PROPERTIES #
 
@@ -105,7 +106,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         """
         try:
             self._filelike.close()
-        except IOError as e:
+        except IOError as e:  # pragma: no cover
             logger.warning("Failed to close file, exception: %s", repr(e))
 
     def read_raw(self, size=-1):
@@ -196,8 +197,9 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         self.sendcmd(msg)
-        time.sleep(0.02)  # Give the bus time to respond.
-        resp = ""
+        if not self._testing:
+            time.sleep(0.02)  # Give the bus time to respond.
+        resp = b""
         try:
             # FIXME: this is slow, but we do it to avoid unreliable
             #        filelike devices such as some usbtmc-class devices.
@@ -206,7 +208,8 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
                 if not nextchar:
                     break
                 resp += nextchar
-                if nextchar.endswith(self._terminator):
+                if nextchar.endswith(self._terminator.encode("utf-8")):
+                    resp = resp[:-len(self._terminator)]
                     break
         except IOError as ex:
             if ex.errno == errno.ETIMEDOUT:
@@ -224,4 +227,4 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
                     "the instrument. Consider restarting the instrument.".format(
                         self.address
                     ))
-        return resp
+        return resp.decode("utf-8")

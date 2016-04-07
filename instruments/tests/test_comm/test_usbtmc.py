@@ -19,6 +19,7 @@ from instruments.abstract_instruments.comm import USBTMCCommunicator
 
 patch_path = "instruments.abstract_instruments.comm.usbtmc_communicator.usbtmc"
 
+
 @mock.patch(patch_path)
 def test_usbtmccomm_init(mock_usbtmc):
     _ = USBTMCCommunicator("foobar", var1=123)
