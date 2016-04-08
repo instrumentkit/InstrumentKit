@@ -50,7 +50,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
     @address.setter
     def address(self, newval):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
     def terminator(self):
@@ -144,7 +144,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for loopback communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def tell(self):  # pylint: disable=no-self-use
         """
@@ -152,7 +152,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for loopback communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def flush_input(self):
         """
