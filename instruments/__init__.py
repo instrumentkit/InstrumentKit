@@ -41,7 +41,7 @@ import instruments.other as _other
 
 __version__ = "0.0.1"
 
-__title__ = "instruments"
+__title__ = "instrumentkit"
 __description__ = "Test and measurement communication library"
 __uri__ = "https://instrumentkit.readthedocs.org/"
 
