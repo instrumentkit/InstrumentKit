@@ -59,6 +59,7 @@ LONG_DESCRIPTION = """
     code. Since the API is consistent across similar instruments, a user
     can, for example, upgrade from their 1980's multimeter using GPIB to a
     modern Keysight 34461a using ethernet with only a single line change.
+
 """
 
 # HELPER FUNCTONS ############################################################
