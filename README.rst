@@ -15,7 +15,7 @@ various communication buses.
 
 Supported means of communication are:
 
-- Galvant Industries GPIBUSB adapter (`open_gpibusb`)
+- Galvant Industries GPIBUSB adapter (``open_gpibusb``)
 - Serial (``open_serial``)
 - Sockets (``open_tcpip``)
 - VISA (``open_visa``)
@@ -23,8 +23,7 @@ Supported means of communication are:
 - USBTMC (``open_usbtmc``)
 - VXI11 over Ethernet (``open_vxi11``)
 
-There is planned support for VXI11 (current under development) and eventually
-HiSLIP.
+There is planned support for HiSLIP someday, but a good Python HiSLIP library will be needed first.
 
 If you have any problems or have code you wish to contribute back to the
 project please feel free to open an issue or a pull request!
