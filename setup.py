@@ -103,6 +103,5 @@ if __name__ == "__main__":
         install_requires=INSTALL_REQUIRES,
         extras_require=EXTRAS_REQUIRE,
         description=find_meta("description"),
-        long_description=LONG_DESCRIPTION,
         classifiers=CLASSIFIERS
     )
