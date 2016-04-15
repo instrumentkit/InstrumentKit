@@ -47,20 +47,6 @@ EXTRAS_REQUIRE = {
     'USB': ["pyusb"],
     "VXI11": ["python-vxi11"]
 }
-LONG_DESCRIPTION = """
-    InstrumentKit
-    -------------
-
-    InstrumentKit is an open source Python library designed to help the
-    end-user get straight into communicating with their equipment via a PC.
-    InstrumentKit aims to accomplish this by providing a connection- and
-    vendor-agnostic API. Users can freely swap between a variety of
-    connection types (ethernet, gpib, serial, usb) without impacting their
-    code. Since the API is consistent across similar instruments, a user
-    can, for example, upgrade from their 1980's multimeter using GPIB to a
-    modern Keysight 34461a using ethernet with only a single line change.
-
-"""
 
 # HELPER FUNCTONS ############################################################
 
