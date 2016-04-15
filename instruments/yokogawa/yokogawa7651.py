@@ -166,7 +166,7 @@ class Yokogawa7651(PowerSupply, Instrument):
         This (single) channel is accessed as a list in the following manner::
 
         >>> import instruments as ik
-        >>> yoko = ik.other.Yokogawa7651.open_gpibusb('/dev/ttyUSB0', 10)
+        >>> yoko = ik.yokogawa.Yokogawa7651.open_gpibusb('/dev/ttyUSB0', 10)
         >>> yoko.channel[0].voltage = 1 # Sets output voltage to 1V
 
         :rtype: `~Yokogawa7651.Channel`
