@@ -1,11 +1,14 @@
 InstrumentKit
 =============
 
-.. image:: https://img.shields.io/travis/Galvant/InstrumentKit.svg?maxAge=2592000 :target: https://travis-ci.org/Galvant/InstrumentKit
+.. image:: https://img.shields.io/travis/Galvant/InstrumentKit.svg?maxAge=2592000
+    :target: https://travis-ci.org/Galvant/InstrumentKit
 
-.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/dev.svg?maxAge=2592000 :target: https://coveralls.io/r/Galvant/InstrumentKit?branch=dev
+.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/dev.svg?maxAge=2592000
+    :target: https://coveralls.io/r/Galvant/InstrumentKit?branch=dev
 
-.. image:: https://readthedocs.org/projects/instrumentkit/badge/?version=latest :target: https://readthedocs.org/projects/instrumentkit/?badge=latest
+.. image:: https://readthedocs.org/projects/instrumentkit/badge/?version=latest
+    :target: https://readthedocs.org/projects/instrumentkit/?badge=latest
 
 This project contains code to easily interact with laboratory equipment using
 various communication buses.
