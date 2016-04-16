@@ -39,13 +39,14 @@ INSTALL_REQUIRES = [
     "pyserial",
     "quantities",
     "enum34",
-    "future"
+    "future",
+    "python-vxi11",
+    "python-usbtmc",
+    "pyusb",
+    "pyyaml"
 ]
 EXTRAS_REQUIRE = {
-    'USBTMC': ["python-usbtmc"],
-    'VISA': ["pyvisa"],
-    'USB': ["pyusb"],
-    "VXI11": ["python-vxi11"]
+    'VISA': ["pyvisa"]
 }
 
 # HELPER FUNCTONS ############################################################
