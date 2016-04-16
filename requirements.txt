@@ -4,6 +4,6 @@ quantities
 future>=0.15
 enum34
 python-vxi11>=0.8
-pyusb>=1
+pyusb
 python-usbtmc
 pyyaml
