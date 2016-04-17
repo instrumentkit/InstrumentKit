@@ -15,10 +15,7 @@ import io
 
 from builtins import str, bytes
 
-try:
-    import vxi11
-except ImportError:
-    vxi11 = None
+import vxi11
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 
