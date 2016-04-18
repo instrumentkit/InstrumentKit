@@ -16,3 +16,10 @@ script:
   - pylint instruments/
 after_success:
   - coveralls
+deploy:
+  provider: pypi
+  user: ${PYPI_USERNAME}
+  password: ${PYPI_PASSWORD}
+  distributions: "sdist bdist_wheel"
+  on:
+    tags: true

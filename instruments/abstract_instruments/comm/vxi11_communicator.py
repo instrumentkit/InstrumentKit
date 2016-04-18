@@ -15,12 +15,9 @@ import io
 
 from builtins import str, bytes
 
-from instruments.abstract_instruments.comm import AbstractCommunicator
+import vxi11
 
-try:
-    import vxi11
-except ImportError:
-    vxi11 = None
+from instruments.abstract_instruments.comm import AbstractCommunicator
 
 # CLASSES #####################################################################
 

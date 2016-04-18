@@ -15,7 +15,7 @@ from instruments.abstract_instruments.comm import USBTMCCommunicator
 
 # TEST CASES #################################################################
 
-# pylint: disable=protected-access,unused-argument
+# pylint: disable=protected-access,unused-argument,no-member
 
 patch_path = "instruments.abstract_instruments.comm.usbtmc_communicator.usbtmc"
 

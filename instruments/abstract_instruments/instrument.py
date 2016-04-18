@@ -591,6 +591,7 @@ class Instrument(object):
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
         """
+        # pylint: disable=no-member
         if usb is None:
             raise ImportError("USB support not imported. Do you have PyUSB "
                               "version 1.0 or later?")

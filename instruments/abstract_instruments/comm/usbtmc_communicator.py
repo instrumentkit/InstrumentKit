@@ -14,10 +14,7 @@ from __future__ import unicode_literals
 import io
 from builtins import str, bytes
 
-try:
-    import usbtmc
-except ImportError:
-    usbtmc = None
+import usbtmc
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 

@@ -32,16 +32,13 @@ from . import yokogawa
 from . import units
 from .config import load_instruments
 
-# Replace instruments.other with a deprecation warning.
-import instruments.other as _other
-
 # VERSION METADATA ###########################################################
 # In keeping with PEP-396, we define a version number of the form
 # {major}.{minor}[.{postrelease}]{prerelease-tag}
 
 __version__ = "0.0.1"
 
-__title__ = "instruments"
+__title__ = "instrumentkit"
 __description__ = "Test and measurement communication library"
 __uri__ = "https://instrumentkit.readthedocs.org/"
 
@@ -50,25 +47,3 @@ __email__ = "scasagrande@galvant.ca"
 
 __license__ = "AGPLv3"
 __copyright__ = "Copyright (c) 2012-2016 Steven Casagrande"
-
-
-class _Other(object):
-
-    def __getattr__(self, name):
-        import warnings
-        attr = getattr(_other, name)
-
-        msg = (
-            "The instruments.other package is deprecated. "
-            "Please use the {} package instead.".format(
-                ".".join(attr.__module__.split(".")[:2])
-            )
-        )
-
-        # This really should be a DeprecationWarning, except those are silenced
-        # by default. Why?
-        warnings.warn(msg, UserWarning)
-
-        return attr
-
-other = _Other()
