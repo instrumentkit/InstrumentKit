@@ -58,7 +58,7 @@ From pypi using pip:
 
 .. code-block:: console
 
-    $ pip install instruments
+    $ pip install instrumentkit
 
 
 Usage Example
@@ -70,7 +70,7 @@ Industries' GPIBUSB adapter:
 .. code-block:: python
 
     >>> import instruments as ik
-    >>> inst = ik.generic_scpi.SCPIMultimeter.open_gpibusb('/dev/ttyUSB0', 1)
+    >>> inst = ik.generic_scpi.SCPIMultimeter.open_gpibusb("/dev/ttyUSB0", 1)
 
 From there, various built-in properties and functions can be called. For
 example, the instrument's identification information can be retrieved by
@@ -137,4 +137,4 @@ License
 -------
 
 All code in this repository is released under the AGPL-v3 license. Please see
-the `license` folder for more information.
+the ``license`` folder for more information.
