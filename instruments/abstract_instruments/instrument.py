@@ -264,16 +264,17 @@ class Instrument(object):
             default.
         """
         # This needs to be a # symbol for valid binary block
-        symbol = self._file.read(1)
-        if symbol != "#":  # Check to make sure block is valid
+        symbol = self._file.read_raw(1)
+        if symbol != b"#":  # Check to make sure block is valid
             raise IOError("Not a valid binary block start. Binary blocks "
-                          "require the first character to be #.")
+                          "require the first character to be #, instead got "
+                          "{}".format(symbol))
         else:
             # Read in the num of digits for next part
             digits = int(self._file.read_raw(1))
 
             # Read in the num of bytes to be read
-            num_of_bytes = int(self._file.read(digits))
+            num_of_bytes = int(self._file.read_raw(digits))
 
             # Make or use the required format string.
             if fmt is None:

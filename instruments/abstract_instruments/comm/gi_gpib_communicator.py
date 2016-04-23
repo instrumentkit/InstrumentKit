@@ -48,7 +48,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if self._version <= 4:
             self._eos = 10
         else:
-            self._eos = "\n"
+            self._eos = "\n"  # pylint: disable=redefined-variable-type
 
     # PROPERTIES #
 
