@@ -29,6 +29,27 @@ def test_gpibusbcomm_init():
     assert isinstance(comm._file, SerialCommunicator)
 
 
+def test_gpibusbcomm_init_correct_values_new_firmware():
+    mock_gpib = mock.MagicMock()
+    mock_gpib.query.return_value = "5"
+    comm = GPIBCommunicator(mock_gpib, 1)
+
+    eq_(comm._terminator, "\n")
+    eq_(comm._version, 5)
+    eq_(comm._eos, "\n")
+    eq_(comm._eoi, True)
+    unit_eq(comm._timeout, 1000 * pq.millisecond)
+
+
+def test_gpibusbcomm_init_correct_values_old_firmware():
+    # This test just has the differences between the new and old firmware
+    mock_gpib = mock.MagicMock()
+    mock_gpib.query.return_value = "4"
+    comm = GPIBCommunicator(mock_gpib, 1)
+
+    eq_(comm._eos, 10)
+
+
 def test_gpibusbcomm_address():
     # Create our communicator
     comm = GPIBCommunicator(mock.MagicMock(), 1)
