@@ -14,6 +14,7 @@ from builtins import range, map
 from enum import Enum
 
 import numpy as np
+import quantities as pq
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
@@ -157,6 +158,10 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
     >>> tek = ik.tektronix.TekTDS224.open_gpibusb("/dev/ttyUSB0", 1)
     >>> [x, y] = tek.channel[0].read_waveform()
     """
+
+    def __init__(self, filelike):
+        super(TekTDS224, self).__init__(filelike)
+        self._file.timeout = 3 * pq.second
 
     # ENUMS #
 
