@@ -21,6 +21,8 @@ from instruments.tests import expected_protocol
 
 # TESTS ######################################################################
 
+# pylint: disable=no-member
+
 
 def test_instrument_binblockread():
     with expected_protocol(

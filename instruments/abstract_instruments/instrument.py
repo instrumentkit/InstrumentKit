@@ -282,7 +282,20 @@ class Instrument(object):
 
             # Read in the data bytes, and pass them to numpy using the specified
             # data type (format).
-            return np.frombuffer(self._file.read_raw(num_of_bytes), dtype=fmt)
+            # This is looped in case a communication timeout occurs midway
+            # through transfer and multiple reads are required
+            tries = 3
+            data = self._file.read_raw(num_of_bytes)
+            while len(data) < num_of_bytes:
+                old_len = len(data)
+                data += self._file.read_raw(num_of_bytes)
+                if old_len == len(data):
+                    tries -= 1
+                if tries == 0:
+                    raise IOError("Did not read in the required number of bytes"
+                                  "during binblock read. Got {}, expected"
+                                  "{}".format(len(data), num_of_bytes))
+            return np.frombuffer(data, dtype=fmt)
 
     # CLASS METHODS #
 
