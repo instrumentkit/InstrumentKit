@@ -288,7 +288,7 @@ class Instrument(object):
             data = self._file.read_raw(num_of_bytes)
             while len(data) < num_of_bytes:
                 old_len = len(data)
-                data += self._file.read_raw(num_of_bytes)
+                data += self._file.read_raw(num_of_bytes - old_len)
                 if old_len == len(data):
                     tries -= 1
                 if tries == 0:

@@ -44,6 +44,10 @@ def test_instrument_binblockread_two_reads():
 
     np.testing.assert_array_equal(inst.binblockread(2), [0, 1, 2, 3, 4])
 
+    calls_expected = [1, 1, 2, 10, 4]
+    calls_actual = [call[0][0] for call in inst._file.read_raw.call_args_list]
+    np.testing.assert_array_equal(calls_expected, calls_actual)
+
 
 @raises(IOError)
 def test_instrument_binblockread_too_many_reads():
