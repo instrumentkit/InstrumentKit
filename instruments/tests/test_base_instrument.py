@@ -54,3 +54,11 @@ def test_instrument_binblockread_too_many_reads():
     )
 
     _ = inst.binblockread(2)
+
+
+@raises(IOError)
+def test_instrument_binblockread_bad_block_start():
+    inst = ik.Instrument.open_test()
+    inst._file.read_raw = mock.MagicMock(return_value=b"@")
+
+    _ = inst.binblockread(2)
