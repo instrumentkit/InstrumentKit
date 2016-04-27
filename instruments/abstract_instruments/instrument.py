@@ -293,7 +293,7 @@ class Instrument(object):
                     tries -= 1
                 if tries == 0:
                     raise IOError("Did not read in the required number of bytes"
-                                  "during binblock read. Got {}, expected"
+                                  "during binblock read. Got {}, expected "
                                   "{}".format(len(data), num_of_bytes))
             return np.frombuffer(data, dtype=fmt)
 
