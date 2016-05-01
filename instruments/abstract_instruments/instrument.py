@@ -525,7 +525,8 @@ class Instrument(object):
         if visa is None:
             raise ImportError("PyVISA is required for loading VISA "
                               "instruments.")
-        if int(visa.__version__.replace(".", "")) >= 160:
+        version = list(map(int, visa.__version__.split(".")))
+        if version[0] >= 1 and version[1] >= 6:
             ins = visa.ResourceManager().open_resource(resource_name)
         else:
             ins = visa.instrument(resource_name)
