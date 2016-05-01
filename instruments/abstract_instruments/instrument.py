@@ -16,6 +16,8 @@ import os
 import collections
 import socket
 
+from builtins import map
+
 from future.standard_library import install_aliases
 import numpy as np
 
@@ -531,7 +533,7 @@ class Instrument(object):
         if version[0] >= 1 and version[1] >= 6:
             ins = visa.ResourceManager().open_resource(resource_name)
         else:
-            ins = visa.instrument(resource_name)
+            ins = visa.instrument(resource_name)  #pylint: disable=no-member
         return cls(VisaCommunicator(ins))
 
     @classmethod
