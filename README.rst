@@ -3,12 +3,22 @@ InstrumentKit
 
 .. image:: https://img.shields.io/travis/Galvant/InstrumentKit.svg?maxAge=2592000
     :target: https://travis-ci.org/Galvant/InstrumentKit
+    :alt: Travis-CI build status
 
 .. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/dev.svg?maxAge=2592000
     :target: https://coveralls.io/r/Galvant/InstrumentKit?branch=dev
+    :alt: Coveralls code coverage
 
 .. image:: https://readthedocs.org/projects/instrumentkit/badge/?version=latest
     :target: https://readthedocs.org/projects/instrumentkit/?badge=latest
+    :alt: Documentation
+
+.. image:: https://img.shields.io/pypi/v/instrumentkit.svg?maxAge=86400
+    :target: https://pypi.python.org/pypi/instrumentkit
+    :alt: PyPI version
+
+.. image:: https://img.shields.io/pypi/pyversions/instrumentkit.svg?maxAge=2592000
+    :alt: Python versions
 
 InstrumentKit is an open source Python library designed to help the
 end-user get straight into communicating with their equipment via a PC.
