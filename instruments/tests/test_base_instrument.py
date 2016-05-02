@@ -8,6 +8,8 @@ Module containing tests for the base Instrument class
 
 from __future__ import absolute_import
 
+import socket
+
 from builtins import bytes
 
 from nose.tools import raises
@@ -17,11 +19,14 @@ import numpy as np
 
 import instruments as ik
 from instruments.tests import expected_protocol
+from instruments.abstract_instruments.comm import SocketCommunicator
 
 # TESTS ######################################################################
 
 # pylint: disable=no-member,protected-access
 
+
+# BINBLOCKREAD TESTS
 
 def test_instrument_binblockread():
     with expected_protocol(
@@ -66,3 +71,16 @@ def test_instrument_binblockread_bad_block_start():
     inst._file.read_raw = mock.MagicMock(return_value=b"@")
 
     _ = inst.binblockread(2)
+
+
+# OPEN CONNECTION TESTS
+
+@mock.patch("instruments.abstract_instruments.instrument.SocketCommunicator")
+@mock.patch("instruments.abstract_instruments.instrument.socket")
+def test_instrument_open_tcpip(mock_socket, mock_socket_comm):
+    mock_socket.socket.return_value.__class__ = socket.socket
+    mock_socket_comm.return_value.__class__ = SocketCommunicator
+
+    inst = ik.Instrument.open_tcpip("127.0.0.1", 1234)
+
+    assert isinstance(inst._file, SocketCommunicator) is True
