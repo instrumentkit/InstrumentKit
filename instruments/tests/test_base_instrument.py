@@ -179,3 +179,113 @@ def test_instrument_open_test():
     assert isinstance(inst._file, LoopbackCommunicator)
     assert inst._file._stdin == a
     assert inst._file._stdout == b
+
+
+@mock.patch("instruments.abstract_instruments.instrument.VXI11Communicator")
+def test_instrument_open_vxi11(mock_vxi11_comm):
+    mock_vxi11_comm.return_value.__class__ = VXI11Communicator
+
+    inst = ik.Instrument.open_vxi11("string", 1, key1="value")
+
+    assert isinstance(inst._file, VXI11Communicator) is True
+
+    mock_vxi11_comm.assert_called_with("string", 1, key1="value")
+
+
+@mock.patch("instruments.abstract_instruments.instrument.USBTMCCommunicator")
+def test_instrument_open_usbtmc(mock_usbtmc_comm):
+    mock_usbtmc_comm.return_value.__class__ = USBTMCCommunicator
+
+    inst = ik.Instrument.open_usbtmc("string", 1, key1="value")
+
+    assert isinstance(inst._file, USBTMCCommunicator) is True
+
+    mock_usbtmc_comm.assert_called_with("string", 1, key1="value")
+
+
+@mock.patch("instruments.abstract_instruments.instrument.FileCommunicator")
+def test_instrument_open_file(mock_file_comm):
+    mock_file_comm.return_value.__class__ = FileCommunicator
+
+    inst = ik.Instrument.open_file("filename")
+
+    assert isinstance(inst._file, FileCommunicator) is True
+
+    mock_file_comm.assert_called_with("filename")
+
+
+# OPEN URI TESTS
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_serial")
+def test_instrument_open_from_uri_serial(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("serial:///dev/foobar")
+
+    mock_open_conn.assert_called_with("/dev/foobar", baud=115200)
+
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_serial")
+def test_instrument_open_from_uri_serial_with_baud(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("serial:///dev/foobar?baud=230400")
+
+    mock_open_conn.assert_called_with("/dev/foobar", baud=230400)
+
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_tcpip")
+def test_instrument_open_from_uri_tcpip(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("tcpip://192.169.0.1:8080")
+
+    mock_open_conn.assert_called_with("192.169.0.1", 8080)
+
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_gpibusb")
+def test_instrument_open_from_uri_gpibusb(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("gpib+usb:///dev/foobar/15")
+
+    mock_open_conn.assert_called_with("/dev/foobar", 15)
+
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_gpibusb")
+def test_instrument_open_from_uri_gpibserial(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("gpib+serial:///dev/foobar/7")
+
+    mock_open_conn.assert_called_with("/dev/foobar", 7)
+
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_visa")
+def test_instrument_open_from_uri_visa(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("visa://USB::0x1234::0xFF12::0x7421::0::INSTR")
+
+    mock_open_conn.assert_called_with("USB::0x1234::0xFF12::0x7421::0::INSTR")
+
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_usbtmc")
+def test_instrument_open_from_uri_usbtmc(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("usbtmc://USB::0x1234::0xFF12::0x7421::0::INSTR")
+
+    mock_open_conn.assert_called_with("USB::0x1234::0xFF12::0x7421::0::INSTR")
+
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_file")
+def test_instrument_open_from_uri_file(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("file:///dev/filename")
+
+    mock_open_conn.assert_called_with("/dev/filename")
+
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_file")
+def test_instrument_open_from_uri_file(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("file:///dev/filename")
+
+    mock_open_conn.assert_called_with("/dev/filename")
+
+
+@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_vxi11")
+def test_instrument_open_from_uri_vxi11(mock_open_conn):
+    _ = ik.Instrument.open_from_uri("vxi11://TCPIP::192.168.1.105::gpib,5::INSTR")
+
+    mock_open_conn.assert_called_with("TCPIP::192.168.1.105::gpib,5::INSTR")
+
+
+@raises(NotImplementedError)
+def test_instrument_open_from_uri_invalid_scheme():
+    _ = ik.Instrument.open_from_uri("foo://bar")
