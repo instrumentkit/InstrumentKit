@@ -14,6 +14,7 @@ import quantities as pq
 import instruments as ik
 from instruments.tests import expected_protocol, unit_eq
 
+
 # TESTS ######################################################################
 
 
@@ -55,6 +56,7 @@ def test_cc1_window():
         unit_eq(cc.window, pq.Quantity(2, "ns"))
         cc.window = 7
 
+
 @raises(ValueError)
 def test_cc1_window_error():
     with expected_protocol(
@@ -72,6 +74,7 @@ def test_cc1_window_error():
     ) as cc:
         cc.window = 10
 
+
 def test_cc1_delay():
     with expected_protocol(
         ik.qubitekk.CC1,
@@ -83,7 +86,7 @@ def test_cc1_delay():
         [
             "FIRM?",
             "Firmware v2.010",
-			"DELA?",
+            "DELA?",
             "8",
             ":DELA 2",
             ""
@@ -103,9 +106,9 @@ def test_cc1_delay_error1():
             ":DELA -1"
         ],
         [
-			"FIRM?",
+            "FIRM?",
             "Firmware v2.010",
-			":DELA -1"
+            ":DELA -1"
         ],
         sep="\n"
     ) as cc:
@@ -121,9 +124,9 @@ def test_cc1_delay_error2():
             ":DELA 1"
         ],
         [
-			"FIRM?",
+            "FIRM?",
             "Firmware v2.010",
-			":DELA 1"
+            ":DELA 1"
         ],
         sep="\n"
     ) as cc:
@@ -141,7 +144,7 @@ def test_cc1_dwell_old_firmware():
         [
             "Firmware v2.001",
             "8000",
-			""
+            ""
         ],
         sep="\n"
     ) as cc:
@@ -179,7 +182,7 @@ def test_cc1_dwell_time_error():
             ":DWEL -1"
         ],
         [
-			"FIRM?",
+            "FIRM?",
             "Firmware v2.010",
             ":DWEL -1"
         ],
@@ -195,7 +198,7 @@ def test_cc1_firmware():
             "FIRM?"
         ],
         [
-			"FIRM?",
+            "FIRM?",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -224,7 +227,7 @@ def test_cc1_firmware_3():
             "FIRM?"
         ],
         [
-			"FIRM?",
+            "FIRM?",
             "Firmware v2.010.1"
         ],
         sep="\n"
@@ -240,9 +243,9 @@ def test_cc1_firmware_repeat_query():
             "FIRM?"
         ],
         [
-			"FIRM?",
+            "FIRM?",
             "Unknown",
-			"FIRM?",
+            "FIRM?",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -261,7 +264,7 @@ def test_cc1_gate_new_firmware():
 
         ],
         [
-			"FIRM?",
+            "FIRM?",
             "Firmware v2.010",
             "GATE?",
             "ON",
@@ -272,6 +275,7 @@ def test_cc1_gate_new_firmware():
         assert cc.gate is True
         cc.gate = True
         cc.gate = False
+
 
 def test_cc1_gate_old_firmware():
     with expected_protocol(
@@ -307,7 +311,7 @@ def test_cc1_gate_error():
         [
             "FIRM?",
             "Firmware v2.010",
-			":GATE blo"
+            ":GATE blo"
         ],
         sep="\n"
     ) as cc:
@@ -329,7 +333,7 @@ def test_cc1_subtract_new_firmware():
             "Firmware v2.010",
             "SUBT?",
             "ON",
-			":SUBT:ON",
+            ":SUBT:ON",
             ":SUBT:OFF"
         ],
         sep="\n"
@@ -413,7 +417,7 @@ def test_cc1_trigger_mode_error():
         ],
         [
             "FIRM?",
-			"Firmware v2.010"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -430,7 +434,7 @@ def test_cc1_clear():
         [
             "FIRM?",
             "Firmware v2.010",
-			"CLEA"
+            "CLEA"
         ],
         sep="\n"
     ) as cc:
