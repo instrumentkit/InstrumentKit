@@ -49,10 +49,14 @@ class CC1(SCPIInstrument):
             self._bool = ("ON", "OFF")
             self._set_fmt = ":{}:{}"
             self.TriggerMode = self._TriggerModeNew
+            self._ack_expected = self.repeat
         else:
             self._bool = ("1", "0")
             self._set_fmt = ":{} {}"
             self.TriggerMode = self._TriggerModeOld
+
+    def repeat(self, msg=""):
+        return msg
 
     # ENUMS #
 
@@ -258,6 +262,8 @@ class CC1(SCPIInstrument):
                     self._firmware = None
                 else:
                     value = self._firmware.replace("Firmware v", "").split(".")
+                    if value[0] == "FIRM?":
+                        value = self.read(-1).replace("Firmware v", "").split(".")
                     if len(value) < 3:
                         for _ in range(3-len(value)):
                             value.append(0)
