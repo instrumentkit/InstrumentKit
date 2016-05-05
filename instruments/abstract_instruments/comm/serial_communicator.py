@@ -121,7 +121,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
             c = b''
             while c != self._terminator.encode("utf-8"):
                 c = self._conn.read(1)
-                if c == "":
+                if c == b"":
                     raise IOError("Serial connection timed out before reading "
                                   "a termination character.")
                 if c != self._terminator.encode("utf-8"):
