@@ -43,6 +43,7 @@ class CC1(SCPIInstrument):
         self.terminator = "\n"
         self._channel_count = 3
         self._firmware = None
+        self.ack_on = True
         _ = self.firmware  # prime the firmware
 
         if self.firmware[0] >= 2 and self.firmware[1] > 1:
@@ -55,8 +56,11 @@ class CC1(SCPIInstrument):
             self.TriggerMode = self._TriggerModeOld
 
     def _ack_expected(self, msg=""):
-        if self.firmware[0] >= 2 and self.firmware[1] > 1:
-            return msg
+        if self.ack_on:
+            if self.firmware[0] >= 2 and self.firmware[1] > 1:
+                return msg
+            else:
+                return None
         else:
             return None
 
@@ -257,9 +261,12 @@ class CC1(SCPIInstrument):
         # the firmware is assumed not to change while the device is active
         # firmware is stored locally as it will be gotten often
         # pylint: disable=no-member
+        self.ack_on = False
         if self._firmware is None:
             while self._firmware is None:
                 self._firmware = self.query("FIRM?")
+                if self._firmware == "FIRM?":
+                    self._firmware = self.read(-1)
                 if self._firmware.find("Unknown") >= 0:
                     self._firmware = None
                 else:
@@ -273,6 +280,7 @@ class CC1(SCPIInstrument):
                             value.append(0)
                     value = tuple(map(int, value))
                     self._firmware = value
+        self.ack_on = True
         return self._firmware
 
     @property
