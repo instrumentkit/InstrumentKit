@@ -272,13 +272,6 @@ def test_instrument_open_from_uri_file(mock_open_conn):
     mock_open_conn.assert_called_with("/dev/filename")
 
 
-@mock.patch("instruments.abstract_instruments.instrument.Instrument.open_file")
-def test_instrument_open_from_uri_file(mock_open_conn):
-    _ = ik.Instrument.open_from_uri("file:///dev/filename")
-
-    mock_open_conn.assert_called_with("/dev/filename")
-
-
 @mock.patch("instruments.abstract_instruments.instrument.Instrument.open_vxi11")
 def test_instrument_open_from_uri_vxi11(mock_open_conn):
     _ = ik.Instrument.open_from_uri("vxi11://TCPIP::192.168.1.105::gpib,5::INSTR")
