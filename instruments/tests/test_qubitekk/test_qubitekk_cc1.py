@@ -25,7 +25,9 @@ def test_cc1_count():
             "COUN:C1?"
         ],
         [
+            "FIRM?",
             "Firmware v2.010",
+            "COUN:C1?",
             "20"
         ],
         sep="\n"
@@ -42,9 +44,11 @@ def test_cc1_window():
             ":WIND 7"
         ],
         [
+            "FIRM?",
             "Firmware v2.010",
+            "WIND?",
             "2",
-            ""
+            ":WIND 7"
         ],
         sep="\n"
     ) as cc:
@@ -61,7 +65,9 @@ def test_cc1_window_error():
             ":WIND 10"
         ],
         [
-            "Firmware v2.010"
+            "FIRM?",
+            "Firmware v2.010",
+            ":WIND 10"
         ],
         sep="\n"
     ) as cc:
@@ -77,6 +83,7 @@ def test_cc1_delay():
             ":DELA 2"
         ],
         [
+            "FIRM?",
             "Firmware v2.010",
             "8",
             ""

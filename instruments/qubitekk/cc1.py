@@ -49,14 +49,16 @@ class CC1(SCPIInstrument):
             self._bool = ("ON", "OFF")
             self._set_fmt = ":{}:{}"
             self.TriggerMode = self._TriggerModeNew
-            self._ack_expected = self.repeat
         else:
             self._bool = ("1", "0")
             self._set_fmt = ":{} {}"
             self.TriggerMode = self._TriggerModeOld
 
-    def repeat(self, msg=""):
-        return msg
+    def _ack_expected(self, msg=""):
+        if self.firmware[0] >= 2 and self.firmware[1] > 1:
+            return msg
+        else:
+            return None
 
     # ENUMS #
 
