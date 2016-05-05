@@ -26,6 +26,7 @@ from instruments.abstract_instruments.comm import (
     LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,
     USBTMCCommunicator, VXI11Communicator, serial_manager, SerialCommunicator
 )
+from instruments.errors import AcknowledgementError, PromptError
 
 # TESTS ######################################################################
 
@@ -282,3 +283,115 @@ def test_instrument_open_from_uri_vxi11(mock_open_conn):
 @raises(NotImplementedError)
 def test_instrument_open_from_uri_invalid_scheme():
     _ = ik.Instrument.open_from_uri("foo://bar")
+
+
+# INIT TESTS
+
+@raises(TypeError)
+def test_instrument_init_bad_filelike():
+    _ = ik.Instrument(mock.MagicMock())
+
+
+def test_instrument_init():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    assert inst._testing is False
+    assert inst._prompt is None
+    assert inst._terminator == "\n"
+    assert inst._file == mock_filelike
+
+
+def test_instrument_init_loopbackcomm():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = LoopbackCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    assert inst._testing is True
+
+
+# COMM TESTS
+
+def test_instrument_default_ack_expected():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    assert inst._ack_expected() is None
+    assert inst._ack_expected("foobar") is None
+
+
+def test_instrument_sendcmd_noack_noprompt():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    inst.sendcmd("foobar")
+
+    inst._file.sendcmd.assert_called_with("foobar")
+
+
+def test_instrument_sendcmd_noprompt():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    def new_ack(msg):
+        return msg
+
+    inst._ack_expected = new_ack
+    inst.read = mock.MagicMock(return_value="foobar")
+
+    inst.sendcmd("foobar")
+    inst.read.assert_called_with()
+    inst._file.sendcmd.assert_called_with("foobar")
+
+
+@raises(AcknowledgementError)
+def test_instrument_sendcmd_bad_ack():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    def new_ack(msg):
+        return msg
+
+    inst._ack_expected = new_ack
+    inst.read = mock.MagicMock(return_value="derp")
+
+    inst.sendcmd("foobar")
+    inst.read.assert_called_with()
+    inst._file.sendcmd.assert_called_with("foobar")
+
+
+def test_instrument_sendcmd_noack():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    inst.prompt = "> "
+    inst.read = mock.MagicMock(return_value="> ")
+
+    inst.sendcmd("foobar")
+    inst.read.assert_called_with(2)
+    inst._file.sendcmd.assert_called_with("foobar")
+
+
+def test_instrument_sendcmd():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    def new_ack(msg):
+        return msg
+
+    inst._ack_expected = new_ack
+    inst.prompt = "> "
+    inst.read = mock.MagicMock(side_effect=["foobar", "> "])
+
+    inst.sendcmd("foobar")
+    inst.read.assert_any_call()
+    inst.read.assert_any_call(2)
+    inst._file.sendcmd.assert_called_with("foobar")
+    assert inst.read.call_count == 2
