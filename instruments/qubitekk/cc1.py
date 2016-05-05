@@ -262,7 +262,9 @@ class CC1(SCPIInstrument):
                     self._firmware = None
                 else:
                     value = self._firmware.replace("Firmware v", "").split(".")
-                    if value[0] == "FIRM?":
+                    if value[0] == "FIRM?": # this line exists to handle the
+                        # repeat back message of the firmware message prior
+                        # to the _ack_expected message being set
                         value = self.read(-1).replace("Firmware v", "").split(".")
                     if len(value) < 3:
                         for _ in range(3-len(value)):
