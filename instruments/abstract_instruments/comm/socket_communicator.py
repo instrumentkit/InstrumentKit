@@ -110,6 +110,9 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
             c = b''
             while c != self._terminator.encode("utf-8"):
                 c = self._conn.recv(1)
+                if c == b"":
+                    raise IOError("Socket connection timed out before reading "
+                                  "a termination character.")
                 if c != self._terminator.encode("utf-8"):
                     result += c
             return result
