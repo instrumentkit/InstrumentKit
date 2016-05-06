@@ -102,6 +102,15 @@ def test_socketcomm_read_raw():
     comm._conn.recv.assert_called_with(10)
 
 
+@raises(IOError)
+def test_serialcomm_read_raw_timeout():
+    comm = SocketCommunicator(socket.socket())
+    comm._conn = mock.MagicMock()
+    comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b""])
+
+    _ = comm.read_raw(-1)
+
+
 def test_socketcomm_write_raw():
     comm = SocketCommunicator(socket.socket())
     comm._conn = mock.MagicMock()
