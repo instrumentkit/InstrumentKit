@@ -441,3 +441,19 @@ def test_acknowledge_notimplementederror():
         sep="\n"
     ) as cc:
         cc.acknowledge = True
+
+
+@raises(NotImplementedError)
+def test_acknowledge_not_implemented_error():  # pylint: disable=protected-access
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?"
+        ],
+        [
+            "Firmware v2.001"
+
+        ],
+        sep="\n"
+    ) as cc:
+        cc.acknowledge = True
