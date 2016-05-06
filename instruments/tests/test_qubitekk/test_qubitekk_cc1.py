@@ -458,4 +458,4 @@ def test_cc1_ack_old_firmware():
         sep="\n"
     ) as cc:
         cc._ack_on = True
-        assert cc._ack_expected() == None
+        assert cc._ack_expected() is None
