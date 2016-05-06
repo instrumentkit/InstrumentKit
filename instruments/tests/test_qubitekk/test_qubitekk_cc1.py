@@ -442,20 +442,3 @@ def test_acknowledge_notimplementederror():
     ) as cc:
         cc.acknowledge = True
 
-
-def test_cc1_ack_old_firmware():
-    # it should be impossible to get into the state where the acknowledge
-    # variable is on on the old firmware, but just incase it is, test to make
-    #  sure it returns nothing
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            "FIRM?",
-        ],
-        [
-            "Firmware v2.001"
-        ],
-        sep="\n"
-    ) as cc:
-        cc._ack_on = True
-        assert cc._ack_expected() is None
