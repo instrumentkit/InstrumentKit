@@ -418,12 +418,12 @@ def test_acknowledge():
         ],
         sep="\n"
     ) as cc:
-        assert cc.acknowledge == False
+        assert not cc.acknowledge
         cc.acknowledge = True
-        assert cc.acknowledge == True
+        assert cc.acknowledge
         cc.clear_counts()
         cc.acknowledge = False
-        assert cc.acknowledge == False
+        assert not cc.acknowledge
         cc.clear_counts()
 
 
