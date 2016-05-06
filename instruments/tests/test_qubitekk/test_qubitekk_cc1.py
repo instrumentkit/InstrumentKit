@@ -441,4 +441,3 @@ def test_acknowledge_notimplementederror():
         sep="\n"
     ) as cc:
         cc.acknowledge = True
-
