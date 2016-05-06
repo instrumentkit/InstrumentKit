@@ -61,9 +61,7 @@ def test_cc1_window_error():
             ":WIND 10"
         ],
         [
-            "FIRM?",
-            "Firmware v2.010",
-            ":WIND 10"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -98,9 +96,7 @@ def test_cc1_delay_error1():
             ":DELA -1"
         ],
         [
-            "FIRM?",
-            "Firmware v2.010",
-            ":DELA -1"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -116,9 +112,7 @@ def test_cc1_delay_error2():
             ":DELA 1"
         ],
         [
-            "FIRM?",
-            "Firmware v2.010",
-            ":DELA 1"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -171,9 +165,7 @@ def test_cc1_dwell_time_error():
             ":DWEL -1"
         ],
         [
-            "FIRM?",
-            "Firmware v2.010",
-            ":DWEL -1"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -386,7 +378,6 @@ def test_cc1_trigger_mode_error():
             "FIRM?"
         ],
         [
-            "FIRM?",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -427,9 +418,12 @@ def test_acknowledge():
         ],
         sep="\n"
     ) as cc:
+        assert cc.acknowledge == False
         cc.acknowledge = True
+        assert cc.acknowledge == True
         cc.clear_counts()
         cc.acknowledge = False
+        assert cc.acknowledge == False
         cc.clear_counts()
 
 
@@ -448,3 +442,20 @@ def test_acknowledge_notimplementederror():
     ) as cc:
         cc.acknowledge = True
 
+
+def test_cc1_ack_old_firmware():
+    # it should be impossible to get into the state where the acknowledge
+    # variable is on on the old firmware, but just incase it is, test to make
+    #  sure it returns nothing
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?",
+        ],
+        [
+            "Firmware v2.001"
+        ],
+        sep="\n"
+    ) as cc:
+        cc._ack_on = True
+        assert cc._ack_expected() == None
