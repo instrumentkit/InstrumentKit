@@ -26,9 +26,7 @@ def test_cc1_count():
             "COUN:C1?"
         ],
         [
-            "FIRM?",
             "Firmware v2.010",
-            "COUN:C1?",
             "20"
         ],
         sep="\n"
@@ -45,11 +43,8 @@ def test_cc1_window():
             ":WIND 7"
         ],
         [
-            "FIRM?",
             "Firmware v2.010",
-            "WIND?",
             "2",
-            ":WIND 7"
         ],
         sep="\n"
     ) as cc:
@@ -84,11 +79,8 @@ def test_cc1_delay():
             ":DELA 2"
         ],
         [
-            "FIRM?",
             "Firmware v2.010",
-            "DELA?",
             "8",
-            ":DELA 2",
             ""
         ],
         sep="\n"
@@ -161,11 +153,8 @@ def test_cc1_dwell_new_firmware():
             ":DWEL 2"
         ],
         [
-            "FIRM?",
             "Firmware v2.010",
-            "DWEL?",
-            "8",
-            ":DWEL 2"
+            "8"
         ],
         sep="\n"
     ) as cc:
@@ -198,7 +187,6 @@ def test_cc1_firmware():
             "FIRM?"
         ],
         [
-            "FIRM?",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -227,7 +215,6 @@ def test_cc1_firmware_3():
             "FIRM?"
         ],
         [
-            "FIRM?",
             "Firmware v2.010.1"
         ],
         sep="\n"
@@ -243,9 +230,7 @@ def test_cc1_firmware_repeat_query():
             "FIRM?"
         ],
         [
-            "FIRM?",
             "Unknown",
-            "FIRM?",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -264,12 +249,8 @@ def test_cc1_gate_new_firmware():
 
         ],
         [
-            "FIRM?",
             "Firmware v2.010",
-            "GATE?",
-            "ON",
-            ":GATE:ON",
-            ":GATE:OFF"
+            "ON"
         ],
     ) as cc:
         assert cc.gate is True
@@ -309,9 +290,7 @@ def test_cc1_gate_error():
             ":GATE blo"
         ],
         [
-            "FIRM?",
-            "Firmware v2.010",
-            ":GATE blo"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -329,11 +308,8 @@ def test_cc1_subtract_new_firmware():
 
         ],
         [
-            "FIRM?",
             "Firmware v2.010",
-            "SUBT?",
             "ON",
-            ":SUBT:ON",
             ":SUBT:OFF"
         ],
         sep="\n"
@@ -353,9 +329,7 @@ def test_cc1_subtract_error():
 
         ],
         [
-            "FIRM?",
-            "Firmware v2.010",
-            ":SUBT blo"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
@@ -372,12 +346,8 @@ def test_cc1_trigger_mode():  # pylint: disable=redefined-variable-type
             ":TRIG:MODE STOP"
         ],
         [
-            "FIRM?",
             "Firmware v2.010",
-            "TRIG?",
-            "MODE STOP",
-            ":TRIG:MODE CONT",
-            ":TRIG:MODE STOP"
+            "MODE STOP"
         ],
         sep="\n"
     ) as cc:
@@ -432,10 +402,49 @@ def test_cc1_clear():
             "CLEA"
         ],
         [
-            "FIRM?",
-            "Firmware v2.010",
-            "CLEA"
+            "Firmware v2.010"
         ],
         sep="\n"
     ) as cc:
         cc.clear_counts()
+
+
+def test_acknowledge():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?",
+            ":ACKN ON",
+            "CLEA",
+            ":ACKN OF",
+            "CLEA"
+        ],
+        [
+            "Firmware v2.010",
+            "CLEA",
+            ":ACKN OF"
+
+        ],
+        sep="\n"
+    ) as cc:
+        cc.acknowledge = True
+        cc.clear_counts()
+        cc.acknowledge = False
+        cc.clear_counts()
+
+
+@raises(NotImplementedError)
+def test_acknowledge_notimplementederror():
+    with expected_protocol(
+        ik.qubitekk.CC1,
+        [
+            "FIRM?"
+        ],
+        [
+            "Firmware v2.001"
+
+        ],
+        sep="\n"
+    ) as cc:
+        cc.acknowledge = True
+

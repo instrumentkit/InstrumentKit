@@ -12,8 +12,7 @@ from matplotlib.backend_bases import key_press_handler
 from sys import platform as _platform
 
 import instruments as ik
-
-import Tkinter as tk
+import tkinter as tk
 import re
 
 
@@ -91,7 +90,7 @@ if __name__ == "__main__":
         cc = ik.qubitekk.CC1.open_serial('/dev/ttyUSB0', 19200, timeout=10)
     else:
         cc = ik.qubitekk.CC1.open_serial('COM9', 19200, timeout=10)
-    print cc.firmware
+    print(cc.firmware)
     # i is used to keep track of time
     i = 0
     # read counts every 0.5 seconds

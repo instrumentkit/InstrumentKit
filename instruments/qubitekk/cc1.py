@@ -43,7 +43,7 @@ class CC1(SCPIInstrument):
         self.terminator = "\n"
         self._channel_count = 3
         self._firmware = None
-        self.ack_on = True
+        self._ack_on = False
         _ = self.firmware  # prime the firmware
 
         if self.firmware[0] >= 2 and self.firmware[1] > 1:
@@ -56,7 +56,7 @@ class CC1(SCPIInstrument):
             self.TriggerMode = self._TriggerModeOld
 
     def _ack_expected(self, msg=""):
-        if self.ack_on:
+        if self._ack_on:
             if self.firmware[0] >= 2 and self.firmware[1] > 1:
                 return msg
             else:
@@ -128,6 +128,34 @@ class CC1(SCPIInstrument):
             return self._count
 
     # PROPERTIES #
+
+    @property
+    def acknowledge(self):
+        """
+        Gets/sets the acknowledge message state.
+
+        :units: None
+        :type: boolean
+        """
+        return self._ack_on
+
+    @acknowledge.setter
+    def acknowledge(self, new_val):
+        """
+        Turn the acknowledge message strings on or off
+        :param new_val: boolean
+        :return:
+        """
+        if self.firmware[0] >= 2 and self.firmware[1] > 1:
+            if self._ack_on and not new_val:
+                self.sendcmd(":ACKN OF")
+                self._ack_on = False
+            elif not self._ack_on and new_val:
+                self.sendcmd(":ACKN ON")
+                self._ack_on = True
+        else:
+            raise NotImplementedError("Acknowledge message not implemented in "
+                                      "this version.")
 
     @property
     def gate(self):
@@ -261,26 +289,18 @@ class CC1(SCPIInstrument):
         # the firmware is assumed not to change while the device is active
         # firmware is stored locally as it will be gotten often
         # pylint: disable=no-member
-        self.ack_on = False
         if self._firmware is None:
             while self._firmware is None:
                 self._firmware = self.query("FIRM?")
-                if self._firmware == "FIRM?":
-                    self._firmware = self.read(-1)
                 if self._firmware.find("Unknown") >= 0:
                     self._firmware = None
                 else:
                     value = self._firmware.replace("Firmware v", "").split(".")
-                    if value[0] == "FIRM?": # this line exists to handle the
-                        # repeat back message of the firmware message prior
-                        # to the _ack_expected message being set
-                        value = self.read(-1).replace("Firmware v", "").split(".")
                     if len(value) < 3:
                         for _ in range(3-len(value)):
                             value.append(0)
                     value = tuple(map(int, value))
                     self._firmware = value
-        self.ack_on = True
         return self._firmware
 
     @property
