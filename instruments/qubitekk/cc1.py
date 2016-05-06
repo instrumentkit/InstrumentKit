@@ -141,11 +141,6 @@ class CC1(SCPIInstrument):
 
     @acknowledge.setter
     def acknowledge(self, new_val):
-        """
-        Turn the acknowledge message strings on or off
-        :param new_val: boolean
-        :return:
-        """
         if self.firmware[0] >= 2 and self.firmware[1] > 1:
             if self._ack_on and not new_val:
                 self.sendcmd(":ACKN OF")
