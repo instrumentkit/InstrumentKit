@@ -361,8 +361,6 @@ def test_instrument_sendcmd_bad_ack():
     inst.read = mock.MagicMock(return_value="derp")
 
     inst.sendcmd("foobar")
-    inst.read.assert_called_with()
-    inst._file.sendcmd.assert_called_with("foobar")
 
 
 def test_instrument_sendcmd_noack():
@@ -394,4 +392,108 @@ def test_instrument_sendcmd():
     inst.read.assert_any_call()
     inst.read.assert_any_call(2)
     inst._file.sendcmd.assert_called_with("foobar")
+    assert inst.read.call_count == 2
+
+
+def test_instrument_query_noack_noprompt():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    inst._file.query.return_value = "datas"
+
+    assert inst.query("foobar?") == "datas"
+
+    inst._file.query.assert_called_with("foobar?", -1)
+
+
+def test_instrument_query_noprompt():
+    """
+    Expected order of operations:
+
+    - IK sends command to instrument
+    - Instrument sends ACK, commonly an echo of the command
+    - ACK is verified with _ack_expected function
+    - If ACK is good, do another read which contains our return data
+    """
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    inst._file.query.return_value = "foobar?"
+    inst.read = mock.MagicMock(return_value="datas")
+
+    def new_ack(msg):
+        return msg
+
+    inst._ack_expected = new_ack
+
+    assert inst.query("foobar?") == "datas"
+    inst._file.query.assert_called_with("foobar?")
+    inst.read.assert_called_with(-1)
+
+
+@raises(AcknowledgementError)
+def test_instrument_query_bad_ack():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    inst.read = mock.MagicMock(return_value="derp")
+
+    def new_ack(msg):
+        return msg
+
+    inst._ack_expected = new_ack
+
+    _ = inst.query("foobar?")
+
+
+def test_instrument_query_noack():
+    """
+    Expected order of operations:
+
+    - IK sends command to instrument and gets responce containing our data
+    - Another read is done to capture the prompt characters sent by the
+        instrument. Read should be equal to the length of the expected prompt
+    - Exception is raised is prompt is not correct
+    """
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    inst._file.query.return_value = "datas"
+
+    inst.prompt = "> "
+    inst.read = mock.MagicMock(return_value="> ")
+
+    assert inst.query("foobar?") == "datas"
+    inst._file.query.assert_called_with("foobar?", -1)
+    inst.read.assert_called_with(2)
+
+
+def test_instrument_query():
+    """
+    Expected order of operations:
+
+    - IK sends command to instrument
+    - Instrument sends ACK, commonly an echo of the command
+    - ACK is verified with _ack_expected function
+    - If ACK is good, do another read which contains our return data
+    - Another read is done to capture the prompt characters sent by the
+        instrument. Read should be equal to the length of the expected prompt
+    - Exception is raised is prompt is not correct
+    """
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    inst._file.query.return_value = "foobar?"
+    inst.read = mock.MagicMock(side_effect=["datas", "> "])
+
+    def new_ack(msg):
+        return msg
+
+    inst._ack_expected = new_ack
+    inst.prompt = "> "
+
+    assert inst.query("foobar?") == "datas"
+    inst.read.assert_any_call(-1)
+    inst.read.assert_any_call(2)
+    inst._file.query.assert_called_with("foobar?")
     assert inst.read.call_count == 2
