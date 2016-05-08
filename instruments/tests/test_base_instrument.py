@@ -497,3 +497,86 @@ def test_instrument_query():
     inst.read.assert_any_call(2)
     inst._file.query.assert_called_with("foobar?")
     assert inst.read.call_count == 2
+
+
+def test_instrument_read():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    inst._file.read.return_value = "foobar"
+
+    assert inst.read() == "foobar"
+    inst._file.read.assert_called_with(-1)
+
+    inst._file = mock.MagicMock()
+    inst._file.read.return_value = "foobar"
+
+    assert inst.read(6) == "foobar"
+    inst._file.read.assert_called_with(6)
+
+
+def test_instrument_write():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    inst.write("foobar")
+    inst._file.write.assert_called_with("foobar")
+
+
+# PROPERTIES #
+
+def test_instrument_timeout():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    timeout = mock.PropertyMock(return_value=1)
+    type(inst._file).timeout = timeout
+
+    assert inst.timeout == 1
+    timeout.assert_called_with()
+
+    inst.timeout = 5
+    timeout.assert_called_with(5)
+
+
+def test_instrument_address():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    address = mock.PropertyMock(return_value="/dev/foobar")
+    type(inst._file).address = address
+
+    assert inst.address == "/dev/foobar"
+    address.assert_called_with()
+
+    inst.address = "COM1"
+    address.assert_called_with("COM1")
+
+
+def test_instrument_terminator():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    terminator = mock.PropertyMock(return_value="\n")
+    type(inst._file).terminator = terminator
+
+    assert inst.terminator == "\n"
+    terminator.assert_called_with()
+
+    inst.terminator = "*"
+    terminator.assert_called_with("*")
+
+
+def test_instrument_prompt():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    assert inst.prompt is None
+
+    inst.prompt = "> "
+    assert inst.prompt == "> "
+
+    inst.prompt = None
+    assert inst.prompt is None
