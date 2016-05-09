@@ -21,15 +21,12 @@ from builtins import map
 from future.standard_library import install_aliases
 import numpy as np
 
+import usb
+import usb.core
+import usb.util
+
 install_aliases()
 import urllib.parse as parse  # pylint: disable=wrong-import-order,import-error
-
-try:
-    import usb
-    import usb.core
-    import usb.util
-except ImportError:
-    usb = None
 
 if not getattr(__builtins__, "WindowsError", None):
     class WindowsError(OSError):
@@ -396,7 +393,7 @@ class Instrument(object):
         elif parsed_uri.scheme == "usbtmc":
             # TODO: check for other kinds of usbtmc URLs.
             # Ex: usbtmc can take URIs exactly like visa://.
-            return cls.open_visa(parsed_uri.netloc, **kwargs)
+            return cls.open_usbtmc(parsed_uri.netloc, **kwargs)
         elif parsed_uri.scheme == "file":
             return cls.open_file(os.path.join(
                 parsed_uri.netloc,

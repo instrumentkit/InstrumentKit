@@ -40,7 +40,8 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
             self._terminator = "\n"
         else:
             raise TypeError("SocketCommunicator must wrap a "
-                            ":class:`socket.socket` object.")
+                            ":class:`socket.socket` object, instead got "
+                            "{}".format(type(conn)))
 
     # PROPERTIES #
 
