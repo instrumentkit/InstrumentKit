@@ -21,15 +21,12 @@ from builtins import map
 from future.standard_library import install_aliases
 import numpy as np
 
+import usb
+import usb.core
+import usb.util
+
 install_aliases()
 import urllib.parse as parse  # pylint: disable=wrong-import-order,import-error
-
-try:
-    import usb
-    import usb.core
-    import usb.util
-except ImportError:
-    usb = None
 
 if not getattr(__builtins__, "WindowsError", None):
     class WindowsError(OSError):
