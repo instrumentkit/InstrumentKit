@@ -376,6 +376,18 @@ def test_instrument_sendcmd_noack():
     inst._file.sendcmd.assert_called_with("foobar")
 
 
+@raises(PromptError)
+def test_instrument_sendcmd_noack_bad_prompt():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    inst.prompt = "> "
+    inst.read = mock.MagicMock(return_value="* ")
+
+    inst.sendcmd("foobar")
+
+
 def test_instrument_sendcmd():
     mock_filelike = mock.MagicMock()
     mock_filelike.__class__ = AbstractCommunicator
@@ -466,6 +478,19 @@ def test_instrument_query_noack():
     assert inst.query("foobar?") == "datas"
     inst._file.query.assert_called_with("foobar?", -1)
     inst.read.assert_called_with(2)
+
+
+@raises(PromptError)
+def test_instrument_query_noack_bad_prompt():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    inst._file.query.return_value = "datas"
+
+    inst.prompt = "> "
+    inst.read = mock.MagicMock(return_value="* ")
+
+    _ = inst.query("foobar?")
 
 
 def test_instrument_query():
