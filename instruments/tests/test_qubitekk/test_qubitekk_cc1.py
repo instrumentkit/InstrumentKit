@@ -22,10 +22,12 @@ def test_cc1_count():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "COUN:C1?"
         ],
         [
+            "",
             "Firmware v2.010",
             "20"
         ],
@@ -38,11 +40,13 @@ def test_cc1_window():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "WIND?",
             ":WIND 7"
         ],
         [
+            "",
             "Firmware v2.010",
             "2",
         ],
@@ -57,10 +61,12 @@ def test_cc1_window_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             ":WIND 10"
         ],
         [
+            "",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -72,11 +78,13 @@ def test_cc1_delay():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "DELA?",
             ":DELA 2"
         ],
         [
+            "",
             "Firmware v2.010",
             "8",
             ""
@@ -92,10 +100,12 @@ def test_cc1_delay_error1():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             ":DELA -1"
         ],
         [
+            "",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -108,10 +118,12 @@ def test_cc1_delay_error2():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             ":DELA 1"
         ],
         [
+            "",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -123,11 +135,13 @@ def test_cc1_dwell_old_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "DWEL?",
             ":DWEL 2"
         ],
         [
+            "Unknown Command",
             "Firmware v2.001",
             "8000",
             ""
@@ -142,11 +156,13 @@ def test_cc1_dwell_new_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "DWEL?",
             ":DWEL 2"
         ],
         [
+            "",
             "Firmware v2.010",
             "8"
         ],
@@ -161,10 +177,12 @@ def test_cc1_dwell_time_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             ":DWEL -1"
         ],
         [
+            "",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -176,9 +194,11 @@ def test_cc1_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?"
         ],
         [
+            "",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -190,9 +210,11 @@ def test_cc1_firmware_2():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?"
         ],
         [
+            "Unknown Command",
             "Firmware v2"
         ],
         sep="\n"
@@ -204,9 +226,11 @@ def test_cc1_firmware_3():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?"
         ],
         [
+            "Unknown Command",
             "Firmware v2.010.1"
         ],
         sep="\n"
@@ -218,10 +242,12 @@ def test_cc1_firmware_repeat_query():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "FIRM?"
         ],
         [
+            "Unknown Command",
             "Unknown",
             "Firmware v2.010"
         ],
@@ -234,6 +260,7 @@ def test_cc1_gate_new_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "GATE?",
             ":GATE:ON",
@@ -241,6 +268,7 @@ def test_cc1_gate_new_firmware():
 
         ],
         [
+            "",
             "Firmware v2.010",
             "ON"
         ],
@@ -254,6 +282,7 @@ def test_cc1_gate_old_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "GATE?",
             ":GATE 1",
@@ -261,6 +290,7 @@ def test_cc1_gate_old_firmware():
 
         ],
         [
+            "Unknown Command",
             "Firmware v2.001",
             "1",
             "",
@@ -278,10 +308,12 @@ def test_cc1_gate_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             ":GATE blo"
         ],
         [
+            "",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -293,6 +325,7 @@ def test_cc1_subtract_new_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "SUBT?",
             ":SUBT:ON",
@@ -300,6 +333,7 @@ def test_cc1_subtract_new_firmware():
 
         ],
         [
+            "",
             "Firmware v2.010",
             "ON",
             ":SUBT:OFF"
@@ -316,11 +350,13 @@ def test_cc1_subtract_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             ":SUBT blo"
 
         ],
         [
+            "",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -332,12 +368,14 @@ def test_cc1_trigger_mode():  # pylint: disable=redefined-variable-type
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "TRIG?",
             ":TRIG:MODE CONT",
             ":TRIG:MODE STOP"
         ],
         [
+            "",
             "Firmware v2.010",
             "MODE STOP"
         ],
@@ -352,12 +390,14 @@ def test_cc1_trigger_mode_old_firmware():  # pylint: disable=redefined-variable-
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "TRIG?",
             ":TRIG 0",
             ":TRIG 1"
         ],
         [
+            "Unknown Command",
             "Firmware v2.001",
             "1",
             "",
@@ -375,9 +415,11 @@ def test_cc1_trigger_mode_error():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?"
         ],
         [
+            "",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -389,10 +431,12 @@ def test_cc1_clear():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             "CLEA"
         ],
         [
+            "",
             "Firmware v2.010"
         ],
         sep="\n"
@@ -404,6 +448,7 @@ def test_acknowledge():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?",
             ":ACKN ON",
             "CLEA",
@@ -411,6 +456,7 @@ def test_acknowledge():
             "CLEA"
         ],
         [
+            "",
             "Firmware v2.010",
             "CLEA",
             ":ACKN OF"
@@ -432,9 +478,11 @@ def test_acknowledge_notimplementederror():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?"
         ],
         [
+            "Unknown Command",
             "Firmware v2.001"
 
         ],
@@ -448,9 +496,11 @@ def test_acknowledge_not_implemented_error():  # pylint: disable=protected-acces
     with expected_protocol(
         ik.qubitekk.CC1,
         [
+            ":ACKN OF",
             "FIRM?"
         ],
         [
+            "Unknown Command",
             "Firmware v2.001"
 
         ],
