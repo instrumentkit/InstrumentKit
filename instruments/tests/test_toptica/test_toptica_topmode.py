@@ -234,6 +234,8 @@ def test_laser_correction():
             "(param-ref 'laser1:charm:correction-status)",
             "(exec 'laser1:charm:start-correction-initial)",
             "(param-ref 'laser1:charm:correction-status)",
+            "(exec 'laser1:charm:start-correction)",
+            "(param - ref 'laser1:charm:correction-status)",
             "(exec 'laser1:charm:start-correction)"
         ],
         [
@@ -245,11 +247,20 @@ def test_laser_correction():
             "1",
             "> (exec 'laser1:charm:start-correction)\r",
             "()\r",
-            "> "
+            "> ",
+            "(param-ref 'laser1:charm:correction-status)\r",
+            "3",
+            "> ",
+            "> (exec 'laser1:charm:start-correction)\r",
+            "()\r",
+            "()\r",
+            "> ",
         ],
         sep="\n"
     ) as tm:
         tm.laser[0].correction()
+        tm.laser[0].correction()
+        _ = tm.laser[0].correction_status
         tm.laser[0].correction()
 
 
@@ -261,7 +272,7 @@ def test_reboot_system():
         ],
         [
             "(exec 'reboot-system)\r",
-            "reboot process started.\r"
+            "reboot process started.\r",
             "> "
         ],
         sep="\n"
