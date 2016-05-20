@@ -240,9 +240,11 @@ def test_laser_correction():
             "(param-ref 'laser1:charm:correction-status)\r",
             "0",
             "> (exec 'laser1:charm:start-correction-initial)\r",
+            "()\r",
             "> (param-ref 'laser1:charm:correction-status)\r",
             "1",
             "> (exec 'laser1:charm:start-correction)\r",
+            "()\r",
             "> "
         ],
         sep="\n"
@@ -259,6 +261,7 @@ def test_reboot_system():
         ],
         [
             "(exec 'reboot-system)\r",
+            "reboot process started.\r"
             "> "
         ],
         sep="\n"
