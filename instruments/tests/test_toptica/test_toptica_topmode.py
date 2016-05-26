@@ -231,28 +231,28 @@ def test_laser_correction():
     with expected_protocol(
         ik.toptica.TopMode,
         [
-            "(param-ref 'laser1:charm:correction-status)",
+            "(param-ref 'laser1:charm:correction-status)",  # 1st
             "(exec 'laser1:charm:start-correction-initial)",
-            "(param-ref 'laser1:charm:correction-status)",
+            "(param-ref 'laser1:charm:correction-status)",  # 2nd
             "(exec 'laser1:charm:start-correction)",
-            "(param - ref 'laser1:charm:correction-status)",
+            "(param-ref 'laser1:charm:correction-status)",  # 3rd
+            "(param-ref 'laser1:charm:correction-status)",  # 4th
             "(exec 'laser1:charm:start-correction)"
         ],
         [
-            "(param-ref 'laser1:charm:correction-status)\r",
+            "(param-ref 'laser1:charm:correction-status)\r",  # 1st
             "0",
             "> (exec 'laser1:charm:start-correction-initial)\r",
             "()\r",
-            "> (param-ref 'laser1:charm:correction-status)\r",
+            "> (param-ref 'laser1:charm:correction-status)\r",  # 3nd
             "1",
             "> (exec 'laser1:charm:start-correction)\r",
             "()\r",
-            "> ",
-            "(param-ref 'laser1:charm:correction-status)\r",
+            "> (param-ref 'laser1:charm:correction-status)\r",  # 3rd
             "3",
-            "> ",
+            "> (param-ref 'laser1:charm:correction-status)\r",  # 4th
+            "2",
             "> (exec 'laser1:charm:start-correction)\r",
-            "()\r",
             "()\r",
             "> ",
         ],
