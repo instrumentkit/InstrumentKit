@@ -43,11 +43,15 @@ class TopMode(Instrument):
     def __init__(self, filelike):
         super(TopMode, self).__init__(filelike)
         self.prompt = "> "
-        self._ack_expected = self._return_msg
         self.terminator = "\n"
 
-    def _return_msg(self, msg=""): # pylint: disable=no-self-use
-        return msg+"\r"
+    def _ack_expected(self, msg=""):
+        if "reboot" in msg:
+            return [msg+"\r", "reboot process started.\r"]
+        elif "start-correction" in msg:
+            return [msg + "\r", "()\r"]
+        else:
+            return msg + "\r"
 
     # ENUMS #
 
@@ -251,8 +255,7 @@ class TopMode(Instrument):
             :return: The correction status of the specified laser
             :type: `~TopMode.CharmStatus`
             """
-            value = self.parent.reference(
-                self.name + ":charm:correction-status")
+            value = self.parent.reference(self.name + ":charm:correction-status")
             return TopMode.CharmStatus(int(value))
 
         # METHODS #

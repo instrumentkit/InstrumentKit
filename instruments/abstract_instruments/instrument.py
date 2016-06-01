@@ -92,8 +92,12 @@ class Instrument(object):
             be sent.
         """
         self._file.sendcmd(str(cmd))
-        ack_expected = self._ack_expected(cmd)
-        if ack_expected is not None:
+        ack_expected_list = self._ack_expected(cmd)
+        if not isinstance(ack_expected_list, (list, tuple)):
+            ack_expected_list = [ack_expected_list]
+        for ack_expected in ack_expected_list:
+            if ack_expected is None:
+                break
             ack = self.read()
             if ack != ack_expected:
                 raise AcknowledgementError(
@@ -120,17 +124,22 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        ack_expected = self._ack_expected(cmd)
-        if ack_expected is not None:
-            ack = self._file.query(cmd)
-            if ack != ack_expected:
-                raise AcknowledgementError(
-                    "Incorrect ACK message received: got {} "
-                    "expected {}".format(ack, ack_expected)
-                )
-            value = self.read(size)
-        else:
+        ack_expected_list = self._ack_expected(cmd)
+        if not isinstance(ack_expected_list, (list, tuple)):
+            ack_expected_list = [ack_expected_list]
+
+        if ack_expected_list[0] is None:  # Case no ACK
             value = self._file.query(cmd, size)
+        else:  # Case with ACKs
+            _ = self._file.query(cmd, size=0)  # Send the cmd, don't read
+            for ack_expected in ack_expected_list:  # Read and verify ACKs
+                ack = self.read()
+                if ack != ack_expected:
+                    raise AcknowledgementError(
+                        "Incorrect ACK message received: got {} "
+                        "expected {}".format(ack, ack_expected)
+                    )
+            value = self.read(size)  # Now read in our return data
         if self.prompt is not None:
             prompt = self.read(len(self.prompt))
             if prompt != self.prompt:

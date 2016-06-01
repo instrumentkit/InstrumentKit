@@ -348,6 +348,22 @@ def test_instrument_sendcmd_noprompt():
     inst._file.sendcmd.assert_called_with("foobar")
 
 
+def test_instrument_sendcmd_noprompt_multiple_ack():
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+
+    def new_ack(msg):
+        return [msg, "second ack"]
+
+    inst._ack_expected = new_ack
+    inst.read = mock.MagicMock(side_effect=["foobar", "second ack"])
+
+    inst.sendcmd("foobar")
+    inst.read.assert_called_with()
+    inst._file.sendcmd.assert_called_with("foobar")
+
+
 @raises(AcknowledgementError)
 def test_instrument_sendcmd_bad_ack():
     mock_filelike = mock.MagicMock()
@@ -430,8 +446,7 @@ def test_instrument_query_noprompt():
     mock_filelike = mock.MagicMock()
     mock_filelike.__class__ = AbstractCommunicator
     inst = ik.Instrument(mock_filelike)
-    inst._file.query.return_value = "foobar?"
-    inst.read = mock.MagicMock(return_value="datas")
+    inst.read = mock.MagicMock(side_effect=["foobar?", "datas"])
 
     def new_ack(msg):
         return msg
@@ -439,7 +454,32 @@ def test_instrument_query_noprompt():
     inst._ack_expected = new_ack
 
     assert inst.query("foobar?") == "datas"
-    inst._file.query.assert_called_with("foobar?")
+    inst._file.query.assert_called_with("foobar?", size=0)
+    inst.read.assert_called_with(-1)
+
+
+def test_instrument_query_noprompt_multiple_ack():
+    """
+    Expected order of operations:
+
+    - IK sends command to instrument
+    - Instrument sends ACK, commonly an echo of the command
+    - ACK is verified with _ack_expected function
+    - Loop through each ACK that is expected
+    - If ACK is good, do another read which contains our return data
+    """
+    mock_filelike = mock.MagicMock()
+    mock_filelike.__class__ = AbstractCommunicator
+    inst = ik.Instrument(mock_filelike)
+    inst.read = mock.MagicMock(side_effect=["foobar?", "second ack", "datas"])
+
+    def new_ack(msg):
+        return [msg, "second ack"]
+
+    inst._ack_expected = new_ack
+
+    assert inst.query("foobar?") == "datas"
+    inst._file.query.assert_called_with("foobar?", size=0)
     inst.read.assert_called_with(-1)
 
 
@@ -509,7 +549,7 @@ def test_instrument_query():
     mock_filelike.__class__ = AbstractCommunicator
     inst = ik.Instrument(mock_filelike)
     inst._file.query.return_value = "foobar?"
-    inst.read = mock.MagicMock(side_effect=["datas", "> "])
+    inst.read = mock.MagicMock(side_effect=["foobar?", "datas", "> "])
 
     def new_ack(msg):
         return msg
@@ -520,8 +560,8 @@ def test_instrument_query():
     assert inst.query("foobar?") == "datas"
     inst.read.assert_any_call(-1)
     inst.read.assert_any_call(2)
-    inst._file.query.assert_called_with("foobar?")
-    assert inst.read.call_count == 2
+    inst._file.query.assert_called_with("foobar?", size=0)
+    assert inst.read.call_count == 3
 
 
 def test_instrument_read():
