@@ -7,6 +7,7 @@ MC1 Class originally contributed by Catherine Holloway.
 """
 
 # IMPORTS #####################################################################
+from __future__ import absolute_import
 from instruments.abstract_instruments import Instrument
 from enum import Enum
 # CLASSES #####################################################################
@@ -94,7 +95,6 @@ class MC1(Instrument):
         if self._firmware is None:
             while self._firmware is None:
                 self._firmware = self.query("FIRM?")
-                print("firmware blo", self._firmware)
                 value = self._firmware.split(".")
                 if len(value) < 3:
                     for _ in range(3-len(value)):
