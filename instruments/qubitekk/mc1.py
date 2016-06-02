@@ -8,8 +8,8 @@ MC1 Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 from __future__ import absolute_import
-from instruments.abstract_instruments import Instrument
 from enum import Enum
+from instruments.abstract_instruments import Instrument
 # CLASSES #####################################################################
 
 
@@ -32,6 +32,9 @@ class MC1(Instrument):
      # ENUMS #
 
     class MotorType(Enum):
+        """
+        Enum for the motor types for the MC1
+        """
         radio = "Radio"
         relay = "Relay"
 
