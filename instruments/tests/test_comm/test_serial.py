@@ -53,6 +53,10 @@ def test_serialcomm_terminator():
     comm.terminator = "*"
     eq_(comm.terminator, "*")
 
+    comm.terminator = "\r\n"
+    eq_(comm.terminator, "\r\n")
+    eq_(comm._terminator, "\r\n")
+
 
 def test_serialcomm_timeout():
     comm = SerialCommunicator(serial.Serial())
@@ -92,6 +96,17 @@ def test_serialcomm_read_raw():
     comm._conn.read = mock.MagicMock()
     comm.read_raw(10)
     comm._conn.read.assert_called_with(10)
+
+
+def test_loopbackcomm_read_raw_2char_terminator():
+    comm = SerialCommunicator(serial.Serial())
+    comm._conn = mock.MagicMock()
+    comm._conn.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\r", b"\n"])
+    comm._terminator = "\r\n"
+
+    eq_(comm.read_raw(), b"abc")
+    comm._conn.read.assert_has_calls([mock.call(1)] * 5)
+    assert comm._conn.read.call_count == 5
 
 
 @raises(IOError)
