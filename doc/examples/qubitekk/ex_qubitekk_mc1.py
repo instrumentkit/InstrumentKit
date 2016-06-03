@@ -31,6 +31,7 @@ def main():
         mc1.move(x_pos)
         while mc1.move_timeout > 0:
             sleep(0.5)
+        sleep(1)
 
 
 if __name__ == "__main__":

@@ -166,6 +166,8 @@ class MC1(Instrument):
         :type new_val: int
         """
         if self.lower_limit <= new_val <= self.upper_limit:
-            self.sendcmd(":MOVE "+str(int(new_val)))
+            cmd = ":MOVE "+str(int(new_val))
+            print(cmd)
+            self.sendcmd(cmd)
         else:
             raise ValueError("Location out of range")
