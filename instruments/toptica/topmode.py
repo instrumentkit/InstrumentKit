@@ -376,6 +376,16 @@ class TopMode(Instrument):
         return ctbool(self.reference("interlock-open"))
 
     @property
+    def firmware(self):
+        """
+        Gets the firmware version of the charm controller
+
+        :return: The firmware version of the charm controller
+        :type: `str`
+        """
+        return self.reference("fm-ver")
+
+    @property
     def fpga_status(self):
         """
         Gets the FPGA health status
@@ -389,6 +399,16 @@ class TopMode(Instrument):
             return False
         response = int(response)
         return False if response % 2 else True
+
+    @property
+    def serial_number(self):
+        """
+        Gets the serial number of the charm controller
+
+        :return: The serial number of the charm controller
+        :type: `str`
+        """
+        return self.reference("serial-number")
 
     @property
     def temperature_status(self):
