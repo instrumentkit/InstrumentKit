@@ -125,7 +125,7 @@ class MC1(Instrument):
         :return: the internal timeout of the motor
         :rtype: int
         """
-        response = self.query("TAME?")
+        response = self.query("TIME?")
         return int(response)
 
     @property

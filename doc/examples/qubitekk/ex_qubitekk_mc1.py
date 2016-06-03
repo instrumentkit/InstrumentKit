@@ -4,12 +4,12 @@ from instruments.qubitekk import MC1
 
 
 def main():
-    """
-    Runs the switch program on its own, as a test
-    :return:
-    """
     if platform == "linux" or platform == "linux2":
-        port = "/dev/ttyUSB0"
+        # all qubitekk devices use the same ftdi chip, which makes them
+        # difficult to differentiate. One solution is to use the provided
+        # udev rule to create a symlink based on the serial number, then add
+        # the serial number to the port as done here.
+        port = "/dev/ftdi_AH02VMP4"
     else:
         port = "COM1"
     mc1 = MC1.open_serial(port, 9600, timeout=1)
