@@ -14,6 +14,7 @@ from __future__ import unicode_literals
 
 from builtins import range
 from enum import IntEnum
+from re import sub
 
 import quantities as pq
 
@@ -137,9 +138,24 @@ class TopMode(Instrument):
         @enable.setter
         def enable(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError(
-                    "Laser emmission must be a boolean, got: {}".format(newval))
+                raise TypeError("Emission status must be a boolean, "
+                            "got: {}".format(type(newval)))
+            if not self.is_connected:
+                print("not connected")
+                return
+            else:
+                print("finished connecting")
             self.parent.set(self.name + ":enable-emission", newval)
+
+        @property
+        def is_connected(self):
+            """
+            Check whether a laser is even connected
+            """
+            if self.serial_number == 'unknown':
+                raise RuntimeError("Laser was not recognized by charm "
+                                   "controller. Is it plugged in?")
+            return True
 
         @property
         def on_time(self):
@@ -224,6 +240,9 @@ class TopMode(Instrument):
             :return: The datetime of start of mode-locking for specified laser
             :type: `datetime`
             """
+            if not self.is_connected:
+                return
+
             return ctdate(self.parent.reference(self.name + ":charm:reg:started"))
 
         @property
@@ -310,7 +329,15 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        return self.query("(param-ref '{})".format(param))
+        # the toptica topmode termination character is \r\n,
+        # but unfortunately serial communicator only allows for single
+        # character terminators.
+        # toptica also returns all strings encapsulated by double quotations.
+        response = self.query("(param-ref '{})".format(param))
+        response = sub("\r", "", response)
+        response = sub("^\"", "", response)
+        response = sub("\"$", "", response)
+        return response.replace('^"', "").replace('"$', "")
 
     def display(self, param):
         """
@@ -383,7 +410,7 @@ class TopMode(Instrument):
         :return: The firmware version of the charm controller
         :type: `str`
         """
-        return self.reference("fm-ver")
+        return self.reference("fw-ver")
 
     @property
     def fpga_status(self):

@@ -82,11 +82,14 @@ def test_laser_enable():
         ik.toptica.TopMode,
         [
             "(param-ref 'laser1:emission)",
+            "(param-ref 'laser1:serial-number)",
             "(param-set! 'laser1:enable-emission #t)"
         ],
         [
             "(param-ref 'laser1:emission)\r",
             "#f",
+            "> (param-ref 'laser1:serial-number)\r",
+            "bloop1",
             "> (param-set! 'laser1:enable-emission #t)\r",
             "0",
             "> "
@@ -102,10 +105,13 @@ def test_laser_enable_error():
     with expected_protocol(
         ik.toptica.TopMode,
         [
+            "(param-ref 'laser1:serial-number)",
             "(param-set! 'laser1:enable-emission #t)"
         ],
         [
-            "(param-set! 'laser1:enable-emission #t)\r",
+            "(param-ref 'laser1:serial-number)\r",
+            "bloop1",
+            "> (param-set! 'laser1:enable-emission #t)\r",
             "0",
             "> "
         ],
@@ -166,10 +172,13 @@ def test_laser_lock_start():
     with expected_protocol(
         ik.toptica.TopMode,
         [
+            "(param-ref 'laser1:serial-number)",
             "(param-ref 'laser1:charm:reg:started)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:started)\r",
+            "(param-ref 'laser1:serial-number)\r",
+            "bloop1",
+            "> (param-ref 'laser1:charm:reg:started)\r",
             "\"\"",
             "> "
         ],
