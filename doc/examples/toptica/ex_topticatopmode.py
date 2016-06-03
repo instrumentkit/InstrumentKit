@@ -10,9 +10,9 @@ from platform import system
 if system() == 'Windows':
       tm = ik.toptica.TopMode.open_serial('COM14', 115200)
 else:
-      tm = ik.toptica.TopMode.open_serial('/dev/ttyACM0', 115200)
+      tm = ik.toptica.TopMode.open_serial('/dev/toptica_laser', 115200)
 
-print("The top mode's serial number is: ", tm.firmware)
+print("The top mode's firmware is: ", tm.firmware)
 print("The top mode's serial number is: ", tm.serial_number)
 
 print("The current lock state is: ", tm.locked)
