@@ -261,7 +261,7 @@ def test_laser_first_mode_hop_time():
         assert tm.laser[0].first_mode_hop_time == _date
 
 
-def test_laser_latest_mode_hop_time():
+def test_laser_latest_mode_hop_time_none():
     with expected_protocol(
         ik.toptica.TopMode,
         [
@@ -275,6 +275,23 @@ def test_laser_latest_mode_hop_time():
         sep="\n"
     ) as tm:
         assert tm.laser[0].latest_mode_hop_time is None
+
+
+def test_laser_latest_mode_hop_time():
+    with expected_protocol(
+        ik.toptica.TopMode,
+        [
+            "(param-ref 'laser1:charm:reg:latest-mh)"
+        ],
+        [
+            "(param-ref 'laser1:charm:reg:latest-mh)\r",
+            "\"2012-12-01 01:02:01\"",
+            "> "
+        ],
+        sep="\n"
+    ) as tm:
+        _date = datetime(2012, 12, 1, 1, 2, 1)
+        assert tm.laser[0].latest_mode_hop_time == _date
 
 
 def test_laser_correction_status():

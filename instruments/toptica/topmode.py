@@ -424,10 +424,6 @@ class TopMode(Instrument):
         :type: `str`
         """
         firmware = [int(i) for i in self.reference("fw-ver").split(".")]
-
-        if len(firmware) < 3:
-            for _ in range(3 - len(firmware)):
-                firmware.append(0)
         return firmware
 
     @property
