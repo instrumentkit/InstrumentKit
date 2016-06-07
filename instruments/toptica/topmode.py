@@ -423,7 +423,13 @@ class TopMode(Instrument):
         :return: The firmware version of the charm controller
         :type: `str`
         """
-        return self.reference("fw-ver")
+        firmware = self.reference("fw-ver").split(".")
+
+        if len(firmware) < 3:
+            for _ in range(3 - len(firmware)):
+                firmware.append(0)
+        firmware = tuple(map(int, firmware))
+        return firmware
 
     @property
     def fpga_status(self):
