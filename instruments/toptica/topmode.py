@@ -423,12 +423,11 @@ class TopMode(Instrument):
         :return: The firmware version of the charm controller
         :type: `str`
         """
-        firmware = self.reference("fw-ver").split(".")
+        firmware = [int(i) for i in self.reference("fw-ver").split(".")]
 
         if len(firmware) < 3:
             for _ in range(3 - len(firmware)):
                 firmware.append(0)
-        firmware = tuple(map(int, firmware))
         return firmware
 
     @property
