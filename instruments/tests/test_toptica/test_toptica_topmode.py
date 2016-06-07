@@ -7,10 +7,10 @@ Module containing tests for the Toptica Topmode
 # IMPORTS #####################################################################
 
 from __future__ import absolute_import
-
+from datetime import datetime
 from nose.tools import raises
 import quantities as pq
-from datetime import datetime
+
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -18,7 +18,7 @@ from instruments.tests import expected_protocol
 # TESTS #######################################################################
 
 
-def test_serial_number():
+def test_laser_serial_number():
     with expected_protocol(
         ik.toptica.TopMode,
         [
