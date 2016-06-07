@@ -230,7 +230,9 @@ class TopMode(Instrument):
             :return: Mode-hop status of the specified laser
             :type: `bool`
             """
-            return ctbool(self.parent.reference(self.name + ":charm:reg:mh-occured"))
+            response = self.parent.reference(self.name + ":charm:reg:mh-occurred")
+            print(response)
+            return ctbool(response)
 
         @property
         def lock_start(self):
@@ -242,8 +244,12 @@ class TopMode(Instrument):
             """
             if not self.is_connected:
                 return
-
-            return ctdate(self.parent.reference(self.name + ":charm:reg:started"))
+            response = self.parent.reference(self.name + ":charm:reg:started")
+            # if mode locking has not started yet, the device will respond with an empty date string.
+            # This causes a problem with ctdate.
+            if len(response)<2:
+                return None
+            return ctdate(response)
 
         @property
         def first_mode_hop_time(self):
@@ -253,7 +259,12 @@ class TopMode(Instrument):
             :return: The datetime of the first mode hop for the specified laser
             :type: `datetime`
             """
-            return ctdate(self.parent.reference(self.name + ":charm:reg:first-mh"))
+            response = self.parent.reference(self.name + ":charm:reg:first-mh")
+            # if the mode has not hopped, the device will respond with an empty date string.
+            # This causes a problem with ctdate.
+            if len(response) < 2:
+                return None
+            return ctdate(response)
 
         @property
         def latest_mode_hop_time(self):
@@ -264,7 +275,12 @@ class TopMode(Instrument):
                 specified laser
             :type: `datetime`
             """
-            return ctdate(self.parent.reference(self.name + ":charm:reg:latest-mh"))
+            response = self.parent.reference(self.name + ":charm:reg:latest-mh")
+            # if the mode has not hopped, the device will respond with an empty date string.
+            # This causes a problem with ctdate.
+            if len(response) < 2:
+                return None
+            return ctdate(response)
 
         @property
         def correction_status(self):

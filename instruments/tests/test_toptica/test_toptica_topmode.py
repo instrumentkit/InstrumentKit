@@ -156,10 +156,10 @@ def test_laser_mode_hop():
     with expected_protocol(
         ik.toptica.TopMode,
         [
-            "(param-ref 'laser1:charm:reg:mh-occured)"
+            "(param-ref 'laser1:charm:reg:mh-occurred)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:mh-occured)\r",
+            "(param-ref 'laser1:charm:reg:mh-occurred)\r",
             "#f",
             "> "
         ],
