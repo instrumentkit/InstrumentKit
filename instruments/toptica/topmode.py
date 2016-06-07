@@ -229,7 +229,6 @@ class TopMode(Instrument):
             :type: `bool`
             """
             response = self.parent.reference(self.name + ":charm:reg:mh-occurred")
-            print(response)
             return ctbool(response)
 
         @property
