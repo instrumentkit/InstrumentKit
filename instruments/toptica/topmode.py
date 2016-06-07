@@ -12,9 +12,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from re import sub
 from builtins import range
 from enum import IntEnum
-from re import sub
+
 
 import quantities as pq
 
@@ -138,13 +139,10 @@ class TopMode(Instrument):
         @enable.setter
         def enable(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError("Emission status must be a boolean, "
-                            "got: {}".format(type(newval)))
+                raise TypeError("Emission status must be a boolean, got: {}".
+                                format(type(newval)))
             if not self.is_connected:
-                print("not connected")
                 return
-            else:
-                print("finished connecting")
             self.parent.set(self.name + ":enable-emission", newval)
 
         @property
@@ -245,9 +243,9 @@ class TopMode(Instrument):
             if not self.is_connected:
                 return
             response = self.parent.reference(self.name + ":charm:reg:started")
-            # if mode locking has not started yet, the device will respond with an empty date string.
-            # This causes a problem with ctdate.
-            if len(response)<2:
+            # if mode locking has not started yet, the device will respond with an empty
+            # date string. This causes a problem with ctdate.
+            if len(response) < 2:
                 return None
             return ctdate(response)
 
@@ -260,8 +258,8 @@ class TopMode(Instrument):
             :type: `datetime`
             """
             response = self.parent.reference(self.name + ":charm:reg:first-mh")
-            # if the mode has not hopped, the device will respond with an empty date string.
-            # This causes a problem with ctdate.
+            # if the mode has not hopped, the device will respond with an empty date
+            # string. This causes a problem with ctdate.
             if len(response) < 2:
                 return None
             return ctdate(response)
@@ -276,8 +274,8 @@ class TopMode(Instrument):
             :type: `datetime`
             """
             response = self.parent.reference(self.name + ":charm:reg:latest-mh")
-            # if the mode has not hopped, the device will respond with an empty date string.
-            # This causes a problem with ctdate.
+            # if the mode has not hopped, the device will respond with an empty date
+            # string. This causes a problem with ctdate.
             if len(response) < 2:
                 return None
             return ctdate(response)
