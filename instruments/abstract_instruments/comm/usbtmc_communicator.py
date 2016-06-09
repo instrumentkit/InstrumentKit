@@ -56,21 +56,23 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
     @terminator.setter
     def terminator(self, newval):
+
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
         if not isinstance(newval, str) or len(newval) > 1:
             raise TypeError("Terminator for loopback communicator must be "
                             "specified as a single character string.")
+
         self._terminator = newval
-        self._filelike.term_char = newval
+        self._filelike.term_char = ord(newval)
 
     @property
     def timeout(self):
-        raise NotImplementedError
+        return self._filelike.timeout
 
     @timeout.setter
     def timeout(self, newval):
-        raise NotImplementedError
+        self._filelike.timeout = newval
 
     # FILE-LIKE METHODS #
 
@@ -137,7 +139,9 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         raise NotImplementedError
 
     def flush_input(self):
-        raise NotImplementedError
+        # since usbtmc handles packets rather than writing
+        # characters, there is nothing to flush
+        pass
 
     # METHODS #
 
@@ -150,7 +154,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
-        self._filelike.write("{}{}".format(msg, self.terminator))
+        self._filelike.write(msg)
 
     def _query(self, msg, size=-1):
         """

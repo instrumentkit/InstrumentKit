@@ -50,6 +50,9 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
         """
         return self._name
 
+    def save_waveform(self):
+        self._tek.sendcmd('SAVe:WAVEform')
+
     def read_waveform(self, bin_format=True):
         """
         Read waveform from the oscilloscope.
@@ -88,6 +91,7 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
 
                 # pylint: disable=protected-access
                 self._tek._file.flush_input()  # Flush input buffer
+
 
             yoffs = self._tek.query(
                 'WFMP:{}:YOF?'.format(self.name))  # Retrieve Y offset
@@ -161,7 +165,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
 
     def __init__(self, filelike):
         super(TekTDS224, self).__init__(filelike)
-        self._file.timeout = 3 * pq.second
+        self._file.timeout = 1000
 
     # ENUMS #
 
@@ -258,6 +262,10 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
             raise ValueError("Only one or two byte-width is supported.")
 
         self.sendcmd("DATA:WIDTH {}".format(newval))
+
+    @property
+    def waveform(self):
+        return self.query('WAVFrm?')
 
     @property
     def force_trigger(self):
