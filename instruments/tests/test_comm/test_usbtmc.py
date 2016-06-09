@@ -11,7 +11,10 @@ from __future__ import absolute_import
 from nose.tools import raises, eq_
 import mock
 
+import quantities as pq
+
 from instruments.abstract_instruments.comm import USBTMCCommunicator
+from instruments.tests import unit_eq
 
 # TEST CASES #################################################################
 
@@ -59,18 +62,21 @@ def test_usbtmccomm_terminator_setter(mock_usbtmc):
     term_char.assert_called_with("*")
 
 
-@raises(NotImplementedError)
 @mock.patch(patch_path)
-def test_usbtmccomm_timeout_getter(mock_usbtmc):
+def test_usbtmccomm_timeout(mock_usbtmc):
     comm = USBTMCCommunicator()
-    _ = comm.timeout
 
+    timeout = mock.PropertyMock(return_value=1)
+    type(comm._filelike).timeout = timeout
 
-@raises(NotImplementedError)
-@mock.patch(patch_path)
-def test_usbtmccomm_timeout_setter(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm.timeout = 1
+    unit_eq(comm.timeout, 1 * pq.second)
+    timeout.assert_called_with()
+
+    comm.timeout = 10
+    timeout.assert_called_with(10)
+
+    comm.timeout = 1000 * pq.millisecond
+    timeout.assert_called_with(1)
 
 
 @mock.patch(patch_path)

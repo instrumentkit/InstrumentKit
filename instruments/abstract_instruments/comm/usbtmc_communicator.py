@@ -15,8 +15,10 @@ import io
 from builtins import str, bytes
 
 import usbtmc
+import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
+from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
 
@@ -66,11 +68,12 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
     @property
     def timeout(self):
-        raise NotImplementedError
+        return self._filelike.timeout * pq.second
 
     @timeout.setter
     def timeout(self, newval):
-        raise NotImplementedError
+        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
+        self._filelike.timeout = newval
 
     # FILE-LIKE METHODS #
 
