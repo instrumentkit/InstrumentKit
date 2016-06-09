@@ -68,6 +68,12 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
     @property
     def timeout(self):
+        """
+        Gets/sets the communication timeout of the usbtmc comm channel.
+
+        :type: `~quantities.Quantity`
+        :units: As specified or assumed to be of units ``seconds``
+        """
         return self._filelike.timeout * pq.second
 
     @timeout.setter
@@ -140,7 +146,11 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         raise NotImplementedError
 
     def flush_input(self):
-        raise NotImplementedError
+        """
+        For a USBTMC connection, this function does not actually do anything
+        and simply returns.
+        """
+        pass
 
     # METHODS #
 

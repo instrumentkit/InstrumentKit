@@ -144,7 +144,6 @@ def test_usbtmccomm_tell(mock_usbtmc):
     comm.tell()
 
 
-@raises(NotImplementedError)
 @mock.patch(patch_path)
 def test_usbtmccomm_flush_input(mock_usbtmc):
     comm = USBTMCCommunicator()
