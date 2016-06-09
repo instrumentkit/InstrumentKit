@@ -55,11 +55,11 @@ def test_usbtmccomm_terminator_setter(mock_usbtmc):
 
     comm.terminator = "*"
     eq_(comm._terminator, "*")
-    term_char.assert_called_with("*")
+    term_char.assert_called_with(42)
 
     comm.terminator = b"*"  # pylint: disable=redefined-variable-type
     eq_(comm._terminator, "*")
-    term_char.assert_called_with("*")
+    term_char.assert_called_with(42)
 
 
 @mock.patch(patch_path)
@@ -112,10 +112,10 @@ def test_usbtmccomm_write_raw(mock_usbtmc):
 @mock.patch(patch_path)
 def test_usbtmccomm_sendcmd(mock_usbtmc):
     comm = USBTMCCommunicator()
-    comm.terminator = "\n"  # included due to mocking
+    comm.write = mock.MagicMock()
 
     comm._sendcmd("mock")
-    comm._filelike.write.assert_called_with("mock\n")
+    comm.write.assert_called_with("mock")
 
 
 @mock.patch(patch_path)

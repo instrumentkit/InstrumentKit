@@ -64,7 +64,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
             raise TypeError("Terminator for loopback communicator must be "
                             "specified as a single character string.")
         self._terminator = newval
-        self._filelike.term_char = newval
+        self._filelike.term_char = ord(newval)
 
     @property
     def timeout(self):
@@ -153,7 +153,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
-        self._filelike.write("{}{}".format(msg, self.terminator))
+        self.write(msg)
 
     def _query(self, msg, size=-1):
         """
