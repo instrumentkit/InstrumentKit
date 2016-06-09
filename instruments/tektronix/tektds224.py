@@ -50,6 +50,9 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
         """
         return self._name
 
+    def save_waveform(self):
+        self._tek.sendcmd('SAVe:WAVEform')
+
     def read_waveform(self, bin_format=True):
         """
         Read waveform from the oscilloscope.
