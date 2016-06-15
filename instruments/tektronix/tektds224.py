@@ -161,7 +161,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
 
     def __init__(self, filelike):
         super(TekTDS224, self).__init__(filelike)
-        self._file.timeout = 3 * pq.second
+        #self._file.timeout = 3 * pq.second
 
     # ENUMS #
 

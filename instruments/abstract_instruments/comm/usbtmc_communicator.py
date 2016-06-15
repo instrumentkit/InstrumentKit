@@ -33,7 +33,6 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         if usbtmc is None:
             raise ImportError("usbtmc is required for TMC instruments.")
         super(USBTMCCommunicator, self).__init__(self)
-
         self._filelike = usbtmc.Instrument(*args, **kwargs)
         self._terminator = "\n"
 
