@@ -27,9 +27,10 @@ class MC1(Instrument):
         self.upper_limit = upper_limit
         self._firmware = None
         self._controller = None
+        if self.controller == self.MotorType.relay:
+            self.timeout = 2
 
-
-     # ENUMS #
+    # ENUMS #
 
     class MotorType(Enum):
         """
@@ -39,7 +40,6 @@ class MC1(Instrument):
         relay = "Relay"
 
     # PROPERTIES #
-
 
     @property
     def setting(self):
@@ -167,7 +167,6 @@ class MC1(Instrument):
         """
         if self.lower_limit <= new_val <= self.upper_limit:
             cmd = ":MOVE "+str(int(new_val))
-            print(cmd)
             self.sendcmd(cmd)
         else:
             raise ValueError("Location out of range")
