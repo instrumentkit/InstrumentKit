@@ -13,7 +13,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from re import sub
-from builtins import range
+from builtins import range, map
 from enum import IntEnum
 
 
@@ -423,7 +423,7 @@ class TopMode(Instrument):
         :return: The firmware version of the charm controller
         :type: `str`
         """
-        firmware = [int(i) for i in self.reference("fw-ver").split(".")]
+        firmware = tuple(map(int, self.reference("fw-ver").split(".")))
         return firmware
 
     @property
