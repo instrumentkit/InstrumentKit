@@ -139,8 +139,8 @@ class TopMode(Instrument):
         @enable.setter
         def enable(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError("Emission status must be a boolean, got: {}".
-                                format(type(newval)))
+                raise TypeError("Emission status must be a boolean, "
+                                "got: {}".format(type(newval)))
             if not self.is_connected:
                 return
             self.parent.set(self.name + ":enable-emission", newval)
@@ -148,7 +148,10 @@ class TopMode(Instrument):
         @property
         def is_connected(self):
             """
-            Check whether a laser is even connected
+            Check whether a laser is connected
+
+            :return: Whether the controller successfully connected to a laser
+            :type: `bool`
             """
             if self.serial_number == 'unknown':
                 raise RuntimeError("Laser was not recognized by charm "
@@ -158,7 +161,7 @@ class TopMode(Instrument):
         @property
         def on_time(self):
             """
-            Gets the 'on time' value for the laser
+            Gets the amount of time the laser has been emitting light
 
             :return: The 'on time' value for the specified laser
             :units: Seconds (s)
