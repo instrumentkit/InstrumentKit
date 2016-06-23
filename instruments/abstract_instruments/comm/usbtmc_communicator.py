@@ -78,7 +78,8 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
+        newval = assume_units(newval, pq.second)\
+            .rescale(pq.millisecond).magnitude
         self._filelike.timeout = newval
 
     # FILE-LIKE METHODS #
