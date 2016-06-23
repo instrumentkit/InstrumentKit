@@ -15,8 +15,10 @@ import io
 from builtins import str, bytes
 
 import usbtmc
+import quantities as pq
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
+from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
 
@@ -62,15 +64,22 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
             raise TypeError("Terminator for loopback communicator must be "
                             "specified as a single character string.")
         self._terminator = newval
-        self._filelike.term_char = newval
+        self._filelike.term_char = ord(newval)
 
     @property
     def timeout(self):
-        raise NotImplementedError
+        """
+        Gets/sets the communication timeout of the usbtmc comm channel.
+
+        :type: `~quantities.Quantity`
+        :units: As specified or assumed to be of units ``seconds``
+        """
+        return self._filelike.timeout * pq.second
 
     @timeout.setter
     def timeout(self, newval):
-        raise NotImplementedError
+        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
+        self._filelike.timeout = newval
 
     # FILE-LIKE METHODS #
 
@@ -137,7 +146,11 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         raise NotImplementedError
 
     def flush_input(self):
-        raise NotImplementedError
+        """
+        For a USBTMC connection, this function does not actually do anything
+        and simply returns.
+        """
+        pass
 
     # METHODS #
 
@@ -150,7 +163,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
-        self._filelike.write("{}{}".format(msg, self.terminator))
+        self.write(msg)
 
     def _query(self, msg, size=-1):
         """
