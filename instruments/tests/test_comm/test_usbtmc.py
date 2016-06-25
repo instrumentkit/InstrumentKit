@@ -11,7 +11,11 @@ from __future__ import absolute_import
 from nose.tools import raises, eq_
 import mock
 
+import quantities as pq
+from numpy import array
+
 from instruments.abstract_instruments.comm import USBTMCCommunicator
+from instruments.tests import unit_eq
 
 # TEST CASES #################################################################
 
@@ -52,25 +56,28 @@ def test_usbtmccomm_terminator_setter(mock_usbtmc):
 
     comm.terminator = "*"
     eq_(comm._terminator, "*")
-    term_char.assert_called_with("*")
+    term_char.assert_called_with(42)
 
     comm.terminator = b"*"  # pylint: disable=redefined-variable-type
     eq_(comm._terminator, "*")
-    term_char.assert_called_with("*")
+    term_char.assert_called_with(42)
 
 
-@raises(NotImplementedError)
 @mock.patch(patch_path)
-def test_usbtmccomm_timeout_getter(mock_usbtmc):
+def test_usbtmccomm_timeout(mock_usbtmc):
     comm = USBTMCCommunicator()
-    _ = comm.timeout
 
+    timeout = mock.PropertyMock(return_value=1)
+    type(comm._filelike).timeout = timeout
 
-@raises(NotImplementedError)
-@mock.patch(patch_path)
-def test_usbtmccomm_timeout_setter(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm.timeout = 1
+    unit_eq(comm.timeout, 1 * pq.second)
+    timeout.assert_called_with()
+
+    comm.timeout = 10
+    timeout.assert_called_with(array(10000.0))
+
+    comm.timeout = 1000 * pq.millisecond
+    timeout.assert_called_with(array(1000.0))
 
 
 @mock.patch(patch_path)
@@ -106,10 +113,10 @@ def test_usbtmccomm_write_raw(mock_usbtmc):
 @mock.patch(patch_path)
 def test_usbtmccomm_sendcmd(mock_usbtmc):
     comm = USBTMCCommunicator()
-    comm.terminator = "\n"  # included due to mocking
+    comm.write = mock.MagicMock()
 
     comm._sendcmd("mock")
-    comm._filelike.write.assert_called_with("mock\n")
+    comm.write.assert_called_with("mock")
 
 
 @mock.patch(patch_path)
@@ -138,7 +145,6 @@ def test_usbtmccomm_tell(mock_usbtmc):
     comm.tell()
 
 
-@raises(NotImplementedError)
 @mock.patch(patch_path)
 def test_usbtmccomm_flush_input(mock_usbtmc):
     comm = USBTMCCommunicator()
