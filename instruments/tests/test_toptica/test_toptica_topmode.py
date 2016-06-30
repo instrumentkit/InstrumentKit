@@ -7,9 +7,10 @@ Module containing tests for the Toptica Topmode
 # IMPORTS #####################################################################
 
 from __future__ import absolute_import
-
+from datetime import datetime
 from nose.tools import raises
 import quantities as pq
+
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -17,7 +18,7 @@ from instruments.tests import expected_protocol
 # TESTS #######################################################################
 
 
-def test_serial_number():
+def test_laser_serial_number():
     with expected_protocol(
         ik.toptica.TopMode,
         [
@@ -82,11 +83,14 @@ def test_laser_enable():
         ik.toptica.TopMode,
         [
             "(param-ref 'laser1:emission)",
+            "(param-ref 'laser1:serial-number)",
             "(param-set! 'laser1:enable-emission #t)"
         ],
         [
             "(param-ref 'laser1:emission)\r",
             "#f",
+            "> (param-ref 'laser1:serial-number)\r",
+            "bloop1",
             "> (param-set! 'laser1:enable-emission #t)\r",
             "0",
             "> "
@@ -97,15 +101,38 @@ def test_laser_enable():
         tm.laser[0].enable = True
 
 
+@raises(RuntimeError)
+def test_laser_enable_no_laser():
+    with expected_protocol(
+        ik.toptica.TopMode,
+        [
+            "(param-ref 'laser1:serial-number)",
+            "(param-set! 'laser1:enable-emission #t)"
+        ],
+        [
+            "(param-ref 'laser1:serial-number)\r",
+            "unknown",
+            "> (param-set! 'laser1:enable-emission #t)\r",
+            "0",
+            "> "
+        ],
+        sep="\n"
+    ) as tm:
+        tm.laser[0].enable = True
+
+
 @raises(TypeError)
 def test_laser_enable_error():
     with expected_protocol(
         ik.toptica.TopMode,
         [
+            "(param-ref 'laser1:serial-number)",
             "(param-set! 'laser1:enable-emission #t)"
         ],
         [
-            "(param-set! 'laser1:enable-emission #t)\r",
+            "(param-ref 'laser1:serial-number)\r",
+            "bloop1",
+            "> (param-set! 'laser1:enable-emission #t)\r",
             "0",
             "> "
         ],
@@ -150,10 +177,10 @@ def test_laser_mode_hop():
     with expected_protocol(
         ik.toptica.TopMode,
         [
-            "(param-ref 'laser1:charm:reg:mh-occured)"
+            "(param-ref 'laser1:charm:reg:mh-occurred)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:mh-occured)\r",
+            "(param-ref 'laser1:charm:reg:mh-occurred)\r",
             "#f",
             "> "
         ],
@@ -166,10 +193,13 @@ def test_laser_lock_start():
     with expected_protocol(
         ik.toptica.TopMode,
         [
+            "(param-ref 'laser1:serial-number)",
             "(param-ref 'laser1:charm:reg:started)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:started)\r",
+            "(param-ref 'laser1:serial-number)\r",
+            "bloop1",
+            "> (param-ref 'laser1:charm:reg:started)\r",
             "\"\"",
             "> "
         ],
@@ -178,7 +208,27 @@ def test_laser_lock_start():
         assert tm.laser[0].lock_start is None
 
 
-def test_laser_first_mode_hop_time():
+def test_laser_lock_start_with_date():
+    with expected_protocol(
+        ik.toptica.TopMode,
+        [
+            "(param-ref 'laser1:serial-number)",
+            "(param-ref 'laser1:charm:reg:started)"
+        ],
+        [
+            "(param-ref 'laser1:serial-number)\r",
+            "bloop1",
+            "> (param-ref 'laser1:charm:reg:started)\r",
+            "\"2012-12-01 01:02:01\"",
+            "> "
+        ],
+        sep="\n"
+    ) as tm:
+        _date = datetime(2012, 12, 1, 1, 2, 1)
+        assert tm.laser[0].lock_start == _date
+
+
+def test_laser_first_mode_hop_time_none():
     with expected_protocol(
         ik.toptica.TopMode,
         [
@@ -194,7 +244,24 @@ def test_laser_first_mode_hop_time():
         assert tm.laser[0].first_mode_hop_time is None
 
 
-def test_laser_latest_mode_hop_time():
+def test_laser_first_mode_hop_time():
+    with expected_protocol(
+        ik.toptica.TopMode,
+        [
+            "(param-ref 'laser1:charm:reg:first-mh)"
+        ],
+        [
+            "(param-ref 'laser1:charm:reg:first-mh)\r",
+            "\"2012-12-01 01:02:01\"",
+            "> "
+        ],
+        sep="\n"
+    ) as tm:
+        _date = datetime(2012, 12, 1, 1, 2, 1)
+        assert tm.laser[0].first_mode_hop_time == _date
+
+
+def test_laser_latest_mode_hop_time_none():
     with expected_protocol(
         ik.toptica.TopMode,
         [
@@ -208,6 +275,23 @@ def test_laser_latest_mode_hop_time():
         sep="\n"
     ) as tm:
         assert tm.laser[0].latest_mode_hop_time is None
+
+
+def test_laser_latest_mode_hop_time():
+    with expected_protocol(
+        ik.toptica.TopMode,
+        [
+            "(param-ref 'laser1:charm:reg:latest-mh)"
+        ],
+        [
+            "(param-ref 'laser1:charm:reg:latest-mh)\r",
+            "\"2012-12-01 01:02:01\"",
+            "> "
+        ],
+        sep="\n"
+    ) as tm:
+        _date = datetime(2012, 12, 1, 1, 2, 1)
+        assert tm.laser[0].latest_mode_hop_time == _date
 
 
 def test_laser_correction_status():
@@ -428,6 +512,38 @@ def test_enable():
         tm.enable = False
 
 
+def test_firmware():
+    with expected_protocol(
+        ik.toptica.TopMode,
+        [
+            "(param-ref 'fw-ver)"
+        ],
+        [
+            "(param-ref 'fw-ver)\r",
+            "1.02.01",
+            "> "
+        ],
+        sep="\n"
+    ) as tm:
+        assert tm.firmware == (1, 2, 1)
+
+
+def test_serial_number():
+    with expected_protocol(
+        ik.toptica.TopMode,
+        [
+            "(param-ref 'serial-number)"
+        ],
+        [
+            "(param-ref 'serial-number)\r",
+            "010101",
+            "> "
+        ],
+        sep="\n"
+    ) as tm:
+        assert tm.serial_number == '010101'
+
+
 @raises(TypeError)
 def test_enable_error():
     with expected_protocol(
@@ -490,6 +606,22 @@ def test_fpga_status():
         sep="\n"
     ) as tm:
         assert tm.fpga_status is True
+
+
+def test_fpga_status_false():
+    with expected_protocol(
+        ik.toptica.TopMode,
+        [
+            "(param-ref 'system-health)"
+        ],
+        [
+            "(param-ref 'system-health)\r",
+            "#f",
+            "> "
+        ],
+        sep="\n"
+    ) as tm:
+        assert tm.fpga_status is False
 
 
 def test_temperature_status():
