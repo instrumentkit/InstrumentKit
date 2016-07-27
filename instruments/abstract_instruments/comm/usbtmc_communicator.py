@@ -81,6 +81,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         newval = assume_units(newval, pq.second)\
             .rescale(pq.millisecond).magnitude
 <<<<<<< HEAD
+<<<<<<< HEAD
         self._filelike.timeout = newval
 =======
         #newval = assume_units(newval, pq.second)\
@@ -89,6 +90,9 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         from numpy import array
         self._filelike.timeout = 1.0 #array(3000.0)
 >>>>>>> Revert "fixed merge conflict"
+=======
+        self._filelike.timeout = newval
+>>>>>>> Revert "patching usbtmc_comm"
 
     # FILE-LIKE METHODS #
 
