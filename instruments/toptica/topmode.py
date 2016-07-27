@@ -12,10 +12,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from re import sub
-from builtins import range, map
+from builtins import range
 from enum import IntEnum
-
 
 import quantities as pq
 
@@ -139,29 +137,14 @@ class TopMode(Instrument):
         @enable.setter
         def enable(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError("Emission status must be a boolean, "
-                                "got: {}".format(type(newval)))
-            if not self.is_connected:
-                return
+                raise TypeError(
+                    "Laser emmission must be a boolean, got: {}".format(newval))
             self.parent.set(self.name + ":enable-emission", newval)
-
-        @property
-        def is_connected(self):
-            """
-            Check whether a laser is connected
-
-            :return: Whether the controller successfully connected to a laser
-            :type: `bool`
-            """
-            if self.serial_number == 'unknown':
-                raise RuntimeError("Laser was not recognized by charm "
-                                   "controller. Is it plugged in?")
-            return True
 
         @property
         def on_time(self):
             """
-            Gets the amount of time the laser has been emitting light
+            Gets the 'on time' value for the laser
 
             :return: The 'on time' value for the specified laser
             :units: Seconds (s)
@@ -231,8 +214,7 @@ class TopMode(Instrument):
             :return: Mode-hop status of the specified laser
             :type: `bool`
             """
-            response = self.parent.reference(self.name + ":charm:reg:mh-occurred")
-            return ctbool(response)
+            return ctbool(self.parent.reference(self.name + ":charm:reg:mh-occured"))
 
         @property
         def lock_start(self):
@@ -242,14 +224,7 @@ class TopMode(Instrument):
             :return: The datetime of start of mode-locking for specified laser
             :type: `datetime`
             """
-            if not self.is_connected:
-                return
-            response = self.parent.reference(self.name + ":charm:reg:started")
-            # if mode locking has not started yet, the device will respond with an empty
-            # date string. This causes a problem with ctdate.
-            if len(response) < 2:
-                return None
-            return ctdate(response)
+            return ctdate(self.parent.reference(self.name + ":charm:reg:started"))
 
         @property
         def first_mode_hop_time(self):
@@ -259,12 +234,7 @@ class TopMode(Instrument):
             :return: The datetime of the first mode hop for the specified laser
             :type: `datetime`
             """
-            response = self.parent.reference(self.name + ":charm:reg:first-mh")
-            # if the mode has not hopped, the device will respond with an empty date
-            # string. This causes a problem with ctdate.
-            if len(response) < 2:
-                return None
-            return ctdate(response)
+            return ctdate(self.parent.reference(self.name + ":charm:reg:first-mh"))
 
         @property
         def latest_mode_hop_time(self):
@@ -275,12 +245,7 @@ class TopMode(Instrument):
                 specified laser
             :type: `datetime`
             """
-            response = self.parent.reference(self.name + ":charm:reg:latest-mh")
-            # if the mode has not hopped, the device will respond with an empty date
-            # string. This causes a problem with ctdate.
-            if len(response) < 2:
-                return None
-            return ctdate(response)
+            return ctdate(self.parent.reference(self.name + ":charm:reg:latest-mh"))
 
         @property
         def correction_status(self):
@@ -345,15 +310,7 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        # the toptica topmode termination character is \r\n,
-        # but unfortunately serial communicator only allows for single
-        # character terminators.
-        # toptica also returns all strings encapsulated by double quotations.
-        response = self.query("(param-ref '{})".format(param))
-        response = sub("\r", "", response)
-        response = sub("^\"", "", response)
-        response = sub("\"$", "", response)
-        return response.replace('^"', "").replace('"$', "")
+        return self.query("(param-ref '{})".format(param))
 
     def display(self, param):
         """
@@ -419,17 +376,6 @@ class TopMode(Instrument):
         return ctbool(self.reference("interlock-open"))
 
     @property
-    def firmware(self):
-        """
-        Gets the firmware version of the charm controller
-
-        :return: The firmware version of the charm controller
-        :type: `str`
-        """
-        firmware = tuple(map(int, self.reference("fw-ver").split(".")))
-        return firmware
-
-    @property
     def fpga_status(self):
         """
         Gets the FPGA health status
@@ -443,16 +389,6 @@ class TopMode(Instrument):
             return False
         response = int(response)
         return False if response % 2 else True
-
-    @property
-    def serial_number(self):
-        """
-        Gets the serial number of the charm controller
-
-        :return: The serial number of the charm controller
-        :type: `str`
-        """
-        return self.reference("serial-number")
 
     @property
     def temperature_status(self):

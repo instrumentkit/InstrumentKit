@@ -1,1 +1,0 @@
-SUBSYSTEMS=="usb", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="29ba", ATTRS{idProduct}=="0002", SYMLINK+="toptica_laser", MODE="0666"

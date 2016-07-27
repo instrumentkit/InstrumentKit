@@ -36,7 +36,7 @@ from .config import load_instruments
 # In keeping with PEP-396, we define a version number of the form
 # {major}.{minor}[.{postrelease}]{prerelease-tag}
 
-__version__ = "0.1.1"
+__version__ = "0.1.0"
 
 __title__ = "instrumentkit"
 __description__ = "Test and measurement communication library"
