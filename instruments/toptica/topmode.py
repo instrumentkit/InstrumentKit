@@ -12,9 +12,15 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+<<<<<<< HEAD
 from re import sub
 from builtins import range
 from enum import IntEnum
+=======
+from builtins import range
+from enum import IntEnum
+
+>>>>>>> Revert "fixed merge conflict"
 import quantities as pq
 
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
@@ -137,6 +143,7 @@ class TopMode(Instrument):
         @enable.setter
         def enable(self, newval):
             if not isinstance(newval, bool):
+<<<<<<< HEAD
                 raise TypeError("Emission status must be a boolean, got: "
                                 "{}".format(type(newval)))
             if not self.is_connected:
@@ -154,6 +161,13 @@ class TopMode(Instrument):
             return True
 
         @property
+=======
+                raise TypeError(
+                    "Laser emmission must be a boolean, got: {}".format(newval))
+            self.parent.set(self.name + ":enable-emission", newval)
+
+        @property
+>>>>>>> Revert "fixed merge conflict"
         def on_time(self):
             """
             Gets the 'on time' value for the laser
@@ -226,9 +240,13 @@ class TopMode(Instrument):
             :return: Mode-hop status of the specified laser
             :type: `bool`
             """
+<<<<<<< HEAD
             response = self.parent.reference(self.name +
                                              ":charm:reg:mh-occurred")
             return ctbool(response)
+=======
+            return ctbool(self.parent.reference(self.name + ":charm:reg:mh-occured"))
+>>>>>>> Revert "fixed merge conflict"
 
         @property
         def lock_start(self):
@@ -238,6 +256,7 @@ class TopMode(Instrument):
             :return: The datetime of start of mode-locking for specified laser
             :type: `datetime`
             """
+<<<<<<< HEAD
             # if mode locking has not started yet, the device will respond with
             # an empty date string. This causes a problem with ctdate.
             if self.correction_status == TopMode.CharmStatus.un_initialized:
@@ -245,6 +264,9 @@ class TopMode(Instrument):
 
             response = self.parent.reference(self.name + ":charm:reg:started")
             return ctdate(response)
+=======
+            return ctdate(self.parent.reference(self.name + ":charm:reg:started"))
+>>>>>>> Revert "fixed merge conflict"
 
         @property
         def first_mode_hop_time(self):
@@ -254,6 +276,7 @@ class TopMode(Instrument):
             :return: The datetime of the first mode hop for the specified laser
             :type: `datetime`
             """
+<<<<<<< HEAD
             # if the mode has not hopped, the device will respond with an empty
             # date string. This causes a problem with ctdate.
             if not self.mode_hop:
@@ -261,6 +284,9 @@ class TopMode(Instrument):
             response = self.parent.reference(self.name + ":charm:reg:first-mh")
 
             return ctdate(response)
+=======
+            return ctdate(self.parent.reference(self.name + ":charm:reg:first-mh"))
+>>>>>>> Revert "fixed merge conflict"
 
         @property
         def latest_mode_hop_time(self):
@@ -271,12 +297,16 @@ class TopMode(Instrument):
                 specified laser
             :type: `datetime`
             """
+<<<<<<< HEAD
             # if the mode has not hopped, the device will respond with an empty
             # date string. This causes a problem with ctdate.
             if not self.mode_hop:
                 raise RuntimeError("Mode hop not detected")
             response = self.parent.reference(self.name + ":charm:reg:latest-mh")
             return ctdate(response)
+=======
+            return ctdate(self.parent.reference(self.name + ":charm:reg:latest-mh"))
+>>>>>>> Revert "fixed merge conflict"
 
         @property
         def correction_status(self):
@@ -342,15 +372,7 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        # the toptica topmode termination character is \r\n,
-        # but unfortunately serial communicator only allows for single
-        # character terminators.
-        # toptica also returns all strings encapsulated by double quotations.
-        response = self.query("(param-ref '{})".format(param))
-        response = sub("\r", "", response)
-        response = sub("^\"", "", response)
-        response = sub("\"$", "", response)
-        return response.replace('^"', "").replace('"$', "")
+        return self.query("(param-ref '{})".format(param))
 
     def display(self, param):
         """
@@ -416,6 +438,7 @@ class TopMode(Instrument):
         return ctbool(self.reference("interlock-open"))
 
     @property
+<<<<<<< HEAD
     def firmware(self):
         """
         Gets the firmware version of the charm controller
@@ -427,6 +450,8 @@ class TopMode(Instrument):
         return firmware
 
     @property
+=======
+>>>>>>> Revert "fixed merge conflict"
     def fpga_status(self):
         """
         Gets the FPGA health status
@@ -440,16 +465,6 @@ class TopMode(Instrument):
             return False
         response = int(response)
         return False if response % 2 else True
-
-    @property
-    def serial_number(self):
-        """
-        Gets the serial number of the charm controller
-
-        :return: The serial number of the charm controller
-        :type: `str`
-        """
-        return self.reference("serial-number")
 
     @property
     def temperature_status(self):
