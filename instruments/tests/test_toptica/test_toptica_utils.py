@@ -29,7 +29,7 @@ def test_convert_boolean_value():
 
 def test_convert_toptica_datetime():
     blo = datetime.datetime.now()
-    blo_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    blo_str = datetime.datetime.now().strftime("%b %d %Y %I:%M%p")
     assert toptica_utils.convert_toptica_datetime('""\r') is None
     blo2 = toptica_utils.convert_toptica_datetime(blo_str)
     diff = blo - blo2

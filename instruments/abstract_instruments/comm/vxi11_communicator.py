@@ -12,16 +12,12 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import io
-import logging
 
 from builtins import str, bytes
 
 import vxi11
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
 
 # CLASSES #####################################################################
 
@@ -80,13 +76,9 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
     def terminator(self, newval):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
-        if not isinstance(newval, str):
+        if not isinstance(newval, str) or len(newval) > 1:
             raise TypeError("Terminator for VXI11 communicator must be "
-                            "specified as a byte or unicode string.")
-        if len(newval) > 1:
-            logger.warning("VXI11 instruments only support termination"
-                           "characters of length 1. The first character"
-                           "specified will be used.")
+                            "specified as a single character string.")
         self._inst.term_char = newval
 
     @property
