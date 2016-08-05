@@ -61,25 +61,35 @@ class LM(Instrument):
         self.sendcmd("slp:"+str(newval))
 
     @property
-    def Temp(self):
+    def set_temperature(self):
         """
 
-        :return: The Laser Temp. (in C)
+        :return: The Laser temperature (in C)
         """
         response = self.query("rstt? ")
         return response
 
-    @Temp.setter
-    def Temp(self, newval):
+    @property
+    def temperature(self):
+        response = self.query("rtt?")
+        return response
+
+    @temperature.setter
+    def temperature(self, newval):
         """
-        sets the Temp. (im C)
+        sets the temperature. (im C)
         :param newval:
         :return:
         """
         self.sendcmd("stt:"+str(newval))
 
     @property
-    def acc(self):
+    def current(self):
+        response = self.query("rli?")
+        return response
+
+    @property
+    def set_current(self):
         """
 
         :return: Current ACC of the Laser
@@ -87,8 +97,8 @@ class LM(Instrument):
         response = self.query("rstli? ")
         return response
 
-    @acc.setter
-    def acc(self, newval):
+    @current.setter
+    def current(self, newval):
         """
         Sets the Current ACC val.
         :param newval:
@@ -96,15 +106,8 @@ class LM(Instrument):
         """
         self.sendcmd("slc:"+str(newval))
 
-    def rli(self):
-        response = self.query("rli?")
-        return response
-
-    def rtt(self):
-        response = self.query("rtt?")
-        return response
-
-    def rti(self):
+    @property
+    def tec_current(self):
         response = self.query("rti?")
         return response
 
@@ -196,7 +199,8 @@ class LM(Instrument):
         """
         self.sendcmd("slp:"+ newval)
 
-    def rsv(self):
+    @property
+    def firmware(self):
         """
         Return the laser system firmware version
         :return:
@@ -204,7 +208,8 @@ class LM(Instrument):
         response = self.query("rsv?")
         return response
 
-    def stont(self, newval):
+    @property
+    def mod_on_time(self, newval):
         """
         Set inner TTL modulation on time, no less than 0.01ms
         :param newval:
@@ -212,7 +217,8 @@ class LM(Instrument):
         """
         self.sendcmd("stont:"+ newval)
 
-    def stofft(self, newval):
+    @property
+    def mod_off_time(self, newval):
         """
         Set inner TTL modulation off time, no less than 0.01ms
         :param newval:
@@ -220,7 +226,8 @@ class LM(Instrument):
         """
         self.sendcmd("stofft:"+ newval)
 
-    def stsont(self, newval):
+    @property
+    def power_scan_on_time(self, newval):
         """
         Set power scan on time in ms, no less than 0.01
         :param newval:
@@ -228,7 +235,8 @@ class LM(Instrument):
         """
         self.sendcmd("stsont:"+ newval)
 
-    def stsofft(self, newval):
+    @property
+    def power_scan_off_time(self, newval):
         """
         Set power scan off time in ms, no less than 0.01
         :param newval:
@@ -236,13 +244,15 @@ class LM(Instrument):
         """
         self.sendcmd("stsofft:"+ newval)
 
-    def ssps(self, newval):
+    @power_scan_step.setter
+    def power_scan_step(self, newval):
         """
         Set APC power scan step
         :param newval:
         :return:
         """
         self.sendcmd("ssps:"+ newval)
+
 
     def rslp(self):
         """
