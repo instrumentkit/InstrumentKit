@@ -11,7 +11,7 @@ if __name__ == "__main__":
     # open connection to coincidence counter. If you are using Windows, this will be a com port. On linux, it will show
     # up in /dev/ttyusb
     if _platform == "linux" or _platform == "linux2":
-        cc = ik.qubitekk.CC1.open_serial('/dev/ttyUSB0', 19200, timeout=1)
+        cc = ik.qubitekk.CC1.open_serial('/dev/ftdi_xxxxxxx', 19200, timeout=1)
     else:
         cc = ik.qubitekk.CC1.open_serial('COM8', 19200, timeout=1)
 

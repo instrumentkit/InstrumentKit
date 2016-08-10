@@ -7,7 +7,8 @@ from quantities import second, nanosecond
 
 def main():
     if _platform == "linux" or _platform == "linux2":
-        cc1 = ik.qubitekk.CC1v2001.open_serial('/dev/ttyUSB0', 19200, timeout=1)
+        cc1 = ik.qubitekk.CC1v2001.open_serial('/dev/ftdi_xxxx', 19200,
+                                               timeout=1)
     else:
         cc1 = ik.qubitekk.CC1v2001.open_serial('COM8', 19200, timeout=1)
     cc1.dwell_time = 1.0 * second
