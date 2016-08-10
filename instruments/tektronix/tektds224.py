@@ -9,7 +9,6 @@ Provides support for the Tektronix TDS 224 oscilloscope
 from __future__ import absolute_import
 from __future__ import division
 import time
-from copy import deepcopy
 from functools import partial
 from builtins import range, map
 from enum import Enum
@@ -23,7 +22,7 @@ from instruments.abstract_instruments import (
     Oscilloscope,
 )
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import ProxyList, unitful_property
+from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
 
@@ -134,18 +133,12 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
         for key, value in self._tek.MeasurementTypes.items():
             if key not in self._tek.MeasurementUnits.keys():
                 continue
-            doc = """
-        Gets the {} of the channel
 
-        :return: the {} (in {})
-        :rtype: `~quantities.quantity.Quantity`
-        """.format(key, key, self._tek.MeasurementUnits[key])
             _fget = partial(self.measurement,
-                            *[self._tek.MeasurementTypes[key],
-                              self._tek.MeasurementUnits[key]])
+                            *[value, self._tek.MeasurementUnits[key]])
             setattr(self, key, _fget)
 
-            # Ideally, we would like to saet a computable property, however,
+            # Ideally, we would like to set a computable property, however,
             # this doesn't work, possibly due to the way ProxyList is
             # implemented.
             #setattr(self, key, property(fget=_fget, fset=None, doc=doc))
