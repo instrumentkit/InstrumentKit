@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Provides the support for the Ondax LM Laser temperature controller.
+Provides the support for the Ondax LM Laser.
 
 Class originally contributed by Catherine Holloway.
 """
@@ -11,24 +11,19 @@ Class originally contributed by Catherine Holloway.
 from __future__ import absolute_import
 from __future__ import division
 
-from builtins import range, map
-from enum import IntEnum, Enum
+from enum import IntEnum
 
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import convert_temperature
-from instruments.util_fns import enum_property, unitful_property, int_property
 
 # CLASSES #####################################################################
 
 
 class LM(Instrument):
-
     """
-    The LM is the Laser to power the QES
-    It can output date over an RS232 connection at the Back of the device.
-    a PID control to keep the temperature at a set value.
+    The LM is the Ondax SureLock VHG-stabilized laser diode.
 
     The user manual can be found here:
     http://www.ondax.com/Downloads/SureLock/Compact%20laser%20module%20manual.pdf
@@ -37,339 +32,336 @@ class LM(Instrument):
     def __init__(self, filelike):
         super(LM, self).__init__(filelike)
         self.terminator = "\r"
-        self.prompt = "> "
+        self.apc = self.AutomaticPowerControl(self)
+        self.acc = self.AutomaticCurrentControl(self)
+        self.tec = self.ThermoElectricCooler(self)
+        self.modulation = self.Modulation(self)
+
+    # ENUMS #
+    class Status(IntEnum):
+        """
+        Enum containing the states of the laser
+        """
+        normal = 1
+        inner_modulation = 2
+        power_scan = 3
+        calibrate = 4
+        shutdown_current = 5
+        shutdown_overheat = 6
+        waiting_stable_temperature = 7
+        waiting = 8
+
+    # INNER CLASSES #
+
+    class AutomaticCurrentControl(object):
+        def __init__(self, parent):
+            self.parent = parent
+
+        @property
+        def target(self):
+            """
+            The ACC target current
+            :return: Current ACC of the Laser
+            :rtype: quantities.mA
+            """
+            response = float(self.parent.query("rstli?"))
+            return response*pq.mA
+
+        def enable(self):
+            """
+            Enable the ACC driver
+            """
+            self.parent.sendcmd("lcen")
+
+        def disable(self):
+            """
+            Disable the ACC driver
+            """
+            self.parent.sendcmd("lcdis")
+
+        def on(self):
+            """
+            Turn on the ACC driver
+            """
+            self.parent.sendcmd("lcon")
+
+        def off(self):
+            """
+            Turn off the ACC driver
+            """
+            self.parent.sendcmd("lcoff")
+
+    class AutomaticPowerControl(object):
+        def __init__(self, parent):
+            self.parent = parent
+
+        @property
+        def target(self):
+            """
+            Return the target laser power in mW
+            :return: the target laser power
+            :rtype: quantities.mW
+            """
+            response = self.parent.query("rslp?")
+            return float(response)*pq.mW
+
+        def enable(self):
+            """
+            Enable the APC driver
+            """
+            self.parent.sendcmd("len")
+
+        def disable(self):
+            """
+            Disable the APC driver
+            :return:
+            """
+            self.parent.sendcmd("ldis")
+
+        def start(self):
+            """
+            Start the APC scan
+            :return:
+            """
+            self.parent.sendcmd("sps")
+
+        def stop(self):
+            """
+            Stop the APC scan
+            :return:
+            """
+            self.parent.sendcmd("cps")
+
+    class Modulation(object):
+        def __init__(self, parent):
+            self.parent = parent
+
+        @property
+        def on_time(self):
+            """
+            Get the on time of TTL modulation, in mS
+            :return: the on time in the TTL modulation.
+            :rtype: quantities.mS
+            """
+            response = self.parent.query("stsont?")
+            return float(response)*pq.mS
+
+        @on_time.setter
+        def on_time(self, newval):
+            """
+            Set the on time og TTL modulation, in mS.
+            :param newval: the modulation on time, in mS.
+            :type newval: quantities.mS
+            """
+            newval = newval.rescale('mS').magnitude
+            self.parent.sendcmd("stsont:"+str(newval))
+
+        @property
+        def off_time(self):
+            """
+            Get the off time of TTL modulation, in mS
+            :return: the off time in the TTL modulation.
+            :rtype: quantities.mS
+            """
+            response = self.parent.query("stsofft?")
+            return float(response)*pq.mS
+
+        @off_time.setter
+        def off_time(self, newval):
+            """
+            Set the off time og TTL modulation, in mS.
+            :param newval: the modulation off time, in mS.
+            :type newval: quantities.mS
+            """
+            newval = newval.rescale('mS').magnitude
+            self.parent.sendcmd("stsofft:"+str(newval))
+
+        def start(self):
+            """
+            Start TTL modulation.
+            """
+            self.parent.sendcmd("stm")
+
+        def stop(self):
+            """
+            Stop TTl modulation.
+            """
+            self.parent.sendcmd("ctm")
+
+    class ThermoElectricCooler(object):
+        def __init__(self, parent):
+            self.parent = parent
+
+        @property
+        def current(self):
+            """
+            Get the current TEC current
+            :return: the TEC current
+            :rtype: quantities.mA
+            """
+            response = self.parent.query("rti?")
+            return float(response)*pq.mA
+
+        @property
+        def target(self):
+            """
+            Return the TEC target temperature
+            :return: The target temperature
+            :rtype: quantities.degC
+            """
+            response = self.parent.query("rstt?")
+            return float(response)*pq.degC
+
+        def enable(self):
+            """
+            Enable TEC control
+            """
+            self.parent.sendcmd("tecon")
+
+        def shutdown(self):
+            """
+            Shut down TEC control
+            """
+            self.parent.sendcmd("tecoff")
 
     def _ack_expected(self, msg=""):
-        return msg
-
-    @property
-    def power(self):
-        """
-
-        :return: the laser power, in mW
-        """
-        response = self.query("rlp?")
-        return response
-
-    @power.setter
-    def power(self, newval):
-        """
-        sets the power
-        :param newval:
-        :return: Nothing
-        """
-        self.sendcmd("slp:"+str(newval))
-
-    @property
-    def set_temperature(self):
-        """
-
-        :return: The Laser temperature (in C)
-        """
-        response = self.query("rstt? ")
-        return response
-
-    @property
-    def temperature(self):
-        response = self.query("rtt?")
-        return response
-
-    @temperature.setter
-    def temperature(self, newval):
-        """
-        sets the temperature. (im C)
-        :param newval:
-        :return:
-        """
-        self.sendcmd("stt:"+str(newval))
-
-    @property
-    def current(self):
-        response = self.query("rli?")
-        return response
-
-    @property
-    def set_current(self):
-        """
-
-        :return: Current ACC of the Laser
-        """
-        response = self.query("rstli? ")
-        return response
-
-    @current.setter
-    def current(self, newval):
-        """
-        Sets the Current ACC val.
-        :param newval:
-        :return:
-        """
-        self.sendcmd("slc:"+str(newval))
-
-    @property
-    def tec_current(self):
-        response = self.query("rti?")
-        return response
-
-    def enableapc(self):
-        """
-        Enable laser APC driver
-        :return:
-        """
-        self.sendcmd("len")
-
-    def disableapc(self):
-        """
-        Disable laser APC driver
-        :return:
-        """
-        self.sendcmd("ldis")
-
-    def enableemission(self):
-        """
-        Turn on the laser emission output power
-        :return:
-        """
-        self.sendcmd("lon")
-
-    def disableemission(self):
-        """
-        Turn off the laser emission output power
-        :return:
-        """
-        self.sendcmd("loff")
-
-    def calibrate(self, newval):
-        """
-        Calibrate the laser power/Set the laser full power value in mW
-        :param newval:
-        :return:
-        """
-        self.sendcmd("clfp:"+str(newval))
-
-    def start(self):
-        """
-        Start inner TTL modulation
-        :return:
-        """
-        self.sendcmd("stm")
-
-
-    def stop(self):
-        """
-        Stop inner TTl modulation
-        :return:
-        """
-        self.sendcmd("ctm")
-
-    def enabletec(self):
-        """
-        Enable TEC control
-        :return:
-        """
-        self.sendcmd("tecon")
-
-    def shutdowntec(self):
-        """
-        Shut down TEC control
-        :return:
-        """
-        self.sendcmd("tecoff")
-
-    def startapc(self):
-        """
-        Start APC power scan
-        :return:
-        """
-        self.sendcmd("sps")
-
-    def stopapc(self):
-        """
-        Stop APC power scan
-        :return:
-        """
-        self.sendcmd("cps")
-
-    def setfullpower(self, newval):
-        """
-        Set the laser output power from 0.0 to full power(Default: Full power)
-
-        :param newval:
-        :return:
-        """
-        self.sendcmd("slp:"+ newval)
+        if msg.find("?") > 0:
+            return None
+        else:
+            return "OK"
 
     @property
     def firmware(self):
         """
-        Return the laser system firmware version
-        :return:
+        Return the laser system firmware version.
+        :return: The laser system firmware.
+        :rtype: str
         """
         response = self.query("rsv?")
         return response
 
     @property
-    def mod_on_time(self, newval):
+    def current(self):
         """
-        Set inner TTL modulation on time, no less than 0.01ms
-        :param newval:
-        :return:
+        The laser diode current, in mA.
+        :return: The laser diode current.
+        :rtype: pq.mA
         """
-        self.sendcmd("stont:"+ newval)
+        response = self.query("rli?")
+        return float(response)*pq.mA
+
+    @current.setter
+    def current(self, newval):
+        """
+        Set the laser diode current.
+        :param newval: the
+        """
+        newval = newval.rescale('mA').magnitude
+        self.sendcmd("slc:"+str(newval))
 
     @property
-    def mod_off_time(self, newval):
+    def maximum_current(self):
         """
-        Set inner TTL modulation off time, no less than 0.01ms
-        :param newval:
-        :return:
+        Read the maximum laser diode current in mA.
+        :return: The maximum laser diode current.
+        :rtype: pq.mA
         """
-        self.sendcmd("stofft:"+ newval)
+        response = self.query("rlcm?")
+        return float(response)*pq.mA
 
-    @property
-    def power_scan_on_time(self, newval):
-        """
-        Set power scan on time in ms, no less than 0.01
-        :param newval:
-        :return:
-        """
-        self.sendcmd("stsont:"+ newval)
-
-    @property
-    def power_scan_off_time(self, newval):
-        """
-        Set power scan off time in ms, no less than 0.01
-        :param newval:
-        :return:
-        """
-        self.sendcmd("stsofft:"+ newval)
-
-    @power_scan_step.setter
-    def power_scan_step(self, newval):
-        """
-        Set APC power scan step
-        :param newval:
-        :return:
-        """
-        self.sendcmd("ssps:"+ newval)
-
-
-    def rslp(self):
-        """
-        Return the present laser setting power in mW
-
-        :return:
-        """
-        response = self.query("rslp?")
-        return response
-
-    def rclp(self):
-        """
-        Return the present laser full power
-        :return:
-        """
-        response = self.query("rclp?")
-        return response
-
-    def rstt(self):
-        """
-        Return the TEC set up temperature
-        :return:
-        """
-        response = self.query("rstt?")
-        return response
-
-    def rstli(self):
-        """
-        Return the ACC set up current in mA
-        :return:
-        """
-        response = self.query("rstli?")
-        return response
-
-    def ssc(self):
-        """
-        Save the setting to the flash memory so
-        the laser system can operate in the same
-        setting after repower it
-        :return:
-        """
-        self.sendcmd("ssc")
-
-    def rlrs(self):
-        """
-        Read laser controller run status
-        1, Laser controller runs normally
-        2, Inner TTL modulation
-        3, Laser power scan
-        4, Waiting for calibrate laser power
-        5, Over laser current shutdown
-        6, TEC over temperature shutdown
-        7, Waiting temperature stable
-        8, Waiting 30 seconds
-        :return:
-        """
-        response = self.query("rlrs?")
-        return response
-
-    def smlc(self, newval):
+    @maximum_current.setter
+    def maximum_current(self, newval):
         """
         Set the maximum laser diode current in
         mA, if the current is over the limit the laser
         will shut down.
 
-        :param newval:
-        :return:
+        :param newval: the new current.
+        :type newval: quantities.mA
         """
-        self.sendcmd("smlc:"+ newval)
+        newval = newval.rescale("mA").magnitude
+        self.sendcmd("smlc:" + str(newval))
 
-    def rlcm(self):
+    @property
+    def power(self):
         """
-        Read the maximum laser current in mA
-        :return:
+        The laser's optical power.
+        :return: the laser power, in mW
+        :rtype: quantities.mW
         """
-        response = self.query("rlcm?")
-        return response
+        response = self.query("rlp?")
+        return float(response)*pq.mW
 
-    def reset(self):
+    @power.setter
+    def power(self, newval):
         """
-        Reset the laser controller
-        :return:
+        Set the optical power.
+        :param newval: the new power, in mW.
+        :type newval: quantities.mW
         """
-        self.sendcmd("reset")
+        newval = newval.rescale('mW').magnitude
+        self.sendcmd("slp:"+str(newval))
 
-    def rsn(self):
+    @property
+    def serial_number(self):
         """
         Return the laser controller serial number
-        :return:
+        :return: the serial number, as a string.
+        :rtype: str
         """
         response = self.query("rsn?")
         return response
 
-    def lcen(self):
+    @property
+    def status(self):
         """
-        Enable ACC laser driver
-        :return:
+        Read laser controller run status.
+        :return: The status.
+        :rtype: LM.Status
         """
-        self.sendcmd("lcen")
+        response = self.query("rlrs?")
+        return self.Status(int(response))
 
-    def lcdis(self):
+    @property
+    def temperature(self):
         """
-        Disable ACC laser driver
-        :return:
+        Get the current laser diode temperature.
+        :return: The current laser diode temperature.
+        :rtype: quantity.degC
         """
-        self.sendcmd("lcdis")
+        response = self.query("rtt?")
+        return float(response)*pq.degC
 
-    def lcon(self):
+    @temperature.setter
+    def temperature(self, newval):
         """
-        Turn on ACC laser driver
-        :return:
+        Set the laser diode temperature
+        :param newval: the new temperature.
+        :type newval: quantities.degC
         """
-        self.sendcmd("lcon")
+        newval = convert_temperature(newval, pq.degC).magnitude
+        self.sendcmd("stt:"+str(newval))
 
-    def lcoff(self):
+    def enable(self):
         """
-        Turn off ACC laser driver
-        :return:
+        Enable laser emission.
         """
-        self.sendcmd("lcoff")
+        self.sendcmd("lon")
+
+    def disable(self):
+        """
+        Disable laser emission.
+        """
+        self.sendcmd("loff")
+
+    def save(self):
+        """
+        Save current settings in flash memory.
+        """
+        self.sendcmd("ssc")
+
+    def reset(self):
+        """
+        Reset the laser controller.
+        """
+        self.sendcmd("reset")
