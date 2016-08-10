@@ -9,7 +9,7 @@ Provides support for the Tektronix TDS 224 oscilloscope
 from __future__ import absolute_import
 from __future__ import division
 import time
-
+from functools import partial
 from builtins import range, map
 from enum import Enum
 
@@ -25,7 +25,6 @@ from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
-
 
 class _TekTDS224DataSource(OscilloscopeDataSource):
 
@@ -124,6 +123,25 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
     def __init__(self, parent, idx):
         super(_TekTDS224Channel, self).__init__(parent, "CH{}".format(idx + 1))
         self._idx = idx + 1
+        self._set_measurements()
+
+    def _set_measurements(self):
+        """
+        Initialize all of the measurement properties
+        :return:
+        """
+        for key, value in self._tek.MeasurementTypes.items():
+            if key not in self._tek.MeasurementUnits.keys():
+                continue
+
+            _fget = partial(self.measurement,
+                            *[value, self._tek.MeasurementUnits[key]])
+            setattr(self, key, _fget)
+
+            # Ideally, we would like to set a computable property, however,
+            # this doesn't work, possibly due to the way ProxyList is
+            # implemented.
+            #setattr(self, key, property(fget=_fget, fset=None, doc=doc))
 
     @property
     def coupling(self):
@@ -143,6 +161,26 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
                             " value, got {} instead.".format(type(newval)))
         self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
 
+    def measurement(self, measurement="CRM", units=pq.V):
+        """
+        Runs the multi-command protocol for setting up and measuring a value
+        on the current channel.
+        :param units: A quantities unit defining the type of output.
+        :type units: pq.units
+        :param measurement: A string for the measurement type to set the
+        scope.
+        :return: The value from the device.
+        """
+        # set the immediate measurement to the current channel
+        self._tek.sendcmd("MEASU:IMM:SOU {}".format(self._idx))
+        # set the measurement type to the positive width
+        self._tek.sendcmd("MEASU:IMM:TYP {}".format(measurement))
+        # It's possible to get the units as well, however, the width will
+        # always be of type seconds.
+        response = self._tek.query("MEASU:IMM:VAL?")
+        return float(response)*units
+
+
 
 class TekTDS224(SCPIInstrument, Oscilloscope):
 
@@ -158,6 +196,20 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
     >>> tek = ik.tektronix.TekTDS224.open_gpibusb("/dev/ttyUSB0", 1)
     >>> [x, y] = tek.channel[0].read_waveform()
     """
+
+    MeasurementTypes = {'cyclic_rms': 'CRM', 'fall_time': 'FAL',
+                        'frequency': 'FREQ', 'maximum': 'MAXI', 'mean': 'MEAN',
+                        'minimum': 'MINI', 'negative_width': 'NWI',
+                        'none': 'NON', 'peak_peak': 'PK2',
+                        'period': 'PERI', 'positive_width': 'PWI',
+                        'rise_time': 'RIS'}
+
+    MeasurementUnits = {'cyclic_rms': pq.V, 'fall_time': pq.S,
+                        'frequency': pq.Hz, 'maximum': pq.V, 'mean': pq.V,
+                        'minimum': pq.V, 'negative_width': pq.S,
+                        'peak_peak': pq.V,
+                        'period': pq.S, 'positive_width': pq.S,
+                        'rise_time': pq.S}
 
     def __init__(self, filelike):
         super(TekTDS224, self).__init__(filelike)
@@ -262,3 +314,21 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
     @property
     def force_trigger(self):
         raise NotImplementedError
+
+    @property
+    def measurement(self):
+        """
+        Returns the current measurement settings
+        :return:
+        """
+        response = self.query("MEASU?")
+        response_parts = response.split(";")
+        _measurements = []
+        for i in range(int(len(response_parts)/3)):
+            channel = float(response_parts[i*3+2].replace("CH", ""))
+            measurement = [key for key, value in self.MeasurementTypes.items()
+                           if value == response_parts[i*3]][0]
+            _measurements.append({'channel': channel,
+                                  'measurement_type': measurement})
+
+        return _measurements
