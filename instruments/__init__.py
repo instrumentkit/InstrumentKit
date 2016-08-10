@@ -18,6 +18,7 @@ from . import hp
 from . import keithley
 from . import lakeshore
 from . import newport
+from . import ondax
 from . import oxford
 from . import phasematrix
 from . import picowatt
