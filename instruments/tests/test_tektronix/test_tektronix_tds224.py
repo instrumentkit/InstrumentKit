@@ -293,8 +293,8 @@ def test_tektds224_data_source_read_waveform():
             "CH1",
             "2",
             # pylint: disable=no-member
-            "#210" + bytes.fromhex("00000001000200030004").decode(
-                        "utf-8") + "0",
+            "#210" + bytes.fromhex("00000001000200030004").decode("utf-8") +
+            "0",
             "1",
             "0",
             "0",
