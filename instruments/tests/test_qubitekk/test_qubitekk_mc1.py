@@ -114,7 +114,7 @@ def test_mc1_range():
         mc.upper_limit = 200
         mc.lower_limit = 0
         mc.increment = 10
-        assert mc.range == arange(0, 200, 10)
+        assert mc.range.tolist() == arange(0, 200, 10).tolist()
 
 
 def test_mc1_is_centering():
