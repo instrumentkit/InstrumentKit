@@ -27,8 +27,6 @@ class MC1(Instrument):
         self.upper_limit = upper_limit
         self._firmware = None
         self._controller = None
-        if self.controller == self.MotorType.relay:
-            self.timeout = 2
 
     # ENUMS #
 

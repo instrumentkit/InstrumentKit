@@ -93,7 +93,7 @@ def test_mc1_move_timeout():
     with expected_protocol(
         ik.qubitekk.MC1,
         [
-            "TAME?"
+            "TIME?"
         ],
         [
             "200"
