@@ -54,6 +54,10 @@ class LM(Instrument):
     # INNER CLASSES #
 
     class AutomaticCurrentControl(object):
+        """
+        Options and functions relatde to the laser diode's automatic current
+        control driver
+        """
         def __init__(self, parent):
             self.parent = parent
 
@@ -92,6 +96,10 @@ class LM(Instrument):
             self.parent.sendcmd("lcoff")
 
     class AutomaticPowerControl(object):
+        """
+        Options and functions related to the laser diode's automatic power
+        control driver.
+        """
         def __init__(self, parent):
             self.parent = parent
 
@@ -133,6 +141,9 @@ class LM(Instrument):
             self.parent.sendcmd("cps")
 
     class Modulation(object):
+        """
+        Options and functions related to the laser's optical output modulation.
+        """
         def __init__(self, parent):
             self.parent = parent
 
@@ -189,6 +200,10 @@ class LM(Instrument):
             self.parent.sendcmd("ctm")
 
     class ThermoElectricCooler(object):
+        """
+        Options and functions relating to the laser diode's thermo electric
+        cooler.
+        """
         def __init__(self, parent):
             self.parent = parent
 
