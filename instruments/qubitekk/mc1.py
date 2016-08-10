@@ -9,6 +9,8 @@ MC1 Class originally contributed by Catherine Holloway.
 # IMPORTS #####################################################################
 from __future__ import absolute_import
 from enum import Enum
+from numpy import arange
+
 from instruments.abstract_instruments import Instrument
 # CLASSES #####################################################################
 
@@ -27,8 +29,6 @@ class MC1(Instrument):
         self.upper_limit = upper_limit
         self._firmware = None
         self._controller = None
-        if self.controller == self.MotorType.relay:
-            self.timeout = 2
 
     # ENUMS #
 
@@ -134,7 +134,7 @@ class MC1(Instrument):
         Create a range of values using limits and increment
         :rtype: range
         """
-        return range(self.lower_limit, self.upper_limit, self.increment)
+        return arange(self.lower_limit, self.upper_limit, self.increment)
 
     # METHODS #
 

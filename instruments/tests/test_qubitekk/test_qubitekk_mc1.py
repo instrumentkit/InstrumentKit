@@ -9,6 +9,7 @@ Module containing tests for the Qubitekk MC1
 from __future__ import absolute_import
 
 from nose.tools import raises
+from numpy import arange
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -93,7 +94,7 @@ def test_mc1_move_timeout():
     with expected_protocol(
         ik.qubitekk.MC1,
         [
-            "TAME?"
+            "TIME?"
         ],
         [
             "200"
@@ -113,7 +114,7 @@ def test_mc1_range():
         mc.upper_limit = 200
         mc.lower_limit = 0
         mc.increment = 10
-        assert mc.range == range(0, 200, 10)
+        assert mc.range.tolist() == arange(0, 200, 10).tolist()
 
 
 def test_mc1_is_centering():
