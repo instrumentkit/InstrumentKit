@@ -1,6 +1,8 @@
 from sys import platform
 from time import sleep
 from serial.tools import list_ports
+
+from instruments import Device
 from instruments.qubitekk import MC1
 
 HARDWARE_ID = [1027, 24577]
@@ -39,8 +41,8 @@ def find_port():
 
 
 def main():
-    port = find_port()
-    mc1 = MC1.open_serial(port, 9600, timeout=1)
+    hardware = Device(vid=1027, pid=24577)
+    mc1 = MC1.open_serial(hardware.port, baud=9600, timeout=1)
 
     print("Firmware", mc1.firmware)
     print("Motor controller type: ", mc1.controller)

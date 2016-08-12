@@ -16,6 +16,9 @@ import tkinter as tk
 import re
 
 
+
+
+
 def clear_counts(*args):
     cc.clear_counts()
 
@@ -84,12 +87,9 @@ def reset(*args):
     gate_enabled.set(cc.gate_enable)
 
 if __name__ == "__main__":
-    # open connection to coincidence counter. If you are using Windows, this will be a com port. On linux, it will show
-    # up in /dev/ttyusb
-    if _platform == "linux" or _platform == "linux2":
-        cc = ik.qubitekk.CC1.open_serial('/dev/ftdi_xxxxxx', 19200, timeout=10)
-    else:
-        cc = ik.qubitekk.CC1.open_serial('COM9', 19200, timeout=10)
+    hardware = ik.Device(vid=1027, pid=24577)
+    # open connection to coincidence counter.
+    cc = ik.qubitekk.CC1.open_serial(hardware.port, baud=19200, timeout=10)
     print(cc.firmware)
     # i is used to keep track of time
     i = 0

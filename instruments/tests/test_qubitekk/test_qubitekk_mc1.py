@@ -104,19 +104,6 @@ def test_mc1_move_timeout():
         assert mc.move_timeout == 200
 
 
-def test_mc1_range():
-    with expected_protocol(
-        ik.qubitekk.MC1,
-        [],
-        [],
-        sep="\r"
-    ) as mc:
-        mc.upper_limit = 200
-        mc.lower_limit = 0
-        mc.increment = 10
-        assert mc.range.tolist() == arange(0, 200, 10).tolist()
-
-
 def test_mc1_is_centering():
     with expected_protocol(
         ik.qubitekk.MC1,

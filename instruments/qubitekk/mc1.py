@@ -9,10 +9,10 @@ MC1 Class originally contributed by Catherine Holloway.
 # IMPORTS #####################################################################
 from __future__ import absolute_import
 from enum import Enum
-from numpy import arange
 
 from instruments.abstract_instruments import Instrument
 # CLASSES #####################################################################
+from instruments.util_fns import int_property, enum_property
 
 
 class MC1(Instrument):
@@ -41,49 +41,37 @@ class MC1(Instrument):
 
     # PROPERTIES #
 
-    @property
-    def setting(self):
-        """
-        Get the current output setting
-        :return: int, representing the currently active channel
-        """
-        response = self.query("OUTP?")
-        return int(response)
+    setting = int_property(
+        name="OUTP",
+        doc="""
+        Gets/sets the output setting of the optical switch.
 
-    @setting.setter
-    def setting(self, new_val):
-        """
-        Set the current output setting
-        :param new_val: the output channel number, either 0 or 1
-        :type new_val: either int or boolean
-        """
-        if new_val == 0:
-            self.sendcmd(":OUTP 0")
-        elif new_val == 1:
-            self.sendcmd(":OUTP 1")
-        else:
-            raise ValueError("Setting not recognized")
+        :type: `int`
+        """,
+        valid_set=range(2),
+        set_fmt=":{} {}"
+    )
 
-    @property
-    def position(self):
-        """
-        Return the internal motor state position
-        :return: the internal position of the motor
-        :rtype: int
-        """
-        response = self.query("POSI?")
-        return int(response)
+    position = int_property(
+        name="POSI",
+        doc="""
+        Get the internal motor state position.
 
-    @property
-    def direction(self):
-        """
-        Return the internal direction variable, which is a function of how far
-        the motor needs to go
-        :return: the direction variable
-        :rtype: int
-        """
-        response = self.query("DIRE?")
-        return int(response)
+        :type: `int`
+        """,
+        readonly=True
+    )
+
+    direction = int_property(
+        name="DIRE",
+        doc="""
+        Get the internal direction variable, which is a function of how far
+        the motor needs to go.
+
+        :type: `int`
+        """,
+        readonly=True
+    )
 
     @property
     def firmware(self):
@@ -106,35 +94,25 @@ class MC1(Instrument):
                 self._firmware = value
         return self._firmware
 
-    @property
-    def controller(self):
-        """
-        Get the motor controller type
-        :rtype: MC1.MotorType
-        """
-        if self._controller is None:
-            response = self.query("MOTO?")
-            self._controller = self.MotorType(response)
-        return self._controller
+    controller = enum_property(
+        'MOTO',
+        MotorType,
+        doc="""
+        Get the motor controller type.
+        """,
+        readonly=True
+    )
 
-    @property
-    def move_timeout(self):
-        """
-        Return the motor's timeout value, which indicates the number of clock
-        cycles before the motor can start moving again
-        :return: the internal timeout of the motor
-        :rtype: int
-        """
-        response = self.query("TIME?")
-        return int(response)
+    move_timeout = int_property(
+        name="TIME",
+        doc="""
+        Get the motor's timeout value, which indicates the number of clock
+        cycles before the motor can start moving again.
 
-    @property
-    def range(self):
-        """
-        Create a range of values using limits and increment
-        :rtype: range
-        """
-        return arange(self.lower_limit, self.upper_limit, self.increment)
+        :type: `int`
+        """,
+        readonly=True
+    )
 
     # METHODS #
 
@@ -159,14 +137,15 @@ class MC1(Instrument):
         """
         self.sendcmd(":RESE")
 
-    def move(self, new_val):
+    def move(self, new_position):
         """
-        Move to a specified location
-        :param new_val: the location
-        :type new_val: int
+        Move to a specified location. Position is unitless and is defined as
+        the number of motor steps. It varies between motors.
+        :param new_position: the location
+        :type new_position: int
         """
-        if self.lower_limit <= new_val <= self.upper_limit:
-            cmd = ":MOVE "+str(int(new_val))
+        if self.lower_limit <= new_position <= self.upper_limit:
+            cmd = ":MOVE "+str(int(new_position))
             self.sendcmd(cmd)
         else:
             raise ValueError("Location out of range")

@@ -30,6 +30,7 @@ from . import toptica
 from . import yokogawa
 
 from . import units
+from .serial_fns import Device
 from .config import load_instruments
 
 # VERSION METADATA ###########################################################

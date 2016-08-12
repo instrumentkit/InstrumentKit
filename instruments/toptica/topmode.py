@@ -139,8 +139,8 @@ class TopMode(Instrument):
         @enable.setter
         def enable(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError("Emission status must be a boolean, got: {}".
-                                format(type(newval)))
+                raise TypeError("Emission status must be a boolean, got: "
+                                "{}".format(type(newval)))
             if not self.is_connected:
                 return
             self.parent.set(self.name + ":enable-emission", newval)
