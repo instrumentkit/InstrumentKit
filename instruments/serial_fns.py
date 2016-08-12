@@ -9,10 +9,7 @@ Module containing utility functions for serial communications.
 from __future__ import absolute_import
 from __future__ import division
 
-from sys import platform
-
 from serial.tools.list_ports import comports
-from serial.tools.list_ports_common import ListPortInfo
 
 # FUNCTIONS ###################################################################
 

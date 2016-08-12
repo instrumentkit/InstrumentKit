@@ -8,6 +8,7 @@ MC1 Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 from __future__ import absolute_import
+from builtins import range
 from enum import Enum
 
 from instruments.abstract_instruments import Instrument

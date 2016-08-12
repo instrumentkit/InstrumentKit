@@ -9,7 +9,6 @@ Module containing tests for the Qubitekk MC1
 from __future__ import absolute_import
 
 from nose.tools import raises
-from numpy import arange
 
 import instruments as ik
 from instruments.tests import expected_protocol
