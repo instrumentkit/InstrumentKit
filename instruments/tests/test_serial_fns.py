@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Module containing tests for the serial helper functions.
+"""
+from __future__ import absolute_import
 from mock import patch
 from serial.tools.list_ports_common import ListPortInfo
 
