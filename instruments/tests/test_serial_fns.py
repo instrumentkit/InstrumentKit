@@ -11,6 +11,9 @@ from instruments import Device
 
 
 def fake_comports():
+    """
+    Generate a fake list of comports to compare against.
+    """
     dev = ListPortInfo()
     dev.vid = 0
     dev.pid = 1000
@@ -25,4 +28,3 @@ def test_comparison():
     hardware2 = Device(vid=0, pid=1000, serial_number='a0')
     assert hardware.port == 'COM1'
     assert hardware2.port is None
-
