@@ -5,13 +5,12 @@ Toptica Topmode example
 """
 
 import instruments as ik
-import quantities as pq
-from platform import system
-if system() == 'Windows':
-      tm = ik.toptica.TopMode.open_serial('COM14', 115200)
-else:
-      tm = ik.toptica.TopMode.open_serial('/dev/ttyACM0', 115200)
 
+hardware = ik.Device(vid=10682, pid=2)
+tm = ik.toptica.TopMode.open_serial(hardware.port, baud=115200)
+
+print("The top mode's firmware is: ", tm.firmware)
+print("The top mode's serial number is: ", tm.serial_number)
 
 print("The current lock state is: ", tm.locked)
 print("The current interlock state is: ", tm.interlock)
