@@ -35,14 +35,9 @@ class Device(object):
         :return: The comparison.
         :rtype: `bool`
         """
-        comparison = False
-        if self.pid == other.pid and self.vid == other.vid:
-            comparison = True
+        comparison = self.pid == other.pid and self.vid == other.vid
         if comparison and self.serial_number is not None:
-            if self.serial_number == other.serial_number:
-                comparison = True
-            else:
-                comparison = False
+            comparison = self.serial_number == other.serial_number
         return comparison
 
     @property
