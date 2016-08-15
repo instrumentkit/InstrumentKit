@@ -12,7 +12,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from re import sub
 from builtins import range
 from enum import IntEnum
 import quantities as pq
