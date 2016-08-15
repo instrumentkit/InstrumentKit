@@ -240,8 +240,9 @@ class TopMode(Instrument):
             """
             # if mode locking has not started yet, the device will respond with
             # an empty date string. This causes a problem with ctdate.
-            if self.correction_status == TopMode.CharmStatus.un_initialized or \
-                    self.correction_status == TopMode.CharmStatus.failure:
+            _corr_stat = self.correction_status
+            if _corr_stat == TopMode.CharmStatus.un_initialized \
+                    or _corr_stat == TopMode.CharmStatus.failure:
                 raise RuntimeError("Laser has not yet successfull locked")
 
             response = self.parent.reference(self.name + ":charm:reg:started")

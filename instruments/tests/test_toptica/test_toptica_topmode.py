@@ -198,7 +198,7 @@ def test_laser_lock_start():
         ],
         [
             "(param-ref 'laser1:charm:correction-status)",
-            "3",
+            "2",
             "> (param-ref 'laser1:charm:reg:started)",
             "\"2012-12-01 01:02:01\"",
             "> "
