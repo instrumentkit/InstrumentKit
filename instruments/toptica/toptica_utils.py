@@ -38,4 +38,4 @@ def convert_toptica_datetime(response):
     if response.find('""') >= 0:
         return None
     else:
-        return datetime.strptime(response, "\"%Y-%m-%d %H:%M:%S\"")
+        return datetime.strptime(response, "%Y-%m-%d %H:%M:%S")

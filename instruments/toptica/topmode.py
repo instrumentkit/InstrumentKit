@@ -344,7 +344,7 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        response = self.query("(param-ref '{})".format(param))
+        response = self.query("(param-ref '{})".format(param)).replace("\"", "")
         return response
 
     def display(self, param):
