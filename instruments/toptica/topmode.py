@@ -15,13 +15,10 @@ from __future__ import unicode_literals
 from re import sub
 from builtins import range
 from enum import IntEnum
-
-
 import quantities as pq
 
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
 from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
-
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import ProxyList
 
@@ -113,7 +110,8 @@ class TopMode(Instrument):
             :units: Nanometers (nm)
             :type: `~quantities.quantity.Quantity`
             """
-            return float(self.parent.reference(self.name + ":wavelength")) * pq.nm
+            return float(self.parent.reference(self.name +
+                                               ":wavelength")) * pq.nm
 
         @property
         def production_date(self):
@@ -142,7 +140,8 @@ class TopMode(Instrument):
                 raise TypeError("Emission status must be a boolean, got: "
                                 "{}".format(type(newval)))
             if not self.is_connected:
-                return
+                raise RuntimeError("Laser was not recognized by charm "
+                                   "controller. Is it plugged in?")
             self.parent.set(self.name + ":enable-emission", newval)
 
         @property
@@ -151,8 +150,7 @@ class TopMode(Instrument):
             Check whether a laser is even connected
             """
             if self.serial_number == 'unknown':
-                raise RuntimeError("Laser was not recognized by charm "
-                                   "controller. Is it plugged in?")
+                return False
             return True
 
         @property
@@ -228,7 +226,8 @@ class TopMode(Instrument):
             :return: Mode-hop status of the specified laser
             :type: `bool`
             """
-            response = self.parent.reference(self.name + ":charm:reg:mh-occurred")
+            response = self.parent.reference(self.name +
+                                             ":charm:reg:mh-occurred")
             return ctbool(response)
 
         @property
@@ -239,13 +238,12 @@ class TopMode(Instrument):
             :return: The datetime of start of mode-locking for specified laser
             :type: `datetime`
             """
-            if not self.is_connected:
-                return
+            # if mode locking has not started yet, the device will respond with
+            # an empty date string. This causes a problem with ctdate.
+            if self.correction_status == TopMode.CharmStatus.un_initialized:
+                raise RuntimeError("Laser has not yet initialized correction")
+
             response = self.parent.reference(self.name + ":charm:reg:started")
-            # if mode locking has not started yet, the device will respond with an empty
-            # date string. This causes a problem with ctdate.
-            if len(response) < 2:
-                return None
             return ctdate(response)
 
         @property
@@ -256,11 +254,12 @@ class TopMode(Instrument):
             :return: The datetime of the first mode hop for the specified laser
             :type: `datetime`
             """
+            # if the mode has not hopped, the device will respond with an empty
+            # date string. This causes a problem with ctdate.
+            if not self.mode_hop:
+                raise RuntimeError("Mode hop not detected")
             response = self.parent.reference(self.name + ":charm:reg:first-mh")
-            # if the mode has not hopped, the device will respond with an empty date
-            # string. This causes a problem with ctdate.
-            if len(response) < 2:
-                return None
+
             return ctdate(response)
 
         @property
@@ -272,11 +271,11 @@ class TopMode(Instrument):
                 specified laser
             :type: `datetime`
             """
+            # if the mode has not hopped, the device will respond with an empty
+            # date string. This causes a problem with ctdate.
+            if not self.mode_hop:
+                raise RuntimeError("Mode hop not detected")
             response = self.parent.reference(self.name + ":charm:reg:latest-mh")
-            # if the mode has not hopped, the device will respond with an empty date
-            # string. This causes a problem with ctdate.
-            if len(response) < 2:
-                return None
             return ctdate(response)
 
         @property
@@ -287,7 +286,8 @@ class TopMode(Instrument):
             :return: The correction status of the specified laser
             :type: `~TopMode.CharmStatus`
             """
-            value = self.parent.reference(self.name + ":charm:correction-status")
+            value = self.parent.reference(self.name +
+                                          ":charm:correction-status")
             return TopMode.CharmStatus(int(value))
 
         # METHODS #
