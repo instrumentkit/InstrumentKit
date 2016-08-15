@@ -343,15 +343,8 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        # the toptica topmode termination character is \r\n,
-        # but unfortunately serial communicator only allows for single
-        # character terminators.
-        # toptica also returns all strings encapsulated by double quotations.
         response = self.query("(param-ref '{})".format(param))
-        response = sub("\r", "", response)
-        response = sub("^\"", "", response)
-        response = sub("\"$", "", response)
-        return response.replace('^"', "").replace('"$', "")
+        return response
 
     def display(self, param):
         """
