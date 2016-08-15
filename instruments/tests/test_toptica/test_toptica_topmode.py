@@ -525,7 +525,7 @@ def test_firmware():
         ],
         sep="\n"
     ) as tm:
-        assert tm.firmware == [1, 2, 1]
+        assert tm.firmware == (1, 2, 1)
 
 
 def test_serial_number():

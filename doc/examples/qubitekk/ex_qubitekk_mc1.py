@@ -3,7 +3,7 @@ from time import sleep
 from serial.tools import list_ports
 from instruments.qubitekk import MC1
 
-HARDWARE_ID = [1027, 24577]
+HARDWARE_ID = [5824, 1155]#[1027, 24577]
 
 
 def find_port():

@@ -147,6 +147,7 @@ class TC200(Instrument):
         """
         _ = self._file.query(str("stat?"))
         response = self.read(5)
+        print(response)
         return int(response.split(" ")[0])
 
     temperature = unitful_property(

@@ -10,6 +10,7 @@ from platform import system
 if system() == 'Windows':
       tm = ik.toptica.TopMode.open_serial('COM14', 115200)
 else:
+      # this assumes that the rules in file 91-toptica.rules have been applied
       tm = ik.toptica.TopMode.open_serial('/dev/toptica_laser', 115200)
 
 print("The top mode's firmware is: ", tm.firmware)

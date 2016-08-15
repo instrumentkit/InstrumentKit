@@ -12,6 +12,7 @@ from nose.tools import raises, eq_
 import mock
 
 import quantities as pq
+from numpy import array
 
 from instruments.abstract_instruments.comm import USBTMCCommunicator
 from instruments.tests import unit_eq
@@ -73,10 +74,10 @@ def test_usbtmccomm_timeout(mock_usbtmc):
     timeout.assert_called_with()
 
     comm.timeout = 10
-    timeout.assert_called_with(10)
+    timeout.assert_called_with(array(10000.0))
 
     comm.timeout = 1000 * pq.millisecond
-    timeout.assert_called_with(1)
+    timeout.assert_called_with(array(1000.0))
 
 
 @mock.patch(patch_path)
