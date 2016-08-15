@@ -42,14 +42,24 @@ class MC1(Instrument):
 
     # PROPERTIES #
 
-    setting = int_property(
-        name="OUTP",
+    direction = int_property(
+        name="DIRE",
         doc="""
-        Gets/sets the output setting of the optical switch.
+        Get the internal direction variable, which is a function of how far
+        the motor needs to go.
 
         :type: `int`
         """,
-        valid_set=range(2),
+        readonly=True
+    )
+
+    inertia = int_property(
+        name="INER",
+        doc="""
+        Gets/Sets the amount of force required to overcome static inertia.
+
+        :type: `int`
+        """,
         set_fmt=":{} {}"
     )
 
@@ -63,16 +73,27 @@ class MC1(Instrument):
         readonly=True
     )
 
-    direction = int_property(
-        name="DIRE",
+    setting = int_property(
+        name="OUTP",
         doc="""
-        Get the internal direction variable, which is a function of how far
-        the motor needs to go.
+        Gets/sets the output setting of the optical switch.
 
         :type: `int`
         """,
-        readonly=True
+        valid_set=range(2),
+        set_fmt=":{} {}"
     )
+
+    step_size = int_property(
+        name="STEP",
+        doc="""
+        Gets/Sets the number of milliseconds per step.
+
+        :type: `int`
+        """,
+        set_fmt=":{} {}"
+    )
+
 
     @property
     def firmware(self):
