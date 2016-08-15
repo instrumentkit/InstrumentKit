@@ -193,31 +193,12 @@ def test_laser_lock_start():
     with expected_protocol(
         ik.toptica.TopMode,
         [
-            "(param-ref 'laser1:serial-number)",
+            "(param-ref 'laser1:charm:correction-status)",
             "(param-ref 'laser1:charm:reg:started)"
         ],
         [
-            "(param-ref 'laser1:serial-number)\r",
-            "bloop1",
-            "> (param-ref 'laser1:charm:reg:started)\r",
-            "\"\"",
-            "> "
-        ],
-        sep="\n"
-    ) as tm:
-        assert tm.laser[0].lock_start is None
-
-
-def test_laser_lock_start_with_date():
-    with expected_protocol(
-        ik.toptica.TopMode,
-        [
-            "(param-ref 'laser1:serial-number)",
-            "(param-ref 'laser1:charm:reg:started)"
-        ],
-        [
-            "(param-ref 'laser1:serial-number)\r",
-            "bloop1",
+            "(param-ref 'laser1:charm:correction-status)\r",
+            "3",
             "> (param-ref 'laser1:charm:reg:started)\r",
             "\"2012-12-01 01:02:01\"",
             "> "
@@ -227,15 +208,39 @@ def test_laser_lock_start_with_date():
         _date = datetime(2012, 12, 1, 1, 2, 1)
         assert tm.laser[0].lock_start == _date
 
-
-def test_laser_first_mode_hop_time_none():
+@raises(RuntimeError)
+def test_laser_lock_start_runtime_error():
     with expected_protocol(
         ik.toptica.TopMode,
         [
+            "(param-ref 'laser1:charm:correction-status)",
+            "(param-ref 'laser1:charm:reg:started)"
+        ],
+        [
+            "(param-ref 'laser1:charm:correction-status)\r",
+            "0",
+            "> (param-ref 'laser1:charm:reg:started)\r",
+            "\"\"",
+            "> "
+        ],
+        sep="\n"
+    ) as tm:
+        _date = datetime(2012, 12, 1, 1, 2, 1)
+        assert tm.laser[0].lock_start == _date
+
+
+@raises(RuntimeError)
+def test_laser_first_mode_hop_time_runtime_error():
+    with expected_protocol(
+        ik.toptica.TopMode,
+        [
+            "(param-ref 'laser1:charm:reg:mh-occurred)",
             "(param-ref 'laser1:charm:reg:first-mh)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:first-mh)\r",
+            "(param-ref 'laser1:charm:reg:mh-occurred)\r",
+            "#f",
+            "> (param-ref 'laser1:charm:reg:first-mh)\r",
             "\"\"",
             "> "
         ],
@@ -248,10 +253,13 @@ def test_laser_first_mode_hop_time():
     with expected_protocol(
         ik.toptica.TopMode,
         [
+            "(param-ref 'laser1:charm:reg:mh-occurred)",
             "(param-ref 'laser1:charm:reg:first-mh)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:first-mh)\r",
+            "(param-ref 'laser1:charm:reg:mh-occurred)\r",
+            "#t",
+            "> (param-ref 'laser1:charm:reg:first-mh)\r",
             "\"2012-12-01 01:02:01\"",
             "> "
         ],
@@ -261,14 +269,18 @@ def test_laser_first_mode_hop_time():
         assert tm.laser[0].first_mode_hop_time == _date
 
 
+@raises(RuntimeError)
 def test_laser_latest_mode_hop_time_none():
     with expected_protocol(
         ik.toptica.TopMode,
         [
+            "(param-ref 'laser1:charm:reg:mh-occurred)",
             "(param-ref 'laser1:charm:reg:latest-mh)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:latest-mh)\r",
+            "(param-ref 'laser1:charm:reg:mh-occurred)\r",
+            "#f",
+            "> (param-ref 'laser1:charm:reg:latest-mh)\r",
             "\"\"",
             "> "
         ],
@@ -281,10 +293,13 @@ def test_laser_latest_mode_hop_time():
     with expected_protocol(
         ik.toptica.TopMode,
         [
+            "(param-ref 'laser1:charm:reg:mh-occurred)",
             "(param-ref 'laser1:charm:reg:latest-mh)"
         ],
         [
-            "(param-ref 'laser1:charm:reg:latest-mh)\r",
+            "(param-ref 'laser1:charm:reg:mh-occurred)\r",
+            "#t",
+            "> (param-ref 'laser1:charm:reg:latest-mh)\r",
             "\"2012-12-01 01:02:01\"",
             "> "
         ],
