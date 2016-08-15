@@ -75,9 +75,9 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
     def terminator(self, newval):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
-        if not isinstance(newval, str):
+        if not isinstance(newval, str) or len(newval) > 1:
             raise TypeError("Terminator for serial communicator must be "
-                            "specified as a byte or unicode string.")
+                            "specified as a single character string.")
         self._terminator = newval
 
     @property
@@ -118,13 +118,15 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
             return resp
         elif size == -1:
             result = bytes()
-            while result.endswith(self._terminator.encode("utf-8")) is False:
+            c = b''
+            while c != self._terminator.encode("utf-8"):
                 c = self._conn.read(1)
-                if c == b'':
+                if c == b"":
                     raise IOError("Serial connection timed out before reading "
                                   "a termination character.")
-                result += c
-            return result[:-len(self._terminator)]
+                if c != self._terminator.encode("utf-8"):
+                    result += c
+            return result
         else:
             raise ValueError("Must read a positive value of characters.")
 

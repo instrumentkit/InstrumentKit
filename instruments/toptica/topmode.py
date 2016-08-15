@@ -13,8 +13,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 from re import sub
-
-from builtins import range, map
+from builtins import range
 from enum import IntEnum
 
 
@@ -162,7 +161,7 @@ class TopMode(Instrument):
         @property
         def on_time(self):
             """
-            Gets the amount of time the laser has been emitting light
+            Gets the 'on time' value for the laser
 
             :return: The 'on time' value for the specified laser
             :units: Seconds (s)
