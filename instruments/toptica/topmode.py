@@ -12,7 +12,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from builtins import range
+from builtins import range, map
 from enum import IntEnum
 import quantities as pq
 
@@ -146,7 +146,10 @@ class TopMode(Instrument):
         @property
         def is_connected(self):
             """
-            Check whether a laser is even connected
+            Check whether a laser is connected.
+
+            :return: Whether the controller successfully connected to a laser
+            :type: `bool`
             """
             if self.serial_number == 'unknown':
                 return False
@@ -242,7 +245,7 @@ class TopMode(Instrument):
             _corr_stat = self.correction_status
             if _corr_stat == TopMode.CharmStatus.un_initialized \
                     or _corr_stat == TopMode.CharmStatus.failure:
-                raise RuntimeError("Laser has not yet successfull locked")
+                raise RuntimeError("Laser has not yet successfully locked")
 
             response = self.parent.reference(self.name + ":charm:reg:started")
             return ctdate(response)
@@ -415,9 +418,9 @@ class TopMode(Instrument):
         Gets the firmware version of the charm controller
 
         :return: The firmware version of the charm controller
-        :type: `str`
+        :type: `tuple`
         """
-        firmware = [int(i) for i in self.reference("fw-ver").split(".")]
+        firmware = tuple(map(int, self.reference("fw-ver").split(".")))
         return firmware
 
     @property
