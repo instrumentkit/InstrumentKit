@@ -112,6 +112,17 @@ def test_instrument_open_serial(mock_serial_manager):
     )
 
 
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_ids(mock_serial_manager):
+    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+
+    inst = ik.Instrument.open_serial(baud=1234, vid=1, pid=2)
+    print(inst._file)
+
+    assert isinstance(inst._file, SerialCommunicator) is True
+
+
+
 @mock.patch("instruments.abstract_instruments.instrument.GPIBCommunicator")
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_gpibusb(mock_serial_manager, mock_gpib_comm):

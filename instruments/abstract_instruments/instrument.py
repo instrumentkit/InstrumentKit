@@ -24,6 +24,7 @@ import numpy as np
 import usb
 import usb.core
 import usb.util
+from serial.tools.list_ports import comports
 
 install_aliases()
 import urllib.parse as parse  # pylint: disable=wrong-import-order,import-error
@@ -437,7 +438,8 @@ class Instrument(object):
         return cls(SocketCommunicator(conn))
 
     @classmethod
-    def open_serial(cls, port, baud, timeout=3, write_timeout=3):
+    def open_serial(cls, port=None, baud=9600, vid=None, pid=None,
+                    serial_number=None, timeout=3, write_timeout=3):
         """
         Opens an instrument, connecting via a physical or emulated serial port.
         Note that many instruments which connect via USB are exposed to the
@@ -448,6 +450,9 @@ class Instrument(object):
             connection on. For example, ``"COM10"`` on Windows or
             ``"/dev/ttyUSB0"`` on Linux.
         :param int baud: The baud rate at which instrument communicates.
+        :param int vid: the USB port vendor id.
+        :param int pid: the USB port product id.
+        :param str serial_number: The USB port serial_number.
         :param float timeout: Number of seconds to wait when reading from the
             instrument before timing out.
         :param float write_timeout: Number of seconds to wait when writing to the
@@ -459,6 +464,15 @@ class Instrument(object):
         .. seealso::
             `~serial.Serial` for description of `port`, baud rates and timeouts.
         """
+        if port is None:
+            for _port in comports():
+                comparison = _port.pid == pid and _port.vid == vid
+                if comparison and serial_number is not None:
+                    comparison = _port.serial_number == serial_number
+                if comparison:
+                    port = _port.device
+                    break
+
         ser = serial_manager.new_serial_connection(
             port,
             baud=baud,
