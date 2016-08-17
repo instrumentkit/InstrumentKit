@@ -64,7 +64,7 @@ class Instrument(object):
     tasks. In addition, it also contains several class methods for opening
     connections via the supported hardware channels.
     """
-
+    # pylint: disable=too-many-arguments
     def __init__(self, filelike):
         # Check to make sure filelike is a subclass of AbstractCommunicator
         if isinstance(filelike, AbstractCommunicator):

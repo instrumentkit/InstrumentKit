@@ -118,8 +118,8 @@ class fake_serial(object):
     Create a fake serial.Serial() object so that tests can be run without
     accessing a non-existant port.
     """
-    def __init__(self, device, baudrate=None, timeout=None,
-                          writeTimeout=None):
+    # pylint: disable=unused-variable, unused-argument, no-self-use
+    def __init__(self, device, baudrate=None, timeout=None, writeTimeout=None):
         self.device = device
 
     def isOpen(self):
@@ -161,8 +161,7 @@ def test_instrument_open_serial_ids():
             ".serial.Serial",
             new=fake_serial)
 def test_instrument_open_serial_ids_error():
-    inst = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000,
-                                     serial_number='a2')
+    ik.Instrument.open_serial(baud=1234, vid=0, pid=1000, serial_number='a2')
 
 
 
