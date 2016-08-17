@@ -86,7 +86,6 @@ def reset(*args):
 if __name__ == "__main__":
     cc = ik.qubitekk.CC1.open_serial(vid=1027, pid=24577, baud=19200,
                                      timeout=10)
-    print(cc._file.port)
     print(cc.firmware)
     # i is used to keep track of time
     i = 0

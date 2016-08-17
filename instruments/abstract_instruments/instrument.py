@@ -446,6 +446,14 @@ class Instrument(object):
         operating system as serial ports, so this method will very commonly
         be used for connecting instruments via USB.
 
+        This method can be called by either supplying a port as a string,
+        or by specifying vendor and product IDs, and an optional serial
+        number (used when more than one device with the same IDs is
+        attached). If both the port and IDs are supplied, the port will
+        default to the supplied port string, else it will search the
+        available com ports for a port matching the defined IDs and serial
+        number.
+
         :param str port: Name of the the port or device file to open a
             connection on. For example, ``"COM10"`` on Windows or
             ``"/dev/ttyUSB0"`` on Linux.
