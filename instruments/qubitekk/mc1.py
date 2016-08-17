@@ -10,10 +10,11 @@ MC1 Class originally contributed by Catherine Holloway.
 from __future__ import absolute_import
 from builtins import range
 from enum import Enum
+import quantities as pq
 
 from instruments.abstract_instruments import Instrument
 # CLASSES #####################################################################
-from instruments.util_fns import int_property, enum_property
+from instruments.util_fns import int_property, enum_property, unitful_property
 
 
 class MC1(Instrument):
@@ -63,13 +64,24 @@ class MC1(Instrument):
         set_fmt=":{} {}"
     )
 
-    position = int_property(
+    internal_position = int_property(
         name="POSI",
         doc="""
         Get the internal motor state position.
 
         :type: `int`
         """,
+        readonly=True
+    )
+
+    metric_position = unitful_property(
+        name="METRIC",
+        doc="""
+        Get the estimated motor position, in microns.
+
+        :type: `quantities.`
+        """,
+        units=pq.mm,
         readonly=True
     )
 
@@ -93,7 +105,6 @@ class MC1(Instrument):
         """,
         set_fmt=":{} {}"
     )
-
 
     @property
     def firmware(self):
