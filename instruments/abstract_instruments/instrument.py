@@ -473,6 +473,12 @@ class Instrument(object):
                     port = _port.device
                     break
 
+        # if the port is still none after that, warn the user.
+        if port is None and vid is not None:
+            raise TypeError("Could not find a port with the attributes vid: ",
+                            vid, " pid: ", pid, " serial number: ",
+                            "any" if serial_number is None else serial_number)
+
         ser = serial_manager.new_serial_connection(
             port,
             baud=baud,

@@ -17,6 +17,7 @@ from nose.tools import raises
 import mock
 
 import numpy as np
+from serial.tools.list_ports_common import ListPortInfo
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -112,14 +113,56 @@ def test_instrument_open_serial(mock_serial_manager):
     )
 
 
-@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
-def test_instrument_open_serial_ids(mock_serial_manager):
-    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+class fake_serial(object):
+    """
+    Create a fake serial.Serial() object so that tests can be run without
+    accessing a non-existant port.
+    """
+    def __init__(self, device, baudrate=None, timeout=None,
+                          writeTimeout=None):
+        self.device = device
 
-    inst = ik.Instrument.open_serial(baud=1234, vid=1, pid=2)
-    print(inst._file)
+    def isOpen(self):
+        """
+        Pretends that the serial connection is open.
+        """
+        return True
 
-    assert isinstance(inst._file, SerialCommunicator) is True
+
+def fake_comports():
+    """
+    Generate a fake list of comports to compare against.
+    """
+    dev = ListPortInfo()
+    dev.vid = 0
+    dev.pid = 1000
+    dev.serial_number = 'a1'
+    dev.device = 'COM1'
+    return [dev]
+
+
+@mock.patch("instruments.abstract_instruments.instrument.comports",
+            new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager"
+            ".serial.Serial",
+            new=fake_serial)
+def test_instrument_open_serial_ids():
+    inst = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000)
+    assert inst._file._conn.device == 'COM1'
+    inst = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000,
+                                     serial_number='a1')
+    assert inst._file._conn.device == 'COM1'
+
+
+@raises(TypeError)
+@mock.patch("instruments.abstract_instruments.instrument.comports",
+            new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager"
+            ".serial.Serial",
+            new=fake_serial)
+def test_instrument_open_serial_ids_error():
+    inst = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000,
+                                     serial_number='a2')
 
 
 
