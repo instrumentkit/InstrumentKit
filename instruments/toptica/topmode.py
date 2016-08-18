@@ -109,8 +109,7 @@ class TopMode(Instrument):
             :units: Nanometers (nm)
             :type: `~quantities.quantity.Quantity`
             """
-            return float(self.parent.reference(self.name +
-                                               ":wavelength")) * pq.nm
+            return float(self.parent.reference(self.name + ":wavelength")) * pq.nm
 
         @property
         def production_date(self):
@@ -228,8 +227,7 @@ class TopMode(Instrument):
             :return: Mode-hop status of the specified laser
             :type: `bool`
             """
-            response = self.parent.reference(self.name +
-                                             ":charm:reg:mh-occurred")
+            response = self.parent.reference(self.name + ":charm:reg:mh-occurred")
             return ctbool(response)
 
         @property
@@ -290,8 +288,7 @@ class TopMode(Instrument):
             :return: The correction status of the specified laser
             :type: `~TopMode.CharmStatus`
             """
-            value = self.parent.reference(self.name +
-                                          ":charm:correction-status")
+            value = self.parent.reference(self.name + ":charm:correction-status")
             return TopMode.CharmStatus(int(value))
 
         # METHODS #
@@ -301,8 +298,7 @@ class TopMode(Instrument):
             Run the correction against the specified laser
             """
             if self.correction_status == TopMode.CharmStatus.un_initialized:
-                self.parent.execute(
-                    self.name + ":charm:start-correction-initial")
+                self.parent.execute(self.name + ":charm:start-correction-initial")
             else:
                 self.parent.execute(self.name + ":charm:start-correction")
 
@@ -331,8 +327,7 @@ class TopMode(Instrument):
         if isinstance(value, str):
             self.query("(param-set! '{} \"{}\")".format(param, value))
         elif isinstance(value, tuple) or isinstance(value, list):
-            self.query(
-                "(param-set! '{} '({}))".format(param, " ".join(value)))
+            self.query("(param-set! '{} '({}))".format(param, " ".join(value)))
         elif isinstance(value, bool):
             value = "t" if value else "f"
             self.query("(param-set! '{} #{})".format(param, value))
