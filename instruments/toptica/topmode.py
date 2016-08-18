@@ -16,12 +16,10 @@ from re import sub
 from builtins import range
 from enum import IntEnum
 
-
 import quantities as pq
 
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
 from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
-
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import ProxyList
 
@@ -45,15 +43,15 @@ class TopMode(Instrument):
     def __init__(self, filelike):
         super(TopMode, self).__init__(filelike)
         self.prompt = "> "
-        self.terminator = "\n"
+        self.terminator = "\r\n"
 
     def _ack_expected(self, msg=""):
         if "reboot" in msg:
-            return [msg+"\r", "reboot process started.\r"]
+            return [msg, "reboot process started."]
         elif "start-correction" in msg:
-            return [msg + "\r", "()\r"]
+            return [msg, "()"]
         else:
-            return msg + "\r"
+            return msg
 
     # ENUMS #
 
@@ -113,7 +111,8 @@ class TopMode(Instrument):
             :units: Nanometers (nm)
             :type: `~quantities.quantity.Quantity`
             """
-            return float(self.parent.reference(self.name + ":wavelength")) * pq.nm
+            return float(self.parent.reference(self.name +
+                                               ":wavelength")) * pq.nm
 
         @property
         def production_date(self):
@@ -143,6 +142,7 @@ class TopMode(Instrument):
                                 "got: {}".format(type(newval)))
             if not self.is_connected:
                 return
+
             self.parent.set(self.name + ":enable-emission", newval)
 
         @property
@@ -242,13 +242,14 @@ class TopMode(Instrument):
             :return: The datetime of start of mode-locking for specified laser
             :type: `datetime`
             """
-            if not self.is_connected:
-                return
+            # if mode locking has not started yet, the device will respond with
+            # an empty date string. This causes a problem with ctdate.
+            _corr_stat = self.correction_status
+            if _corr_stat == TopMode.CharmStatus.un_initialized \
+                    or _corr_stat == TopMode.CharmStatus.failure:
+                raise RuntimeError("Laser has not yet successfull locked")
+
             response = self.parent.reference(self.name + ":charm:reg:started")
-            # if mode locking has not started yet, the device will respond with an empty
-            # date string. This causes a problem with ctdate.
-            if len(response) < 2:
-                return None
             return ctdate(response)
 
         @property
@@ -259,11 +260,11 @@ class TopMode(Instrument):
             :return: The datetime of the first mode hop for the specified laser
             :type: `datetime`
             """
+            # if the mode has not hopped, the device will respond with an empty
+            # date string. This causes a problem with ctdate.
+            if not self.mode_hop:
+                raise RuntimeError("Mode hop not detected")
             response = self.parent.reference(self.name + ":charm:reg:first-mh")
-            # if the mode has not hopped, the device will respond with an empty date
-            # string. This causes a problem with ctdate.
-            if len(response) < 2:
-                return None
             return ctdate(response)
 
         @property
@@ -275,11 +276,11 @@ class TopMode(Instrument):
                 specified laser
             :type: `datetime`
             """
+            # if the mode has not hopped, the device will respond with an empty
+            # date string. This causes a problem with ctdate.
+            if not self.mode_hop:
+                raise RuntimeError("Mode hop not detected")
             response = self.parent.reference(self.name + ":charm:reg:latest-mh")
-            # if the mode has not hopped, the device will respond with an empty date
-            # string. This causes a problem with ctdate.
-            if len(response) < 2:
-                return None
             return ctdate(response)
 
         @property
@@ -290,7 +291,8 @@ class TopMode(Instrument):
             :return: The correction status of the specified laser
             :type: `~TopMode.CharmStatus`
             """
-            value = self.parent.reference(self.name + ":charm:correction-status")
+            value = self.parent.reference(self.name +
+                                          ":charm:correction-status")
             return TopMode.CharmStatus(int(value))
 
         # METHODS #
@@ -345,15 +347,8 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        # the toptica topmode termination character is \r\n,
-        # but unfortunately serial communicator only allows for single
-        # character terminators.
-        # toptica also returns all strings encapsulated by double quotations.
-        response = self.query("(param-ref '{})".format(param))
-        response = sub("\r", "", response)
-        response = sub("^\"", "", response)
-        response = sub("\"$", "", response)
-        return response.replace('^"', "").replace('"$', "")
+        response = self.query("(param-ref '{})".format(param)).replace("\"", "")
+        return response
 
     def display(self, param):
         """
@@ -426,7 +421,7 @@ class TopMode(Instrument):
         :return: The firmware version of the charm controller
         :type: `str`
         """
-        firmware = tuple(map(int, self.reference("fw-ver").split(".")))
+        firmware = [int(i) for i in self.reference("fw-ver").split(".")]
         return firmware
 
     @property

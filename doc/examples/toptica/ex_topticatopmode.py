@@ -6,6 +6,7 @@ Toptica Topmode example
 
 import instruments as ik
 
+
 hardware = ik.Device(vid=10682, pid=2)
 tm = ik.toptica.TopMode.open_serial(hardware.port, baud=115200)
 
@@ -33,6 +34,7 @@ print("The laser1's current controller state is: ",
 print("The laser1's tec state is: ", tm.laser[0].tec_status)
 print("The laser1's intensity is: ", tm.laser[0].intensity)
 print("The laser1's mode hop state is: ", tm.laser[0].mode_hop)
+print("The laser1's correction status is: ", tm.laser[0].correction_status)
 print("The laser1's lock start time is: ", tm.laser[0].lock_start)
 print("The laser1's first mode hop time is: ", tm.laser[0].first_mode_hop_time)
 print("The laser1's latest mode hop time is: ",
@@ -40,7 +42,7 @@ print("The laser1's latest mode hop time is: ",
 print("The current emission state is: ", tm.enable)
 
 tm.laser[0].enable = True
-print("The laser1's correction status is: ", tm.laser[0].correction_status)
+
 
 
 
