@@ -78,9 +78,8 @@ def reset(*args):
     gate_enabled.set(cc.gate)
 
 if __name__ == "__main__":
-    hardware = ik.Device(vid=1027, pid=24577)
-    # open connection to coincidence counter.
-    cc = ik.qubitekk.CC1.open_serial(hardware.port, baud=19200, timeout=10)
+    cc = ik.qubitekk.CC1.open_serial(vid=1027, pid=24577, baud=19200,
+                                     timeout=10)
     print(cc.firmware)
     # i is used to keep track of time
     i = 0
