@@ -17,6 +17,8 @@ import collections
 import socket
 
 from builtins import map
+from serial import SerialException
+from serial.tools.list_ports import comports
 
 from future.standard_library import install_aliases
 import numpy as np
@@ -24,7 +26,6 @@ import numpy as np
 import usb
 import usb.core
 import usb.util
-from serial.tools.list_ports import comports
 
 install_aliases()
 import urllib.parse as parse  # pylint: disable=wrong-import-order,import-error
@@ -64,7 +65,7 @@ class Instrument(object):
     tasks. In addition, it also contains several class methods for opening
     connections via the supported hardware channels.
     """
-    # pylint: disable=too-many-arguments
+
     def __init__(self, filelike):
         # Check to make sure filelike is a subclass of AbstractCommunicator
         if isinstance(filelike, AbstractCommunicator):
@@ -437,6 +438,7 @@ class Instrument(object):
         conn.connect((host, port))
         return cls(SocketCommunicator(conn))
 
+    # pylint: disable=too-many-arguments
     @classmethod
     def open_serial(cls, port=None, baud=9600, vid=None, pid=None,
                     serial_number=None, timeout=3, write_timeout=3):
@@ -472,20 +474,47 @@ class Instrument(object):
         .. seealso::
             `~serial.Serial` for description of `port`, baud rates and timeouts.
         """
+        if port is None and vid is None:
+            raise ValueError("One of port, or the USB VID/PID pair, must be "
+                             "specified when ")
+        if port is not None and vid is not None:
+            raise ValueError("Cannot specify both a specific port, and a USB"
+                             "VID/PID pair.")
+        if (vid is not None and pid is None) or (pid is not None and vid is None):
+            raise ValueError("Both VID and PID must be specified when opening"
+                             "a serial connection via a USB VID/PID pair.")
+
         if port is None:
+            match_count = 0
             for _port in comports():
-                comparison = _port.pid == pid and _port.vid == vid
-                if comparison and serial_number is not None:
-                    comparison = _port.serial_number == serial_number
-                if comparison:
+                # If no match on vid/pid, go to next comport
+                if not _port.pid == pid or not _port.vid == vid:
+                    continue
+                # If we specified a serial num, verify then break
+                if serial_number is not None and _port.serial_number == serial_number:
                     port = _port.device
                     break
+                # If no provided serial number, match, but also keep a count
+                if serial_number is None:
+                    port = _port.device
+                    match_count += 1
+                # If we found more than 1 vid/pid device, but no serial number,
+                # raise an exception due to ambiguity
+                if match_count > 1:
+                    raise SerialException("Found more than one matching serial "
+                                          "port from VID/PID pair")
 
-        # if the port is still none after that, warn the user.
+        # if the port is still None after that, raise an error.
         if port is None and vid is not None:
-            raise TypeError("Could not find a port with the attributes vid: ",
-                            vid, " pid: ", pid, " serial number: ",
-                            "any" if serial_number is None else serial_number)
+            err_msg = "Could not find a port with the attributes vid: {vid}, " \
+                      "pid: {pid}, serial number: {serial_number}"
+            raise ValueError(
+                err_msg.format(
+                    vid=vid,
+                    pid=pid,
+                    serial_number="any" if serial_number is None else serial_number
+                )
+            )
 
         ser = serial_manager.new_serial_connection(
             port,
