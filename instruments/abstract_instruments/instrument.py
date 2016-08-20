@@ -17,6 +17,8 @@ import collections
 import socket
 
 from builtins import map
+from serial import SerialException
+from serial.tools.list_ports import comports
 
 from future.standard_library import install_aliases
 import numpy as np
@@ -436,18 +438,31 @@ class Instrument(object):
         conn.connect((host, port))
         return cls(SocketCommunicator(conn))
 
+    # pylint: disable=too-many-arguments
     @classmethod
-    def open_serial(cls, port, baud, timeout=3, write_timeout=3):
+    def open_serial(cls, port=None, baud=9600, vid=None, pid=None,
+                    serial_number=None, timeout=3, write_timeout=3):
         """
         Opens an instrument, connecting via a physical or emulated serial port.
         Note that many instruments which connect via USB are exposed to the
         operating system as serial ports, so this method will very commonly
         be used for connecting instruments via USB.
 
+        This method can be called by either supplying a port as a string,
+        or by specifying vendor and product IDs, and an optional serial
+        number (used when more than one device with the same IDs is
+        attached). If both the port and IDs are supplied, the port will
+        default to the supplied port string, else it will search the
+        available com ports for a port matching the defined IDs and serial
+        number.
+
         :param str port: Name of the the port or device file to open a
             connection on. For example, ``"COM10"`` on Windows or
             ``"/dev/ttyUSB0"`` on Linux.
         :param int baud: The baud rate at which instrument communicates.
+        :param int vid: the USB port vendor id.
+        :param int pid: the USB port product id.
+        :param str serial_number: The USB port serial_number.
         :param float timeout: Number of seconds to wait when reading from the
             instrument before timing out.
         :param float write_timeout: Number of seconds to wait when writing to the
@@ -459,6 +474,48 @@ class Instrument(object):
         .. seealso::
             `~serial.Serial` for description of `port`, baud rates and timeouts.
         """
+        if port is None and vid is None:
+            raise ValueError("One of port, or the USB VID/PID pair, must be "
+                             "specified when ")
+        if port is not None and vid is not None:
+            raise ValueError("Cannot specify both a specific port, and a USB"
+                             "VID/PID pair.")
+        if (vid is not None and pid is None) or (pid is not None and vid is None):
+            raise ValueError("Both VID and PID must be specified when opening"
+                             "a serial connection via a USB VID/PID pair.")
+
+        if port is None:
+            match_count = 0
+            for _port in comports():
+                # If no match on vid/pid, go to next comport
+                if not _port.pid == pid or not _port.vid == vid:
+                    continue
+                # If we specified a serial num, verify then break
+                if serial_number is not None and _port.serial_number == serial_number:
+                    port = _port.device
+                    break
+                # If no provided serial number, match, but also keep a count
+                if serial_number is None:
+                    port = _port.device
+                    match_count += 1
+                # If we found more than 1 vid/pid device, but no serial number,
+                # raise an exception due to ambiguity
+                if match_count > 1:
+                    raise SerialException("Found more than one matching serial "
+                                          "port from VID/PID pair")
+
+        # if the port is still None after that, raise an error.
+        if port is None and vid is not None:
+            err_msg = "Could not find a port with the attributes vid: {vid}, " \
+                      "pid: {pid}, serial number: {serial_number}"
+            raise ValueError(
+                err_msg.format(
+                    vid=vid,
+                    pid=pid,
+                    serial_number="any" if serial_number is None else serial_number
+                )
+            )
+
         ser = serial_manager.new_serial_connection(
             port,
             baud=baud,
