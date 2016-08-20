@@ -90,7 +90,7 @@ class MDT693B(Instrument):
         def minimum(self, new_voltage):
             new_voltage = new_voltage.rescale('V').magnitude
             self._mdt.sendcmd(self._chan+"min="+str(new_voltage))
-            
+
         @property
         def maximum(self):
             """
