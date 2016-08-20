@@ -12,6 +12,8 @@ import socket
 import io
 
 from builtins import bytes
+import serial
+from serial.tools.list_ports_common import ListPortInfo
 
 from nose.tools import raises
 import mock
@@ -111,6 +113,143 @@ def test_instrument_open_serial(mock_serial_manager):
         write_timeout=3
     )
 
+
+class fake_serial(object):
+    """
+    Create a fake serial.Serial() object so that tests can be run without
+    accessing a non-existant port.
+    """
+    # pylint: disable=unused-variable, unused-argument, no-self-use
+    def __init__(self, device, baudrate=None, timeout=None, writeTimeout=None):
+        self.device = device
+
+    def isOpen(self):
+        """
+        Pretends that the serial connection is open.
+        """
+        return True
+
+
+# TEST OPEN_SERIAL WITH USB IDENTIFIERS ######################################
+
+def fake_comports():
+    """
+    Generate a fake list of comports to compare against.
+    """
+    fake_device = ListPortInfo()
+    fake_device.vid = 0
+    fake_device.pid = 1000
+    fake_device.serial_number = 'a1'
+    fake_device.device = 'COM1'
+
+    fake_device2 = ListPortInfo()
+    fake_device2.vid = 1
+    fake_device2.pid = 1010
+    fake_device2.serial_number = 'c0'
+    fake_device2.device = 'COM2'
+    return [fake_device, fake_device2]
+
+
+@mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_by_usb_ids(mock_serial_manager):
+    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+
+    inst = ik.Instrument.open_serial(baud=1234, vid=1, pid=1010)
+    assert isinstance(inst._file, SerialCommunicator) is True
+    mock_serial_manager.new_serial_connection.assert_called_with(
+        "COM2",
+        baud=1234,
+        timeout=3,
+        write_timeout=3
+    )
+
+
+@mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_by_usb_ids_and_serial_number(mock_serial_manager):
+    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+
+    inst = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000, serial_number="a1")
+    assert isinstance(inst._file, SerialCommunicator) is True
+    mock_serial_manager.new_serial_connection.assert_called_with(
+        "COM1",
+        baud=1234,
+        timeout=3,
+        write_timeout=3
+    )
+
+
+@raises(serial.SerialException)
+@mock.patch("instruments.abstract_instruments.instrument.comports")
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_by_usb_ids_multiple_matches(_, mock_comports):
+    fake_device = ListPortInfo()
+    fake_device.vid = 0
+    fake_device.pid = 1000
+    fake_device.serial_number = 'a1'
+    fake_device.device = 'COM1'
+
+    fake_device2 = ListPortInfo()
+    fake_device2.vid = 0
+    fake_device2.pid = 1000
+    fake_device2.serial_number = 'b2'
+    fake_device2.device = 'COM2'
+
+    mock_comports.return_value = [fake_device, fake_device2]
+
+    _ = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000)
+
+
+@raises(ValueError)
+@mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_by_usb_ids_incorrect_serial_num(mock_serial_manager):
+    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+    _ = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000, serial_number="xyz")
+
+
+@raises(ValueError)
+@mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_by_usb_ids_cant_find(mock_serial_manager):
+    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+    _ = ik.Instrument.open_serial(baud=1234, vid=1234, pid=1000)
+
+
+@raises(ValueError)
+@mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_no_port(mock_serial_manager):
+    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+    _ = ik.Instrument.open_serial(baud=1234)
+
+
+@raises(ValueError)
+@mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_by_usb_ids_and_port(mock_serial_manager):
+    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+    _ = ik.Instrument.open_serial(port="COM1", baud=1234, vid=1234, pid=1000)
+
+
+@raises(ValueError)
+@mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_by_usb_vid_no_pid(mock_serial_manager):
+    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+    _ = ik.Instrument.open_serial(baud=1234, vid=1234)
+
+
+@raises(ValueError)
+@mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
+@mock.patch("instruments.abstract_instruments.instrument.serial_manager")
+def test_instrument_open_serial_by_usb_pid_no_vid(mock_serial_manager):
+    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+    _ = ik.Instrument.open_serial(baud=1234, pid=1234)
+
+
+# TEST OPEN_GPIBUSB ##########################################################
 
 @mock.patch("instruments.abstract_instruments.instrument.GPIBCommunicator")
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
