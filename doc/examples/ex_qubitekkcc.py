@@ -6,10 +6,7 @@ from quantities import second, nanosecond
 
 
 def main():
-    if _platform == "linux" or _platform == "linux2":
-        cc1 = ik.qubitekk.CC1v2001.open_serial('/dev/ttyUSB0', 19200, timeout=1)
-    else:
-        cc1 = ik.qubitekk.CC1v2001.open_serial('COM8', 19200, timeout=1)
+    cc = ik.qubitekk.CC1.open_serial(vid=1027, pid=24577, baud=19200, timeout=10)
     cc1.dwell_time = 1.0 * second
     print cc1.dwell_time
     cc1.delay = 0.0 * nanosecond

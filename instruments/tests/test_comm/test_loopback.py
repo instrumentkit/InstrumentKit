@@ -52,6 +52,10 @@ def test_loopbackcomm_terminator():
     eq_(comm.terminator, u"\r")
     eq_(comm._terminator, u"\r")
 
+    comm.terminator = "\r\n"
+    eq_(comm.terminator, "\r\n")
+    eq_(comm._terminator, "\r\n")
+
 
 def test_loopbackcomm_timeout():
     comm = LoopbackCommunicator()
@@ -82,6 +86,17 @@ def test_loopbackcomm_read_raw():
     mock_stdin.read = mock.MagicMock()
     comm.read_raw(10)
     mock_stdin.read.assert_called_with(10)
+
+
+def test_loopbackcomm_read_raw_2char_terminator():
+    mock_stdin = mock.MagicMock()
+    mock_stdin.read.side_effect = [b"a", b"b", b"c", b"\r", b"\n"]
+    comm = LoopbackCommunicator(stdin=mock_stdin)
+    comm._terminator = "\r\n"
+
+    eq_(comm.read_raw(), b"abc")
+    mock_stdin.read.assert_has_calls([mock.call(1)]*5)
+    assert mock_stdin.read.call_count == 5
 
 
 def test_loopbackcomm_write_raw():
