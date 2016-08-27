@@ -16,7 +16,8 @@ from enum import IntEnum
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument
-from instruments.util_fns import convert_temperature
+from instruments.util_fns import convert_temperature, assume_units
+
 
 # CLASSES #####################################################################
 
@@ -32,10 +33,11 @@ class LM(Instrument):
     def __init__(self, filelike):
         super(LM, self).__init__(filelike)
         self.terminator = "\r"
-        self.apc = self.AutomaticPowerControl(self)
-        self.acc = self.AutomaticCurrentControl(self)
-        self.tec = self.ThermoElectricCooler(self)
-        self.modulation = self.Modulation(self)
+        self.apc = self._AutomaticPowerControl(self)
+        self.acc = self._AutomaticCurrentControl(self)
+        self.tec = self._ThermoElectricCooler(self)
+        self.modulation = self._Modulation(self)
+        self._enabled = None
 
     # ENUMS #
     class Status(IntEnum):
@@ -53,191 +55,203 @@ class LM(Instrument):
 
     # INNER CLASSES #
 
-    class AutomaticCurrentControl(object):
+    class _AutomaticCurrentControl(object):
         """
-        Options and functions relatde to the laser diode's automatic current
+        Options and functions related to the laser diode's automatic current
         control driver
         """
         def __init__(self, parent):
-            self.parent = parent
+            self._parent = parent
+            self._enabled = None
 
         @property
         def target(self):
             """
             The ACC target current
             :return: Current ACC of the Laser
-            :rtype: quantities.mA
+            :rtype: ~quantities.Quantity
             """
-            response = float(self.parent.query("rstli?"))
+            response = float(self._parent.query("rstli?"))
             return response*pq.mA
 
-        def enable(self):
+        @property
+        def enabled(self):
             """
-            Enable the ACC driver
-            """
-            self.parent.sendcmd("lcen")
+            Get/Set the enabled state of the ACC driver
 
-        def disable(self):
+            :return: The enabled state of the ACC driver
+            :rtype: bool
             """
-            Disable the ACC driver
-            """
-            self.parent.sendcmd("lcdis")
+            return self._enabled
+
+        @enabled.setter
+        def enabled(self, newval):
+            if newval:
+                self._parent.sendcmd("lcen")
+            else:
+                self._parent.sendcmd("lcdis")
+            self._enabled = newval
 
         def on(self):
             """
             Turn on the ACC driver
             """
-            self.parent.sendcmd("lcon")
+            self._parent.sendcmd("lcon")
 
         def off(self):
             """
             Turn off the ACC driver
             """
-            self.parent.sendcmd("lcoff")
+            self._parent.sendcmd("lcoff")
 
-    class AutomaticPowerControl(object):
+    class _AutomaticPowerControl(object):
         """
         Options and functions related to the laser diode's automatic power
         control driver.
         """
         def __init__(self, parent):
-            self.parent = parent
+            self._parent = parent
+            self._enabled = None
 
         @property
         def target(self):
             """
             Return the target laser power in mW
             :return: the target laser power
-            :rtype: quantities.mW
+            :rtype: ~quantities.Quantities
             """
-            response = self.parent.query("rslp?")
+            response = self._parent.query("rslp?")
             return float(response)*pq.mW
 
-        def enable(self):
+        @property
+        def enabled(self):
             """
-            Enable the APC driver
+            Get/Set the enabled state of the APC driver
+            :return: The enabled state of the APC driver
+            :rtype: bool
             """
-            self.parent.sendcmd("len")
+            return self._enabled
 
-        def disable(self):
-            """
-            Disable the APC driver
-            :return:
-            """
-            self.parent.sendcmd("ldis")
+        @enabled.setter
+        def enabled(self, newval):
+            if newval:
+                self._parent.sendcmd("len")
+            else:
+                self._parent.sendcmd("ldis")
+            self._enabled = newval
 
         def start(self):
             """
-            Start the APC scan
-            :return:
+            Start the APC scan.
             """
-            self.parent.sendcmd("sps")
+            self._parent.sendcmd("sps")
 
         def stop(self):
             """
-            Stop the APC scan
-            :return:
+            Stop the APC scan.
             """
-            self.parent.sendcmd("cps")
+            self._parent.sendcmd("cps")
 
-    class Modulation(object):
+    class _Modulation(object):
         """
         Options and functions related to the laser's optical output modulation.
         """
         def __init__(self, parent):
-            self.parent = parent
+            self._parent = parent
+            self._enabled = None
 
         @property
         def on_time(self):
             """
-            Get the on time of TTL modulation, in mS
+            Get/Set the on time of TTL modulation, in mS
             :return: the on time in the TTL modulation.
-            :rtype: quantities.mS
+            :rtype: ~quantities.Quantity
             """
-            response = self.parent.query("stsont?")
+            response = self._parent.query("stsont?")
             return float(response)*pq.mS
 
         @on_time.setter
         def on_time(self, newval):
-            """
-            Set the on time og TTL modulation, in mS.
-            :param newval: the modulation on time, in mS.
-            :type newval: quantities.mS
-            """
-            newval = newval.rescale('mS').magnitude
-            self.parent.sendcmd("stsont:"+str(newval))
+            newval = assume_units(newval, pq.ms).rescale('mS').magnitude
+            self._parent.sendcmd("stsont:"+str(newval))
 
         @property
         def off_time(self):
             """
-            Get the off time of TTL modulation, in mS
+            Get/Set the off time of TTL modulation, in mS
             :return: the off time in the TTL modulation.
-            :rtype: quantities.mS
+            :rtype: ~quantities.Quantity
             """
-            response = self.parent.query("stsofft?")
+            response = self._parent.query("stsofft?")
             return float(response)*pq.mS
 
         @off_time.setter
         def off_time(self, newval):
-            """
-            Set the off time og TTL modulation, in mS.
-            :param newval: the modulation off time, in mS.
-            :type newval: quantities.mS
-            """
-            newval = newval.rescale('mS').magnitude
-            self.parent.sendcmd("stsofft:"+str(newval))
+            newval = assume_units(newval, pq.ms).rescale('mS').magnitude
+            self._parent.sendcmd("stsofft:"+str(newval))
 
-        def start(self):
+        @property
+        def enabled(self):
             """
-            Start TTL modulation.
+            Get/Set the TTL modulation output state.
+            :return: the TTL modulation state
+            :rtype: bool
             """
-            self.parent.sendcmd("stm")
+            return self._enabled
 
-        def stop(self):
-            """
-            Stop TTl modulation.
-            """
-            self.parent.sendcmd("ctm")
+        @enabled.setter
+        def enabled(self, newval):
+            if newval:
+                self._parent.sendcmd("stm")
+            else:
+                self._parent.sendcmd("ctm")
+            self._enabled = newval
 
-    class ThermoElectricCooler(object):
+    class _ThermoElectricCooler(object):
         """
         Options and functions relating to the laser diode's thermo electric
         cooler.
         """
         def __init__(self, parent):
-            self.parent = parent
+            self._parent = parent
+            self._enabled = None
 
         @property
         def current(self):
             """
             Get the current TEC current
             :return: the TEC current
-            :rtype: quantities.mA
+            :rtype: ~quantities.Quantity
             """
-            response = self.parent.query("rti?")
+            response = self._parent.query("rti?")
             return float(response)*pq.mA
 
         @property
         def target(self):
             """
-            Return the TEC target temperature
+            Get the TEC target temperature
             :return: The target temperature
-            :rtype: quantities.degC
+            :rtype: ~quantities.Quantity
             """
-            response = self.parent.query("rstt?")
+            response = self._parent.query("rstt?")
             return float(response)*pq.degC
 
-        def enable(self):
+        @property
+        def enabled(self):
             """
-            Enable TEC control
+            Get/Set the enable state fo the TEC.
+            :return: The TEC's enabled state.
+            :rtype: bool
             """
-            self.parent.sendcmd("tecon")
+            return self._enabled
 
-        def shutdown(self):
-            """
-            Shut down TEC control
-            """
-            self.parent.sendcmd("tecoff")
+        @enabled.setter
+        def enabled(self, newval):
+            if newval:
+                self._parent.sendcmd("tecon")
+            else:
+                self._parent.sendcmd("tecoff")
+            self._enabled = newval
 
     def _ack_expected(self, msg=""):
         if msg.find("?") > 0:
@@ -258,63 +272,48 @@ class LM(Instrument):
     @property
     def current(self):
         """
-        The laser diode current, in mA.
+        Get/Set the laser diode current, in mA.
         :return: The laser diode current.
-        :rtype: pq.mA
+        :rtype: ~quantities.Quantity
         """
         response = self.query("rli?")
         return float(response)*pq.mA
 
     @current.setter
     def current(self, newval):
-        """
-        Set the laser diode current.
-        :param newval: the
-        """
-        newval = newval.rescale('mA').magnitude
+        newval = assume_units(newval, pq.mA).rescale('mA').magnitude
         self.sendcmd("slc:"+str(newval))
 
     @property
     def maximum_current(self):
         """
-        Read the maximum laser diode current in mA.
+        Get/Set the maximum laser diode current in mA. If the current is set
+        over the limit, the laser will shut down.
+
         :return: The maximum laser diode current.
-        :rtype: pq.mA
+        :rtype: ~quantities.Quantity
         """
         response = self.query("rlcm?")
         return float(response)*pq.mA
 
     @maximum_current.setter
     def maximum_current(self, newval):
-        """
-        Set the maximum laser diode current in
-        mA, if the current is over the limit the laser
-        will shut down.
-
-        :param newval: the new current.
-        :type newval: quantities.mA
-        """
-        newval = newval.rescale("mA").magnitude
+        newval = assume_units(newval, pq.mA).rescale('mA').magnitude
         self.sendcmd("smlc:" + str(newval))
 
     @property
     def power(self):
         """
-        The laser's optical power.
+        Get/Set the laser's optical power.
         :return: the laser power, in mW
-        :rtype: quantities.mW
+        :rtype: ~quantities.Quantity
         """
         response = self.query("rlp?")
         return float(response)*pq.mW
 
     @power.setter
     def power(self, newval):
-        """
-        Set the optical power.
-        :param newval: the new power, in mW.
-        :type newval: quantities.mW
-        """
-        newval = newval.rescale('mW').magnitude
+        newval = assume_units(newval, pq.mW).rescale('mW').magnitude
         self.sendcmd("slp:"+str(newval))
 
     @property
@@ -340,34 +339,34 @@ class LM(Instrument):
     @property
     def temperature(self):
         """
-        Get the current laser diode temperature.
+        Get/Set the current laser diode temperature.
         :return: The current laser diode temperature.
-        :rtype: quantity.degC
+        :rtype: ~quantities.Quantity
         """
         response = self.query("rtt?")
         return float(response)*pq.degC
 
     @temperature.setter
     def temperature(self, newval):
-        """
-        Set the laser diode temperature
-        :param newval: the new temperature.
-        :type newval: quantities.degC
-        """
         newval = convert_temperature(newval, pq.degC).magnitude
         self.sendcmd("stt:"+str(newval))
 
-    def enable(self):
+    @property
+    def enabled(self):
         """
-        Enable laser emission.
+        Enable/disable laser emission.
+        :return: True for enabled, False for disabled.
+        :rtype: bool
         """
-        self.sendcmd("lon")
+        return self._enabled
 
-    def disable(self):
-        """
-        Disable laser emission.
-        """
-        self.sendcmd("loff")
+    @enabled.setter
+    def enabled(self, newval):
+        if newval:
+            self.sendcmd("lon")
+        else:
+            self.sendcmd("loff")
+        self._enabled = newval
 
     def save(self):
         """

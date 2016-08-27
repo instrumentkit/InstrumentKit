@@ -29,7 +29,8 @@ def test_acc_enable():
             ],
             sep="\r"
     ) as lm:
-        lm.acc.enable()
+        lm.acc.enabled = True
+        assert lm.acc.enabled
 
 
 def test_acc_disable():
@@ -43,7 +44,8 @@ def test_acc_disable():
             ],
             sep="\r"
     ) as lm:
-        lm.acc.disable()
+        lm.acc.enabled = False
+        assert not lm.acc.enabled
 
 
 def test_acc_on():
@@ -99,7 +101,8 @@ def test_apc_enable():
             ],
             sep="\r"
     ) as lm:
-        lm.apc.enable()
+        lm.apc.enabled = True
+        assert lm.apc.enabled
 
 
 def test_apc_disable():
@@ -113,7 +116,8 @@ def test_apc_disable():
             ],
             sep="\r"
     ) as lm:
-        lm.apc.disable()
+        lm.apc.enabled = False
+        assert not lm.apc.enabled
 
 
 def test_apc_start():
@@ -178,7 +182,7 @@ def test_modulation_off_time():
         lm.modulation.off_time = 20 * quantities.mS
 
 
-def test_modulation_start():
+def test_modulation_enabled():
     with expected_protocol(
             ondax.LM,
             [
@@ -189,7 +193,8 @@ def test_modulation_start():
             ],
             sep="\r"
     ) as lm:
-        lm.modulation.start()
+        lm.modulation.enabled = True
+        assert lm.modulation.enabled
 
 
 def test_modulation_stop():
@@ -203,7 +208,8 @@ def test_modulation_stop():
             ],
             sep="\r"
     ) as lm:
-        lm.modulation.stop()
+        lm.modulation.enabled = False
+        assert not lm.modulation.enabled
 
 
 def test_tec_current():
@@ -245,10 +251,11 @@ def test_tec_enable():
             ],
             sep="\r"
     ) as lm:
-        lm.tec.enable()
+        lm.tec.enabled = True
+        assert lm.tec.enabled
 
 
-def test_tec_shutdown():
+def test_tec_disable():
     with expected_protocol(
             ondax.LM,
             [
@@ -259,7 +266,8 @@ def test_tec_shutdown():
             ],
             sep="\r"
     ) as lm:
-        lm.tec.shutdown()
+        lm.tec.enabled = False
+        assert not lm.tec.enabled
 
 
 def test_firmware():
@@ -383,7 +391,8 @@ def test_enable():
             ],
             sep="\r"
     ) as lm:
-        lm.enable()
+        lm.enabled = True
+        assert lm.enabled
 
 
 def test_disable():
@@ -397,7 +406,8 @@ def test_disable():
             ],
             sep="\r"
     ) as lm:
-        lm.disable()
+        lm.enabled = False
+        assert not lm.enabled
 
 
 def test_save():
