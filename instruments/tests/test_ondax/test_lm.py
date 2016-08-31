@@ -1,7 +1,21 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Unit tests for the Ondax Laser Module
+"""
+
+# IMPORTS #####################################################################
+
+from __future__ import absolute_import
+
+from nose.tools import raises
+
 import quantities
 
 from instruments import ondax
 from instruments.tests import expected_protocol
+
+# TESTS #######################################################################
 
 
 def test_acc_target():
@@ -46,6 +60,17 @@ def test_acc_disable():
     ) as lm:
         lm.acc.enabled = False
         assert not lm.acc.enabled
+
+
+@raises(TypeError)
+def test_acc_enable_not_boolean():
+    with expected_protocol(
+            ondax.LM,
+            [],
+            [],
+            sep="\r"
+    ) as lm:
+        lm.acc.enabled = "foobar"
 
 
 def test_acc_on():
@@ -118,6 +143,18 @@ def test_apc_disable():
     ) as lm:
         lm.apc.enabled = False
         assert not lm.apc.enabled
+
+
+@raises(TypeError)
+def test_apc_enable_not_boolean():
+    with expected_protocol(
+            ondax.LM,
+            [],
+            [],
+            sep="\r"
+    ) as lm:
+        lm.apc.enabled = "foobar"
+
 
 
 def test_apc_start():
@@ -197,7 +234,7 @@ def test_modulation_enabled():
         assert lm.modulation.enabled
 
 
-def test_modulation_stop():
+def test_modulation_disabled():
     with expected_protocol(
             ondax.LM,
             [
@@ -210,6 +247,17 @@ def test_modulation_stop():
     ) as lm:
         lm.modulation.enabled = False
         assert not lm.modulation.enabled
+
+
+@raises(TypeError)
+def test_modulation_enable_not_boolean():
+    with expected_protocol(
+            ondax.LM,
+            [],
+            [],
+            sep="\r"
+    ) as lm:
+        lm.modulation.enabled = "foobar"
 
 
 def test_tec_current():
@@ -268,6 +316,17 @@ def test_tec_disable():
     ) as lm:
         lm.tec.enabled = False
         assert not lm.tec.enabled
+
+
+@raises(TypeError)
+def test_tec_enable_not_boolean():
+    with expected_protocol(
+            ondax.LM,
+            [],
+            [],
+            sep="\r"
+    ) as lm:
+        lm.tec.enabled = "foobar"
 
 
 def test_firmware():
@@ -408,6 +467,17 @@ def test_disable():
     ) as lm:
         lm.enabled = False
         assert not lm.enabled
+
+
+@raises(TypeError)
+def test_enable_not_boolean():
+    with expected_protocol(
+            ondax.LM,
+            [],
+            [],
+            sep="\r"
+    ) as lm:
+        lm.enabled = "foobar"
 
 
 def test_save():
