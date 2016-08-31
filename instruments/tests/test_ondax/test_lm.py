@@ -161,8 +161,8 @@ def test_modulation_on_time():
             ],
             sep="\r"
     ) as lm:
-        assert lm.modulation.on_time == 10 * quantities.mS
-        lm.modulation.on_time = 20 * quantities.mS
+        assert lm.modulation.on_time == 10 * quantities.ms
+        lm.modulation.on_time = 20 * quantities.ms
 
 
 def test_modulation_off_time():
@@ -178,8 +178,8 @@ def test_modulation_off_time():
             ],
             sep="\r"
     ) as lm:
-        assert lm.modulation.off_time == 10 * quantities.mS
-        lm.modulation.off_time = 20 * quantities.mS
+        assert lm.modulation.off_time == 10 * quantities.ms
+        lm.modulation.off_time = 20 * quantities.ms
 
 
 def test_modulation_enabled():

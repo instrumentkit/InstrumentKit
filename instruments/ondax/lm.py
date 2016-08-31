@@ -18,7 +18,6 @@ import quantities as pq
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import convert_temperature, assume_units
 
-
 # CLASSES #####################################################################
 
 
@@ -26,8 +25,9 @@ class LM(Instrument):
     """
     The LM is the Ondax SureLock VHG-stabilized laser diode.
 
-    The user manual can be found here:
-    http://www.ondax.com/Downloads/SureLock/Compact%20laser%20module%20manual.pdf
+    The user manual can be found on the `Ondax website`_.
+
+    .. _Ondax website: http://www.ondax.com/Downloads/SureLock/Compact%20laser%20module%20manual.pdf
     """
 
     def __init__(self, filelike):
@@ -42,7 +42,7 @@ class LM(Instrument):
     # ENUMS #
     class Status(IntEnum):
         """
-        Enum containing the states of the laser
+        Enum containing the valid states of the laser
         """
         normal = 1
         inner_modulation = 2
@@ -58,18 +58,31 @@ class LM(Instrument):
     class _AutomaticCurrentControl(object):
         """
         Options and functions related to the laser diode's automatic current
-        control driver
+        control driver.
+
+        .. warning:: This class is not designed to be accessed directly. It
+            should be interfaced via `LM.acc`
         """
         def __init__(self, parent):
             self._parent = parent
-            self._enabled = None
+            self._enabled = False
 
         @property
         def target(self):
             """
-            The ACC target current
+            Gets the automatic current control target setting.
+
+            This property is accessed via the `LM.acc` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.acc.target)
+
             :return: Current ACC of the Laser
-            :rtype: ~quantities.Quantity
+            :units: mA
+            :type: `~quantities.Quantity`
             """
             response = float(self._parent.query("rstli?"))
             return response*pq.mA
@@ -77,15 +90,26 @@ class LM(Instrument):
         @property
         def enabled(self):
             """
-            Get/Set the enabled state of the ACC driver
+            Get/Set the enabled state of the ACC driver.
 
-            :return: The enabled state of the ACC driver
-            :rtype: bool
+            This property is accessed via the `LM.acc` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.acc.enabled)
+            >>> laser.acc.enabled = True
+
+            :type: `bool`
             """
             return self._enabled
 
         @enabled.setter
         def enabled(self, newval):
+            if not isinstance(newval, bool):
+                raise TypeError("ACC driver enabled property must be specified"
+                                "with a boolean, got {}.".format(type(newval)))
             if newval:
                 self._parent.sendcmd("lcen")
             else:
@@ -94,13 +118,29 @@ class LM(Instrument):
 
         def on(self):
             """
-            Turn on the ACC driver
+            Turns on the automatic current control driver.
+
+            This function is accessed via the `LM.acc` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> laser.acc.on()
             """
             self._parent.sendcmd("lcon")
 
         def off(self):
             """
-            Turn off the ACC driver
+            Turn off the automatic current control driver.
+
+            This function is accessed via the `LM.acc` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> laser.acc.off()
             """
             self._parent.sendcmd("lcoff")
 
@@ -108,17 +148,30 @@ class LM(Instrument):
         """
         Options and functions related to the laser diode's automatic power
         control driver.
+
+        .. warning:: This class is not designed to be accessed directly. It
+            should be interfaced via `LM.apc`
         """
         def __init__(self, parent):
             self._parent = parent
-            self._enabled = None
+            self._enabled = False
 
         @property
         def target(self):
             """
-            Return the target laser power in mW
+            Gets the target laser power of the automatic power control in mW.
+
+            This property is accessed via the `LM.apc` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.apc.target)
+
             :return: the target laser power
-            :rtype: ~quantities.Quantities
+            :units: mW
+            :type: `~quantities.Quantities`
             """
             response = self._parent.query("rslp?")
             return float(response)*pq.mW
@@ -126,14 +179,26 @@ class LM(Instrument):
         @property
         def enabled(self):
             """
-            Get/Set the enabled state of the APC driver
-            :return: The enabled state of the APC driver
-            :rtype: bool
+            Get/Set the enabled state of the automatic power control driver.
+
+            This property is accessed via the `LM.apc` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.apc.enabled)
+            >>> laser.apc.enabled = True
+
+            :type: `bool`
             """
             return self._enabled
 
         @enabled.setter
         def enabled(self, newval):
+            if not isinstance(newval, bool):
+                raise TypeError("APC driver enabled property must be specified "
+                                "with a boolean, got {}.".format(type(newval)))
             if newval:
                 self._parent.sendcmd("len")
             else:
@@ -142,65 +207,122 @@ class LM(Instrument):
 
         def start(self):
             """
-            Start the APC scan.
+            Start the automatic power control scan.
+
+            This function is accessed via the `LM.apc` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> laser.apc.start()
             """
             self._parent.sendcmd("sps")
 
         def stop(self):
             """
-            Stop the APC scan.
+            Stop the automatic power control scan.
+
+            This function is accessed via the `LM.apc` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> laser.apc.stop()
             """
             self._parent.sendcmd("cps")
 
     class _Modulation(object):
         """
         Options and functions related to the laser's optical output modulation.
+
+        .. warning:: This class is not designed to be accessed directly. It
+            should be interfaced via `LM.modulation`
         """
         def __init__(self, parent):
             self._parent = parent
-            self._enabled = None
+            self._enabled = False
 
         @property
         def on_time(self):
             """
-            Get/Set the on time of TTL modulation, in mS
-            :return: the on time in the TTL modulation.
-            :rtype: ~quantities.Quantity
+            Gets/sets the TTL modulation on time, in milliseconds.
+
+            This property is accessed via the `LM.modulation` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> import quantities as pq
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.modulation.on_time)
+            >>> laser.modulation.on_time = 1 * pq.ms
+
+            :return: The TTL modulation on time
+            :units: As specified (if a `~quantities.Quantity`) or assumed
+                to be of units milliseconds.
+            :type: `~quantities.Quantity`
             """
             response = self._parent.query("stsont?")
-            return float(response)*pq.mS
+            return float(response)*pq.ms
 
         @on_time.setter
         def on_time(self, newval):
-            newval = assume_units(newval, pq.ms).rescale('mS').magnitude
+            newval = assume_units(newval, pq.ms).rescale(pq.ms).magnitude
             self._parent.sendcmd("stsont:"+str(newval))
 
         @property
         def off_time(self):
             """
-            Get/Set the off time of TTL modulation, in mS
-            :return: the off time in the TTL modulation.
-            :rtype: ~quantities.Quantity
+            Gets/sets the TTL modulation off time, in milliseconds.
+
+            This property is accessed via the `LM.modulation` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> import quantities as pq
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.modulation.on_time)
+            >>> laser.modulation.on_time = 1 * pq.ms
+
+            :return: The TTL modulation off time.
+            :units: As specified (if a `~quantities.Quantity`) or assumed
+                to be of units milliseconds.
+            :type: `~quantities.Quantity`
             """
             response = self._parent.query("stsofft?")
-            return float(response)*pq.mS
+            return float(response)*pq.ms
 
         @off_time.setter
         def off_time(self, newval):
-            newval = assume_units(newval, pq.ms).rescale('mS').magnitude
+            newval = assume_units(newval, pq.ms).rescale(pq.ms).magnitude
             self._parent.sendcmd("stsofft:"+str(newval))
 
         @property
         def enabled(self):
             """
             Get/Set the TTL modulation output state.
-            :return: the TTL modulation state
-            :rtype: bool
+
+            This property is accessed via the `LM.modulation` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.modulation.enabled)
+            >>> laser.modulation.enabled = True
+
+            :type: `bool`
             """
             return self._enabled
 
         @enabled.setter
         def enabled(self, newval):
+            if not isinstance(newval, bool):
+                raise TypeError("Modulation enabled property must be specified "
+                                "with a boolean, got {}.".format(type(newval)))
             if newval:
                 self._parent.sendcmd("stm")
             else:
@@ -211,17 +333,29 @@ class LM(Instrument):
         """
         Options and functions relating to the laser diode's thermo electric
         cooler.
+
+        .. warning:: This class is not designed to be accessed directly. It
+            should be interfaced via `LM.tec`
         """
         def __init__(self, parent):
             self._parent = parent
-            self._enabled = None
+            self._enabled = False
 
         @property
         def current(self):
             """
-            Get the current TEC current
-            :return: the TEC current
-            :rtype: ~quantities.Quantity
+            Gets the thermoelectric cooler current setting.
+
+            This property is accessed via the `LM.tec` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.tec.current)
+
+            :units: mA
+            :type: `~quantities.Quantity`
             """
             response = self._parent.query("rti?")
             return float(response)*pq.mA
@@ -229,9 +363,18 @@ class LM(Instrument):
         @property
         def target(self):
             """
-            Get the TEC target temperature
-            :return: The target temperature
-            :rtype: ~quantities.Quantity
+            Gets the thermoelectric cooler target temperature.
+
+            This property is acccessed via the `LM.tec` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.tec.target)
+
+            :units: Degrees Celcius
+            :type: `~quantities.Quantity`
             """
             response = self._parent.query("rstt?")
             return float(response)*pq.degC
@@ -239,14 +382,26 @@ class LM(Instrument):
         @property
         def enabled(self):
             """
-            Get/Set the enable state fo the TEC.
-            :return: The TEC's enabled state.
-            :rtype: bool
+            Gets/sets the enable state for the thermoelectric cooler.
+
+            This property is accessed via the `LM.tec` namespace.
+
+            Example usage:
+
+            >>> import instruments as ik
+            >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
+            >>> print(laser.tec.enabled)
+            >>> laser.tec.enabled = True
+
+            :type: `bool`
             """
             return self._enabled
 
         @enabled.setter
         def enabled(self, newval):
+            if not isinstance(newval, bool):
+                raise TypeError("TEC enabled property must be specified with "
+                                "a boolean, got {}.".format(type(newval)))
             if newval:
                 self._parent.sendcmd("tecon")
             else:
@@ -262,9 +417,9 @@ class LM(Instrument):
     @property
     def firmware(self):
         """
-        Return the laser system firmware version.
-        :return: The laser system firmware.
-        :rtype: str
+        Gets the laser system firmware version.
+
+        :type: `str`
         """
         response = self.query("rsv?")
         return response
@@ -272,16 +427,18 @@ class LM(Instrument):
     @property
     def current(self):
         """
-        Get/Set the laser diode current, in mA.
-        :return: The laser diode current.
-        :rtype: ~quantities.Quantity
+        Gets/sets the laser diode current, in mA.
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed
+                to be of units mA.
+        :type: `~quantities.Quantity`
         """
         response = self.query("rli?")
         return float(response)*pq.mA
 
     @current.setter
     def current(self, newval):
-        newval = assume_units(newval, pq.mA).rescale('mA').magnitude
+        newval = assume_units(newval, pq.mA).rescale(pq.mA).magnitude
         self.sendcmd("slc:"+str(newval))
 
     @property
@@ -290,8 +447,9 @@ class LM(Instrument):
         Get/Set the maximum laser diode current in mA. If the current is set
         over the limit, the laser will shut down.
 
-        :return: The maximum laser diode current.
-        :rtype: ~quantities.Quantity
+        :units: As specified (if a `~quantities.Quantity`) or assumed
+                to be of units mA.
+        :type: `~quantities.Quantity`
         """
         response = self.query("rlcm?")
         return float(response)*pq.mA
@@ -304,24 +462,26 @@ class LM(Instrument):
     @property
     def power(self):
         """
-        Get/Set the laser's optical power.
-        :return: the laser power, in mW
-        :rtype: ~quantities.Quantity
+        Get/Set the laser's optical power in mW.
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed
+                to be of units mW.
+        :rtype: `~quantities.Quantity`
         """
         response = self.query("rlp?")
         return float(response)*pq.mW
 
     @power.setter
     def power(self, newval):
-        newval = assume_units(newval, pq.mW).rescale('mW').magnitude
+        newval = assume_units(newval, pq.mW).rescale(pq.mW).magnitude
         self.sendcmd("slp:"+str(newval))
 
     @property
     def serial_number(self):
         """
-        Return the laser controller serial number
-        :return: the serial number, as a string.
-        :rtype: str
+        Gets the laser controller serial number
+
+        :type: `str`
         """
         response = self.query("rsn?")
         return response
@@ -330,8 +490,8 @@ class LM(Instrument):
     def status(self):
         """
         Read laser controller run status.
-        :return: The status.
-        :rtype: LM.Status
+
+        :type: `LM.Status`
         """
         response = self.query("rlrs?")
         return self.Status(int(response))
@@ -339,9 +499,11 @@ class LM(Instrument):
     @property
     def temperature(self):
         """
-        Get/Set the current laser diode temperature.
-        :return: The current laser diode temperature.
-        :rtype: ~quantities.Quantity
+        Gets/sets laser diode temperature.
+
+        :units: As specified (if a `~quantities.Quantity`) or assumed
+                to be of units degrees celcius.
+        :type: `~quantities.Quantity`
         """
         response = self.query("rtt?")
         return float(response)*pq.degC
@@ -354,14 +516,17 @@ class LM(Instrument):
     @property
     def enabled(self):
         """
-        Enable/disable laser emission.
-        :return: True for enabled, False for disabled.
-        :rtype: bool
+        Gets/sets the laser emission enabled status.
+
+        :type: `bool`
         """
         return self._enabled
 
     @enabled.setter
     def enabled(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError("Laser module enabled property must be specified "
+                            "with a boolean, got {}.".format(type(newval)))
         if newval:
             self.sendcmd("lon")
         else:
