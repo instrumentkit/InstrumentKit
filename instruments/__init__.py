@@ -17,6 +17,7 @@ from . import holzworth
 from . import hp
 from . import keithley
 from . import lakeshore
+from . import minghe
 from . import newport
 from . import oxford
 from . import phasematrix
