@@ -102,7 +102,8 @@ class MHS5200(Instrument):
             :param bool new_val: the enable state
             """
             query = ":r{0}b".format(self._chan)
-            return int(self._mhs.query(query).replace(query, "").replace("\r", ""))
+            return int(self._mhs.query(query).replace(query, "").
+                       replace("\r", ""))
 
         @enable.setter
         def enable(self, new_val):
@@ -121,11 +122,12 @@ class MHS5200(Instrument):
             query = ":r{0}f".format(self._chan)
             response = self._mhs.query(query)
             freq = float(response.replace(query, ""))*pq.Hz
-            return freq
+            return freq/100.0
 
         @frequency.setter
         def frequency(self, new_val):
-            new_val = assume_units(new_val, pq.Hz).rescale(pq.Hz).magnitude
+            new_val = assume_units(new_val, pq.Hz).rescale(pq.Hz).\
+                          magnitude*100.0
             query = ":s{0}f{1}".format(self._chan, int(new_val))
             response = self._mhs.query(query)
 
