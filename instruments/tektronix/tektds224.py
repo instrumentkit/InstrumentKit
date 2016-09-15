@@ -22,7 +22,8 @@ from instruments.abstract_instruments import (
     Oscilloscope,
 )
 from instruments.generic_scpi import SCPIInstrument
-from instruments.util_fns import ProxyList
+from instruments.util_fns import ProxyList, assume_units
+
 
 # CLASSES #####################################################################
 
@@ -181,7 +182,6 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
         return float(response)*units
 
 
-
 class TekTDS224(SCPIInstrument, Oscilloscope):
 
     """
@@ -332,3 +332,19 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
                                   'measurement_type': measurement})
 
         return _measurements
+
+    @property
+    def time_scale(self):
+        """
+        Get/set the seconds/div on the scope, in seconds.
+
+        :type: `quantities.`
+        """
+        response = self.query("HORizontal:MAIn:SCAle?")
+        return float(response)*pq.s
+
+    @time_scale.setter
+    def time_scale(self, new_val):
+        val = assume_units(new_val, pq.s).rescale("s").magnitude
+        format_out = "{:.1E}".format(float(val))
+        self.sendcmd("HORizontal:MAIn:SCAle "+format_out)
