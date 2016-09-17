@@ -35,10 +35,25 @@ def test_mhs_amplitude():
         ],
         sep="\n"
     ) as mhs:
-        assert mhs.channel[0].amplitude == 3.3*pq.V
-        assert mhs.channel[1].amplitude == 5.0*pq.V
+        assert mhs.channel[0].amplitude[0] == 3.3*pq.V
+        assert mhs.channel[1].amplitude[0] == 5.0*pq.V
         mhs.channel[0].amplitude = 6.6*pq.V
         mhs.channel[1].amplitude = 8.0*pq.V
+
+
+@raises(NotImplementedError)
+def test_mhs_amplitude_dbm_notimplemented():
+    with expected_protocol(
+        ik.minghe.MHS5200,
+        [
+            ":s1a660"
+        ],
+        [
+            "ok"
+        ],
+        sep="\n"
+    ) as mhs:
+        mhs.channel[0].amplitude = 6.6*ik.units.dBm
 
 
 def test_mhs_duty_cycle():
@@ -94,13 +109,13 @@ def test_mhs_frequency():
         [
             ":r1f",
             ":r2f",
-            ":s1f6000",
-            ":s2f8000"
+            ":s1f600000",
+            ":s2f800000"
 
         ],
         [
-            ":r1f33000",
-            ":r2f500000",
+            ":r1f3300000",
+            ":r2f50000000",
             "ok",
             "ok"
         ],
@@ -178,10 +193,10 @@ def test_mhs_wave_type():
         ],
         sep="\n"
     ) as mhs:
-        assert mhs.channel[0].wave_type == mhs.WaveType.sine
-        assert mhs.channel[1].wave_type == mhs.WaveType.square
-        mhs.channel[0].wave_type = mhs.WaveType.triangular
-        mhs.channel[1].wave_type = mhs.WaveType.sawtooth_up
+        assert mhs.channel[0].function == mhs.Function.sine
+        assert mhs.channel[1].function == mhs.Function.square
+        mhs.channel[0].function = mhs.Function.triangular
+        mhs.channel[1].function = mhs.Function.sawtooth_up
 
 
 def test_mhs_serial_number():
