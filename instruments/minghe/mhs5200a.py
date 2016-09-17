@@ -56,13 +56,6 @@ class MHS5200(Instrument):
             self._count = 0
 
         def _get_amplitude_(self):
-            """
-            Gets/Sets the amplitude of this channel.
-
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units volt.
-            :type: `~quantities.Quantity`
-            """
             query = ":r{0}a".format(self._chan)
             response = self._mhs.query(query)
             return float(response.replace(query, ""))/100.0, self.VoltageMode.rms
@@ -180,7 +173,7 @@ class MHS5200(Instrument):
             """
             Gets/Sets the wave type of this channel.
 
-            :type: `MHS5200.WaveType`
+            :type: `MHS5200.Function`
             """
             query = ":r{0}w".format(self._chan)
             response = self._mhs.query(query).replace(query, "")
