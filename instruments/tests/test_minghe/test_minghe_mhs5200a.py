@@ -33,7 +33,7 @@ def test_mhs_amplitude():
             "ok",
             "ok"
         ],
-        sep="\n"
+        sep="\r\n"
     ) as mhs:
         assert mhs.channel[0].amplitude[0] == 3.3*pq.V
         assert mhs.channel[1].amplitude[0] == 5.0*pq.V
@@ -51,7 +51,7 @@ def test_mhs_amplitude_dbm_notimplemented():
         [
             "ok"
         ],
-        sep="\n"
+        sep="\r\n"
     ) as mhs:
         mhs.channel[0].amplitude = 6.6*ik.units.dBm
 
@@ -72,7 +72,7 @@ def test_mhs_duty_cycle():
             "ok",
             "ok"
         ],
-        sep="\n"
+        sep="\r\n"
     ) as mhs:
         assert mhs.channel[0].duty_cycle == 330.0*pq.s
         assert mhs.channel[1].duty_cycle == 500.0*pq.s
@@ -95,7 +95,7 @@ def test_mhs_enable():
             "ok",
             "ok"
         ],
-        sep="\n"
+        sep="\r\n"
     ) as mhs:
         assert mhs.channel[0].enable
         assert not mhs.channel[1].enable
@@ -119,7 +119,7 @@ def test_mhs_frequency():
             "ok",
             "ok"
         ],
-        sep="\n"
+        sep="\r\n"
     ) as mhs:
         assert mhs.channel[0].frequency == 33.0*pq.kHz
         assert mhs.channel[1].frequency == 500.0*pq.kHz
@@ -143,7 +143,7 @@ def test_mhs_offset():
             "ok",
             "ok"
         ],
-        sep="\n"
+        sep="\r\n"
     ) as mhs:
         assert mhs.channel[0].offset == 0
         assert mhs.channel[1].offset == -1.2
@@ -167,7 +167,7 @@ def test_mhs_phase():
             "ok",
             "ok"
         ],
-        sep="\n"
+        sep="\r\n"
     ) as mhs:
         assert mhs.channel[0].phase == 120
         assert mhs.channel[1].phase == 0
@@ -191,7 +191,7 @@ def test_mhs_wave_type():
             "ok",
             "ok"
         ],
-        sep="\n"
+        sep="\r\n"
     ) as mhs:
         assert mhs.channel[0].function == mhs.Function.sine
         assert mhs.channel[1].function == mhs.Function.square
@@ -209,6 +209,6 @@ def test_mhs_serial_number():
         [
             ":r0c5225A1",
         ],
-        sep="\n"
+        sep="\r\n"
     ) as mhs:
         assert mhs.serial_number == "5225A1"

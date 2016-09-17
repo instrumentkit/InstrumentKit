@@ -32,6 +32,14 @@ class MHS5200(Instrument):
     def __init__(self, filelike):
         super(MHS5200, self).__init__(filelike)
         self._channel_count = 2
+        self.terminator = "\r\n"
+
+    def _ack_expected(self, msg=""):
+        if msg.find(":r") == 0:
+            return None
+        else:
+            # most commands res
+            return "ok"
 
     # INNER CLASSES #
 
