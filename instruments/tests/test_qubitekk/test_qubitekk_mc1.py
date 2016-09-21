@@ -38,14 +38,17 @@ def test_mc1_internal_position():
     with expected_protocol(
         ik.qubitekk.MC1,
         [
-            "POSI?"
+            "POSI?",
+            "STEP?"
+
         ],
         [
-            "-100"
+            "-100",
+            "1"
         ],
         sep="\r"
     ) as mc:
-        assert mc.internal_position == -100
+        assert mc.internal_position == -100*pq.ms
 
 
 def test_mc1_metric_position():
@@ -115,7 +118,7 @@ def test_mc1_step():
         ],
         sep="\r"
     ) as mc:
-        assert mc.step_size == 20
+        assert mc.step_size == 20*pq.ms
 
 
 def test_mc1_motor():
@@ -136,14 +139,16 @@ def test_mc1_move_timeout():
     with expected_protocol(
         ik.qubitekk.MC1,
         [
-            "TIME?"
+            "TIME?",
+            "STEP?"
         ],
         [
-            "200"
+            "200",
+            "1"
         ],
         sep="\r"
     ) as mc:
-        assert mc.move_timeout == 200
+        assert mc.move_timeout == 200*pq.ms
 
 
 def test_mc1_is_centering():
@@ -179,8 +184,8 @@ def test_mc1_reset():
 def test_mc1_move():
     with expected_protocol(
         ik.qubitekk.MC1,
-        [":MOVE 0"],
-        [""],
+        ["STEP?", ":MOVE 0"],
+        ["1"],
         sep="\r"
     ) as mc:
         mc.move(0)

@@ -3,13 +3,14 @@
 from time import sleep
 
 from instruments.qubitekk import MC1
+import quantities as pq
 
 
 if __name__ == "__main__":
 
     mc1 = MC1.open_serial(vid=1027, pid=24577, baud=9600, timeout=1)
-    mc1.step_size = 25
-    mc1.inertia = 10
+    mc1.step_size = 25*pq.ms
+    mc1.inertia = 10*pq.ms
     print("step size:", mc1.step_size)
     print("inertial force: ", mc1.inertia)
 
@@ -25,12 +26,14 @@ if __name__ == "__main__":
     print("Stage Centered")
     # for the motor in the mechanical delay line, the travel is limited from
     # the full range of travel. Here's how to set the limits.
-    mc1.lower_limit = -260
-    mc1.upper_limit = 300
-    mc1.increment = 5
-    for x_pos in range(mc1.lower_limit, mc1.upper_limit, mc1.increment):
+    mc1.lower_limit = -260*pq.ms
+    mc1.upper_limit = 300*pq.ms
+    mc1.increment = 5*pq.ms
+    x_pos = mc1.lower_limit
+    while x_pos <= mc1.upper_limit:
         print(str(mc1.metric_position)+" "+str(mc1.direction))
         mc1.move(x_pos)
         while mc1.move_timeout > 0:
             sleep(0.5)
         sleep(1)
+        x_pos += mc1.increment

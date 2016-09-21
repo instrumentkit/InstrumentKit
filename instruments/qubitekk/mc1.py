@@ -14,7 +14,8 @@ import quantities as pq
 
 from instruments.abstract_instruments import Instrument
 # CLASSES #####################################################################
-from instruments.util_fns import int_property, enum_property, unitful_property
+from instruments.util_fns import int_property, enum_property, unitful_property, \
+    assume_units
 
 
 class MC1(Instrument):
@@ -22,13 +23,12 @@ class MC1(Instrument):
     The MC1 is a controller for the qubitekk motor controller. Used with a
     linear actuator to perform a HOM dip.
     """
-    def __init__(self, filelike, increment=1, upper_limit=300,
-                 lower_limit=-300):
+    def __init__(self, filelike):
         super(MC1, self).__init__(filelike)
         self.terminator = "\r"
-        self.increment = increment
-        self.lower_limit = lower_limit
-        self.upper_limit = upper_limit
+        self.increment = 1*pq.ms
+        self.lower_limit = -300*pq.ms
+        self.upper_limit = 300*pq.ms
         self._firmware = None
         self._controller = None
 
@@ -43,43 +43,54 @@ class MC1(Instrument):
 
     # PROPERTIES #
 
-    direction = int_property(
+    direction = unitful_property(
         name="DIRE",
         doc="""
         Get the internal direction variable, which is a function of how far
         the motor needs to go.
 
-        :type: `int`
+        :type: `~quantities.Quantity`
+        :units: milliseconds
         """,
+        units=pq.ms,
         readonly=True
     )
 
-    inertia = int_property(
+    inertia = unitful_property(
         name="INER",
         doc="""
-        Gets/Sets the amount of force required to overcome static inertia.
+        Gets/Sets the amount of force required to overcome static inertia. Must
+         be between 0 and 100 milliseconds.
 
-        :type: `int`
+        :type: `~quantities.Quantity`
+        :units: milliseconds
         """,
+        units=pq.ms,
+        valid_range=(0*pq.ms, 100*pq.ms),
         set_fmt=":{} {}"
     )
 
-    internal_position = int_property(
-        name="POSI",
-        doc="""
-        Get the internal motor state position.
+    @property
+    def internal_position(self):
+        """
+        Get the internal motor state position, which is equivalent to the total
+         number of milliseconds that voltage has been applied to the motor in
+         the positive direction minus the number of milliseconds that voltage
+         has been applied to the motor in the negative direction.
 
-        :type: `int`
-        """,
-        readonly=True
-    )
+        :type: `~quantities.Quantity`
+        :units: milliseconds
+        """
+        response = int(self.query("POSI?"))*self.step_size
+        return response
 
     metric_position = unitful_property(
         name="METR",
         doc="""
-        Get the estimated motor position, in microns.
+        Get the estimated motor position, in millimeters.
 
-        :type: `quantities.`
+        :type: `~quantities.Quantity`
+        :units: millimeters
         """,
         units=pq.mm,
         readonly=True
@@ -96,14 +107,17 @@ class MC1(Instrument):
         set_fmt=":{} {}"
     )
 
-    step_size = int_property(
+    step_size = unitful_property(
         name="STEP",
         doc="""
-        Gets/Sets the number of milliseconds per step.
+        Gets/Sets the number of milliseconds per step. Must be between 1
+        and 100 milliseconds.
 
-        :type: `int`
+        :type: `~quantities.Quantity`
+        :units: milliseconds
         """,
-        valid_set=range(1, 100),
+        units=pq.ms,
+        valid_range=(1*pq.ms, 100*pq.ms),
         set_fmt=":{} {}"
     )
 
@@ -137,16 +151,17 @@ class MC1(Instrument):
         readonly=True
     )
 
-    move_timeout = int_property(
-        name="TIME",
-        doc="""
-        Get the motor's timeout value, which indicates the number of clock
-        cycles before the motor can start moving again.
+    @property
+    def move_timeout(self):
+        """
+        Get the motor's timeout value, which indicates the number of
+        milliseconds before the motor can start moving again.
 
-        :type: `int`
-        """,
-        readonly=True
-    )
+        :type: `~quantities.Quantity`
+        :units: milliseconds
+        """
+        response = int(self.query("TIME?"))
+        return response*self.step_size
 
     # METHODS #
 
@@ -176,10 +191,12 @@ class MC1(Instrument):
         Move to a specified location. Position is unitless and is defined as
         the number of motor steps. It varies between motors.
         :param new_position: the location
-        :type new_position: int
+        :type new_position: `~quantities.Quantity`
         """
         if self.lower_limit <= new_position <= self.upper_limit:
-            cmd = ":MOVE "+str(int(new_position))
+            new_position = assume_units(new_position, pq.ms).rescale("ms")
+            clock_cycles = new_position/self.step_size
+            cmd = ":MOVE "+str(int(clock_cycles))
             self.sendcmd(cmd)
         else:
             raise ValueError("Location out of range")
