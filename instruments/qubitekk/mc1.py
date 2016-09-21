@@ -7,7 +7,7 @@ MC1 Class originally contributed by Catherine Holloway.
 """
 
 # IMPORTS #####################################################################
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 from builtins import range
 from enum import Enum
 import quantities as pq
