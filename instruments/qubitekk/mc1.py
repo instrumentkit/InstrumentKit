@@ -7,15 +7,20 @@ MC1 Class originally contributed by Catherine Holloway.
 """
 
 # IMPORTS #####################################################################
+
 from __future__ import absolute_import, division
-from builtins import range
+
+from builtins import range, map
 from enum import Enum
+
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument
+from instruments.util_fns import (
+    int_property, enum_property, unitful_property, assume_units
+)
+
 # CLASSES #####################################################################
-from instruments.util_fns import int_property, enum_property, unitful_property, \
-    assume_units
 
 
 class MC1(Instrument):
@@ -26,9 +31,9 @@ class MC1(Instrument):
     def __init__(self, filelike):
         super(MC1, self).__init__(filelike)
         self.terminator = "\r"
-        self.increment = 1*pq.ms
-        self.lower_limit = -300*pq.ms
-        self.upper_limit = 300*pq.ms
+        self._increment = 1*pq.ms
+        self._lower_limit = -300*pq.ms
+        self._upper_limit = 300*pq.ms
         self._firmware = None
         self._controller = None
 
@@ -42,6 +47,48 @@ class MC1(Instrument):
         relay = "Relay"
 
     # PROPERTIES #
+
+    @property
+    def increment(self):
+        """
+        Gets/sets the stepping increment value of the motor controller
+
+        :units: As specified, or assumed to be of units milliseconds
+        :type: `~quantities.Quantity`
+        """
+        return self._increment
+
+    @increment.setter
+    def increment(self, newval):
+        self._increment = assume_units(newval, pq.ms).rescale(pq.ms)
+
+    @property
+    def lower_limit(self):
+        """
+        Gets/sets the stepping lower limit value of the motor controller
+
+        :units: As specified, or assumed to be of units milliseconds
+        :type: `~quantities.Quantity`
+        """
+        return self._lower_limit
+
+    @lower_limit.setter
+    def lower_limit(self, newval):
+        self._lower_limit = assume_units(newval, pq.ms).rescale(pq.ms)
+
+    @property
+    def upper_limit(self):
+        """
+        Gets/sets the stepping upper limit value of the motor controller
+
+        :units: As specified, or assumed to be of units milliseconds
+        :type: `~quantities.Quantity`
+        """
+        return self._upper_limit
+
+    @upper_limit.setter
+    def upper_limit(self, newval):
+        self._upper_limit = assume_units(newval, pq.ms).rescale(pq.ms)
 
     direction = unitful_property(
         name="DIRE",
@@ -168,6 +215,7 @@ class MC1(Instrument):
     def is_centering(self):
         """
         Query whether the motor is in its centering phase
+
         :return: 0 if not centering, 1 if centering
         :rtype: int
         """
@@ -190,11 +238,12 @@ class MC1(Instrument):
         """
         Move to a specified location. Position is unitless and is defined as
         the number of motor steps. It varies between motors.
+
         :param new_position: the location
         :type new_position: `~quantities.Quantity`
         """
         if self.lower_limit <= new_position <= self.upper_limit:
-            new_position = assume_units(new_position, pq.ms).rescale("ms")
+            new_position = assume_units(new_position, pq.ms).rescale(pq.ms)
             clock_cycles = new_position/self.step_size
             cmd = ":MOVE "+str(int(clock_cycles))
             self.sendcmd(cmd)
