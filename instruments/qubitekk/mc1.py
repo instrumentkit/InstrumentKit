@@ -112,6 +112,7 @@ class MC1(Instrument):
         :type: `~quantities.Quantity`
         :units: milliseconds
         """,
+        format_code='{:.0f}',
         units=pq.ms,
         valid_range=(0*pq.ms, 100*pq.ms),
         set_fmt=":{} {}"
@@ -163,6 +164,7 @@ class MC1(Instrument):
         :type: `~quantities.Quantity`
         :units: milliseconds
         """,
+        format_code='{:.0f}',
         units=pq.ms,
         valid_range=(1*pq.ms, 100*pq.ms),
         set_fmt=":{} {}"
