@@ -158,7 +158,17 @@ def test_mc1_is_centering():
         ["1"],
         sep="\r"
     ) as mc:
-        assert mc.is_centering()
+        assert mc.is_centering() is True
+
+
+def test_mc1_is_centering_false():
+    with expected_protocol(
+        ik.qubitekk.MC1,
+        ["CENT?"],
+        ["0"],
+        sep="\r"
+    ) as mc:
+        assert mc.is_centering() is False
 
 
 def test_mc1_center():

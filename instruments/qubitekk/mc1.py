@@ -218,11 +218,11 @@ class MC1(Instrument):
         """
         Query whether the motor is in its centering phase
 
-        :return: 0 if not centering, 1 if centering
-        :rtype: int
+        :return: False if not centering, True if centering
+        :rtype: `bool`
         """
         response = self.query("CENT?")
-        return int(response)
+        return True if int(response) == 1 else False
 
     def center(self):
         """
