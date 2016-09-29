@@ -147,7 +147,9 @@ class MC1(Instrument):
     setting = int_property(
         name="OUTP",
         doc="""
-        Gets/sets the output setting of the optical switch.
+        Gets/sets the output port of the optical switch. 0 means input 1 is
+        directed to output 1, and input 2 is directed to output 2. 1 means that
+         input 1 is directed to output 2 and input 2 is directed to output 1.
 
         :type: `int`
         """,
