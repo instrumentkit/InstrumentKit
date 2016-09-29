@@ -63,21 +63,21 @@ def test_mhs_duty_cycle():
             ":r1d",
             ":r2d",
             ":s1d6",
-            ":s2d8"
+            ":s2d80"
 
         ],
         [
-            ":r1d330",
-            ":r2d500",
+            ":r1d010",
+            ":r2d100",
             "ok",
             "ok"
         ],
         sep="\r\n"
     ) as mhs:
-        assert mhs.channel[0].duty_cycle == 330.0*pq.s
-        assert mhs.channel[1].duty_cycle == 500.0*pq.s
-        mhs.channel[0].duty_cycle = 6*pq.s
-        mhs.channel[1].duty_cycle = 8*pq.s
+        assert mhs.channel[0].duty_cycle == 1.0
+        assert mhs.channel[1].duty_cycle == 10.0
+        mhs.channel[0].duty_cycle = 0.06
+        mhs.channel[1].duty_cycle = 0.8
 
 
 def test_mhs_enable():

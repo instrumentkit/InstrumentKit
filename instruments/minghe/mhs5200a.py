@@ -83,19 +83,17 @@ class MHS5200(Instrument):
             """
             Gets/Sets the duty cycle of this channel.
 
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units seconds.
+            :units: A fraction
             :type: `~quantities.Quantity`
             """
             query = ":r{0}d".format(self._chan)
             response = self._mhs.query(query)
-            duty = float(response.replace(query, ""))*pq.s
+            duty = float(response.replace(query, ""))/10.0
             return duty
 
         @duty_cycle.setter
         def duty_cycle(self, new_val):
-            new_val = assume_units(new_val, pq.s).rescale(pq.s).magnitude
-            query = ":s{0}d{1}".format(self._chan, int(new_val))
+            query = ":s{0}d{1}".format(self._chan, int(100.0*new_val))
             self._mhs.sendcmd(query)
 
         @property
