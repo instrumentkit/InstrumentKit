@@ -15,8 +15,7 @@ from builtins import range
 from enum import Enum
 
 import quantities as pq
-
-from instruments.abstract_instruments import Instrument
+from instruments.abstract_instruments import Instrument, FunctionGenerator
 from instruments.util_fns import ProxyList, assume_units
 
 # CLASSES #####################################################################
@@ -30,17 +29,25 @@ class MHS5200(Instrument):
     communications protocol:
     https://github.com/wd5gnr/mhs5200a/blob/master/MHS5200AProtocol.pdf
     """
-    # pylint: disable=unused-variable
     def __init__(self, filelike):
         super(MHS5200, self).__init__(filelike)
         self._channel_count = 2
+        self.terminator = "\r\n"
+
+    def _ack_expected(self, msg=""):
+        if msg.find(":r") == 0:
+            return None
+        else:
+            # most commands res
+            return "ok"
 
     # INNER CLASSES #
 
-    class Channel(object):
+    class Channel(FunctionGenerator):
         """
         Class representing a channel on the MHS52000.
         """
+        # pylint: disable=protected-access
 
         __CHANNEL_NAMES = {
             1: '1',
@@ -49,64 +56,64 @@ class MHS5200(Instrument):
 
         def __init__(self, mhs, idx):
             self._mhs = mhs
+            super(MHS5200.Channel, self).__init__(self._mhs._file)
             # Use zero-based indexing for the external API, but one-based
             # for talking to the instrument.
             self._idx = idx + 1
             self._chan = self.__CHANNEL_NAMES[self._idx]
             self._count = 0
 
-        @property
-        def amplitude(self):
-            """
-            Gets/Sets the amplitude of this channel.
-
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units volt.
-            :type: `~quantities.Quantity`
-            """
+        def _get_amplitude_(self):
             query = ":r{0}a".format(self._chan)
             response = self._mhs.query(query)
-            return float(response.replace(query, ""))/100.0*pq.V
+            return float(response.replace(query, ""))/100.0, self.VoltageMode.rms
 
-        @amplitude.setter
-        def amplitude(self, new_val):
-            new_val = 100*assume_units(new_val, pq.V).rescale(pq.V).magnitude
+        def _set_amplitude_(self, new_val, units):
+            if units == self.VoltageMode.peak_to_peak or \
+                            units == self.VoltageMode.rms:
+                new_val = assume_units(new_val, "V").rescale(pq.V).magnitude
+            elif units == self.VoltageMode.dBm:
+                raise NotImplementedError("Decibel units are not supported.")
+            new_val *= 100
             query = ":s{0}a{1}".format(self._chan, int(new_val))
-            response = self._mhs.query(query)
+            self._mhs.sendcmd(query)
 
         @property
         def duty_cycle(self):
             """
             Gets/Sets the duty cycle of this channel.
 
-            :units: A fraction
+            :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            of units seconds.
             :type: `~quantities.Quantity`
             """
             query = ":r{0}d".format(self._chan)
             response = self._mhs.query(query)
-            duty = float(response.replace(query, ""))/10.0
+            duty = float(response.replace(query, ""))*pq.s
             return duty
 
         @duty_cycle.setter
         def duty_cycle(self, new_val):
-            query = ":s{0}d{1}".format(self._chan, int(100.0*new_val))
-            response = self._mhs.query(query)
+            new_val = assume_units(new_val, pq.s).rescale(pq.s).magnitude
+            query = ":s{0}d{1}".format(self._chan, int(new_val))
+            self._mhs.sendcmd(query)
 
         @property
         def enable(self):
             """
             Gets/Sets the enable state of this channel.
 
-            :param bool new_val: the enable state
+            :param new_val: the enable state
+            :type: `bool`
             """
             query = ":r{0}b".format(self._chan)
             return int(self._mhs.query(query).replace(query, "").
-                       replace("\r", ""))/10.0
+                       replace("\r", ""))
 
         @enable.setter
         def enable(self, new_val):
             query = ":s{0}b{1}".format(self._chan, int(new_val))
-            response = self._mhs.query(query)
+            self._mhs.sendcmd(query)
 
         @property
         def frequency(self):
@@ -127,16 +134,16 @@ class MHS5200(Instrument):
             new_val = assume_units(new_val, pq.Hz).rescale(pq.Hz).\
                           magnitude*100.0
             query = ":s{0}f{1}".format(self._chan, int(new_val))
-            response = self._mhs.query(query)
+            self._mhs.sendcmd(query)
 
         @property
         def offset(self):
             """
             Gets/Sets the offset of this channel.
 
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of fraction.
-            :type: `~quantities.Quantity`
+            :param new_val: The fraction of the duty cycle to offset the
+            function by.
+            :type: `float`
             """
             # need to convert
             query = ":r{0}o".format(self._chan)
@@ -147,7 +154,7 @@ class MHS5200(Instrument):
         def offset(self, new_val):
             new_val = int(new_val*100)+120
             query = ":s{0}o{1}".format(self._chan, new_val)
-            response = self._mhs.query(query)
+            self._mhs.sendcmd(query)
 
         @property
         def phase(self):
@@ -161,31 +168,32 @@ class MHS5200(Instrument):
             # need to convert
             query = ":r{0}p".format(self._chan)
             response = self._mhs.query(query)
-            return int(response.replace(query, ""))
+            return int(response.replace(query, ""))*pq.deg
 
         @phase.setter
         def phase(self, new_val):
+            new_val = assume_units(new_val, pq.deg).rescale("deg").magnitude
             query = ":s{0}p{1}".format(self._chan, int(new_val))
-            response = self._mhs.query(query)
+            self._mhs.sendcmd(query)
 
         @property
-        def wave_type(self):
+        def function(self):
             """
             Gets/Sets the wave type of this channel.
 
-            :type: `MHS5200.WaveType`
+            :type: `MHS5200.Function`
             """
             query = ":r{0}w".format(self._chan)
             response = self._mhs.query(query).replace(query, "")
-            return self._mhs.WaveType(int(response))
+            return self._mhs.Function(int(response))
 
-        @wave_type.setter
-        def wave_type(self, new_val):
+        @function.setter
+        def function(self, new_val):
             query = ":s{0}w{1}".format(self._chan,
-                                       self._mhs.WaveType(new_val).value)
-            response = self._mhs.query(query)
+                                       self._mhs.Function(new_val).value)
+            self._mhs.sendcmd(query)
 
-    class WaveType(Enum):
+    class Function(Enum):
         """
         Enum containing valid wave modes for
         """
