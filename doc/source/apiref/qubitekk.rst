@@ -14,4 +14,9 @@ Qubitekk
     :members:
     :undoc-members:
     
+:class:`MC1` Motor Controller
+=============================
 
+.. autoclass:: MC1
+    :members:
+    :undoc-members:
