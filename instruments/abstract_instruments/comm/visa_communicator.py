@@ -45,7 +45,8 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         if visa is None:
             raise ImportError("PyVISA required for accessing VISA instruments.")
 
-        version = int(visa.__version__.replace(".", ""))
+        version = int(visa.__version__.replace(".", "").ljust(3, "0"))
+        # pylint: disable=no-member
         if (version < 160 and isinstance(conn, visa.Instrument)) or \
                 (version >= 160 and isinstance(conn, visa.Resource)):
             self._conn = conn
