@@ -25,6 +25,8 @@ default_write_timeout = 10
 
 # TEST CASES ##################################################################
 
+# pylint: disable=protected-access
+
 
 def test_init():
     filelike = LoopbackCommunicator()

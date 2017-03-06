@@ -19,6 +19,8 @@ from instruments.abstract_instruments.comm \
 
 # TEST CASES ##################################################################
 
+# pylint: disable=protected-access
+
 
 def test_comm_init():
     comm = CryomagneticsSerialCommunicator(serial.Serial())
