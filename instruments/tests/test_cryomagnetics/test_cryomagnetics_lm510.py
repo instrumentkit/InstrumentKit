@@ -3,6 +3,7 @@
 Tests the Cryomagnetics LM 510 liquid cryogen level meter
 """
 # IMPORTS #####################################################################
+from __future__ import absolute_import
 
 import quantities as pq
 from nose.tools import eq_

@@ -4,6 +4,8 @@ Implements the cryomagnetics 4G superconducting magnet power supply
 """
 
 # IMPORTS #####################################################################
+from __future__ import absolute_import
+
 import re
 from time import sleep
 

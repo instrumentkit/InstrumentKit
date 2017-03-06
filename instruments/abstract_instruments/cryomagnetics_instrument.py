@@ -6,6 +6,7 @@ Cryomagnetics Instruments are special.
 """
 
 # IMPORTS #####################################################################
+from __future__ import absolute_import
 
 from serial.tools.list_ports import comports
 from serial import SerialException

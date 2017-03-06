@@ -5,6 +5,8 @@ monitor for InstrumentKit
 """
 
 # IMPORTS #####################################################################
+from __future__ import absolute_import
+
 import re
 from threading import Lock
 from time import sleep

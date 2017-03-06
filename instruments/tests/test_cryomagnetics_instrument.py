@@ -4,10 +4,10 @@ Test the cryomagnetics instrument base class
 """
 
 # IMPORTS #####################################################################
+from __future__ import absolute_import
 
 import mock
 from nose.tools import eq_, raises
-import serial
 
 from instruments.abstract_instruments import CryomagneticsInstrument
 from instruments.abstract_instruments.comm import LoopbackCommunicator

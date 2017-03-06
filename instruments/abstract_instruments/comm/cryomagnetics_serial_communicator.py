@@ -8,6 +8,8 @@ to allow proper serial communication to happen
 """
 
 # IMPORTS #####################################################################
+from __future__ import absolute_import
+
 import re
 from threading import Lock
 from instruments.abstract_instruments.comm.serial_communicator \
