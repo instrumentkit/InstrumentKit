@@ -1,4 +1,4 @@
-# -*- codingL utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Extends the instrument class, and overwrites `Instrument.open_serial`, in order
 to use the `CryomagneticsSerialCommunicator`. This needs to be done because
