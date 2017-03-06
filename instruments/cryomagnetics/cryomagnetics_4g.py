@@ -83,8 +83,8 @@ class Cryomagnetics4G(CryomagneticsInstrument):
             magnetic field that was measured
         :rtype: Quantity
         """
-        value_match = re.search("^(\d|\.)*(?=(A|G))", response)
-        unit_match = re.search(".(?=$)", response)
+        value_match = re.search(r"^(\d|\.)*(?=(A|G))", response)
+        unit_match = re.search(r".(?=$)", response)
 
         value = float(value_match.group(0))
         unit = Cryomagnetics4G.UNITS[unit_match.group(0)]

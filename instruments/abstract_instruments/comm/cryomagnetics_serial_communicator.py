@@ -125,9 +125,9 @@ class CryomagneticsSerialCommunicator(SerialCommunicator):
         :raises `RuntimeError` if the response or query cannot be retrieved,
             or if the echoed command does not match the actual device command
         """
-        echoed_command = re.search("^.*(?=\r\n)", response)
+        echoed_command = re.search(r"^.*(?=\r\n)", response)
         response_from_instrument = re.search(
-            "(?<=\r\n).*?(?=\r\n$)", response
+            r"(?<=\r\n).*?(?=\r\n$)", response
         )
 
         if echoed_command is None:

@@ -149,8 +149,8 @@ class CryomagneticsLM510(CryomagneticsInstrument):
         :return: The measured quantity
         :rtype: Quantity
         """
-        value_match = re.search("^(\d|\.)*(?=\s)", response)
-        unit_match = re.search("(?<=\s).*(?=$)", response)
+        value_match = re.search(r"^(\d|\.)*(?=\s)", response)
+        unit_match = re.search(r"(?<=\s).*(?=$)", response)
 
         value = float(value_match.group(0))
         unit = CryomagneticsLM510.UNITS[unit_match.group(0)]
