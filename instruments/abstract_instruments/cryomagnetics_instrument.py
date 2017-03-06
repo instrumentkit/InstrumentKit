@@ -27,6 +27,7 @@ class CryomagneticsInstrument(Instrument):
     def __init__(self, filelike):
         Instrument.__init__(self, filelike)
 
+    # pylint: disable=too-many-arguments
     @classmethod
     def open_serial(cls, port=None, baud=9600, vid=None, pid=None,
                     serial_number=None, timeout=3, write_timeout=3):

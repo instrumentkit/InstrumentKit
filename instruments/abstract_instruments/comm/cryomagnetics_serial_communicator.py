@@ -70,6 +70,22 @@ class CryomagneticsSerialCommunicator(SerialCommunicator):
         """
         self._maximum_message_size = new_size
 
+    def seek(self, offset):
+        """
+        Go to a particular point in the data stream. This is not implemented
+        in this communicator
+
+        :param offset: The amount of bytes to fast forward
+        """
+        raise NotImplementedError
+
+    def tell(self):
+        """
+        Get the current positional offset for the data stream. This is not
+        implemented in this communicator
+        """
+        raise NotImplementedError
+
     def _query(self, msg, size=-1):
         """
         This is the implementation of ``query`` for communicating with

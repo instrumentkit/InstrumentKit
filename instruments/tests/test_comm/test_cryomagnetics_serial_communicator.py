@@ -7,10 +7,11 @@ Unit tests for the Cryomagnetics serial communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
 from threading import Lock
+
 import mock
 import serial
+from nose.tools import raises, eq_
 
 from instruments.abstract_instruments.comm \
     import SerialCommunicator
