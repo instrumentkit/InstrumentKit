@@ -11,6 +11,7 @@ to allow proper serial communication to happen
 from __future__ import absolute_import
 
 import re
+from contextlib import contextmanager
 from threading import Lock
 from instruments.abstract_instruments.comm.serial_communicator \
         import SerialCommunicator
@@ -103,13 +104,12 @@ class CryomagneticsSerialCommunicator(SerialCommunicator):
         :rtype: `str`
         """
         size_to_read = self._get_required_message_size(size)
-
-        self._querying_lock.acquire()
         self.terminator = '\r'
-        self.write(msg + self.terminator)
-        self.terminator = '\r\n'
-        response = self.read(size=size_to_read)
-        self._querying_lock.release()
+
+        with self._context_managed_query_lock():
+            self.write(msg + self.terminator)
+            self.terminator = '\r\n'
+            response = self.read(size=size_to_read)
 
         return self._parse_query(msg, response)
 
@@ -165,3 +165,16 @@ class CryomagneticsSerialCommunicator(SerialCommunicator):
             )
 
         return response_from_instrument.group(0)
+
+    @contextmanager
+    def _context_managed_query_lock(self):
+        """
+        Wraps the querying lock in a context manager. This ensures that the
+        lock is always released, preventing exceptions from creating
+        instrument deadlocks.
+        """
+        self._querying_lock.acquire()
+        try:
+            yield
+        finally:
+            self._querying_lock.release()

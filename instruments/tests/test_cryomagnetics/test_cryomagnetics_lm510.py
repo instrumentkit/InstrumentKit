@@ -63,13 +63,13 @@ def test_channel_1_data_ready():
     with expected_protocol(
         CryomagneticsLM510,
         [
-            "*STB?",
+            "*STB?"
         ],
         [
             chr(17)
         ]
     ) as inst:
-        assert inst.channel_1_data_ready is True
+        assert inst.channel[0].data_ready is True
 
 
 def test_channel_2_data_ready():
@@ -79,13 +79,13 @@ def test_channel_2_data_ready():
             "*STB?"
         ],
         [
-            "5"
+            chr(4)
         ]
     ) as inst:
-        assert inst.channel_2_data_ready is True
+        assert inst.channel[1].data_ready is True
 
 
-def test_channel_1_measurement():
+def test_channel_1_measurement_data_selector():
     with expected_protocol(
         CryomagneticsLM510,
         [
@@ -97,11 +97,11 @@ def test_channel_1_measurement():
     ) as inst:
         eq_(
             5.42 * pq.cm,
-            inst.channel_1_measurement
+            inst.channel[0].measurement
         )
 
 
-def test_channel_2_measurement():
+def test_channel_2_measurement_data_selector():
     with expected_protocol(
         CryomagneticsLM510,
         [
@@ -113,7 +113,7 @@ def test_channel_2_measurement():
     ) as inst:
         eq_(
             102.321 * pq.cm,
-            inst.channel_2_measurement
+            inst.channel[1].measurement
         )
 
 

@@ -10,6 +10,7 @@ from __future__ import absolute_import
 import re
 from threading import Lock
 from time import sleep
+from contextlib import contextmanager
 
 import quantities as pq
 
@@ -24,8 +25,7 @@ class CryomagneticsLM510(CryomagneticsInstrument):
     """
     CHANNELS = {1, 2}
 
-    channel_measurement_lock = Lock()  # type: Lock
-    querying_lock = Lock()  # type: Lock
+    _channel_measurement_lock = Lock()  # type: Lock
 
     measurement_timeout = 1
 
@@ -59,9 +59,10 @@ class CryomagneticsLM510(CryomagneticsInstrument):
         set of allowed channels defined in ``CHANNELS``
         """
         if channel not in self.CHANNELS:
-            raise ValueError("Attempted to set channel to %s. Channel must "
-                             "be an integer of either 1 or 2", channel)
-        command = "CHAN %d" % channel
+            raise ValueError(
+                "Attempted to set channel to {0}. Channel must "
+                "be an integer of either 1 or 2".format(channel))
+        command = "CHAN {0}".format(channel)
         self.query(command)
 
     @property
@@ -79,45 +80,13 @@ class CryomagneticsLM510(CryomagneticsInstrument):
         return byte_as_string.encode('ascii')
 
     @property
-    def channel_1_data_ready(self):
+    def channel(self):
         """
 
-        :return: ``True`` if channel 1 is ready to measure, otherwise ``False``
-        :rtype: bool
+        :return: The measurement channels for levels available to the level
+        meter.
         """
-        status_byte = self.status_byte
-        return (int(status_byte[0]) & 1) > 0
-
-    @property
-    def channel_2_data_ready(self):
-        """
-
-        :return: ``True`` if channel 2 is ready to measure, otherwise ``False``
-        :rtype: bool
-        """
-        status_byte = self.status_byte
-        return (int(status_byte[0]) & 4) > 0
-
-    @property
-    def channel_1_measurement(self):
-        """
-        Make a measurement on channel 1
-
-        :return: The level of the cryogen.
-        :rtype: Quantity
-        """
-        return self._measurement(1)
-
-    @property
-    def channel_2_measurement(self):
-        """
-        Make a measurement on channel 2
-
-        :return: The level of cryogen measured by the probe connected to
-            channel 2 in the meter
-        :rtype: Quantity
-        """
-        return self._measurement(2)
+        return self._Channel(1, self), self._Channel(2, self)
 
     def reset(self):
         """
@@ -125,44 +94,27 @@ class CryomagneticsLM510(CryomagneticsInstrument):
         """
         self.query("*RST")
 
-    def _measurement(self, channel_number):
+    @contextmanager
+    def context_managed_measuring_lock(self):
         """
-        Make a measurement on a particular channel
+        Acquire the lock, and yield to the next function. Upon entry back
+        into the function, release the channel measurement lock, no matter
+        what exception was thrown in the process.
 
-        :param int channel_number: The channel on which the measurement is
-            to be made
-        :return: The measured value on that channel
-        :rtype: Quantity
+        This method prevents exceptions from creating hardware deadlocks.
+        It is the recommended way to isolate channels during measurement.
         """
-        measurer = self._ChannelMeasurement(channel_number, self)
-        response = measurer.measurement
+        self._channel_measurement_lock.acquire()
+        try:
+            yield
+        finally:
+            self._channel_measurement_lock.release()
 
-        return self.parse_response(response)
-
-    @staticmethod
-    def parse_response(response):
+    class _Channel(object):
         """
-        Extract the value and unit in which the response was returned,
-        and match these values to a physical quantity
-
-        :param str response: The response returned by making a measurement
-        :return: The measured quantity
-        :rtype: Quantity
-        """
-        value_match = re.search(r"^(\d|\.)*(?=\s)", response)
-        unit_match = re.search(r"(?<=\s).*(?=$)", response)
-
-        value = float(value_match.group(0))
-        unit = CryomagneticsLM510.UNITS[unit_match.group(0)]
-
-        return_value = value * unit
-
-        return return_value
-
-    class _ChannelMeasurement(object):
-        """
-        Prepares a measurement of a channel, and returns a string stating
-        what the measurement was.
+        Contains methods for working with a single measurement channel on
+        the level meter. This class is meant to be accessed using the
+        ``channel`` property in `CryomagneticsLM510`
         """
 
         def __init__(
@@ -174,20 +126,81 @@ class CryomagneticsLM510(CryomagneticsInstrument):
                 Must be 1 or 2
             :param Instrument instrument: the managed instrument
             """
-            self.channel = channel_number
+            self._check_channel_number(channel_number)
+            self.measurement_channel = channel_number
             self.instrument = instrument
+
+        @property
+        def data_ready(self):
+            """
+
+            :return: ``True`` if data is ready to be measured from the
+                channel, otherwise ``False``.
+            :raises: `RuntimeError` if the device measurement channel is not
+                ``1`` or ``2``
+
+            .. note::
+                The variable ``data_ready_bit_index`` is used to take a
+                bitwise ``&`` with the instrument status byte, in order to
+                obtain the value of the correct bit to indicate whether the
+                bit is ready or not.
+            """
+            status_byte = self.instrument.status_byte
+            if self.measurement_channel == 1:
+                data_ready_bit_index = 1
+            elif self.measurement_channel == 2:
+                data_ready_bit_index = 4
+            else:
+                raise RuntimeError(
+                    "The channel was not 1 or 2. This is not allowed"
+                )
+
+            return (int(status_byte[0]) & data_ready_bit_index) > 0
 
         @property
         def measurement(self):
             """
 
-            :return: The string returned from the level measurement
-            :rtype: str
+            :return: The measured value of the level of cryogen
+            :rtype: Quantity
             """
-            self.instrument.channel_measurement_lock.acquire()
-            sleep(self.instrument.measurement_timeout)
+            with self.instrument.context_managed_measuring_lock():
+                sleep(self.instrument.measurement_timeout)
+                response = self.instrument.query(
+                    "MEAS? {0}".format(self.measurement_channel)
+                )
 
-            response = self.instrument.query("MEAS? %d" % self.channel)
+            return self.parse_response(response)
 
-            self.instrument.channel_measurement_lock.release()
-            return response
+        @staticmethod
+        def _check_channel_number(channel_number):
+            """
+            Check that the channel number is 1 or 2. If it isn't, throw a
+            `RuntimeError`
+
+            :param int channel_number: The number to check
+            """
+            if channel_number not in CryomagneticsLM510.CHANNELS:
+                raise RuntimeError(
+                    "The channel number of {0} is not a member of the "
+                    "allowed channel set {1}".format(
+                        channel_number, CryomagneticsLM510.CHANNELS)
+                )
+
+        @staticmethod
+        def parse_response(response):
+            """
+            Extract the value and unit in which the response was returned,
+            and match these values to a physical quantity
+
+            :param str response: The response returned by making a measurement
+            :return: The measured quantity
+            :rtype: Quantity
+            """
+            value_match = re.search(r"^(\d|\.)*(?=\s)", response)
+            unit_match = re.search(r"(?<=\s).*(?=$)", response)
+
+            value = float(value_match.group(0))
+            unit = CryomagneticsLM510.UNITS[unit_match.group(0)]
+
+            return value * unit
