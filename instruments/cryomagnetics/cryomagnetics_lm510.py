@@ -86,7 +86,7 @@ class CryomagneticsLM510(CryomagneticsInstrument):
         :return: The measurement channels for levels available to the level
         meter.
         """
-        return self._Channel(1, self), self._Channel(2, self)
+        return self.Channel(1, self), self.Channel(2, self)
 
     def reset(self):
         """
@@ -110,7 +110,7 @@ class CryomagneticsLM510(CryomagneticsInstrument):
         finally:
             self._channel_measurement_lock.release()
 
-    class _Channel(object):
+    class Channel(object):
         """
         Contains methods for working with a single measurement channel on
         the level meter. This class is meant to be accessed using the
