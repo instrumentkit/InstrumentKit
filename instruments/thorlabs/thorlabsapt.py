@@ -476,6 +476,13 @@ class APTMotorController(ThorLabsAPT):
                 'FW103':  (pq.Quantity(25600 / 360, 'ct/deg'),) * 3,
                 'NR360':  (pq.Quantity(25600 / 5.4546, 'ct/deg'),) * 3
             },
+
+            re.compile('[TK]DC001'): {
+                'MTS25-Z8': (1 / pq.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
+                'MTS50-Z8': (1 / pq.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
+                # TODO: Z8xx and Z6xx models. Need to add regex support to motor models, too.
+                'PRM1-Z8': (1 / pq.Quantity(1919.64, 'deg/ct'), NotImplemented, NotImplemented),
+            }
             # TODO: add other tables here.
         }
 
