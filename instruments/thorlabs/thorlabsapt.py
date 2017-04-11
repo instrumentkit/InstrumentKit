@@ -18,6 +18,7 @@ from builtins import range
 import quantities as pq
 
 from instruments.thorlabs import _abstract, _packets, _cmds
+from instruments.util_fns import assume_units
 
 # LOGGING #####################################################################
 
@@ -463,6 +464,8 @@ class APTMotorController(ThorLabsAPT):
         #: For more details, see the APT protocol documentation.
         scale_factors = (pq.Quantity(1, 'dimensionless'), ) * 3
 
+        _motion_timeout = pq.Quantity(10, 'second')
+
         __SCALE_FACTORS_BY_MODEL = {
             # TODO: add other tables here.
             re.compile('TST001|BSC00.|BSC10.|MST601'): {
@@ -478,11 +481,11 @@ class APTMotorController(ThorLabsAPT):
                 'NR360':  (pq.Quantity(25600 / 5.4546, 'ct/deg'),) * 3
             },
 
-            re.compile('[TK]DC001'): {
+            re.compile('TDC001|KDC101'): {
                 'MTS25-Z8': (1 / pq.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
                 'MTS50-Z8': (1 / pq.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
                 # TODO: Z8xx and Z6xx models. Need to add regex support to motor models, too.
-                'PRM1-Z8': (1 / pq.Quantity(1919.64, 'deg/ct'), NotImplemented, NotImplemented),
+                'PRM1-Z8': (pq.Quantity(1919.64, 'ct/deg'), NotImplemented, NotImplemented),
             }
         }
 
@@ -500,6 +503,17 @@ class APTMotorController(ThorLabsAPT):
             'HOMING_COMPLETE':      0x00000400,
             'INTERLOCK_STATE':      0x00001000
         }
+
+        # IK-SPECIFIC PROPERTIES #
+        # These properties don't correspond to any particular functionality
+        # of the underlying device, but control how we interact with it.
+
+        @property
+        def motion_timeout(self):
+            return self._motion_timeout
+        @motion_timeout.setter
+        def motion_timeout(self, newval):
+            self._motion_timeout = assume_units(newval, pq.second)
 
         # UNIT CONVERSION METHODS #
 
@@ -613,7 +627,10 @@ class APTMotorController(ThorLabsAPT):
                 source=0x01,
                 data=None
             )
-            self._apt.sendpacket(pkt)
+            _ = self._apt.querypacket(pkt,
+                expect=_cmds.ThorLabsCommands.MOT_MOVE_HOMED,
+                timeout=self.motion_timeout
+            )
 
         def move(self, pos, absolute=True):
             """
@@ -662,7 +679,8 @@ class APTMotorController(ThorLabsAPT):
 
             _ = self._apt.querypacket(
                 pkt,
-                expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED
+                expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED,
+                timeout=self.motion_timeout
             )
 
     _channel_type = MotorChannel
