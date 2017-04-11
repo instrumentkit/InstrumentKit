@@ -464,6 +464,7 @@ class APTMotorController(ThorLabsAPT):
         scale_factors = (pq.Quantity(1, 'dimensionless'), ) * 3
 
         __SCALE_FACTORS_BY_MODEL = {
+            # TODO: add other tables here.
             re.compile('TST001|BSC00.|BSC10.|MST601'): {
                 # Note that for these drivers, the scale factors are identical
                 # for position, velcoity and acceleration. This is not true for
@@ -483,7 +484,6 @@ class APTMotorController(ThorLabsAPT):
                 # TODO: Z8xx and Z6xx models. Need to add regex support to motor models, too.
                 'PRM1-Z8': (1 / pq.Quantity(1919.64, 'deg/ct'), NotImplemented, NotImplemented),
             }
-            # TODO: add other tables here.
         }
 
         __STATUS_BIT_MASK = {
