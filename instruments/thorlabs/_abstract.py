@@ -35,7 +35,7 @@ class ThorLabsInstrument(Instrument):
         :param packet: The thorlabs data packet that will be queried
         :type packet: `ThorLabsPacket`
         """
-        self.sendcmd(packet.pack())
+        self._file.write_raw(packet.pack())
 
     # pylint: disable=protected-access
     def querypacket(self, packet, expect=None):
@@ -56,7 +56,8 @@ class ThorLabsInstrument(Instrument):
             a thorlabs packet
         :rtype: `ThorLabsPacket`
         """
-        resp = self.query(packet.pack())
+        self._file.write_raw(packet.pack())
+        resp = self._file.read_raw()
         if not resp:
             if expect is None:
                 return None

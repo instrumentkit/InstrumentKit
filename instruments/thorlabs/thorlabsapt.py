@@ -12,6 +12,7 @@ from __future__ import division
 import re
 import struct
 import logging
+import codecs
 
 from builtins import range
 import quantities as pq
@@ -109,11 +110,10 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             hw_info = self.querypacket(
                 req_packet, expect=_cmds.ThorLabsCommands.HW_GET_INFO)
 
-            self._serial_number = str(hw_info.data[0:4]).encode('hex')
-            self._model_number = str(
-                hw_info.data[4:12]).replace('\x00', '').strip()
+            self._serial_number = codecs.encode(hw_info.data[0:4], 'hex').decode('ascii')
+            self._model_number = hw_info.data[4:12].decode('ascii').replace('\x00', '').strip()
 
-            hw_type_int = struct.unpack('<H', str(hw_info.data[12:14]))[0]
+            hw_type_int = struct.unpack('<H', hw_info.data[12:14])[0]
             if hw_type_int == 45:
                 self._hw_type = 'Multi-channel controller motherboard'
             elif hw_type_int == 44:
@@ -125,16 +125,16 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             # three bytes and format them.
             # pylint: disable=invalid-format-index
             self._fw_version = "{0[0]}.{0[1]}.{0[2]}".format(
-                str(hw_info.data[14:18]).encode('hex')
+                codecs.encode(hw_info.data[14:18], 'hex')
             )
             self._notes = str(hw_info.data[18:66]).replace('\x00', '').strip()
 
             self._hw_version = struct.unpack(
-                '<H', str(hw_info.data[78:80]))[0]
+                '<H', hw_info.data[78:80])[0]
             self._mod_state = struct.unpack(
-                '<H', str(hw_info.data[80:82]))[0]
+                '<H', hw_info.data[80:82])[0]
             self._n_channels = struct.unpack(
-                '<H', str(hw_info.data[82:84]))[0]
+                '<H', hw_info.data[82:84])[0]
         except IOError as e:
             logger.error("Exception occured while fetching hardware info: %s", e)
 

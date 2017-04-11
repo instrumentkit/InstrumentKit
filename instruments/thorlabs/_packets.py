@@ -166,7 +166,7 @@ ThorLabs APT packet:
 
         # Check if 0x80 is set on header byte 4. If so, then this packet
         # has data.
-        if struct.unpack("B", header[4])[0] & 0x80:
+        if struct.unpack("B", header[4:5])[0] & 0x80:
             msg_id, length, dest, source = message_header_wpacket.unpack(
                 header)
             dest = dest ^ 0x80  # Turn off 0x80.
