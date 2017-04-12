@@ -10,9 +10,9 @@ from __future__ import absolute_import, unicode_literals
 
 from io import StringIO
 
-import quantities as pq
-
 from unittest import skipIf
+
+import quantities as pq
 
 try:
     import yaml
