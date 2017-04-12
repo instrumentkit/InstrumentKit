@@ -520,6 +520,9 @@ class APTMotorController(ThorLabsAPT):
             logger.warning("Scale factors for controller %s and motor %s are "
                            "unknown", self._apt.model_number, motor_model)
 
+        # We copy the docstring below, so it's OK for this method
+        # to not have a docstring of its own.
+        # pylint: disable=missing-docstring
         def set_scale(self, motor_model):
             warnings.warn(
                 "The set_scale method has been deprecated in favor "
@@ -542,12 +545,12 @@ class APTMotorController(ThorLabsAPT):
             :type: `str` or `None`
             """
             return self._motor_model
-        
+
         @motor_model.setter
         def motor_model(self, newval):
             self._set_scale(newval)
             self._motor_model = newval
-        
+
 
         # MOTOR COMMANDS #
 
