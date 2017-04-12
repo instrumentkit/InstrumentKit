@@ -16,6 +16,8 @@ try:
 except ImportError:
     yaml = None
 
+from instruments.util_fns import setattr_expression
+
 # FUNCTIONS ###################################################################
 
 
@@ -114,13 +116,7 @@ def load_instruments(conf_file_name, conf_path="/"):
             if 'attrs' in value:
                 # We have some attrs we can set on the newly created instrument.
                 for attr_name, attr_value in value['attrs'].items():
-                    # Allow "." in attribute names so that we can set attributes
-                    # recursively.
-                    target = inst_dict[name]
-                    while '.' in attr_name:
-                        head, attr_name = attr_name.split('.', 1)
-                        target = getattr(target, head)
-                    setattr(target, attr_name, attr_value)
+                    setattr_expression(inst_dict[name], attr_name, attr_value)
 
         except IOError as ex:
             # FIXME: need to subclass Warning so that repeated warnings
