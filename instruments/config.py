@@ -16,6 +16,8 @@ try:
 except ImportError:
     yaml = None
 
+import quantities as pq
+
 from instruments.util_fns import setattr_expression
 
 # FUNCTIONS ###################################################################
@@ -48,6 +50,11 @@ def walk_dict(d, path):
         # Otherwise, resolve that segment and recurse.
         return walk_dict(d[path[0]], path[1:])
 
+def quantity_constructor(loader, node):
+    # Follows the example of http://stackoverflow.com/a/43081967/267841.
+    value = loader.construct_scalar(node)
+    magnitude, units = value.split(" ", 1)
+    return pq.Quantity(magnitude, units)
 
 def load_instruments(conf_file_name, conf_path="/"):
     """
@@ -75,6 +82,16 @@ def load_instruments(conf_file_name, conf_path="/"):
             uri: serial:///dev/ttyUSB0?baud=115200
             attrs:
                 channel[0].motor_model: PRM1-Z8
+
+    Unitful attributes can be specified by using the ``!Q`` tag to quickly create
+    instances of `pq.Quantity`. In the example above, for instance, we can set a motion
+    timeout as a unitful quantity::
+
+        attrs:
+            motion_timeout: !Q 1 minute
+
+    When using the ``!Q`` tag, any text before a space is taken to be the magnitude
+    of the quantity, and text following is taken to be the unit specification.
 
     By specifying a path within the configuration file, one can load only a part
     of the given file. For instance, consider the configuration::
@@ -110,6 +127,8 @@ def load_instruments(conf_file_name, conf_path="/"):
     if yaml is None:
         raise ImportError("Could not import PyYAML, which is required "
                           "for this function.")
+    # Add support for the physical quantity tag.
+    yaml.add_constructor(u'!Q', quantity_constructor)
 
     if isinstance(conf_file_name, (str, unicode)):
         with open(conf_file_name, 'r') as f:
