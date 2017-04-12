@@ -20,7 +20,7 @@ import quantities as pq
 
 from future.builtins import str
 
-from instruments.util_fns import setattr_expression
+from instruments.util_fns import setattr_expression, split_unit_str
 
 # FUNCTIONS ###################################################################
 
@@ -43,8 +43,9 @@ def walk_dict(d, path):
     # Treat as a base case that the path is empty.
     if not path:
         return d
-    if isinstance(path, str):
+    if not isinstance(path, list):
         path = path.split("/")
+
     if not path[0]:
         # If the first part of the path is empty, do nothing.
         return walk_dict(d, path[1:])
@@ -59,8 +60,12 @@ def quantity_constructor(loader, node):
     """
     # Follows the example of http://stackoverflow.com/a/43081967/267841.
     value = loader.construct_scalar(node)
-    magnitude, units = value.split(" ", 1)
-    return pq.Quantity(magnitude, units)
+    return pq.Quantity(*split_unit_str(value))
+
+# We avoid having to register !Q every time by doing as soon as the
+# relevant constructor is defined.
+if yaml:
+    yaml.add_constructor(u'!Q', quantity_constructor)
 
 def load_instruments(conf_file_name, conf_path="/"):
     """
@@ -133,8 +138,6 @@ def load_instruments(conf_file_name, conf_path="/"):
     if yaml is None:
         raise ImportError("Could not import PyYAML, which is required "
                           "for this function.")
-    # Add support for the physical quantity tag.
-    yaml.add_constructor(u'!Q', quantity_constructor)
 
     if isinstance(conf_file_name, str):
         with open(conf_file_name, 'r') as f:
