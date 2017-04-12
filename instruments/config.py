@@ -78,7 +78,7 @@ def load_instruments(conf_file_name, conf_path="/"):
     all other keys in the YAML file.
 
     :param str conf_file_name: Name of the configuration file to load
-        instruments from.
+        instruments from. Alternatively, a file-like object may be provided.
     :param str conf_path: ``"/"`` separated path to the section in the
         configuration file to load.
 
@@ -98,20 +98,36 @@ def load_instruments(conf_file_name, conf_path="/"):
         raise ImportError("Could not import PyYAML, which is required "
                           "for this function.")
 
-    with open(conf_file_name, 'r') as f:
-        conf_dict = yaml.load(f)
+    if isinstance(conf_file_name, (str, unicode)):
+        with open(conf_file_name, 'r') as f:
+            conf_dict = yaml.load(f)
+    else:
+        conf_dict = yaml.load(conf_file_name)
 
     conf_dict = walk_dict(conf_dict, conf_path)
 
     inst_dict = {}
-    for name, value in conf_dict.iteritems():
+    for name, value in conf_dict.items():
         try:
             inst_dict[name] = value["class"].open_from_uri(value["uri"])
+
+            if 'attrs' in value:
+                # We have some attrs we can set on the newly created instrument.
+                for attr_name, attr_value in value['attrs'].items():
+                    # Allow "." in attribute names so that we can set attributes
+                    # recursively.
+                    target = inst_dict[name]
+                    while '.' in attr_name:
+                        head, attr_name = attr_name.split('.', 1)
+                        target = getattr(target, head)
+                    setattr(target, attr_name, attr_value)
+
         except IOError as ex:
             # FIXME: need to subclass Warning so that repeated warnings
             #        aren't ignored.
-            warnings.warn("Exception occured loading device URI "
+            warnings.warn("Exception occured loading device with URI "
                           "{}:\n\t{}.".format(value["uri"], ex), RuntimeWarning)
             inst_dict[name] = None
+
 
     return inst_dict
