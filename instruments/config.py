@@ -18,6 +18,8 @@ except ImportError:
 
 import quantities as pq
 
+from future.builtins import str
+
 from instruments.util_fns import setattr_expression
 
 # FUNCTIONS ###################################################################
@@ -51,6 +53,10 @@ def walk_dict(d, path):
         return walk_dict(d[path[0]], path[1:])
 
 def quantity_constructor(loader, node):
+    """
+    Constructs a `pq.Quantity` instance from a PyYAML
+    node tagged as ``!Q``.
+    """
     # Follows the example of http://stackoverflow.com/a/43081967/267841.
     value = loader.construct_scalar(node)
     magnitude, units = value.split(" ", 1)
@@ -130,7 +136,7 @@ def load_instruments(conf_file_name, conf_path="/"):
     # Add support for the physical quantity tag.
     yaml.add_constructor(u'!Q', quantity_constructor)
 
-    if isinstance(conf_file_name, (str, unicode)):
+    if isinstance(conf_file_name, str):
         with open(conf_file_name, 'r') as f:
             conf_dict = yaml.load(f)
     else:
