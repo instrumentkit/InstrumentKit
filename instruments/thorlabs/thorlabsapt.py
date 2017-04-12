@@ -13,6 +13,7 @@ import re
 import struct
 import logging
 import codecs
+import warnings
 
 from builtins import range
 import quantities as pq
@@ -444,6 +445,8 @@ class APTMotorController(ThorLabsAPT):
 
         # INSTANCE VARIABLES #
 
+        _motor_model = None
+
         #: Sets the scale between the encoder counts and physical units
         #: for the position, velocity and acceleration parameters of this
         #: channel. By default, set to dimensionless, indicating that the proper
@@ -517,7 +520,7 @@ class APTMotorController(ThorLabsAPT):
 
         # UNIT CONVERSION METHODS #
 
-        def set_scale(self, motor_model):
+        def _set_scale(self, motor_model):
             """
             Sets the scale factors for this motor channel, based on the model
             of the attached motor and the specifications of the driver of which
@@ -537,6 +540,35 @@ class APTMotorController(ThorLabsAPT):
             # model.
             logger.warning("Scale factors for controller %s and motor %s are "
                            "unknown", self._apt.model_number, motor_model)
+
+        def set_scale(self, motor_model):
+            warnings.warn(
+                "The set_scale method has been deprecated in favor "
+                "of the motor_model property.",
+                DeprecationWarning
+            )
+            return self._set_scale(motor_model)
+
+        set_scale.__doc__ = _set_scale.__doc__
+
+        @property
+        def motor_model(self):
+            """
+            Gets or sets the model name of the attached motor.
+            Note that the scale factors for this motor channel are based on the model
+            of the attached motor and the specifications of the driver of which
+            this is a channel, such that setting a new motor model will update
+            the scale factors accordingly.
+
+            :type: `str` or `None`
+            """
+            return self._motor_model
+        
+        @motor_model.setter
+        def motor_model(self, newval):
+            self._set_scale(newval)
+            self._motor_model = newval
+        
 
         # MOTOR COMMANDS #
 
