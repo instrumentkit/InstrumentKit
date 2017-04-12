@@ -65,6 +65,17 @@ def load_instruments(conf_file_name, conf_path="/"):
     the form
     ``{'ddg': instruments.srs.SRSDG645.open_from_uri('gpib+usb://COM7/15')}``.
 
+    Optionally, each the value of each instrument key can also contain a dictionary
+    of attributes to set on the newly-created instrument. For instance, the following
+    dictionary creates a ThorLabs APT motor controller instrument with a single motor
+    model configured::
+
+        rot_stage:
+            class: !!python/name:instruments.thorabsapt.APTMotorController
+            uri: serial:///dev/ttyUSB0?baud=115200
+            attrs:
+                channel[0].motor_model: PRM1-Z8
+
     By specifying a path within the configuration file, one can load only a part
     of the given file. For instance, consider the configuration::
 
