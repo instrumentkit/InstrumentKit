@@ -212,4 +212,3 @@ def test_setattr_expression_both():
     a = A()
     setattr_expression(a, 'b[0].x', 'foo')
     assert a.b[0].x == 'foo'
-
