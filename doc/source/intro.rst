@@ -36,7 +36,7 @@ $ pip install -r requirements.txt
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
-- `PyYAML`_ (required for configuration file support)
+- `ruamel.yaml`_ (required for configuration file support)
 - `PyUSB`_ (version 1.0a or higher, required for raw USB support)
 - `PyVISA`_ (required for accessing instruments via VISA library)
 
@@ -44,7 +44,7 @@ Optional Dependencies
 .. _quantities: http://pythonhosted.org/quantities/
 .. _enum34: https://pypi.python.org/pypi/enum34
 .. _future: https://pypi.python.org/pypi/future
-.. _PyYAML: https://bitbucket.org/xi/pyyaml
+.. _ruamel.yaml: http://yaml.readthedocs.io
 .. _PyUSB: http://sourceforge.net/apps/trac/pyusb/
 .. _PyVISA: http://pyvisa.sourceforge.net/
 
