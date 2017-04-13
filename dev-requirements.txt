@@ -1,3 +1,4 @@
 mock
 nose
 pylint
+ruamel.yaml
