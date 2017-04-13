@@ -86,8 +86,9 @@ def load_instruments(conf_file_name, conf_path="/"):
     the form
     ``{'ddg': instruments.srs.SRSDG645.open_from_uri('gpib+usb://COM7/15')}``.
 
-    Optionally, each the value of each instrument key can also contain a dictionary
-    of attributes to set on the newly-created instrument. For instance, the following
+    Each instrument configuration section can also specify one or more attributes
+    to set. These attributes are specified using a ``attrs`` section as well as the
+    required ``class`` and ``uri`` sections. For instance, the following
     dictionary creates a ThorLabs APT motor controller instrument with a single motor
     model configured::
 
