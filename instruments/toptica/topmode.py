@@ -12,14 +12,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
-from builtins import range
+from builtins import range, map
 from enum import IntEnum
-
 import quantities as pq
 
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
 from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
-
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import ProxyList
 
@@ -43,11 +41,15 @@ class TopMode(Instrument):
     def __init__(self, filelike):
         super(TopMode, self).__init__(filelike)
         self.prompt = "> "
-        self._ack_expected = self._return_msg
-        self.terminator = "\n"
+        self.terminator = "\r\n"
 
-    def _return_msg(self, msg=""): # pylint: disable=no-self-use
-        return msg+"\r"
+    def _ack_expected(self, msg=""):
+        if "reboot" in msg:
+            return [msg, "reboot process started."]
+        elif "start-correction" in msg:
+            return [msg, "()"]
+        else:
+            return msg
 
     # ENUMS #
 
@@ -133,9 +135,24 @@ class TopMode(Instrument):
         @enable.setter
         def enable(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError(
-                    "Laser emmission must be a boolean, got: {}".format(newval))
+                raise TypeError("Emission status must be a boolean, got: "
+                                "{}".format(type(newval)))
+            if not self.is_connected:
+                raise RuntimeError("Laser was not recognized by charm "
+                                   "controller. Is it plugged in?")
             self.parent.set(self.name + ":enable-emission", newval)
+
+        @property
+        def is_connected(self):
+            """
+            Check whether a laser is connected.
+
+            :return: Whether the controller successfully connected to a laser
+            :type: `bool`
+            """
+            if self.serial_number == 'unknown':
+                return False
+            return True
 
         @property
         def on_time(self):
@@ -210,7 +227,8 @@ class TopMode(Instrument):
             :return: Mode-hop status of the specified laser
             :type: `bool`
             """
-            return ctbool(self.parent.reference(self.name + ":charm:reg:mh-occured"))
+            response = self.parent.reference(self.name + ":charm:reg:mh-occurred")
+            return ctbool(response)
 
         @property
         def lock_start(self):
@@ -220,7 +238,15 @@ class TopMode(Instrument):
             :return: The datetime of start of mode-locking for specified laser
             :type: `datetime`
             """
-            return ctdate(self.parent.reference(self.name + ":charm:reg:started"))
+            # if mode locking has not started yet, the device will respond with
+            # an empty date string. This causes a problem with ctdate.
+            _corr_stat = self.correction_status
+            if _corr_stat == TopMode.CharmStatus.un_initialized \
+                    or _corr_stat == TopMode.CharmStatus.failure:
+                raise RuntimeError("Laser has not yet successfully locked")
+
+            response = self.parent.reference(self.name + ":charm:reg:started")
+            return ctdate(response)
 
         @property
         def first_mode_hop_time(self):
@@ -230,7 +256,13 @@ class TopMode(Instrument):
             :return: The datetime of the first mode hop for the specified laser
             :type: `datetime`
             """
-            return ctdate(self.parent.reference(self.name + ":charm:reg:first-mh"))
+            # if the mode has not hopped, the device will respond with an empty
+            # date string. This causes a problem with ctdate.
+            if not self.mode_hop:
+                raise RuntimeError("Mode hop not detected")
+            response = self.parent.reference(self.name + ":charm:reg:first-mh")
+
+            return ctdate(response)
 
         @property
         def latest_mode_hop_time(self):
@@ -241,7 +273,12 @@ class TopMode(Instrument):
                 specified laser
             :type: `datetime`
             """
-            return ctdate(self.parent.reference(self.name + ":charm:reg:latest-mh"))
+            # if the mode has not hopped, the device will respond with an empty
+            # date string. This causes a problem with ctdate.
+            if not self.mode_hop:
+                raise RuntimeError("Mode hop not detected")
+            response = self.parent.reference(self.name + ":charm:reg:latest-mh")
+            return ctdate(response)
 
         @property
         def correction_status(self):
@@ -251,8 +288,7 @@ class TopMode(Instrument):
             :return: The correction status of the specified laser
             :type: `~TopMode.CharmStatus`
             """
-            value = self.parent.reference(
-                self.name + ":charm:correction-status")
+            value = self.parent.reference(self.name + ":charm:correction-status")
             return TopMode.CharmStatus(int(value))
 
         # METHODS #
@@ -262,8 +298,7 @@ class TopMode(Instrument):
             Run the correction against the specified laser
             """
             if self.correction_status == TopMode.CharmStatus.un_initialized:
-                self.parent.execute(
-                    self.name + ":charm:start-correction-initial")
+                self.parent.execute(self.name + ":charm:start-correction-initial")
             else:
                 self.parent.execute(self.name + ":charm:start-correction")
 
@@ -292,8 +327,7 @@ class TopMode(Instrument):
         if isinstance(value, str):
             self.query("(param-set! '{} \"{}\")".format(param, value))
         elif isinstance(value, tuple) or isinstance(value, list):
-            self.query(
-                "(param-set! '{} '({}))".format(param, " ".join(value)))
+            self.query("(param-set! '{} '({}))".format(param, " ".join(value)))
         elif isinstance(value, bool):
             value = "t" if value else "f"
             self.query("(param-set! '{} #{})".format(param, value))
@@ -307,7 +341,8 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        return self.query("(param-ref '{})".format(param))
+        response = self.query("(param-ref '{})".format(param)).replace("\"", "")
+        return response
 
     def display(self, param):
         """
@@ -373,6 +408,17 @@ class TopMode(Instrument):
         return ctbool(self.reference("interlock-open"))
 
     @property
+    def firmware(self):
+        """
+        Gets the firmware version of the charm controller
+
+        :return: The firmware version of the charm controller
+        :type: `tuple`
+        """
+        firmware = tuple(map(int, self.reference("fw-ver").split(".")))
+        return firmware
+
+    @property
     def fpga_status(self):
         """
         Gets the FPGA health status
@@ -386,6 +432,16 @@ class TopMode(Instrument):
             return False
         response = int(response)
         return False if response % 2 else True
+
+    @property
+    def serial_number(self):
+        """
+        Gets the serial number of the charm controller
+
+        :return: The serial number of the charm controller
+        :type: `str`
+        """
+        return self.reference("serial-number")
 
     @property
     def temperature_status(self):

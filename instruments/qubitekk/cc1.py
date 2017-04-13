@@ -43,16 +43,34 @@ class CC1(SCPIInstrument):
         self.terminator = "\n"
         self._channel_count = 3
         self._firmware = None
+        self._ack_on = False
+        self.sendcmd(":ACKN OF")
+        # a readline is required because if the firmware is prior to 2.2,
+        # the cc1 will respond with 'Unknown Command'. After
+        # 2.2, it will either respond by acknowledging the command (turning
+        # acknowledgements off does not take place until after the current
+        # exchange has been completed), or not acknowledging it (if the
+        # acknowledgements are off). The try/except block is required to
+        # handle the case in which acknowledgements are off.
+        try:
+            self.read(-1)
+        except OSError:
+            pass
         _ = self.firmware  # prime the firmware
 
         if self.firmware[0] >= 2 and self.firmware[1] > 1:
             self._bool = ("ON", "OFF")
             self._set_fmt = ":{}:{}"
             self.TriggerMode = self._TriggerModeNew
+
         else:
             self._bool = ("1", "0")
             self._set_fmt = ":{} {}"
             self.TriggerMode = self._TriggerModeOld
+
+    def _ack_expected(self, msg=""):
+        return msg if self._ack_on and self.firmware[0] >= 2 and \
+                      self.firmware[1] > 1 else None
 
     # ENUMS #
 
@@ -118,6 +136,32 @@ class CC1(SCPIInstrument):
             return self._count
 
     # PROPERTIES #
+
+    @property
+    def acknowledge(self):
+        """
+        Gets/sets the acknowledge message state. If True, the CC1 will echo
+        back every command sent, then print the response (either Unable to
+        comply, Unknown command or the response to a query). If False,
+        the CC1 will only print the response.
+
+        :units: None
+        :type: boolean
+        """
+        return self._ack_on
+
+    @acknowledge.setter
+    def acknowledge(self, new_val):
+        if self.firmware[0] >= 2 and self.firmware[1] > 1:
+            if self._ack_on and not new_val:
+                self.sendcmd(":ACKN OF")
+                self._ack_on = False
+            elif not self._ack_on and new_val:
+                self.sendcmd(":ACKN ON")
+                self._ack_on = True
+        else:
+            raise NotImplementedError("Acknowledge message not implemented in "
+                                      "this version.")
 
     @property
     def gate(self):

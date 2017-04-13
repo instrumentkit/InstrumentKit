@@ -48,7 +48,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if self._version <= 4:
             self._eos = 10
         else:
-            self._eos = 2
+            self._eos = "\n"  # pylint: disable=redefined-variable-type
 
     # PROPERTIES #
 
@@ -205,7 +205,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     def eos(self, newval):
         # pylint: disable=redefined-variable-type
         if self._version <= 4:
-            if isinstance(newval, str):
+            if isinstance(newval, (str, bytes)):
                 newval = ord(newval)
             self._file.sendcmd("+eos:{}".format(newval))
             self._eos = newval

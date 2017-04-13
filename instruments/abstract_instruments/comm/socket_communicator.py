@@ -40,7 +40,8 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
             self._terminator = "\n"
         else:
             raise TypeError("SocketCommunicator must wrap a "
-                            ":class:`socket.socket` object.")
+                            ":class:`socket.socket` object, instead got "
+                            "{}".format(type(conn)))
 
     # PROPERTIES #
 
@@ -63,9 +64,9 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
     def terminator(self, newval):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
-        if not isinstance(newval, str) or len(newval) > 1:
+        if not isinstance(newval, str):
             raise TypeError("Terminator for socket communicator must be "
-                            "specified as a single character string.")
+                            "specified as a byte or unicode string.")
         self._terminator = newval
 
     @property
@@ -107,12 +108,13 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
             return self._conn.recv(size)
         elif size == -1:
             result = bytes()
-            c = b''
-            while c != self._terminator.encode("utf-8"):
+            while result.endswith(self._terminator.encode("utf-8")) is False:
                 c = self._conn.recv(1)
-                if c != self._terminator.encode("utf-8"):
-                    result += c
-            return result
+                if c == b'':
+                    raise IOError("Socket connection timed out before reading "
+                                  "a termination character.")
+                result += c
+            return result[:-len(self._terminator)]
         else:
             raise ValueError("Must read a positive value of characters.")
 
@@ -131,7 +133,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for socket communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def tell(self):  # pylint: disable=no-self-use
         """
@@ -139,7 +141,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for socket communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def flush_input(self):
         """
@@ -160,7 +162,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         :param str msg: The command message to send to the instrument
         """
         msg += self._terminator
-        self._conn.sendall(msg)
+        self.write(msg)
 
     def _query(self, msg, size=-1):
         """

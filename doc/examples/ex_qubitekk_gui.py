@@ -12,8 +12,7 @@ from matplotlib.backend_bases import key_press_handler
 from sys import platform as _platform
 
 import instruments as ik
-
-import Tkinter as tk
+import tkinter as tk
 import re
 
 
@@ -85,13 +84,8 @@ def reset(*args):
     gate_enabled.set(cc.gate_enable)
 
 if __name__ == "__main__":
-    # open connection to coincidence counter. If you are using Windows, this will be a com port. On linux, it will show
-    # up in /dev/ttyusb
-    if _platform == "linux" or _platform == "linux2":
-        cc = ik.qubitekk.CC1.open_serial('/dev/ttyUSB0', 19200, timeout=1)
-    else:
-        cc = ik.qubitekk.CC1.open_serial('COM8', 19200, timeout=1)
-    print cc.firmware
+    cc = ik.qubitekk.CC1.open_serial(vid=1027, pid=24577, baud=19200, timeout=10)
+    print(cc.firmware)
     # i is used to keep track of time
     i = 0
     # read counts every 0.5 seconds
@@ -191,8 +185,8 @@ if __name__ == "__main__":
     tk.Button(mainframe, text="Clear Counts", font="Verdana 24", command=clear_counts).grid(column=2, row=10,
                                                                                             sticky=tk.W)
 
-    tk.Label(mainframe, text="Firmware Version: " + cc.firmware, font="Verdana 20").grid(column=1, row=11,
-                                                                                         columnspan=2, sticky=tk.W)
+    tk.Label(mainframe, text="Firmware Version: " + str(cc.firmware),
+             font="Verdana 20").grid(column=1, row=11, columnspan=2, sticky=tk.W)
 
     for child in mainframe.winfo_children():
         child.grid_configure(padx=5, pady=5)

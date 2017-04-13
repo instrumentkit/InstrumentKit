@@ -124,7 +124,10 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         """
         if size >= 0:
             while len(self._buf) < size:
-                self._buf += self._conn.read()
+                data = self._conn.read()
+                if data == "":
+                    break
+                self._buf += data
             msg = self._buf[:size]
             # Remove the front of the buffer.
             del self._buf[:size]
