@@ -12,9 +12,12 @@ from __future__ import division
 import warnings
 
 try:
-    import yaml
+    import ruamel_yaml as yaml
 except ImportError:
-    yaml = None
+    try:
+        import yaml
+    except ImportError:
+        yaml = None
 
 import quantities as pq
 

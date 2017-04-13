@@ -10,25 +10,17 @@ from __future__ import absolute_import, unicode_literals
 
 from io import StringIO
 
-from unittest import skipIf
-
 import quantities as pq
-
-try:
-    import yaml
-except ImportError:
-    yaml = None
 
 from instruments import Instrument
 from instruments.config import (
-    load_instruments
+    load_instruments, yaml
 )
 
 # TEST CASES #################################################################
 
 # pylint: disable=protected-access,missing-docstring
 
-@skipIf(yaml is None, "PyYAML is not installed.")
 def test_load_test_instrument():
     config_data = StringIO(u"""
 test:
@@ -38,7 +30,6 @@ test:
     insts = load_instruments(config_data)
     assert isinstance(insts['test'], Instrument)
 
-@skipIf(yaml is None, "PyYAML is not installed.")
 def test_load_test_instrument_subtree():
     config_data = StringIO(u"""
 instruments:
@@ -49,7 +40,6 @@ instruments:
     insts = load_instruments(config_data, conf_path="/instruments")
     assert isinstance(insts['test'], Instrument)
 
-@skipIf(yaml is None, "PyYAML is not installed.")
 def test_yaml_quantity_tag():
     yaml_data = StringIO(u"""
 a:
@@ -62,7 +52,6 @@ a:
     assert data['a']['c'] == pq.Quantity(41.2, 'inches')
     assert data['a']['d'] == 98
 
-@skipIf(yaml is None, "PyYAML is not installed.")
 def test_load_test_instrument_setattr():
     config_data = StringIO(u"""
 test:
