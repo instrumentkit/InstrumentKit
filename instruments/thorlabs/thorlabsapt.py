@@ -663,9 +663,9 @@ class APTMotorController(ThorLabsAPT):
                 data=None
             )
             _ = self._apt.querypacket(pkt,
-                expect=_cmds.ThorLabsCommands.MOT_MOVE_HOMED,
-                timeout=self.motion_timeout
-            )
+                                      expect=_cmds.ThorLabsCommands.MOT_MOVE_HOMED,
+                                      timeout=self.motion_timeout
+                                     )
 
         def move(self, pos, absolute=True):
             """
