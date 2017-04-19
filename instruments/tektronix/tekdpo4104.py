@@ -83,7 +83,7 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
-        
+
         return other.name == self.name
 
     __hash__ = None
@@ -261,7 +261,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         name = self.query("DAT:SOU?")
         if name.startswith("CH"):
             return _TekDPO4104Channel(self, int(name[2:]) - 1)
-        
+
         return _TekDPO4104DataSource(self, name)
 
     @data_source.setter
