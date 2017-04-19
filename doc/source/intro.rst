@@ -32,6 +32,10 @@ $ pip install -r requirements.txt
 - `quantities`_
 - `enum34`_
 - `future`_
+- `python-vxi11`_
+- `PyUSB`_
+- `python-usbtmc`_
+- `PyYAML`_
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
@@ -47,6 +51,8 @@ Optional Dependencies
 .. _ruamel.yaml: http://yaml.readthedocs.io
 .. _PyUSB: http://sourceforge.net/apps/trac/pyusb/
 .. _PyVISA: http://pyvisa.sourceforge.net/
+.. _python-usbtmc: https://pypi.python.org/pypi/python-usbtmc
+.. _python-vxi11: https://pypi.python.org/pypi/python-vxi11
 
 Getting Started
 ===============

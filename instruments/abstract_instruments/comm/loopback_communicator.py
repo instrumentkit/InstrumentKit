@@ -50,7 +50,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
     @address.setter
     def address(self, newval):
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
     def terminator(self):
@@ -67,9 +67,9 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
     def terminator(self, newval):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
-        if not isinstance(newval, str) or len(newval) > 1:
+        if not isinstance(newval, str):
             raise TypeError("Terminator for loopback communicator must be "
-                            "specified as a single character string.")
+                            "specified as a byte or unicode string.")
         self._terminator = newval
 
     @property
@@ -113,12 +113,12 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
                 return bytes(input_var)
             elif size == -1:
                 result = bytes()
-                c = b''
-                while c != self._terminator.encode("utf-8"):
+                while result.endswith(self._terminator.encode("utf-8")) is False:
                     c = self._stdin.read(1)
-                    if c != self._terminator.encode("utf-8"):
-                        result += c
-                return result
+                    if c == b'':
+                        break
+                    result += c
+                return result[:-len(self._terminator)]
             else:
                 raise ValueError("Must read a positive value of characters.")
         else:
@@ -144,7 +144,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for loopback communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def tell(self):  # pylint: disable=no-self-use
         """
@@ -152,7 +152,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         Not implemented for loopback communicator.
         """
-        return NotImplemented
+        raise NotImplementedError
 
     def flush_input(self):
         """

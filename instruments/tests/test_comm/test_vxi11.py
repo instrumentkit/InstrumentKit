@@ -15,7 +15,7 @@ from instruments.abstract_instruments.comm import VXI11Communicator
 
 # TEST CASES #################################################################
 
-# pylint: disable=protected-access,unused-argument
+# pylint: disable=protected-access,unused-argument,no-member
 
 import_base = "instruments.abstract_instruments.comm.vxi11_communicator.vxi11"
 

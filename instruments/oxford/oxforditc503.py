@@ -74,7 +74,7 @@ class OxfordITC503(Instrument):
 
         For instance, this would query the temperature of the first sensor::
 
-        >>> itc = ik.other.OxfordITC503.open_gpibusb('/dev/ttyUSB0', 1)
+        >>> itc = ik.oxford.OxfordITC503.open_gpibusb('/dev/ttyUSB0', 1)
         >>> print(itc.sensor[0].temperature)
 
         :type: `OxfordITC503.Sensor`
