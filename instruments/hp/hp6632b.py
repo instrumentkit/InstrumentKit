@@ -76,7 +76,7 @@ class HP6632b(SCPIInstrument, HP6652a):
     >>> psu.voltage
     array(10.0) * V
     """
-    
+
     # ENUMS ##
 
     class ALCBandwidth(IntEnum):

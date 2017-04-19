@@ -203,7 +203,6 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @eos.setter
     def eos(self, newval):
-        # pylint: disable=redefined-variable-type
         if self._version <= 4:
             if isinstance(newval, (str, bytes)):
                 newval = ord(newval)
