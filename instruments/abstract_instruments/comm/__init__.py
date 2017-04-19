@@ -11,6 +11,7 @@ from .abstract_comm import AbstractCommunicator
 from .socket_communicator import SocketCommunicator
 from .usb_communicator import USBCommunicator
 from .serial_communicator import SerialCommunicator
+from .cryomagnetics_serial_communicator import CryomagneticsSerialCommunicator
 from .visa_communicator import VisaCommunicator
 from .loopback_communicator import LoopbackCommunicator
 from .gi_gpib_communicator import GPIBCommunicator
