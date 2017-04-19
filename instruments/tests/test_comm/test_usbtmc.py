@@ -58,7 +58,7 @@ def test_usbtmccomm_terminator_setter(mock_usbtmc):
     eq_(comm._terminator, "*")
     term_char.assert_called_with(42)
 
-    comm.terminator = b"*"  # pylint: disable=redefined-variable-type
+    comm.terminator = b"*"
     eq_(comm._terminator, "*")
     term_char.assert_called_with(42)
 
