@@ -1,3 +1,3 @@
 mock
 nose
-pylint
+pylint==1.6.5
