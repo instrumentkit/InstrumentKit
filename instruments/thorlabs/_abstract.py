@@ -9,13 +9,13 @@ Defines a generic Thorlabs instrument to define some common functionality.
 from __future__ import absolute_import
 from __future__ import division
 
+import time
+
 from instruments.thorlabs import _packets
 from instruments.abstract_instruments.instrument import Instrument
 from instruments.util_fns import assume_units
 
 from quantities import second
-
-import time
 
 # CLASSES #####################################################################
 
