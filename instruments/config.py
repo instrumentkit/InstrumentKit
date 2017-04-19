@@ -11,14 +11,7 @@ from __future__ import division
 
 import warnings
 
-try:
-    import ruamel_yaml as yaml
-except ImportError:
-    try:
-        import yaml
-    except ImportError:
-        yaml = None
-
+import ruamel.yaml as yaml
 import quantities as pq
 
 from future.builtins import str
@@ -67,8 +60,7 @@ def quantity_constructor(loader, node):
 
 # We avoid having to register !Q every time by doing as soon as the
 # relevant constructor is defined.
-if yaml:
-    yaml.add_constructor(u'!Q', quantity_constructor)
+yaml.add_constructor(u'!Q', quantity_constructor)
 
 def load_instruments(conf_file_name, conf_path="/"):
     """

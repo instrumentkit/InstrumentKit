@@ -43,7 +43,7 @@ INSTALL_REQUIRES = [
     "python-vxi11",
     "python-usbtmc",
     "pyusb",
-    "pyyaml"
+    "ruamel.yaml"
 ]
 EXTRAS_REQUIRE = {
     'VISA': ["pyvisa"]
