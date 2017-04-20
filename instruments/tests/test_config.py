@@ -47,7 +47,7 @@ a:
     c: !Q 41.2 inches
     d: !Q 98
 """)
-    data = yaml.load(yaml_data)
+    data = yaml.load(yaml_data, Loader=yaml.Loader)
     assert data['a']['b'] == pq.Quantity(37, 'tesla')
     assert data['a']['c'] == pq.Quantity(41.2, 'inches')
     assert data['a']['d'] == 98
