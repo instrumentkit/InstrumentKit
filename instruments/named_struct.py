@@ -27,6 +27,13 @@ Notably, this hack is not at all required on Python 3.6:
 TODO: arrays other than string arrays do not currently work.
 """
 
+# PYLINT CONFIGURATION ########################################################
+
+# All of the classes in this module need to interact with each other rather
+# deeply, so we disable the protected-access check within this module.
+
+# pylint:disable=protected-access
+
 # CLASSES #####################################################################
 
 class Field(object):
@@ -112,13 +119,13 @@ class Padding(Field):
         super(Padding, self).__init__('{}x'.format(n_bytes))
 
 class HasFields(type):
-    def __new__(mcls, name, bases, attrs):
+    def __new__(mcs, name, bases, attrs):
         # Since this is a metaclass, the __new__ method observes
         # creation of new *classes* and not new instances.
         # We call the superclass of HasFields, which is another
         # metaclass, to do most of the heavy lifting of creating
         # the new class.
-        cls = super(HasFields, mcls).__new__(mcls, name, bases, attrs)
+        cls = super(HasFields, mcs).__new__(mcs, name, bases, attrs)
 
         # We now sort the fields by their birthdays and store them in an
         # ordered dict for easier look up later.
@@ -152,6 +159,34 @@ class HasFields(type):
         return cls
 
 class NamedStruct(with_metaclass(HasFields, object)):
+    """
+    Represents a C-style struct with one or more named fields,
+    useful for packing and unpacking serialized data documented
+    in terms of C examples. For instance, consider a struct of the
+    form::
+
+        typedef struct {
+            unsigned long a = 0x1234;
+            char[12] dummy;
+            unsigned char b = 0xab;
+        } Foo;
+
+    This struct can be represented as the following NamedStruct::
+
+        class Foo(NamedStruct):
+            a = Field('L')
+            dummy = Padding(12)
+            b = Field('B')
+
+        foo = Foo(a=0x1234, b=0xab)
+    """
+
+    # Provide reasonable defaults for the lowercase-f-fields
+    # created by HasFields. This will prevent a few edge cases,
+    # allow type inference and will prevent pylint false positives.
+    _fields = {}
+    _struct = None
+
     def __init__(self, **kwargs):
         super(NamedStruct, self).__init__()
         self._values = OrderedDict([
@@ -174,11 +209,31 @@ class NamedStruct(with_metaclass(HasFields, object)):
         })
 
     def pack(self):
+        """
+        Packs this instance into bytes, suitable for transmitting over
+        a network or recording to disc. See :func:`struct.pack` for details.
+
+        :return bytes packed_data: A serialized representation of this
+            instance.
+        """
         return self._struct.pack(*self._to_seq())
 
     @classmethod
     def unpack(cls, buffer):
+        """
+        Given a buffer, unpacks it into an instance of this NamedStruct.
+        See :func:`struct.unpack` for details.
+
+        :param bytes buffer: Data to use in creating a new instance.
+        :return: The new instance represented by `buffer`.
+        """
         return cls._from_seq(cls._struct.unpack(buffer))
+
+    def __eq__(self, other):
+        if not isinstance(other, NamedStruct):
+            return False
+
+        return self._values == other._values
 
     def __str__(self):
         return "{name} {{\n{fields}\n}}".format(
