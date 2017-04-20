@@ -50,17 +50,32 @@ class Field(object):
     _name = None
     _owner_type = object
 
-    def __init__(self, fmt):
+    def __init__(self, fmt, strip_null=False):
         super(Field, self).__init__()
 
         # Record our birthday so that we can sort fields later.
         self._field_birthday = Field.__n_fields_created
         Field.__n_fields_created += 1
 
-        self._fmt = fmt
+        self._fmt = fmt.strip()
+        self._strip_null = strip_null
 
     def is_significant(self):
-        return not self._fmt.strip().endswith('x')
+        return not self._fmt.endswith('x')
+
+    @property
+    def fmt_char(self):
+        return self._fmt[-1]
+
+    def __len__(self):
+        if self._fmt[:-1]:
+            length = int(self._fmt[-1])
+            if length < 0:
+                raise TypeError("Field is specified with negative length.")
+
+            return length
+
+        raise TypeError("Field is scalar and has no len().")
 
     def __repr__(self):
         if self._owner_type:
@@ -73,8 +88,7 @@ class Field(object):
         )
 
     def __str__(self):
-        fmt = self._fmt.strip()
-        n, fmt_char = fmt[:-1], fmt[-1]
+        n, fmt_char = len(self), self.fmt_char
         c_type = {
             'x': 'char',
             'c': 'char',
@@ -113,7 +127,47 @@ class Field(object):
     def __set__(self, obj, value):
         obj._values[self._name] = value
 
+class StringField(Field):
+    """
+    Represents a field that is interpreted as a Python string.
+
+    :param int length: Maximum allowed length of the field, as
+        measured in the number of bytes used by its encoding.
+        Note that if a shorter string is provided, it will
+        be padded by null bytes.
+    :param str encoding: Name of an encoding to use in serialization
+        and deserialization to Python strings.
+    :param bool strip_null: If `True`, null bytes (``'\x00'``) will
+        be removed from the right upon deserialization.
+    """
+
+    _strip_null = False
+    _encoding = 'ascii'
+
+    def __init__(self, length, encoding='ascii', strip_null=False):
+        super(StringField, self).__init__('{}s'.format(length))
+        self._strip_null = strip_null
+        self._encoding = encoding
+
+    def __set__(self, obj, value):
+        if self._strip_null:
+            value = value.rstrip('\x00')
+        value = value.encode(self._encoding)
+
+        super(StringField, self).__set__(obj, value)
+
+    def __get__(self, obj, type=None):
+        super(StringField, self).__get__(obj, type=type).decode(self._encoding)
+
+
 class Padding(Field):
+    """
+    Represents a field whose value is insignificant, and will not
+    be kept in serialization and deserialization.
+
+    :param int n_bytes: Number of padding bytes occupied by this field.
+    """
+
     def __init__(self, n_bytes=1):
         super(Padding, self).__init__('{}x'.format(n_bytes))
 
@@ -190,11 +244,13 @@ class NamedStruct(with_metaclass(HasFields, object)):
         super(NamedStruct, self).__init__()
         self._values = OrderedDict([
             (
-                field._name,
-                kwargs[field._name] if field._name in kwargs else None
+                field._name, None
             )
             for field in filter(Field.is_significant, self._fields.values())
         ])
+
+        for field_name, value in kwargs.items():
+            setattr(self, field_name, value)
 
     def _to_seq(self):
         return tuple(self._values.values())

@@ -9,7 +9,7 @@ Module containing tests for named structures.
 from __future__ import absolute_import
 
 from instruments.named_struct import (
-    Field, Padding, NamedStruct
+    Field, StringField, Padding, NamedStruct
 )
 
 # TESTS ######################################################################
@@ -23,4 +23,13 @@ def test_named_struct_roundtrip():
         b = Field('B')
 
     foo = Foo(a=0x1234, b=0xab)
+    assert Foo.unpack(foo.pack()) == foo
+
+
+def test_named_struct_str():
+    class Foo(NamedStruct):
+        a = StringField(8)
+        b = StringField(9, strip_null=True)
+
+    foo = Foo(a="0123456\x00", b='abc')
     assert Foo.unpack(foo.pack()) == foo
