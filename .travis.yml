@@ -12,8 +12,8 @@ install:
   - pip install coverage
 script:
   - nosetests --with-coverage -w instruments
-  - pylint --py3k instruments/
-  - pylint instruments/
+  - pylint --py3k instruments
+  - pylint --disable=I instruments
 after_success:
   - coveralls
 deploy:
