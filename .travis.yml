@@ -23,8 +23,10 @@ before_script:
   - pylint --version
 script:
   - nosetests --with-coverage -w instruments
-  - pylint --py3k instruments
-  - pylint --disable=I instruments
+  # We invoke pylint using -m to ensure that we get the exact same
+  # version as in the virtualenv that Travis creates for 3.5.
+  - python -m pylint --py3k instruments
+  - python -m pylint --disable=I instruments
 after_success:
   - coveralls
 deploy:
