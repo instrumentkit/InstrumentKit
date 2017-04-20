@@ -143,14 +143,14 @@ def load_instruments(conf_file_name, conf_path="/"):
     """
 
     if yaml is None:
-        raise ImportError("Could not import PyYAML, which is required "
+        raise ImportError("Could not import ruamel.yaml, which is required "
                           "for this function.")
 
     if isinstance(conf_file_name, str):
         with open(conf_file_name, 'r') as f:
-            conf_dict = yaml.load(f)
+            conf_dict = yaml.load(f, Loader=yaml.Loader)
     else:
-        conf_dict = yaml.load(conf_file_name)
+        conf_dict = yaml.load(conf_file_name, Loader=yaml.Loader)
 
     conf_dict = walk_dict(conf_dict, conf_path)
 
