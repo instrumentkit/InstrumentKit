@@ -204,7 +204,7 @@ class NamedStruct(with_metaclass(HasFields, object)):
         return cls(**{
             field._name: new_value
             for field, new_value in
-            zip(filter(Field.is_significant, cls._fields.values()), new_values)
+            zip(list(filter(Field.is_significant, cls._fields.values())), new_values)
         })
 
     def pack(self):
