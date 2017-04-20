@@ -50,3 +50,9 @@ nosetests.xml
 
 #pycharm generated
 .idea
+
+# VS Code IDE internals
+.vscode/
+
+# nosetests metadata
+.noseids
