@@ -11,7 +11,18 @@ from __future__ import division
 
 import warnings
 
-import ruamel.yaml as yaml
+try:
+    import ruamel.yaml as yaml
+except ImportError:
+    # Some versions of ruamel.yaml are named ruamel_yaml, so try that
+    # too.
+    #
+    # In either case, we've observed issues with pylint where it will raise
+    # a false positive from its import-error checker, so we locally disable
+    # it here. Once the cause for the false positive has been identified,
+    # the import-error check should be re-enabled.
+    import ruamel_yaml as yaml # pylint: disable=import-error
+
 import quantities as pq
 
 from future.builtins import str
