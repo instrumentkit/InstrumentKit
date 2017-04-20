@@ -15,17 +15,16 @@ from collections import OrderedDict
 from future.utils import with_metaclass
 
 # DESIGN NOTES ################################################################
-"""
-This class uses the Django-like strategy described at
-    http://stackoverflow.com/a/3288988/267841
-to assign a "birthday" to each Field as it's instantiated. We can thus sort
-each Field in a NamedStruct by its birthday.
 
-Notably, this hack is not at all required on Python 3.6:
-    https://www.python.org/dev/peps/pep-0520/
+# This class uses the Django-like strategy described at
+#     http://stackoverflow.com/a/3288988/267841
+# to assign a "birthday" to each Field as it's instantiated. We can thus sort
+# each Field in a NamedStruct by its birthday.
 
-TODO: arrays other than string arrays do not currently work.
-"""
+# Notably, this hack is not at all required on Python 3.6:
+#     https://www.python.org/dev/peps/pep-0520/
+
+# TODO: arrays other than string arrays do not currently work.
 
 # PYLINT CONFIGURATION ########################################################
 
