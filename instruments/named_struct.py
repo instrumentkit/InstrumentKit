@@ -35,6 +35,7 @@ from future.utils import with_metaclass
 
 # CLASSES #####################################################################
 
+
 class Field(object):
     """
     A named field within a C-style structure.
@@ -73,7 +74,9 @@ class Field(object):
             if length < 0:
                 raise TypeError("Field is specified with negative length.")
 
-            return length
+            # Although we know that length>0, this abs ensures that static
+            # code checks are happy with __len__ always returning a positive number
+            return abs(length)
 
         raise TypeError("Field is scalar and has no len().")
 
@@ -150,6 +153,8 @@ class StringField(Field):
         self._encoding = encoding
 
     def __set__(self, obj, value):
+        if isinstance(value, bytes):
+            value = value.decode(self._encoding)
         if self._strip_null:
             value = value.rstrip('\x00')
         value = value.encode(self._encoding)
@@ -210,6 +215,7 @@ class HasFields(type):
         )
 
         return cls
+
 
 class NamedStruct(with_metaclass(HasFields, object)):
     """

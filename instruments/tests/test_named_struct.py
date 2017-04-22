@@ -8,6 +8,9 @@ Module containing tests for named structures.
 
 from __future__ import absolute_import
 
+from hypothesis import given
+import hypothesis.strategies as st
+
 from instruments.named_struct import (
     Field, StringField, Padding, NamedStruct
 )
@@ -16,13 +19,15 @@ from instruments.named_struct import (
 
 # pylint: disable=no-member,protected-access,blacklisted-name,missing-docstring
 
-def test_named_struct_roundtrip():
+
+@given(st.integers(min_value=0, max_value=0x7FFF*2+1), st.integers(min_value=0, max_value=0xFF))
+def test_named_struct_roundtrip(var1, var2):
     class Foo(NamedStruct):
         a = Field('H')
         padding = Padding(12)
         b = Field('B')
 
-    foo = Foo(a=0x1234, b=0xab)
+    foo = Foo(a=var1, b=var2)
     assert Foo.unpack(foo.pack()) == foo
 
 

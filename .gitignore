@@ -56,3 +56,6 @@ nosetests.xml
 
 # nosetests metadata
 .noseids
+
+# Hypothesis files
+.hypothesis/
