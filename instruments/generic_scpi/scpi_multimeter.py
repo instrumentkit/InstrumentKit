@@ -139,7 +139,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
     # PROPERTIES ##
 
-    # pylint: disable=unnecessary-lambda
+    # pylint: disable=unnecessary-lambda,undefined-variable
     mode = enum_property(
         name="CONF",
         enum=Mode,
