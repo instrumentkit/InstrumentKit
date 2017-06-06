@@ -1,7 +1,7 @@
 InstrumentKit
 =============
 
-.. image:: https://img.shields.io/travis/Galvant/InstrumentKit.svg?maxAge=2592000
+.. image:: https://img.shields.io/travis/Galvant/InstrumentKit/master.svg?maxAge=2592000
     :target: https://travis-ci.org/Galvant/InstrumentKit
     :alt: Travis-CI build status
 
@@ -134,7 +134,7 @@ To run the tests against all supported version of Python, you will need to
 have the binary for each installed, as well as any requirements needed to
 install ``numpy`` under each Python version. On Debian/Ubuntu systems this means
 you will need to install the ``python-dev`` package for each version of Python
-supported (``python2.7-dev``, ``python3.3-dev``, etc).
+supported (``python2.7-dev``, ``python3.4-dev``, etc).
 
 With the required system packages installed, all tests can be run with ``tox``:
 
