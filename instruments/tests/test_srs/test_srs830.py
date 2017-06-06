@@ -125,7 +125,7 @@ def test_sample_rate():  # sends index of VALID_SAMPLE_RATES
         assert inst.sample_rate == 16 * pq.Hz
         assert inst.sample_rate == "trigger"
         inst.sample_rate = 2
-        inst.sample_rate = "trigger"  # pylint: disable=redefined-variable-type
+        inst.sample_rate = "trigger"
 
 
 @raises(ValueError)

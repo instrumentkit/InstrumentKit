@@ -172,9 +172,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             is designed to be initialized by the `TekDPO70000` class.
         """
 
-        def __init__(self, parent, name):
-            super(TekDPO70000.DataSource, self).__init__(parent, name)
-
         @property
         def name(self):
             return self._name

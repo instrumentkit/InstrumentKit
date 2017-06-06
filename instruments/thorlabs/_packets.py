@@ -138,11 +138,11 @@ ThorLabs APT packet:
                 self._message_id, len(
                     self._data), 0x80 | self._dest, self._source
             ) + self._data
-        else:
-            return message_header_nopacket.pack(
-                self._message_id, self._param1, self._param2, self._dest,
-                self._source
-            )
+
+        return message_header_nopacket.pack(
+            self._message_id, self._param1, self._param2, self._dest,
+            self._source
+        )
 
     @classmethod
     def unpack(cls, bytes):

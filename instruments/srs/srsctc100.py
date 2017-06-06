@@ -168,7 +168,7 @@ class SRSCTC100(SCPIInstrument):
 
             :type: `bool`
             """
-            return True if self._get('stats') is 'On' else False
+            return True if self._get('stats') == 'On' else False
 
         @stats_enabled.setter
         def stats_enabled(self, newval):

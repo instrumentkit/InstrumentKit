@@ -153,8 +153,8 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
 
         if units == self.VoltageMode.dBm:
             return pq.Quantity(mag, u.dBm)
-        else:
-            return pq.Quantity(mag, pq.V), units
+
+        return pq.Quantity(mag, pq.V), units
 
     @amplitude.setter
     def amplitude(self, newval):
@@ -168,7 +168,6 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
             # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
             if not isinstance(newval, tuple):
                 mag = newval
-                # pylint: disable=redefined-variable-type
                 units = self.VoltageMode.peak_to_peak
             else:
                 mag, units = newval

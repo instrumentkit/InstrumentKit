@@ -43,8 +43,8 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
     def address(self):
         if hasattr(self._filelike, "name"):
             return id(self._filelike)  # TODO: replace with something more useful.
-        else:
-            return None
+
+        return None
 
     @property
     def terminator(self):

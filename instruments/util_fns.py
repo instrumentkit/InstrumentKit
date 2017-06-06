@@ -151,8 +151,9 @@ def split_unit_str(s, default_units=pq.dimensionless, lookup=None):
 
         if units is None:
             return float(val), default_units
-        else:
-            return float(val), lookup(units)
+
+        return float(val), lookup(units)
+
     else:
         try:
             return float(s), default_units
@@ -179,8 +180,8 @@ def rproperty(fget=None, fset=None, doc=None, readonly=False, writeonly=False):
         return property(fget=fget, fset=None, doc=doc)
     elif writeonly:
         return property(fget=None, fset=fset, doc=doc)
-    else:
-        return property(fget=fget, fset=fset, doc=doc)
+
+    return property(fget=fget, fset=fset, doc=doc)
 
 
 def bool_property(name, inst_true, inst_false, doc=None, readonly=False,
@@ -480,14 +481,14 @@ def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?",
     def _min_getter(self):
         if valid_range[0] == "query":
             return pq.Quantity(*split_unit_str(self.query(min_fmt_str.format(name)), units))
-        else:
-            return assume_units(valid_range[0], units).rescale(units)
+
+        return assume_units(valid_range[0], units).rescale(units)
 
     def _max_getter(self):
         if valid_range[1] == "query":
             return pq.Quantity(*split_unit_str(self.query(max_fmt_str.format(name)), units))
-        else:
-            return assume_units(valid_range[1], units).rescale(units)
+
+        return assume_units(valid_range[1], units).rescale(units)
 
     new_range = (
         None if valid_range[0] is None else _min_getter,

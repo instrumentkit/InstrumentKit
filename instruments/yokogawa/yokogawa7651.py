@@ -36,9 +36,6 @@ class Yokogawa7651(PowerSupply, Instrument):
     >>> inst.voltage = 10 * pq.V
     """
 
-    def __init__(self, filelike):
-        super(Yokogawa7651, self).__init__(filelike)
-
     # INNER CLASSES #
 
     class Channel(PowerSupplyChannel):

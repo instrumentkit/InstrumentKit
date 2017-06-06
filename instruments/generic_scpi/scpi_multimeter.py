@@ -45,9 +45,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
     >>> print(inst.measure(inst.Mode.resistance))
     """
 
-    def __init__(self, filelike):
-        super(SCPIMultimeter, self).__init__(filelike)
-
     # ENUMS ##
 
     class Mode(Enum):
@@ -142,7 +139,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
     # PROPERTIES ##
 
-    # pylint: disable=unnecessary-lambda
+    # pylint: disable=unnecessary-lambda,undefined-variable
     mode = enum_property(
         name="CONF",
         enum=Mode,
