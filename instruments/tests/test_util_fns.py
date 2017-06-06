@@ -16,7 +16,8 @@ from nose.tools import raises, eq_
 
 from instruments.util_fns import (
     ProxyList,
-    assume_units, convert_temperature
+    assume_units, convert_temperature,
+    setattr_expression
 )
 
 # TEST CASES #################################################################
@@ -169,3 +170,45 @@ def test_temperater_conversion_failure():
 @raises(ValueError)
 def test_assume_units_failures():
     assume_units(1, 'm').rescale('s')
+
+def test_setattr_expression_simple():
+    class A(object):
+        x = 'x'
+        y = 'y'
+        z = 'z'
+
+    a = A()
+    setattr_expression(a, 'x', 'foo')
+    assert a.x == 'foo'
+
+def test_setattr_expression_index():
+    class A(object):
+        x = ['x', 'y', 'z']
+
+    a = A()
+    setattr_expression(a, 'x[1]', 'foo')
+    assert a.x[1] == 'foo'
+
+def test_setattr_expression_nested():
+    class B(object):
+        x = 'x'
+    class A(object):
+        b = None
+        def __init__(self):
+            self.b = B()
+
+    a = A()
+    setattr_expression(a, 'b.x', 'foo')
+    assert a.b.x == 'foo'
+
+def test_setattr_expression_both():
+    class B(object):
+        x = 'x'
+    class A(object):
+        b = None
+        def __init__(self):
+            self.b = [B()]
+
+    a = A()
+    setattr_expression(a, 'b[0].x', 'foo')
+    assert a.b[0].x == 'foo'
