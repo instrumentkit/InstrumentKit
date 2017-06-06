@@ -32,9 +32,6 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     >>> inst.frequency = 1 * pq.kHz
     """
 
-    def __init__(self, filelike):
-        super(SCPIFunctionGenerator, self).__init__(filelike)
-
     # CONSTANTS #
 
     _UNIT_MNEMONICS = {

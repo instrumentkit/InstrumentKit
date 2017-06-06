@@ -61,9 +61,9 @@ class SRS830(SCPIInstrument):
             will be sent depending on what type of communicator self._file is.
         """
         super(SRS830, self).__init__(filelike)
-        if outx_mode is 1:
+        if outx_mode == 1:
             self.sendcmd("OUTX 1")
-        elif outx_mode is 2:
+        elif outx_mode == 2:
             self.sendcmd("OUTX 2")
         else:
             if isinstance(self._file, GPIBCommunicator):

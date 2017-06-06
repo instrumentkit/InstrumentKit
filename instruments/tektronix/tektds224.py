@@ -227,8 +227,8 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         name = self.query("DAT:SOU?")
         if name.startswith("CH"):
             return _TekTDS224Channel(self, int(name[2:]) - 1)
-        else:
-            return _TekTDS224DataSource(self, name)
+
+        return _TekTDS224DataSource(self, name)
 
     @data_source.setter
     def data_source(self, newval):

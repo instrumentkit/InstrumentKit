@@ -195,11 +195,11 @@ class Keithley195(Multimeter):
         index = self.parse_status_word(self.get_status_word())['range']
         if index == 0:
             return 'auto'
-        else:
-            mode = self.mode
-            value = Keithley195.ValidRange[mode.name].value[index - 1]
-            units = UNITS2[mode]
-            return value * units
+
+        mode = self.mode
+        value = Keithley195.ValidRange[mode.name].value[index - 1]
+        units = UNITS2[mode]
+        return value * units
 
     @input_range.setter
     def input_range(self, newval):

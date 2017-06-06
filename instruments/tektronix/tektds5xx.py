@@ -83,8 +83,8 @@ class _TekTDS5xxMeasurement(object):
             resp = self._tek.query('MEASU:MEAS{}:VAL?'.format(self._id))
             self._data['value'] = float(resp)
             return self._data
-        else:
-            return self._data
+
+        return self._data
 
 
 class _TekTDS5xxDataSource(OscilloscopeDataSource):
@@ -96,9 +96,6 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
     .. warning:: This class should NOT be manually created by the user. It is
         designed to be initialized by the `TekTDS5xx` class.
     """
-
-    def __init__(self, parent, name):
-        super(_TekTDS5xxDataSource, self).__init__(parent, name)
 
     @property
     def name(self):
@@ -434,8 +431,8 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         name = self.query("DAT:SOU?")
         if name.startswith("CH"):
             return _TekTDS5xxChannel(self, int(name[2:]) - 1)
-        else:
-            return _TekTDS5xxDataSource(self, name)
+
+        return _TekTDS5xxDataSource(self, name)
 
     @data_source.setter
     def data_source(self, newval):

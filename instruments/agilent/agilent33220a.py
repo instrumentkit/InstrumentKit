@@ -43,9 +43,6 @@ class Agilent33220a(SCPIFunctionGenerator):
 
     """
 
-    def __init__(self, filelike):
-        super(Agilent33220a, self).__init__(filelike)
-
     # ENUMS #
 
     class Function(Enum):

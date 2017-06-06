@@ -48,7 +48,7 @@ def test_loopbackcomm_terminator():
     eq_(comm.terminator, "*")
     eq_(comm._terminator, "*")
 
-    comm.terminator = u"\r"  # pylint: disable=redefined-variable-type
+    comm.terminator = u"\r"
     eq_(comm.terminator, u"\r")
     eq_(comm._terminator, u"\r")
 

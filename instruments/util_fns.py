@@ -14,11 +14,13 @@ import re
 from enum import Enum, IntEnum
 import quantities as pq
 
+# CONSTANTS ###################################################################
+
+_IDX_REGEX = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*)\[(-?[0-9]*)\]')
+
 # FUNCTIONS ###################################################################
 
 # pylint: disable=too-many-arguments
-
-
 def assume_units(value, units):
     """
     If units are not provided for ``value`` (that is, if it is a raw
@@ -36,6 +38,34 @@ def assume_units(value, units):
     if not isinstance(value, pq.Quantity):
         value = pq.Quantity(value, units)
     return value
+
+def setattr_expression(target, name_expr, value):
+    """
+    Recursively calls getattr/setattr for attribute
+    names that are miniature expressions with subscripting.
+    For instance, of the form ``a[0].b``.
+    """
+    # Allow "." in attribute names so that we can set attributes
+    # recursively.
+    if '.' in name_expr:
+        # Recursion: We have to strip off a level of getattr.
+        head, name_expr = name_expr.split('.', 1)
+        match = _IDX_REGEX.match(head)
+        if match:
+            head_name, head_idx = match.groups()
+            target = getattr(target, head_name)[int(head_idx)]
+        else:
+            target = getattr(target, head)
+
+        setattr_expression(target, name_expr, value)
+    else:
+        # Base case: We're in the last part of a dot-expression.
+        match = _IDX_REGEX.match(name_expr)
+        if match:
+            name, idx = match.groups()
+            getattr(target, name)[int(idx)] = value
+        else:
+            setattr(target, name_expr, value)
 
 
 def convert_temperature(temperature, base):
@@ -121,8 +151,9 @@ def split_unit_str(s, default_units=pq.dimensionless, lookup=None):
 
         if units is None:
             return float(val), default_units
-        else:
-            return float(val), lookup(units)
+
+        return float(val), lookup(units)
+
     else:
         try:
             return float(s), default_units
@@ -149,8 +180,8 @@ def rproperty(fget=None, fset=None, doc=None, readonly=False, writeonly=False):
         return property(fget=fget, fset=None, doc=doc)
     elif writeonly:
         return property(fget=None, fset=fset, doc=doc)
-    else:
-        return property(fget=fget, fset=fset, doc=doc)
+
+    return property(fget=fget, fset=fset, doc=doc)
 
 
 def bool_property(name, inst_true, inst_false, doc=None, readonly=False,
@@ -450,14 +481,14 @@ def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?",
     def _min_getter(self):
         if valid_range[0] == "query":
             return pq.Quantity(*split_unit_str(self.query(min_fmt_str.format(name)), units))
-        else:
-            return assume_units(valid_range[0], units).rescale(units)
+
+        return assume_units(valid_range[0], units).rescale(units)
 
     def _max_getter(self):
         if valid_range[1] == "query":
             return pq.Quantity(*split_unit_str(self.query(max_fmt_str.format(name)), units))
-        else:
-            return assume_units(valid_range[1], units).rescale(units)
+
+        return assume_units(valid_range[1], units).rescale(units)
 
     new_range = (
         None if valid_range[0] is None else _min_getter,
