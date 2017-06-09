@@ -20,6 +20,7 @@ _IDX_REGEX = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*)\[(-?[0-9]*)\]')
 
 # FUNCTIONS ###################################################################
 
+
 # pylint: disable=too-many-arguments
 def assume_units(value, units):
     """
@@ -38,6 +39,7 @@ def assume_units(value, units):
     if not isinstance(value, pq.Quantity):
         value = pq.Quantity(value, units)
     return value
+
 
 def setattr_expression(target, name_expr, value):
     """
@@ -184,16 +186,29 @@ def rproperty(fget=None, fset=None, doc=None, readonly=False, writeonly=False):
     return property(fget=fget, fset=fset, doc=doc)
 
 
-def bool_property(name, inst_true, inst_false, doc=None, readonly=False,
-                  writeonly=False, set_fmt="{} {}"):
+def bool_property(command, set_cmd=None, inst_true="ON", inst_false="OFF",
+                  doc=None, readonly=False, writeonly=False, set_fmt="{} {}"):
     """
     Called inside of SCPI classes to instantiate boolean properties
     of the device cleanly.
     For example:
 
-    >>> my_property = bool_property("BEST:PROPERTY", "ON", "OFF") # doctest: +SKIP
+    >>> my_property = bool_property(
+    ...     "BEST:PROPERTY",
+    ...     inst_true="ON",
+    ...     inst_false="OFF"
+    ... ) # doctest: +SKIP
 
-    :param str name: Name of the SCPI command corresponding to this property.
+    This will result in "BEST:PROPERTY ON" or "BEST:PROPERTY OFF" being sent
+    when setting, and "BEST:PROPERTY?" being sent when getting.
+
+    :param str command: Name of the SCPI command corresponding to this property.
+        If parameter set_cmd is not specified, then this parameter is also used
+        for both getting and setting.
+    :param str set_cmd: If not `None`, this parameter sets the command string
+        to be used when sending commands with no return values to the
+        instrument. This allows for non-symmetric properties that have different
+        strings for getting vs setting a property.
     :param str inst_true: String returned and accepted by the instrument for
         `True` values.
     :param str inst_false: String returned and accepted by the instrument for
@@ -210,19 +225,22 @@ def bool_property(name, inst_true, inst_false, doc=None, readonly=False,
     """
 
     def _getter(self):
-        return self.query(name + "?").strip() == inst_true
+        return self.query(command + "?").strip() == inst_true
 
     def _setter(self, newval):
         if not isinstance(newval, bool):
             raise TypeError("Bool properties must be specified with a "
                             "boolean value")
-        self.sendcmd(set_fmt.format(name, inst_true if newval else inst_false))
+        self.sendcmd(set_fmt.format(
+            command if set_cmd is None else set_cmd,
+            inst_true if newval else inst_false
+        ))
 
     return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
                      writeonly=writeonly)
 
 
-def enum_property(name, enum, doc=None, input_decoration=None,
+def enum_property(command, enum, set_cmd=None, doc=None, input_decoration=None,
                   output_decoration=None, readonly=False, writeonly=False,
                   set_fmt="{} {}"):
     """
@@ -234,7 +252,13 @@ def enum_property(name, enum, doc=None, input_decoration=None,
     Example:
     my_property = bool_property("BEST:PROPERTY", enum_class)
 
-    :param str name: Name of the SCPI command corresponding to this property.
+    :param str command: Name of the SCPI command corresponding to this property.
+        If parameter set_cmd is not specified, then this parameter is also used
+        for both getting and setting.
+    :param str set_cmd: If not `None`, this parameter sets the command string
+        to be used when sending commands with no return values to the
+        instrument. This allows for non-symmetric properties that have different
+        strings for getting vs setting a property.
     :param type enum: Class derived from `Enum` representing valid values.
     :param callable input_decoration: Function called on responses from
         the instrument before passing to user code.
@@ -249,6 +273,10 @@ def enum_property(name, enum, doc=None, input_decoration=None,
         non-query to the instrument. The default is "{} {}" which places a
         space between the SCPI command the associated parameter. By switching
         to "{}={}" an equals sign would instead be used as the separator.
+    :param str get_cmd: If not `None`, this parameter sets the command string
+        to be used when reading/querying from the instrument. If used, the name
+        parameter is still used to set the command for pure-write commands to
+        the instrument.
     """
     def _in_decor_fcn(val):
         if input_decoration is None:
@@ -265,7 +293,7 @@ def enum_property(name, enum, doc=None, input_decoration=None,
         return output_decoration(val)
 
     def _getter(self):
-        return enum(_in_decor_fcn(self.query("{}?".format(name)).strip()))
+        return enum(_in_decor_fcn(self.query("{}?".format(command)).strip()))
 
     def _setter(self, newval):
         try:  # First assume newval is Enum.value
@@ -275,19 +303,28 @@ def enum_property(name, enum, doc=None, input_decoration=None,
                 newval = enum(newval)
             except ValueError:
                 raise ValueError("Enum property new value not in enum.")
-        self.sendcmd(set_fmt.format(name, _out_decor_fcn(enum(newval).value)))
+        self.sendcmd(set_fmt.format(
+            command if set_cmd is None else set_cmd,
+            _out_decor_fcn(enum(newval).value)
+        ))
 
     return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
                      writeonly=writeonly)
 
 
-def unitless_property(name, format_code='{:e}', doc=None, readonly=False,
-                      writeonly=False, set_fmt="{} {}"):
+def unitless_property(command, set_cmd=None, format_code='{:e}', doc=None,
+                      readonly=False, writeonly=False, set_fmt="{} {}"):
     """
     Called inside of SCPI classes to instantiate properties with unitless
     numeric values.
 
-    :param str name: Name of the SCPI command corresponding to this property.
+    :param str command: Name of the SCPI command corresponding to this property.
+        If parameter set_cmd is not specified, then this parameter is also used
+        for both getting and setting.
+    :param str set_cmd: If not `None`, this parameter sets the command string
+        to be used when sending commands with no return values to the
+        instrument. This allows for non-symmetric properties that have different
+        strings for getting vs setting a property.
     :param str format_code: Argument to `str.format` used in sending values
         to the instrument.
     :param str doc: Docstring to be associated with the new property.
@@ -302,7 +339,7 @@ def unitless_property(name, format_code='{:e}', doc=None, readonly=False,
     """
 
     def _getter(self):
-        raw = self.query("{}?".format(name))
+        raw = self.query("{}?".format(command))
         return float(raw)
 
     def _setter(self, newval):
@@ -312,19 +349,29 @@ def unitless_property(name, format_code='{:e}', doc=None, readonly=False,
             else:
                 raise ValueError
         strval = format_code.format(newval)
-        self.sendcmd(set_fmt.format(name, strval))
+        self.sendcmd(set_fmt.format(
+            command if set_cmd is None else set_cmd,
+            strval
+        ))
 
     return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
                      writeonly=writeonly)
 
 
-def int_property(name, format_code='{:d}', doc=None, readonly=False,
-                 writeonly=False, valid_set=None, set_fmt="{} {}"):
+def int_property(command, set_cmd=None, format_code='{:d}', doc=None,
+                 readonly=False, writeonly=False, valid_set=None,
+                 set_fmt="{} {}"):
     """
     Called inside of SCPI classes to instantiate properties with unitless
     numeric values.
 
-    :param str name: Name of the SCPI command corresponding to this property.
+    :param str command: Name of the SCPI command corresponding to this property.
+        If parameter set_cmd is not specified, then this parameter is also used
+        for both getting and setting.
+    :param str set_cmd: If not `None`, this parameter sets the command string
+        to be used when sending commands with no return values to the
+        instrument. This allows for non-symmetric properties that have different
+        strings for getting vs setting a property.
     :param str format_code: Argument to `str.format` used in sending values
         to the instrument.
     :param str doc: Docstring to be associated with the new property.
@@ -341,12 +388,15 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False,
     """
 
     def _getter(self):
-        raw = self.query("{}?".format(name))
+        raw = self.query("{}?".format(command))
         return int(raw)
     if valid_set is None:
         def _setter(self, newval):
             strval = format_code.format(newval)
-            self.sendcmd(set_fmt.format(name, strval))
+            self.sendcmd(set_fmt.format(
+                command if set_cmd is None else set_cmd,
+                strval
+            ))
     else:
         def _setter(self, newval):
             if newval not in valid_set:
@@ -355,13 +405,16 @@ def int_property(name, format_code='{:d}', doc=None, readonly=False,
                     "must be one of {}.".format(newval, valid_set)
                 )
             strval = format_code.format(newval)
-            self.sendcmd(set_fmt.format(name, strval))
+            self.sendcmd(set_fmt.format(
+                command if set_cmd is None else set_cmd,
+                strval
+            ))
 
     return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
                      writeonly=writeonly)
 
 
-def unitful_property(name, units, format_code='{:e}', doc=None,
+def unitful_property(command, units, set_cmd=None, format_code='{:e}', doc=None,
                      input_decoration=None, output_decoration=None,
                      readonly=False, writeonly=False, set_fmt="{} {}",
                      valid_range=(None, None)):
@@ -373,7 +426,13 @@ def unitful_property(name, units, format_code='{:e}', doc=None,
     for instruments where the units can change dynamically due to front-panel
     interaction or due to remote commands.
 
-    :param str name: Name of the SCPI command corresponding to this property.
+    :param str command: Name of the SCPI command corresponding to this property.
+        If parameter set_cmd is not specified, then this parameter is also used
+        for both getting and setting.
+    :param str set_cmd: If not `None`, this parameter sets the command string
+        to be used when sending commands with no return values to the
+        instrument. This allows for non-symmetric properties that have different
+        strings for getting vs setting a property.
     :param units: Units to assume in sending and receiving magnitudes to and
         from the instrument.
     :param str format_code: Argument to `str.format` used in sending the
@@ -413,7 +472,7 @@ def unitful_property(name, units, format_code='{:e}', doc=None,
         return output_decoration(val)
 
     def _getter(self):
-        raw = _in_decor_fcn(self.query("{}?".format(name)))
+        raw = _in_decor_fcn(self.query("{}?".format(command)))
         return pq.Quantity(*split_unit_str(raw, units)).rescale(units)
 
     def _setter(self, newval):
@@ -434,13 +493,16 @@ def unitful_property(name, units, format_code='{:e}', doc=None,
         # catch bad units.
         strval = format_code.format(
             assume_units(newval, units).rescale(units).item())
-        self.sendcmd(set_fmt.format(name, _out_decor_fcn(strval)))
+        self.sendcmd(set_fmt.format(
+            command if set_cmd is None else set_cmd,
+            _out_decor_fcn(strval)
+        ))
 
     return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
                      writeonly=writeonly)
 
 
-def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?",
+def bounded_unitful_property(command, units, min_fmt_str="{}:MIN?",
                              max_fmt_str="{}:MAX?",
                              valid_range=("query", "query"), **kwargs):
     """
@@ -454,7 +516,13 @@ def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?",
     the one created by `unitful_property`, one for the minimum value, and one
     for the maximum value.
 
-    :param str name: Name of the SCPI command corresponding to this property.
+    :param str command: Name of the SCPI command corresponding to this property.
+        If parameter set_cmd is not specified, then this parameter is also used
+        for both getting and setting.
+    :param str set_cmd: If not `None`, this parameter sets the command string
+        to be used when sending commands with no return values to the
+        instrument. This allows for non-symmetric properties that have different
+        strings for getting vs setting a property.
     :param units: Units to assume in sending and receiving magnitudes to and
         from the instrument.
     :param str min_fmt_str: Specify the string format to use when sending a
@@ -480,13 +548,13 @@ def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?",
 
     def _min_getter(self):
         if valid_range[0] == "query":
-            return pq.Quantity(*split_unit_str(self.query(min_fmt_str.format(name)), units))
+            return pq.Quantity(*split_unit_str(self.query(min_fmt_str.format(command)), units))
 
         return assume_units(valid_range[0], units).rescale(units)
 
     def _max_getter(self):
         if valid_range[1] == "query":
-            return pq.Quantity(*split_unit_str(self.query(max_fmt_str.format(name)), units))
+            return pq.Quantity(*split_unit_str(self.query(max_fmt_str.format(command)), units))
 
         return assume_units(valid_range[1], units).rescale(units)
 
@@ -496,18 +564,24 @@ def bounded_unitful_property(name, units, min_fmt_str="{}:MIN?",
     )
 
     return (
-        unitful_property(name, units, valid_range=new_range, **kwargs),
+        unitful_property(command, units, valid_range=new_range, **kwargs),
         property(_min_getter) if valid_range[0] is not None else None,
         property(_max_getter) if valid_range[1] is not None else None
     )
 
 
-def string_property(name, bookmark_symbol='"', doc=None, readonly=False,
-                    writeonly=False, set_fmt="{} {}{}{}"):
+def string_property(command, set_cmd=None, bookmark_symbol='"', doc=None,
+                    readonly=False, writeonly=False, set_fmt="{} {}{}{}"):
     """
     Called inside of SCPI classes to instantiate properties with a string value.
 
-    :param str name: Name of the SCPI command corresponding to this property.
+    :param str command: Name of the SCPI command corresponding to this property.
+        If parameter set_cmd is not specified, then this parameter is also used
+        for both getting and setting.
+    :param str set_cmd: If not `None`, this parameter sets the command string
+        to be used when sending commands with no return values to the
+        instrument. This allows for non-symmetric properties that have different
+        strings for getting vs setting a property.
     :param str doc: Docstring to be associated with the new property.
     :param bool readonly: If `True`, the returned property does not have a
         setter.
@@ -523,14 +597,16 @@ def string_property(name, bookmark_symbol='"', doc=None, readonly=False,
     bookmark_length = len(bookmark_symbol)
 
     def _getter(self):
-        string = self.query("{}?".format(name))
+        string = self.query("{}?".format(command))
         string = string[
             bookmark_length:-bookmark_length] if bookmark_length > 0 else string
         return string
 
     def _setter(self, newval):
-        self.sendcmd(
-            set_fmt.format(name, bookmark_symbol, newval, bookmark_symbol))
+        self.sendcmd(set_fmt.format(
+            command if set_cmd is None else set_cmd,
+            bookmark_symbol, newval, bookmark_symbol
+        ))
 
     return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
                      writeonly=writeonly)

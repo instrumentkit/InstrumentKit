@@ -196,3 +196,18 @@ def test_enum_property_readonly_reading_passes():
 
     eq_(mock_instrument.a, SillyEnum.a)
     eq_(mock_instrument.value, 'MOCK:A?\n')
+
+
+def test_enum_property_set_cmd():
+    class SillyEnum(Enum):
+        a = 'aa'
+
+    class EnumMock(MockInstrument):
+        a = enum_property('MOCK:A', SillyEnum, set_cmd='FOOBAR:A')
+
+    mock_inst = EnumMock({'MOCK:A?': 'aa'})
+
+    eq_(mock_inst.a, SillyEnum.a)
+    mock_inst.a = SillyEnum.a
+
+    eq_(mock_inst.value, 'MOCK:A?\nFOOBAR:A aa\n')
