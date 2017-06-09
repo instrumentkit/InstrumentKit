@@ -20,8 +20,8 @@ from . import MockInstrument
 
 def test_bool_property_basics():
     class BoolMock(MockInstrument):
-        mock1 = bool_property('MOCK1', 'ON', 'OFF')
-        mock2 = bool_property('MOCK2', 'YES', 'NO')
+        mock1 = bool_property('MOCK1')
+        mock2 = bool_property('MOCK2', inst_true='YES', inst_false='NO')
 
     mock_inst = BoolMock({'MOCK1?': 'OFF', 'MOCK2?': 'YES'})
 
@@ -36,7 +36,7 @@ def test_bool_property_basics():
 
 def test_bool_property_set_fmt():
     class BoolMock(MockInstrument):
-        mock1 = bool_property('MOCK1', 'ON', 'OFF', set_fmt="{}={}")
+        mock1 = bool_property('MOCK1', set_fmt="{}={}")
 
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
 
@@ -48,7 +48,7 @@ def test_bool_property_set_fmt():
 @raises(AttributeError)
 def test_bool_property_readonly_writing_fails():
     class BoolMock(MockInstrument):
-        mock1 = bool_property('MOCK1', 'ON', 'OFF', readonly=True)
+        mock1 = bool_property('MOCK1', readonly=True)
 
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
 
@@ -57,7 +57,7 @@ def test_bool_property_readonly_writing_fails():
 
 def test_bool_property_readonly_reading_passes():
     class BoolMock(MockInstrument):
-        mock1 = bool_property('MOCK1', 'ON', 'OFF', readonly=True)
+        mock1 = bool_property('MOCK1', readonly=True)
 
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
 
@@ -67,7 +67,7 @@ def test_bool_property_readonly_reading_passes():
 @raises(AttributeError)
 def test_bool_property_writeonly_reading_fails():
     class BoolMock(MockInstrument):
-        mock1 = bool_property('MOCK1', 'ON', 'OFF', writeonly=True)
+        mock1 = bool_property('MOCK1', writeonly=True)
 
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
 
@@ -76,8 +76,20 @@ def test_bool_property_writeonly_reading_fails():
 
 def test_bool_property_writeonly_writing_passes():
     class BoolMock(MockInstrument):
-        mock1 = bool_property('MOCK1', 'ON', 'OFF', writeonly=True)
+        mock1 = bool_property('MOCK1', writeonly=True)
 
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
 
     mock_instrument.mock1 = False
+
+
+def test_bool_property_set_cmd():
+    class BoolMock(MockInstrument):
+        mock1 = bool_property('MOCK1', set_cmd='FOOBAR')
+
+    mock_inst = BoolMock({'MOCK1?': 'OFF'})
+
+    eq_(mock_inst.mock1, False)
+    mock_inst.mock1 = True
+
+    eq_(mock_inst.value, 'MOCK1?\nFOOBAR ON\n')

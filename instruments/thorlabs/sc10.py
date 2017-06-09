@@ -67,8 +67,8 @@ class SC10(Instrument):
 
     enable = bool_property(
         "ens",
-        "1",
-        "0",
+        inst_true="1",
+        inst_false="0",
         set_fmt="{}={}",
         doc="""
         Gets/sets the shutter enable status, False for disabled, True if
@@ -182,8 +182,8 @@ class SC10(Instrument):
 
     closed = bool_property(
         "closed",
-        "1",
-        "0",
+        inst_true="1",
+        inst_false="0",
         readonly=True,
         doc="""
         Gets the shutter closed status.
@@ -197,8 +197,8 @@ class SC10(Instrument):
 
     interlock = bool_property(
         "interlock",
-        "1",
-        "0",
+        inst_true="1",
+        inst_false="0",
         readonly=True,
         doc="""
         Gets the interlock tripped status.

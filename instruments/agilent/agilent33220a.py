@@ -87,7 +87,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         super(Agilent33220a, self).frequency = newval
 
     function = enum_property(
-        name="FUNC",
+        command="FUNC",
         enum=Function,
         doc="""
         Gets/sets the output function of the function generator
@@ -98,7 +98,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     duty_cycle = int_property(
-        name="FUNC:SQU:DCYC",
+        command="FUNC:SQU:DCYC",
         doc="""
         Gets/sets the duty cycle of a square wave.
 
@@ -111,7 +111,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     ramp_symmetry = int_property(
-        name="FUNC:RAMP:SYMM",
+        command="FUNC:RAMP:SYMM",
         doc="""
         Gets/sets the ramp symmetry for ramp waves.
 
@@ -124,7 +124,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     output = bool_property(
-        name="OUTP",
+        command="OUTP",
         inst_true="ON",
         inst_false="OFF",
         doc="""
@@ -138,7 +138,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     output_sync = bool_property(
-        name="OUTP:SYNC",
+        command="OUTP:SYNC",
         inst_true="ON",
         inst_false="OFF",
         doc="""
@@ -149,7 +149,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     output_polarity = enum_property(
-        name="OUTP:POL",
+        command="OUTP:POL",
         enum=OutputPolarity,
         doc="""
         Gets/sets the polarity of the waveform relative to the offset voltage.
