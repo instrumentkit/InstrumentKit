@@ -6,4 +6,4 @@ enum34
 python-vxi11>=0.8
 pyusb
 python-usbtmc
-ruamel.yaml<=0.15
+ruamel.yaml~=0.14.12
