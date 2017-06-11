@@ -54,7 +54,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
         :type: `str`
         """
-        return self._filelike.term_char
+        return chr(self._filelike.term_char)
 
     @terminator.setter
     def terminator(self, newval):
@@ -78,7 +78,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second).rescale(pq.ms).magnitude
+        newval = assume_units(newval, pq.second).rescale(pq.s).magnitude
         self._filelike.timeout = newval
 
     # FILE-LIKE METHODS #
