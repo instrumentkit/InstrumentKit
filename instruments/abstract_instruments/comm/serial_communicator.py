@@ -34,7 +34,13 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, conn):
         super(SerialCommunicator, self).__init__(self)
 
-        if isinstance(conn, serial.Serial):
+        allowed_bases = (serial.Serial, )
+        try:
+            allowed_bases += (serial.serialutil.SerialBase, )
+        except AttributeError:
+            pass
+
+        if isinstance(conn, allowed_bases):
             self._conn = conn
             self._terminator = "\n"
             self._debug = False
