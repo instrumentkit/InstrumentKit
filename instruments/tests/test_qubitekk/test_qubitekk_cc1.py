@@ -364,7 +364,7 @@ def test_cc1_subtract_error():
         cc.subtract = "blo"
 
 
-def test_cc1_trigger_mode():  # pylint: disable=redefined-variable-type
+def test_cc1_trigger_mode():
     with expected_protocol(
         ik.qubitekk.CC1,
         [
@@ -386,7 +386,7 @@ def test_cc1_trigger_mode():  # pylint: disable=redefined-variable-type
         cc.trigger_mode = cc.TriggerMode.start_stop
 
 
-def test_cc1_trigger_mode_old_firmware():  # pylint: disable=redefined-variable-type
+def test_cc1_trigger_mode_old_firmware():
     with expected_protocol(
         ik.qubitekk.CC1,
         [

@@ -78,7 +78,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     # PROPERTIES ##
 
     frequency = unitful_property(
-        name="FREQ",
+        command="FREQ",
         units=pq.Hz,
         doc="""
         Gets/sets the output frequency.
@@ -89,7 +89,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     )
 
     function = enum_property(
-        name="FUNC",
+        command="FUNC",
         enum=Function,
         input_decoration=int,
         doc="""
@@ -100,7 +100,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     )
 
     offset = unitful_property(
-        name="OFFS",
+        command="OFFS",
         units=pq.volt,
         doc="""
         Gets/sets the offset voltage for the output waveform.
@@ -111,7 +111,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     )
 
     phase = unitful_property(
-        name="PHSE",
+        command="PHSE",
         units=pq.degree,
         doc="""
         Gets/sets the phase for the output waveform.

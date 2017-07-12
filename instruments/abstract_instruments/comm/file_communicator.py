@@ -60,8 +60,8 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         """
         if hasattr(self._filelike, 'name'):
             return self._filelike.name
-        else:
-            return None
+
+        return None
 
     @address.setter
     def address(self, newval):

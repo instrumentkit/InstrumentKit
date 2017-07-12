@@ -292,8 +292,8 @@ class TC200(Instrument):
             return pq.degC
         elif (response >> 5) % 2:
             return pq.degK
-        else:
-            return pq.degF
+
+        return pq.degF
 
     @degrees.setter
     def degrees(self, newval):

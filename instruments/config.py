@@ -56,9 +56,9 @@ def walk_dict(d, path):
     if not path[0]:
         # If the first part of the path is empty, do nothing.
         return walk_dict(d, path[1:])
-    else:
-        # Otherwise, resolve that segment and recurse.
-        return walk_dict(d[path[0]], path[1:])
+
+    # Otherwise, resolve that segment and recurse.
+    return walk_dict(d[path[0]], path[1:])
 
 def quantity_constructor(loader, node):
     """

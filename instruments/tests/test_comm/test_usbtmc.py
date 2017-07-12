@@ -40,7 +40,7 @@ def test_usbtmccomm_init_missing_module():
 def test_usbtmccomm_terminator_getter(mock_usbtmc):
     comm = USBTMCCommunicator()
 
-    term_char = mock.PropertyMock(return_value="\n")
+    term_char = mock.PropertyMock(return_value=10)
     type(comm._filelike).term_char = term_char
 
     eq_(comm.terminator, "\n")
@@ -58,7 +58,7 @@ def test_usbtmccomm_terminator_setter(mock_usbtmc):
     eq_(comm._terminator, "*")
     term_char.assert_called_with(42)
 
-    comm.terminator = b"*"  # pylint: disable=redefined-variable-type
+    comm.terminator = b"*"
     eq_(comm._terminator, "*")
     term_char.assert_called_with(42)
 
@@ -74,10 +74,10 @@ def test_usbtmccomm_timeout(mock_usbtmc):
     timeout.assert_called_with()
 
     comm.timeout = 10
-    timeout.assert_called_with(array(10000.0))
+    timeout.assert_called_with(array(10.0))
 
     comm.timeout = 1000 * pq.millisecond
-    timeout.assert_called_with(array(1000.0))
+    timeout.assert_called_with(array(1.0))
 
 
 @mock.patch(patch_path)

@@ -91,7 +91,7 @@ class MC1(Instrument):
         self._upper_limit = assume_units(newval, pq.ms).rescale(pq.ms)
 
     direction = unitful_property(
-        name="DIRE",
+        command="DIRE",
         doc="""
         Get the internal direction variable, which is a function of how far
         the motor needs to go.
@@ -104,7 +104,7 @@ class MC1(Instrument):
     )
 
     inertia = unitful_property(
-        name="INER",
+        command="INER",
         doc="""
         Gets/Sets the amount of force required to overcome static inertia. Must
          be between 0 and 100 milliseconds.
@@ -133,7 +133,7 @@ class MC1(Instrument):
         return response
 
     metric_position = unitful_property(
-        name="METR",
+        command="METR",
         doc="""
         Get the estimated motor position, in millimeters.
 
@@ -145,7 +145,7 @@ class MC1(Instrument):
     )
 
     setting = int_property(
-        name="OUTP",
+        command="OUTP",
         doc="""
         Gets/sets the output port of the optical switch. 0 means input 1 is
         directed to output 1, and input 2 is directed to output 2. 1 means that
@@ -158,7 +158,7 @@ class MC1(Instrument):
     )
 
     step_size = unitful_property(
-        name="STEP",
+        command="STEP",
         doc="""
         Gets/Sets the number of milliseconds per step. Must be between 1
         and 100 milliseconds.

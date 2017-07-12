@@ -124,7 +124,7 @@ def test_bounded_unitful_property_static_range_with_units():
 @mock.patch("instruments.util_fns.unitful_property")
 def test_bounded_unitful_property_passes_kwargs(mock_unitful_property):
     bounded_unitful_property(
-        name='MOCK',
+        command='MOCK',
         units=pq.Hz,
         derp="foobar"
     )
@@ -139,7 +139,7 @@ def test_bounded_unitful_property_passes_kwargs(mock_unitful_property):
 @mock.patch("instruments.util_fns.unitful_property")
 def test_bounded_unitful_property_valid_range_none(mock_unitful_property):
     bounded_unitful_property(
-        name='MOCK',
+        command='MOCK',
         units=pq.Hz,
         valid_range=(None, None)
     )
