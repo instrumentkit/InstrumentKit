@@ -78,7 +78,7 @@ class Field(object):
         if self._fmt[:-1]:
             # Although we know that length > 0, this abs ensures that static
             # code checks are happy with __len__ always returning a positive number
-            return abs(length)
+            return abs(int(self._fmt[:-1]))
 
         raise TypeError("Field is scalar and has no len().")
 
@@ -164,7 +164,7 @@ class StringField(Field):
         super(StringField, self).__set__(obj, value)
 
     def __get__(self, obj, type=None):
-        super(StringField, self).__get__(obj, type=type).decode(self._encoding)
+        return super(StringField, self).__get__(obj, type=type).decode(self._encoding)
 
 
 class Padding(Field):

@@ -6,7 +6,7 @@ Module containing tests for named structures.
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -35,11 +35,17 @@ class TestNamedStruct(TestCase):
 
     def test_str(self):
         class Foo(NamedStruct):
-            a = StringField(8)
+            a = StringField(8, strip_null=False)
             b = StringField(9, strip_null=True)
+            c = StringField(2, encoding='utf-8')
 
-        foo = Foo(a="0123456\x00", b='abc')
+        foo = Foo(a="0123456\x00", b='abc', c=u'α')
         assert Foo.unpack(foo.pack()) == foo
+
+        # Also check that we can get fields out directly.
+        self.assertEqual(foo.a, '0123456\x00')
+        self.assertEqual(foo.b, 'abc')
+        self.assertEqual(foo.c, u'α')
 
 
     def test_negative_len(self):
