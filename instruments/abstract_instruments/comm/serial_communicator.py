@@ -178,8 +178,10 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
-        msg += self._terminator
-        self.write(msg)
+
+        message = msg.decode(encoding='UTF-8')
+        message += self._terminator
+        self.write(message)
 
     def _query(self, msg, size=-1):
         """

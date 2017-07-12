@@ -474,7 +474,8 @@ class APTMotorController(ThorLabsAPT):
                 'DRV113': (pq.Quantity(20480, 'ct/mm'),) * 3,
                 'DRV114': (pq.Quantity(20480, 'ct/mm'),) * 3,
                 'FW103':  (pq.Quantity(25600 / 360, 'ct/deg'),) * 3,
-                'NR360':  (pq.Quantity(25600 / 5.4546, 'ct/deg'),) * 3
+                'NR360':  (pq.Quantity(25600 / 5.4546, 'ct/deg'),) * 3,
+                'PRM1-Z8': (pq.Quantity(1919.64 / 360 ,'ct/deg'),) * 3
             },
             # TODO: add other tables here.
         }
