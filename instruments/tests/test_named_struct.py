@@ -55,3 +55,15 @@ class TestNamedStruct(TestCase):
         with self.assertRaises(TypeError):
             class Foo(NamedStruct):
                 a = StringField(-1)
+
+    def test_equality(self):
+        class Foo(NamedStruct):
+            a = Field('H')
+            b = Field('B')
+            c = StringField(5, encoding='utf8', strip_null=True)
+
+        foo1 = Foo(a=0x1234, b=0x56, c=u'ω')
+        foo2 = Foo(a=0xabcd, b=0xef, c=u'α')
+
+        assert foo1 == foo1
+        assert foo1 != foo2
