@@ -61,6 +61,12 @@ class Field(object):
         self._fmt = fmt.strip()
         self._strip_null = strip_null
 
+        # If we're given a length, check that it
+        # makes sense.
+        if self._fmt[:-1] and int(self._fmt[:-1]) < 0:
+            raise TypeError("Field is specified with negative length.")
+
+
     def is_significant(self):
         return not self._fmt.endswith('x')
 
@@ -70,11 +76,7 @@ class Field(object):
 
     def __len__(self):
         if self._fmt[:-1]:
-            length = int(self._fmt[-1])
-            if length < 0:
-                raise TypeError("Field is specified with negative length.")
-
-            # Although we know that length>0, this abs ensures that static
+            # Although we know that length > 0, this abs ensures that static
             # code checks are happy with __len__ always returning a positive number
             return abs(length)
 
