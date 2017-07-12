@@ -49,12 +49,12 @@ class TestNamedStruct(TestCase):
         self.assertEqual(foo.c, u'α')
 
 
-    def test_negative_len(self): # pylint: disable=unused-variable
+    def test_negative_len(self):
         """
         Checks whether negative field lengths correctly raise.
         """
         with self.assertRaises(TypeError):
-            class Foo(NamedStruct):
+            class Foo(NamedStruct): # pylint: disable=unused-variable
                 a = StringField(-1)
 
     def test_equality(self):
