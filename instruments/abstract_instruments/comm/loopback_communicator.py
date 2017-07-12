@@ -108,10 +108,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `bytes`
         """
         if self._stdin is not None:
-            if size and size >= 0:
-                input_var = self._stdin.read(size)
-                return bytes(input_var)
-            elif size == -1 or size is None:
+            if size == -1 or size is None:
                 result = bytes()
                 if self._terminator:
                     while result.endswith(self._terminator.encode("utf-8")) is False:
@@ -123,6 +120,11 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
                     result = self._stdin.read(-1)
                 
                 return result[:-len(self._terminator)]
+
+            elif size >= 0:
+                input_var = self._stdin.read(size)
+                return bytes(input_var)
+
             else:
                 raise ValueError("Must read a positive value of characters.")
         else:
