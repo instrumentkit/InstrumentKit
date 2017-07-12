@@ -15,6 +15,18 @@ import struct
 
 message_header_nopacket = struct.Struct('<HBBBB')
 message_header_wpacket = struct.Struct('<HHBB')
+hw_info_data = struct.Struct(
+    '<'    # Declare endianness.
+    '4s'   # serial_number
+    '8s'   # model_number
+    'H'    # hw_type_int
+    'BBBx' # fw_version
+    '48s'  # notes
+    '12x'  # padding
+    'H'    # hw_version
+    'H'    # mod_state
+    'H'    # n_channels
+)
 
 # CLASSES #####################################################################
 
