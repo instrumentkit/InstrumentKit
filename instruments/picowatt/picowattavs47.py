@@ -97,7 +97,7 @@ class PicowattAVS47(SCPIInstrument):
         return ProxyList(self, PicowattAVS47.Sensor, range(8))
 
     remote = bool_property(
-        name="REM",
+        command="REM",
         inst_true="1",
         inst_false="0",
         doc="""
@@ -111,7 +111,7 @@ class PicowattAVS47(SCPIInstrument):
     )
 
     input_source = enum_property(
-        name="INP",
+        command="INP",
         enum=InputSource,
         input_decoration=int,
         doc="""
@@ -122,7 +122,7 @@ class PicowattAVS47(SCPIInstrument):
     )
 
     mux_channel = int_property(
-        name="MUX",
+        command="MUX",
         doc="""
         Gets/sets the multiplexer sensor number.
         It is recommended that you ground the input before switching the
@@ -136,7 +136,7 @@ class PicowattAVS47(SCPIInstrument):
     )
 
     excitation = int_property(
-        name="EXC",
+        command="EXC",
         doc="""
         Gets/sets the excitation sensor number.
 
@@ -148,7 +148,7 @@ class PicowattAVS47(SCPIInstrument):
     )
 
     display = int_property(
-        name="DIS",
+        command="DIS",
         doc="""
         Gets/sets the sensor that is displayed on the front panel.
 

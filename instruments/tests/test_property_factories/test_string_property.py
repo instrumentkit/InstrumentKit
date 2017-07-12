@@ -52,3 +52,15 @@ def test_string_property_no_bookmark_symbol():
 
     mock_inst.mock_property = 'foo'
     eq_(mock_inst.value, 'MOCK?\nMOCK foo\n')
+
+
+def test_string_property_set_cmd():
+    class StringMock(MockInstrument):
+        mock_property = string_property('MOCK', set_cmd='FOOBAR')
+
+    mock_inst = StringMock({'MOCK?': '"derp"'})
+
+    eq_(mock_inst.mock_property, 'derp')
+
+    mock_inst.mock_property = 'qwerty'
+    eq_(mock_inst.value, 'MOCK?\nFOOBAR "qwerty"\n')

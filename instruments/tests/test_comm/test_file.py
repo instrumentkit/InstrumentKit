@@ -60,7 +60,7 @@ def test_filecomm_terminator():
     comm.terminator = "*"
     eq_(comm._terminator, "*")
 
-    comm.terminator = b"*"  # pylint: disable=redefined-variable-type
+    comm.terminator = b"*"
     eq_(comm._terminator, "*")
 
 

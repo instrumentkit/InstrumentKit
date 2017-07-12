@@ -463,8 +463,8 @@ class Keithley580(Instrument):
 
     # COMMUNICATOR METHODS #
 
-    def sendcmd(self, msg):
-        super(Keithley580, self).sendcmd(msg + ':')
+    def sendcmd(self, cmd):
+        super(Keithley580, self).sendcmd(cmd + ':')
 
-    def query(self, msg, size=-1):
-        return super(Keithley580, self).query(msg + ':', size)[:-1]
+    def query(self, cmd, size=-1):
+        return super(Keithley580, self).query(cmd + ':', size)[:-1]

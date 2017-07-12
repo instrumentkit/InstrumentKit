@@ -411,8 +411,8 @@ class LM(Instrument):
     def _ack_expected(self, msg=""):
         if msg.find("?") > 0:
             return None
-        else:
-            return "OK"
+
+        return "OK"
 
     @property
     def firmware(self):

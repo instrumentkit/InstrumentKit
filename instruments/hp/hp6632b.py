@@ -77,9 +77,6 @@ class HP6632b(SCPIInstrument, HP6652a):
     array(10.0) * V
     """
 
-    def __init__(self, filelike):
-        super(HP6632b, self).__init__(filelike)
-
     # ENUMS ##
 
     class ALCBandwidth(IntEnum):

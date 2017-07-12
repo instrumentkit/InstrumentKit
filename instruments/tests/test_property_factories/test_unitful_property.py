@@ -242,3 +242,18 @@ def test_unitful_property_split_str():
     value = mock_inst.unitful_property
     assert value.magnitude == 1000
     assert value.units == pq.hertz
+
+
+def test_unitful_property_name_read_not_none():
+    class UnitfulMock(MockInstrument):
+        a = unitful_property(
+            'MOCK',
+            units=pq.hertz,
+            set_cmd='FOOBAR'
+        )
+
+    mock_inst = UnitfulMock({'MOCK?': '1000'})
+    eq_(mock_inst.a, 1000 * pq.hertz)
+    mock_inst.a = 1000 * pq.hertz
+
+    eq_(mock_inst.value, 'MOCK?\nFOOBAR {:e}\n'.format(1000))
