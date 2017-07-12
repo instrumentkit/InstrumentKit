@@ -296,6 +296,9 @@ class NamedStruct(with_metaclass(HasFields, object)):
 
         return self._values == other._values
 
+    def __hash__(self):
+        return hash(self._values)
+
     def __str__(self):
         return "{name} {{\n{fields}\n}}".format(
             name=type(self).__name__,
