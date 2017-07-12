@@ -8,10 +8,10 @@ Module containing tests for named structures.
 
 from __future__ import absolute_import, unicode_literals
 
+from unittest import TestCase
+
 from hypothesis import given
 import hypothesis.strategies as st
-
-from unittest import TestCase
 
 from instruments.named_struct import (
     Field, StringField, Padding, NamedStruct
@@ -19,7 +19,8 @@ from instruments.named_struct import (
 
 # TESTS ######################################################################
 
-# pylint: disable=no-member,protected-access,blacklisted-name,missing-docstring
+# We disable pylint warnings that are not as applicable for unit tests.
+# pylint: disable=no-member,protected-access,blacklisted-name,missing-docstring,no-self-use
 
 class TestNamedStruct(TestCase):
     @given(st.integers(min_value=0, max_value=0x7FFF*2+1), st.integers(min_value=0, max_value=0xFF))
@@ -48,7 +49,7 @@ class TestNamedStruct(TestCase):
         self.assertEqual(foo.c, u'α')
 
 
-    def test_negative_len(self):
+    def test_negative_len(self): # pylint: disable=unused-variable
         """
         Checks whether negative field lengths correctly raise.
         """
