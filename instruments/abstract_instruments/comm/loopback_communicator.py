@@ -118,7 +118,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
                         result += c
                 else:
                     result = self._stdin.read(-1)
-                
+
                 return result[:-len(self._terminator)]
 
             elif size >= 0:
