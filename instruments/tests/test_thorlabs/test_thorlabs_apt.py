@@ -6,11 +6,14 @@ Module containing tests for the Thorlabs TC200
 
 # IMPORTS ####################################################################
 
+# pylint: disable=unused-import
+
 from __future__ import absolute_import
+
+import struct
 
 from nose.tools import raises
 import quantities as pq
-import struct
 
 import instruments as ik
 from instruments.thorlabs._packets import ThorLabsPacket, hw_info_data
@@ -18,6 +21,8 @@ from instruments.thorlabs._cmds import ThorLabsCommands
 from instruments.tests import expected_protocol
 
 # TESTS ######################################################################
+
+# pylint: disable=protected-access,unused-argument
 
 
 def test_apt_hw_info():
@@ -39,13 +44,17 @@ def test_apt_hw_info():
                 source=0x50,
                 data=hw_info_data.pack(
                     # Serial number
+<<<<<<< HEAD
                     b'\x01\x02\x03\x04', 
+=======
+                    0x1234,
+>>>>>>> 68cb90fe6c6714b91a3161f54cd288f97cabc043
                     # Model number
-                    "ABC-123".encode('ascii'), 
+                    "ABC-123".encode('ascii'),
                     # HW type
-                    3, 
+                    3,
                     # FW version,
-                    0xa1, 0xa2, 0xa3, 
+                    0xa1, 0xa2, 0xa3,
                     # Notes
                     "abcdefg".encode('ascii'),
                     # HW version
@@ -71,5 +80,7 @@ def test_apt_hw_info():
         # Check external API.
         assert apt.serial_number == '01020304'
         assert apt.model_number == 'ABC-123'
-        assert apt.name == "ThorLabs APT Instrument model ABC-123, serial 01020304 (HW version 42, FW version a1.a2.a3)"
-
+        assert apt.name == (
+            "ThorLabs APT Instrument model ABC-123, "
+            "serial 01020304 (HW version 42, FW version a1.a2.a3)"
+        )
