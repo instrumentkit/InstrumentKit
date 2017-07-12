@@ -110,7 +110,9 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                 data=None
             )
             hw_info = self.querypacket(
-                req_packet, expect=_cmds.ThorLabsCommands.HW_GET_INFO)
+                req_packet, expect=_cmds.ThorLabsCommands.HW_GET_INFO,
+                expect_data_len=84
+            )
 
             self._serial_number = codecs.encode(hw_info.data[0:4], 'hex').decode('ascii')
             self._model_number = hw_info.data[4:12].decode('ascii').replace('\x00', '').strip()
@@ -126,10 +128,10 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             # Note that the fourth byte is padding, so we strip out the first
             # three bytes and format them.
             # pylint: disable=invalid-format-index
-            self._fw_version = "{0[0]}.{0[1]}.{0[2]}".format(
-                codecs.encode(hw_info.data[14:18], 'hex')
+            self._fw_version = "{0[0]:x}.{0[1]:x}.{0[2]:x}".format(
+                hw_info.data[14:18]
             )
-            self._notes = str(hw_info.data[18:66]).replace('\x00', '').strip()
+            self._notes = hw_info.data[18:66].replace(b'\x00', b'').decode('ascii').strip()
 
             self._hw_version = struct.unpack(
                 '<H', hw_info.data[78:80])[0]

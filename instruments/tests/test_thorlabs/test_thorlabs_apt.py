@@ -13,7 +13,7 @@ import quantities as pq
 import struct
 
 import instruments as ik
-from instruments.thorlabs._packets import ThorLabsPacket, hw_info
+from instruments.thorlabs._packets import ThorLabsPacket, hw_info_data
 from instruments.thorlabs._cmds import ThorLabsCommands
 from instruments.tests import expected_protocol
 
@@ -37,9 +37,9 @@ def test_apt_hw_info():
                 message_id=ThorLabsCommands.HW_GET_INFO,
                 dest=0x01,
                 source=0x50,
-                data=hw_info.pack(
+                data=hw_info_data.pack(
                     # Serial number
-                    0x1234, 
+                    b'\x01\x02\x03\x04', 
                     # Model number
                     "ABC-123".encode('ascii'), 
                     # HW type
@@ -69,7 +69,7 @@ def test_apt_hw_info():
         assert apt._mod_state == 43
 
         # Check external API.
-        assert apt.serial_number == 0x1234
+        assert apt.serial_number == '01020304'
         assert apt.model_number == 'ABC-123'
-        assert apt.name == "ThorLabs APT Instrument model ABC-123, serial 1234 (HW version 42, FW version a1.a2.a3)"
+        assert apt.name == "ThorLabs APT Instrument model ABC-123, serial 01020304 (HW version 42, FW version a1.a2.a3)"
 
