@@ -43,7 +43,7 @@ class ThorLabsInstrument(Instrument):
         self._file.write_raw(packet.pack())
 
     # pylint: disable=protected-access
-    def querypacket(self, packet, expect=None, timeout=None):
+    def querypacket(self, packet, expect=None, timeout=None, expect_data_len=None):
         """
         Sends a packet to the connected APT instrument, and waits for a packet
         in response. Optionally, checks whether the received packet type is
@@ -65,6 +65,9 @@ class ThorLabsInstrument(Instrument):
             as a time and used as the timeout value. Finally, if the timeout is a unitless
             number (e.g. `float` or `int`), then seconds are assumed.
 
+        :param int expect_data_len: Number of bytes to expect as the
+            data for the returned packet.
+
         :return: Returns the response back from the instrument wrapped up in
             a ThorLabs APT packet, or None if no packet was received.
         :rtype: `ThorLabsPacket`
@@ -76,7 +79,11 @@ class ThorLabsInstrument(Instrument):
 
         while True:
             self._file.write_raw(packet.pack())
-            resp = self._file.read_raw()
+            resp = self._file.read_raw(
+                expect_data_len + 6 # the header is six bytes.
+                if expect_data_len else
+                6
+            )
             if resp or timeout is None:
                 break
             else:
