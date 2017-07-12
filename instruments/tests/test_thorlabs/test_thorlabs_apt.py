@@ -44,11 +44,7 @@ def test_apt_hw_info():
                 source=0x50,
                 data=hw_info_data.pack(
                     # Serial number
-<<<<<<< HEAD
                     b'\x01\x02\x03\x04', 
-=======
-                    0x1234,
->>>>>>> 68cb90fe6c6714b91a3161f54cd288f97cabc043
                     # Model number
                     "ABC-123".encode('ascii'),
                     # HW type
