@@ -1,3 +1,4 @@
 mock
 nose
+hypothesis
 pylint==1.7.1

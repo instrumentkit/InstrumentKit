@@ -183,3 +183,15 @@ String Property
 .. autofunction:: string_property
 
 
+Named Structures
+================
+
+The :class:`~instruments.named_struct.NamedStruct` class can be used to represent
+C-style structures for serializing and deserializing data.
+
+.. autoclass:: instruments.named_struct.NamedStruct
+
+.. autoclass:: instruments.named_struct.Field
+
+.. autoclass:: instruments.named_struct.Padding
+
