@@ -149,7 +149,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         :param bytes msg: Bytes to be sent to the instrument over the VISA
             connection.
         """
-        self._conn.write(msg)
+        self._conn.write_raw(msg)
 
     def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
         return NotImplemented
