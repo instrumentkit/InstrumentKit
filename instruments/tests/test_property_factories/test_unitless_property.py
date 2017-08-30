@@ -88,3 +88,15 @@ def test_unitless_property_readonly_reading_passes():
     mock_inst = UnitlessMock({'MOCK?': '1'})
 
     eq_(mock_inst.mock_property, 1)
+
+
+def test_unitless_property_set_cmd():
+    class UnitlessMock(MockInstrument):
+        mock_property = unitless_property('MOCK', set_cmd='FOOBAR')
+
+    mock_inst = UnitlessMock({'MOCK?': '1'})
+
+    eq_(mock_inst.mock_property, 1)
+    mock_inst.mock_property = 1
+
+    eq_(mock_inst.value, 'MOCK?\nFOOBAR {:e}\n'.format(1))

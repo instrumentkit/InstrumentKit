@@ -55,9 +55,6 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
     >>> psu.display_textmode=False
     """
 
-    def __init__(self, filelike):
-        super(HP6652a, self).__init__(filelike)
-
     # ENUMS ##
 
     # I don't know of any possible enumerations supported

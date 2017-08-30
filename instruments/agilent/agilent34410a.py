@@ -35,9 +35,6 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
     .. _Keysight website: http://www.keysight.com/
     """
 
-    def __init__(self, filelike):
-        super(Agilent34410a, self).__init__(filelike)
-
     # PROPERTIES #
 
     @property

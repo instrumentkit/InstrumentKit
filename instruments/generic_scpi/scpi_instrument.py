@@ -37,9 +37,6 @@ class SCPIInstrument(Instrument):
     >>> print(inst.name)
     """
 
-    def __init__(self, filelike):
-        super(SCPIInstrument, self).__init__(filelike)
-
     # PROPERTIES #
 
     @property

@@ -2,18 +2,29 @@ sudo: false
 language: python
 python:
   - "2.7"
-  - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
 install:
   - "pip install -r requirements.txt"
   - "pip install -r dev-requirements.txt"
   - pip install python-coveralls
   - pip install coverage
+before_script:
+  # We use before_script to report version and path information in a way
+  # that can be easily hidden by Travis' log folding. Moreover, a nonzero
+  # exit code from this block kills the entire job, meaning that if we can't
+  # even sensibly get version information, we correctly abort.
+  - which python
+  - python --version
+  - which nosetests
+  - nosetests --version
+  - which pylint
+  - pylint --version
 script:
   - nosetests --with-coverage -w instruments
-  - pylint --py3k instruments/
-  - pylint instruments/
+  - pylint --py3k instruments
+  - pylint --disable=I instruments
 after_success:
   - coveralls
 deploy:

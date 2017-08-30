@@ -32,9 +32,6 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     >>> inst.frequency = 1 * pq.kHz
     """
 
-    def __init__(self, filelike):
-        super(SCPIFunctionGenerator, self).__init__(filelike)
-
     # CONSTANTS #
 
     _UNIT_MNEMONICS = {
@@ -78,7 +75,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     # PROPERTIES #
 
     frequency = unitful_property(
-        name="FREQ",
+        command="FREQ",
         units=pq.Hz,
         doc="""
         Gets/sets the output frequency.
@@ -89,7 +86,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     )
 
     function = enum_property(
-        name="FUNC",
+        command="FUNC",
         enum=lambda: Function,  # pylint: disable=undefined-variable
         doc="""
         Gets/sets the output function of the function generator
@@ -99,7 +96,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     )
 
     offset = unitful_property(
-        name="VOLT:OFFS",
+        command="VOLT:OFFS",
         units=pq.volt,
         doc="""
         Gets/sets the offset voltage of the function generator.

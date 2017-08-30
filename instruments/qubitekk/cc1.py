@@ -275,8 +275,8 @@ class CC1(SCPIInstrument):
         dwell_time = pq.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
         if self.firmware[0] <= 2 and self.firmware[1] <= 1:
             return dwell_time/1000.0
-        else:
-            return dwell_time
+
+        return dwell_time
 
     @dwell_time.setter
     def dwell_time(self, new_val):

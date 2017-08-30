@@ -97,3 +97,15 @@ def test_int_property_format_code():
 
     mock_inst.int_property = 1
     eq_(mock_inst.value, 'MOCK {:e}\n'.format(1))
+
+
+def test_int_property_set_cmd():
+    class IntMock(MockInstrument):
+        int_property = int_property('MOCK', set_cmd='FOOBAR')
+
+    mock_inst = IntMock({'MOCK?': '1'})
+
+    eq_(mock_inst.int_property, 1)
+    mock_inst.int_property = 1
+
+    eq_(mock_inst.value, 'MOCK?\nFOOBAR 1\n')

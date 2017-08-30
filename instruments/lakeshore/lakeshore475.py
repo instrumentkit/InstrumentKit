@@ -269,7 +269,7 @@ class Lakeshore475(SCPIInstrument):
         self.field_control_params = tuple(values)
 
     control_mode = bool_property(
-        name="CMODE",
+        command="CMODE",
         inst_true="1",
         inst_false="0",
         doc="""

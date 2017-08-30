@@ -1,4 +1,4 @@
-numpy
+numpy<1.13.0
 pyserial
 quantities
 future>=0.15
@@ -6,4 +6,4 @@ enum34
 python-vxi11>=0.8
 pyusb
 python-usbtmc
-pyyaml
+ruamel.yaml~=0.14.12

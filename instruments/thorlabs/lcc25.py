@@ -95,8 +95,8 @@ class LCC25(Instrument):
 
     enable = bool_property(
         "enable",
-        "1",
-        "0",
+        inst_true="1",
+        inst_false="0",
         set_fmt="{}={}",
         doc="""
         Gets/sets the output enable status.
@@ -109,8 +109,8 @@ class LCC25(Instrument):
 
     extern = bool_property(
         "extern",
-        "1",
-        "0",
+        inst_true="1",
+        inst_false="0",
         set_fmt="{}={}",
         doc="""
         Gets/sets the use of the external TTL modulation.
@@ -124,8 +124,8 @@ class LCC25(Instrument):
 
     remote = bool_property(
         "remote",
-        "1",
-        "0",
+        inst_true="1",
+        inst_false="0",
         set_fmt="{}={}",
         doc="""
         Gets/sets front panel lockout status for remote instrument operation.

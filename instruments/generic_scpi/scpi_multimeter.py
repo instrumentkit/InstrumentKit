@@ -45,9 +45,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
     >>> print(inst.measure(inst.Mode.resistance))
     """
 
-    def __init__(self, filelike):
-        super(SCPIMultimeter, self).__init__(filelike)
-
     # ENUMS ##
 
     class Mode(Enum):
@@ -142,9 +139,9 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
     # PROPERTIES ##
 
-    # pylint: disable=unnecessary-lambda
+    # pylint: disable=unnecessary-lambda,undefined-variable
     mode = enum_property(
-        name="CONF",
+        command="CONF",
         enum=Mode,
         doc="""
         Gets/sets the current measurement mode for the multimeter.
@@ -160,7 +157,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
     )
 
     trigger_mode = enum_property(
-        name="TRIG:SOUR",
+        command="TRIG:SOUR",
         enum=TriggerMode,
         doc="""
             Gets/sets the SCPI Multimeter trigger mode.
@@ -320,7 +317,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         self.sendcmd("SAMP:COUN {}".format(newval))
 
     trigger_delay = unitful_property(
-        name="TRIG:DEL",
+        command="TRIG:DEL",
         units=pq.second,
         doc="""
         Gets/sets the time delay which the multimeter will use following
@@ -332,7 +329,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
     )
 
     sample_source = enum_property(
-        name="SAMP:SOUR",
+        command="SAMP:SOUR",
         enum=SampleSource,
         doc="""
         Gets/sets the multimeter sample source. This determines whether the
@@ -347,7 +344,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
     )
 
     sample_timer = unitful_property(
-        name="SAMP:TIM",
+        command="SAMP:TIM",
         units=pq.second,
         doc="""
         Gets/sets the sample interval when the sample counter is greater than
