@@ -8,7 +8,6 @@ Module containing tests for the unitless property factory
 
 from __future__ import absolute_import
 
-from nose.tools import eq_
 import pytest
 import quantities as pq
 
@@ -26,10 +25,10 @@ def test_unitless_property_basics():
 
     mock_inst = UnitlessMock({'MOCK?': '1'})
 
-    eq_(mock_inst.mock_property, 1)
+    assert mock_inst.mock_property ==  1
 
     mock_inst.mock_property = 1
-    eq_(mock_inst.value, 'MOCK?\nMOCK {:e}\n'.format(1))
+    assert mock_inst.value ==  'MOCK?\nMOCK {:e}\n'.format(1)
 
 
 def test_unitless_property_units():
@@ -49,7 +48,7 @@ def test_unitless_property_format_code():
     mock_inst = UnitlessMock()
 
     mock_inst.mock_property = 1
-    eq_(mock_inst.value, 'MOCK {:f}\n'.format(1))
+    assert mock_inst.value ==  'MOCK {:f}\n'.format(1)
 
 
 def test_unitless_property_writeonly_reading_fails():
@@ -69,7 +68,7 @@ def test_unitless_property_writeonly_writing_passes():
     mock_inst = UnitlessMock()
 
     mock_inst.mock_property = 1
-    eq_(mock_inst.value, 'MOCK {:e}\n'.format(1))
+    assert mock_inst.value ==  'MOCK {:e}\n'.format(1)
 
 
 def test_unitless_property_readonly_writing_fails():
@@ -88,7 +87,7 @@ def test_unitless_property_readonly_reading_passes():
 
     mock_inst = UnitlessMock({'MOCK?': '1'})
 
-    eq_(mock_inst.mock_property, 1)
+    assert mock_inst.mock_property ==  1
 
 
 def test_unitless_property_set_cmd():
@@ -97,7 +96,7 @@ def test_unitless_property_set_cmd():
 
     mock_inst = UnitlessMock({'MOCK?': '1'})
 
-    eq_(mock_inst.mock_property, 1)
+    assert mock_inst.mock_property ==  1
     mock_inst.mock_property = 1
 
-    eq_(mock_inst.value, 'MOCK?\nFOOBAR {:e}\n'.format(1))
+    assert mock_inst.value ==  'MOCK?\nFOOBAR {:e}\n'.format(1)

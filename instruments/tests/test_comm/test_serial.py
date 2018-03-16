@@ -8,7 +8,6 @@ Unit tests for the serial communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import eq_
 import pytest
 from .. import mock
 import serial
@@ -41,7 +40,7 @@ def test_serialcomm_address():
     type(comm._conn).port = port_name
 
     # Check that our address function is working
-    eq_(comm.address, "/dev/address")
+    assert comm.address ==  "/dev/address"
     port_name.assert_called_with()
 
 
@@ -49,14 +48,14 @@ def test_serialcomm_terminator():
     comm = SerialCommunicator(serial.Serial())
 
     # Default terminator should be \n
-    eq_(comm.terminator, "\n")
+    assert comm.terminator ==  "\n"
 
     comm.terminator = "*"
-    eq_(comm.terminator, "*")
+    assert comm.terminator ==  "*"
 
     comm.terminator = "\r\n"
-    eq_(comm.terminator, "\r\n")
-    eq_(comm._terminator, "\r\n")
+    assert comm.terminator ==  "\r\n"
+    assert comm._terminator ==  "\r\n"
 
 
 def test_serialcomm_timeout():
@@ -90,7 +89,7 @@ def test_serialcomm_read_raw():
     comm._conn = mock.MagicMock()
     comm._conn.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
-    eq_(comm.read_raw(), b"abc")
+    assert comm.read_raw() ==  b"abc"
     comm._conn.read.assert_has_calls([mock.call(1)]*4)
     assert comm._conn.read.call_count == 4
 
@@ -105,7 +104,7 @@ def test_loopbackcomm_read_raw_2char_terminator():
     comm._conn.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\r", b"\n"])
     comm._terminator = "\r\n"
 
-    eq_(comm.read_raw(), b"abc")
+    assert comm.read_raw() ==  b"abc"
     comm._conn.read.assert_has_calls([mock.call(1)] * 5)
     assert comm._conn.read.call_count == 5
 
@@ -141,7 +140,7 @@ def test_serialcomm_query():
     comm.read = mock.MagicMock(return_value="answer")
     comm.sendcmd = mock.MagicMock()
 
-    eq_(comm._query("mock"), "answer")
+    assert comm._query("mock") ==  "answer"
     comm.sendcmd.assert_called_with("mock")
     comm.read.assert_called_with(-1)
 

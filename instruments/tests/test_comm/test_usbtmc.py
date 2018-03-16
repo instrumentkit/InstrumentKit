@@ -8,7 +8,6 @@ Unit tests for the USBTMC communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import eq_
 import pytest
 from .. import mock
 
@@ -44,7 +43,7 @@ def test_usbtmccomm_terminator_getter(mock_usbtmc):
     term_char = mock.PropertyMock(return_value=10)
     type(comm._filelike).term_char = term_char
 
-    eq_(comm.terminator, "\n")
+    assert comm.terminator ==  "\n"
     term_char.assert_called_with()
 
 
@@ -56,11 +55,11 @@ def test_usbtmccomm_terminator_setter(mock_usbtmc):
     type(comm._filelike).term_char = term_char
 
     comm.terminator = "*"
-    eq_(comm._terminator, "*")
+    assert comm._terminator ==  "*"
     term_char.assert_called_with(42)
 
     comm.terminator = b"*"
-    eq_(comm._terminator, "*")
+    assert comm._terminator ==  "*"
     term_char.assert_called_with(42)
 
 
@@ -94,7 +93,7 @@ def test_usbtmccomm_read_raw(mock_usbtmc):
     comm = USBTMCCommunicator()
     comm._filelike.read_raw = mock.MagicMock(return_value=b"abc")
 
-    eq_(comm.read_raw(), b"abc")
+    assert comm.read_raw() ==  b"abc"
     comm._filelike.read_raw.assert_called_with(num=-1)
     assert comm._filelike.read_raw.call_count == 1
 
@@ -125,7 +124,7 @@ def test_usbtmccomm_query(mock_usbtmc):
     comm = USBTMCCommunicator()
     comm._filelike.ask = mock.MagicMock(return_value="answer")
 
-    eq_(comm._query("mock"), "answer")
+    assert comm._query("mock") ==  "answer"
     comm._filelike.ask.assert_called_with("mock", num=-1, encoding="utf-8")
 
     comm._query("mock", size=10)

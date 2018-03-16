@@ -8,7 +8,6 @@ Module containing tests for the bool property factories
 
 from __future__ import absolute_import
 
-from nose.tools import eq_
 import pytest
 
 from instruments.util_fns import bool_property
@@ -26,13 +25,13 @@ def test_bool_property_basics():
 
     mock_inst = BoolMock({'MOCK1?': 'OFF', 'MOCK2?': 'YES'})
 
-    eq_(mock_inst.mock1, False)
-    eq_(mock_inst.mock2, True)
+    assert mock_inst.mock1 ==  False
+    assert mock_inst.mock2 ==  True
 
     mock_inst.mock1 = True
     mock_inst.mock2 = False
 
-    eq_(mock_inst.value, 'MOCK1?\nMOCK2?\nMOCK1 ON\nMOCK2 NO\n')
+    assert mock_inst.value ==  'MOCK1?\nMOCK2?\nMOCK1 ON\nMOCK2 NO\n'
 
 
 def test_bool_property_set_fmt():
@@ -43,7 +42,7 @@ def test_bool_property_set_fmt():
 
     mock_instrument.mock1 = True
 
-    eq_(mock_instrument.value, 'MOCK1=ON\n')
+    assert mock_instrument.value ==  'MOCK1=ON\n'
 
 
 def test_bool_property_readonly_writing_fails():
@@ -62,7 +61,7 @@ def test_bool_property_readonly_reading_passes():
 
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
 
-    eq_(mock_instrument.mock1, False)
+    assert mock_instrument.mock1 ==  False
 
 
 def test_bool_property_writeonly_reading_fails():
@@ -90,7 +89,7 @@ def test_bool_property_set_cmd():
 
     mock_inst = BoolMock({'MOCK1?': 'OFF'})
 
-    eq_(mock_inst.mock1, False)
+    assert mock_inst.mock1 ==  False
     mock_inst.mock1 = True
 
-    eq_(mock_inst.value, 'MOCK1?\nFOOBAR ON\n')
+    assert mock_inst.value ==  'MOCK1?\nFOOBAR ON\n'

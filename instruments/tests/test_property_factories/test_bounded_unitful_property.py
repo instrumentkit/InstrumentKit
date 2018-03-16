@@ -8,7 +8,6 @@ Module containing tests for the bounded unitful property factories
 
 from __future__ import absolute_import
 
-from nose.tools import eq_
 import pytest
 from .. import mock
 import quantities as pq
@@ -31,9 +30,9 @@ def test_bounded_unitful_property_basics():
     mock_inst = BoundedUnitfulMock(
         {'MOCK?': '1000', 'MOCK:MIN?': '10', 'MOCK:MAX?': '9999'})
 
-    eq_(mock_inst.property, 1000 * pq.hertz)
-    eq_(mock_inst.property_min, 10 * pq.hertz)
-    eq_(mock_inst.property_max, 9999 * pq.hertz)
+    assert mock_inst.property ==  1000 * pq.hertz
+    assert mock_inst.property_min ==  10 * pq.hertz
+    assert mock_inst.property_max ==  9999 * pq.hertz
 
     mock_inst.property = 1000 * pq.hertz
 
@@ -76,8 +75,8 @@ def test_bounded_unitful_property_min_fmt_str():
 
     mock_inst = BoundedUnitfulMock({'MOCK MIN?': '10'})
 
-    eq_(mock_inst.property_min, 10 * pq.Hz)
-    eq_(mock_inst.value, 'MOCK MIN?\n')
+    assert mock_inst.property_min ==  10 * pq.Hz
+    assert mock_inst.value ==  'MOCK MIN?\n'
 
 
 def test_bounded_unitful_property_max_fmt_str():
@@ -90,8 +89,8 @@ def test_bounded_unitful_property_max_fmt_str():
 
     mock_inst = BoundedUnitfulMock({'MOCK MAX?': '9999'})
 
-    eq_(mock_inst.property_max, 9999 * pq.Hz)
-    eq_(mock_inst.value, 'MOCK MAX?\n')
+    assert mock_inst.property_max ==  9999 * pq.Hz
+    assert mock_inst.value ==  'MOCK MAX?\n'
 
 
 def test_bounded_unitful_property_static_range():
@@ -104,8 +103,8 @@ def test_bounded_unitful_property_static_range():
 
     mock_inst = BoundedUnitfulMock()
 
-    eq_(mock_inst.property_min, 10 * pq.Hz)
-    eq_(mock_inst.property_max, 9999 * pq.Hz)
+    assert mock_inst.property_min ==  10 * pq.Hz
+    assert mock_inst.property_max ==  9999 * pq.Hz
 
 
 def test_bounded_unitful_property_static_range_with_units():
@@ -118,8 +117,8 @@ def test_bounded_unitful_property_static_range_with_units():
 
     mock_inst = BoundedUnitfulMock()
 
-    eq_(mock_inst.property_min, 10 * 1000 * pq.Hz)
-    eq_(mock_inst.property_max, 9999 * 1000 * pq.Hz)
+    assert mock_inst.property_min ==  10 * 1000 * pq.Hz
+    assert mock_inst.property_max ==  9999 * 1000 * pq.Hz
 
 
 @mock.patch("instruments.util_fns.unitful_property")
@@ -161,5 +160,5 @@ def test_bounded_unitful_property_returns_none():
 
     mock_inst = BoundedUnitfulMock()
 
-    eq_(mock_inst.property_min, None)
-    eq_(mock_inst.property_max, None)
+    assert mock_inst.property_min ==  None
+    assert mock_inst.property_max ==  None

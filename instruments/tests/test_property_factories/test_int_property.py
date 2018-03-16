@@ -8,7 +8,6 @@ Module containing tests for the int property factories
 
 from __future__ import absolute_import
 
-from nose.tools import eq_
 import pytest
 
 from instruments.util_fns import int_property
@@ -34,10 +33,10 @@ def test_int_property_valid_set():
 
     mock_inst = IntMock({'MOCK?': '1'})
 
-    eq_(mock_inst.int_property, 1)
+    assert mock_inst.int_property ==  1
 
     mock_inst.int_property = 2
-    eq_(mock_inst.value, 'MOCK?\nMOCK 2\n')
+    assert mock_inst.value ==  'MOCK?\nMOCK 2\n'
 
 
 def test_int_property_no_set():
@@ -48,7 +47,7 @@ def test_int_property_no_set():
 
     mock_inst.int_property = 1
 
-    eq_(mock_inst.value, 'MOCK 1\n')
+    assert mock_inst.value ==  'MOCK 1\n'
 
 
 def test_int_property_writeonly_reading_fails():
@@ -68,7 +67,7 @@ def test_int_property_writeonly_writing_passes():
     mock_inst = IntMock()
 
     mock_inst.int_property = 1
-    eq_(mock_inst.value, 'MOCK {:d}\n'.format(1))
+    assert mock_inst.value ==  'MOCK {:d}\n'.format(1)
 
 
 def test_int_property_readonly_writing_fails():
@@ -87,7 +86,7 @@ def test_int_property_readonly_reading_passes():
 
     mock_inst = IntMock({'MOCK?': '1'})
 
-    eq_(mock_inst.int_property, 1)
+    assert mock_inst.int_property ==  1
 
 
 def test_int_property_format_code():
@@ -97,7 +96,7 @@ def test_int_property_format_code():
     mock_inst = IntMock()
 
     mock_inst.int_property = 1
-    eq_(mock_inst.value, 'MOCK {:e}\n'.format(1))
+    assert mock_inst.value ==  'MOCK {:e}\n'.format(1)
 
 
 def test_int_property_set_cmd():
@@ -106,7 +105,7 @@ def test_int_property_set_cmd():
 
     mock_inst = IntMock({'MOCK?': '1'})
 
-    eq_(mock_inst.int_property, 1)
+    assert mock_inst.int_property ==  1
     mock_inst.int_property = 1
 
-    eq_(mock_inst.value, 'MOCK?\nFOOBAR 1\n')
+    assert mock_inst.value ==  'MOCK?\nFOOBAR 1\n'
