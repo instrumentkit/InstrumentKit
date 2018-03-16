@@ -35,7 +35,7 @@ def test_rproperty_basic():
 
     mock_inst = Mock()
     mock_inst.mockproperty = 1
-    assert mock_inst.mockproperty ==  1
+    assert mock_inst.mockproperty == 1
 
 
 def test_rproperty_readonly_writing_fails():
@@ -66,7 +66,7 @@ def test_rproperty_readonly_reading_passes():
         mockproperty = rproperty(fget=mockget, fset=None, readonly=True)
 
     mock_inst = Mock()
-    assert mock_inst.mockproperty ==  0
+    assert mock_inst.mockproperty == 0
 
 
 def test_rproperty_writeonly_reading_fails():
@@ -82,7 +82,7 @@ def test_rproperty_writeonly_reading_fails():
             mockproperty = rproperty(fget=mockget, fset=None, writeonly=True)
 
         mock_inst = Mock()
-        assert mock_inst.mockproperty ==  0
+        assert mock_inst.mockproperty == 0
 
 
 def test_rproperty_writeonly_writing_passes():

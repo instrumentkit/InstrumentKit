@@ -11,11 +11,11 @@ from __future__ import absolute_import
 import socket
 
 import pytest
-from .. import mock
 import quantities as pq
 
 from instruments.abstract_instruments.comm import SocketCommunicator
 from instruments.tests import unit_eq
+from .. import mock
 
 # TEST CASES #################################################################
 
@@ -39,7 +39,7 @@ def test_socketcomm_address():
     comm._conn = mock.MagicMock()
     comm._conn.getpeername.return_value = "127.0.0.1", 1234
 
-    assert comm.address, ("127.0.0.1" ==  1234)
+    assert comm.address == ("127.0.0.1", 1234)
     comm._conn.getpeername.assert_called_with()
 
 
@@ -53,19 +53,19 @@ def test_socketcomm_terminator():
     comm = SocketCommunicator(socket.socket())
 
     # Default terminator should be \n
-    assert comm.terminator ==  "\n"
+    assert comm.terminator == "\n"
 
     comm.terminator = b"*"
-    assert comm.terminator ==  "*"
-    assert comm._terminator ==  "*"
+    assert comm.terminator == "*"
+    assert comm._terminator == "*"
 
     comm.terminator = u"\r"
-    assert comm.terminator ==  u"\r"
-    assert comm._terminator ==  u"\r"
+    assert comm.terminator == u"\r"
+    assert comm._terminator == u"\r"
 
     comm.terminator = "\r\n"
-    assert comm.terminator ==  "\r\n"
-    assert comm._terminator ==  "\r\n"
+    assert comm.terminator == "\r\n"
+    assert comm._terminator == "\r\n"
 
 
 def test_socketcomm_timeout():
@@ -97,7 +97,7 @@ def test_socketcomm_read_raw():
     comm._conn = mock.MagicMock()
     comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
-    assert comm.read_raw() ==  b"abc"
+    assert comm.read_raw() == b"abc"
     comm._conn.recv.assert_has_calls([mock.call(1)]*4)
     assert comm._conn.recv.call_count == 4
 
@@ -112,7 +112,7 @@ def test_loopbackcomm_read_raw_2char_terminator():
     comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\r", b"\n"])
     comm._terminator = "\r\n"
 
-    assert comm.read_raw() ==  b"abc"
+    assert comm.read_raw() == b"abc"
     comm._conn.recv.assert_has_calls([mock.call(1)] * 5)
     assert comm._conn.recv.call_count == 5
 
@@ -148,7 +148,7 @@ def test_socketcomm_query():
     comm.read = mock.MagicMock(return_value="answer")
     comm.sendcmd = mock.MagicMock()
 
-    assert comm._query("mock") ==  "answer"
+    assert comm._query("mock") == "answer"
     comm.sendcmd.assert_called_with("mock")
     comm.read.assert_called_with(-1)
 

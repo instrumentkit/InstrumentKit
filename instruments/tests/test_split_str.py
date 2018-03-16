@@ -27,8 +27,8 @@ def test_split_unit_str_magnitude_and_units():
     This checks that "[val] [units]" works where val is a non-scientific number
     """
     mag, units = split_unit_str("42 foobars")
-    assert mag ==  42
-    assert units ==  "foobars"
+    assert mag == 42
+    assert units == "foobars"
 
 
 def test_split_unit_str_magnitude_and_default_units():
@@ -40,8 +40,8 @@ def test_split_unit_str_magnitude_and_default_units():
     default_units as the units.
     """
     mag, units = split_unit_str("42", default_units="foobars")
-    assert mag ==  42
-    assert units ==  "foobars"
+    assert mag == 42
+    assert units == "foobars"
 
 
 def test_split_unit_str_ignore_default_units():
@@ -53,8 +53,8 @@ def test_split_unit_str_ignore_default_units():
     are ignored.
     """
     mag, units = split_unit_str("42 snafus", default_units="foobars")
-    assert mag ==  42
-    assert units ==  "snafus"
+    assert mag == 42
+    assert units == "snafus"
 
 
 def test_split_unit_str_lookups():
@@ -70,8 +70,8 @@ def test_split_unit_str_lookups():
         "SNA": "snafus"
     }
     mag, units = split_unit_str("42 FOO", lookup=unit_dict.__getitem__)
-    assert mag ==  42
-    assert units ==  "foobars"
+    assert mag == 42
+    assert units == "foobars"
 
 
 def test_split_unit_str_scientific_notation():
@@ -84,28 +84,28 @@ def test_split_unit_str_scientific_notation():
     """
     # No signs, no units
     mag, units = split_unit_str("123E1")
-    assert mag ==  1230
-    assert units ==  pq.dimensionless
+    assert mag == 1230
+    assert units == pq.dimensionless
     # Negative exponential, no units
     mag, units = split_unit_str("123E-1")
-    assert mag ==  12.3
-    assert units ==  pq.dimensionless
+    assert mag == 12.3
+    assert units == pq.dimensionless
     # Negative magnitude, no units
     mag, units = split_unit_str("-123E1")
-    assert mag ==  -1230
-    assert units ==  pq.dimensionless
+    assert mag == -1230
+    assert units == pq.dimensionless
     # No signs, with units
     mag, units = split_unit_str("123E1 foobars")
-    assert mag ==  1230
-    assert units ==  "foobars"
+    assert mag == 1230
+    assert units == "foobars"
     # Signs everywhere, with units
     mag, units = split_unit_str("-123E-1 foobars")
-    assert mag ==  -12.3
-    assert units ==  "foobars"
+    assert mag == -12.3
+    assert units == "foobars"
     # Lower case e
     mag, units = split_unit_str("123e1")
-    assert mag ==  1230
-    assert units ==  pq.dimensionless
+    assert mag == 1230
+    assert units == pq.dimensionless
 
 
 def test_split_unit_str_empty_string():
@@ -133,12 +133,12 @@ def test_split_unit_str_magnitude_with_decimal():
     """
     # Decimal and units
     mag, units = split_unit_str("123.4 foobars")
-    assert mag ==  123.4
-    assert units ==  "foobars"
+    assert mag == 123.4
+    assert units == "foobars"
     # Decimal, units, and exponential
     mag, units = split_unit_str("123.4E1 foobars")
-    assert mag ==  1234
-    assert units ==  "foobars"
+    assert mag == 1234
+    assert units == "foobars"
 
 
 def test_split_unit_str_only_units():

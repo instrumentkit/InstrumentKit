@@ -25,13 +25,13 @@ def test_bool_property_basics():
 
     mock_inst = BoolMock({'MOCK1?': 'OFF', 'MOCK2?': 'YES'})
 
-    assert mock_inst.mock1 ==  False
-    assert mock_inst.mock2 ==  True
+    assert mock_inst.mock1 is False
+    assert mock_inst.mock2 is True
 
     mock_inst.mock1 = True
     mock_inst.mock2 = False
 
-    assert mock_inst.value ==  'MOCK1?\nMOCK2?\nMOCK1 ON\nMOCK2 NO\n'
+    assert mock_inst.value == 'MOCK1?\nMOCK2?\nMOCK1 ON\nMOCK2 NO\n'
 
 
 def test_bool_property_set_fmt():
@@ -42,7 +42,7 @@ def test_bool_property_set_fmt():
 
     mock_instrument.mock1 = True
 
-    assert mock_instrument.value ==  'MOCK1=ON\n'
+    assert mock_instrument.value == 'MOCK1=ON\n'
 
 
 def test_bool_property_readonly_writing_fails():
@@ -61,7 +61,7 @@ def test_bool_property_readonly_reading_passes():
 
     mock_instrument = BoolMock({'MOCK1?': 'OFF'})
 
-    assert mock_instrument.mock1 ==  False
+    assert mock_instrument.mock1 is False
 
 
 def test_bool_property_writeonly_reading_fails():
@@ -89,7 +89,7 @@ def test_bool_property_set_cmd():
 
     mock_inst = BoolMock({'MOCK1?': 'OFF'})
 
-    assert mock_inst.mock1 ==  False
+    assert mock_inst.mock1 is False
     mock_inst.mock1 = True
 
-    assert mock_inst.value ==  'MOCK1?\nFOOBAR ON\n'
+    assert mock_inst.value == 'MOCK1?\nFOOBAR ON\n'

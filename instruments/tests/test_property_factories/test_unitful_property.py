@@ -25,10 +25,10 @@ def test_unitful_property_basics():
 
     mock_inst = UnitfulMock({'MOCK?': '1000'})
 
-    assert mock_inst.unitful_property ==  1000 * pq.hertz
+    assert mock_inst.unitful_property == 1000 * pq.hertz
 
     mock_inst.unitful_property = 1000 * pq.hertz
-    assert mock_inst.value ==  'MOCK?\nMOCK {:e}\n'.format(1000)
+    assert mock_inst.value == 'MOCK?\nMOCK {:e}\n'.format(1000)
 
 
 def test_unitful_property_format_code():
@@ -39,7 +39,7 @@ def test_unitful_property_format_code():
     mock_inst = UnitfulMock()
 
     mock_inst.unitful_property = 1000 * pq.hertz
-    assert mock_inst.value ==  'MOCK {:f}\n'.format(1000)
+    assert mock_inst.value == 'MOCK {:f}\n'.format(1000)
 
 
 def test_unitful_property_rescale_units():
@@ -49,7 +49,7 @@ def test_unitful_property_rescale_units():
     mock_inst = UnitfulMock()
 
     mock_inst.unitful_property = 1 * pq.kilohertz
-    assert mock_inst.value ==  'MOCK {:e}\n'.format(1000)
+    assert mock_inst.value == 'MOCK {:e}\n'.format(1000)
 
 
 def test_unitful_property_no_units_on_set():
@@ -59,7 +59,7 @@ def test_unitful_property_no_units_on_set():
     mock_inst = UnitfulMock()
 
     mock_inst.unitful_property = 1000
-    assert mock_inst.value ==  'MOCK {:e}\n'.format(1000)
+    assert mock_inst.value == 'MOCK {:e}\n'.format(1000)
 
 
 def test_unitful_property_wrong_units():
@@ -89,7 +89,7 @@ def test_unitful_property_writeonly_writing_passes():
     mock_inst = UnitfulMock()
 
     mock_inst.unitful_property = 1 * pq.hertz
-    assert mock_inst.value ==  'MOCK {:e}\n'.format(1)
+    assert mock_inst.value == 'MOCK {:e}\n'.format(1)
 
 
 def test_unitful_property_readonly_writing_fails():
@@ -108,7 +108,7 @@ def test_unitful_property_readonly_reading_passes():
 
     mock_inst = UnitfulMock({'MOCK?': '1'})
 
-    assert mock_inst.unitful_property ==  1 * pq.hertz
+    assert mock_inst.unitful_property == 1 * pq.hertz
 
 
 def test_unitful_property_valid_range():
@@ -121,7 +121,7 @@ def test_unitful_property_valid_range():
     mock_inst.unitful_property = 0
     mock_inst.unitful_property = 10
 
-    assert mock_inst.value, 'MOCK {:e}\nMOCK {:e}\n'.format(0 ==  10)
+    assert mock_inst.value == 'MOCK {:e}\nMOCK {:e}\n'.format(0, 10)
 
 
 def test_unitful_property_valid_range_functions():
@@ -141,7 +141,7 @@ def test_unitful_property_valid_range_functions():
     mock_inst.unitful_property = 0
     mock_inst.unitful_property = 10
 
-    assert mock_inst.value, 'MOCK {:e}\nMOCK {:e}\n'.format(0 ==  10)
+    assert mock_inst.value == 'MOCK {:e}\nMOCK {:e}\n'.format(0, 10)
 
 
 def test_unitful_property_minimum_value():
@@ -180,7 +180,7 @@ def test_unitful_property_input_decoration():
 
     mock_instrument = UnitfulMock({'MOCK:A?': 'garbage'})
 
-    assert mock_instrument.a ==  1 * pq.Hz
+    assert mock_instrument.a == 1 * pq.Hz
 
 
 def test_unitful_property_input_decoration_not_a_function():
@@ -194,7 +194,7 @@ def test_unitful_property_input_decoration_not_a_function():
 
     mock_instrument = UnitfulMock({'MOCK:A?': '.123'})
 
-    assert mock_instrument.a ==  0.123 * pq.Hz
+    assert mock_instrument.a == 0.123 * pq.Hz
 
 
 def test_unitful_property_output_decoration():
@@ -213,7 +213,7 @@ def test_unitful_property_output_decoration():
 
     mock_instrument.a = 345 * pq.hertz
 
-    assert mock_instrument.value ==  'MOCK:A 1\n'
+    assert mock_instrument.value == 'MOCK:A 1\n'
 
 
 def test_unitful_property_output_decoration_not_a_function():
@@ -229,7 +229,7 @@ def test_unitful_property_output_decoration_not_a_function():
 
     mock_instrument.a = 1 * pq.hertz
 
-    assert mock_instrument.value ==  'MOCK:A True\n'
+    assert mock_instrument.value == 'MOCK:A True\n'
 
 
 def test_unitful_property_split_str():
@@ -253,7 +253,7 @@ def test_unitful_property_name_read_not_none():
         )
 
     mock_inst = UnitfulMock({'MOCK?': '1000'})
-    assert mock_inst.a ==  1000 * pq.hertz
+    assert mock_inst.a == 1000 * pq.hertz
     mock_inst.a = 1000 * pq.hertz
 
-    assert mock_inst.value ==  'MOCK?\nFOOBAR {:e}\n'.format(1000)
+    assert mock_inst.value == 'MOCK?\nFOOBAR {:e}\n'.format(1000)

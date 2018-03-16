@@ -9,12 +9,12 @@ Unit tests for the serial communication layer
 from __future__ import absolute_import
 
 import pytest
-from .. import mock
 import serial
 import quantities as pq
 
 from instruments.abstract_instruments.comm import SerialCommunicator
 from instruments.tests import unit_eq
+from .. import mock
 
 # TEST CASES #################################################################
 
@@ -40,7 +40,7 @@ def test_serialcomm_address():
     type(comm._conn).port = port_name
 
     # Check that our address function is working
-    assert comm.address ==  "/dev/address"
+    assert comm.address == "/dev/address"
     port_name.assert_called_with()
 
 
@@ -48,14 +48,14 @@ def test_serialcomm_terminator():
     comm = SerialCommunicator(serial.Serial())
 
     # Default terminator should be \n
-    assert comm.terminator ==  "\n"
+    assert comm.terminator == "\n"
 
     comm.terminator = "*"
-    assert comm.terminator ==  "*"
+    assert comm.terminator == "*"
 
     comm.terminator = "\r\n"
-    assert comm.terminator ==  "\r\n"
-    assert comm._terminator ==  "\r\n"
+    assert comm.terminator == "\r\n"
+    assert comm._terminator == "\r\n"
 
 
 def test_serialcomm_timeout():
@@ -89,7 +89,7 @@ def test_serialcomm_read_raw():
     comm._conn = mock.MagicMock()
     comm._conn.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
-    assert comm.read_raw() ==  b"abc"
+    assert comm.read_raw() == b"abc"
     comm._conn.read.assert_has_calls([mock.call(1)]*4)
     assert comm._conn.read.call_count == 4
 
@@ -104,7 +104,7 @@ def test_loopbackcomm_read_raw_2char_terminator():
     comm._conn.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\r", b"\n"])
     comm._terminator = "\r\n"
 
-    assert comm.read_raw() ==  b"abc"
+    assert comm.read_raw() == b"abc"
     comm._conn.read.assert_has_calls([mock.call(1)] * 5)
     assert comm._conn.read.call_count == 5
 
@@ -140,7 +140,7 @@ def test_serialcomm_query():
     comm.read = mock.MagicMock(return_value="answer")
     comm.sendcmd = mock.MagicMock()
 
-    assert comm._query("mock") ==  "answer"
+    assert comm._query("mock") == "answer"
     comm.sendcmd.assert_called_with("mock")
     comm.read.assert_called_with(-1)
 

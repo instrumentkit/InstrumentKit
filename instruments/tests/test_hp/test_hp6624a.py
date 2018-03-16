@@ -9,11 +9,11 @@ Unit tests for the HP 6624a power supply
 from __future__ import absolute_import
 
 import quantities as pq
-from .. import mock
 import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
+from .. import mock
 
 # TESTS #######################################################################
 

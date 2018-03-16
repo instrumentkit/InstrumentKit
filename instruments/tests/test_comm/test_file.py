@@ -9,9 +9,9 @@ Unit tests for the file communication layer
 from __future__ import absolute_import
 
 import pytest
-from .. import mock
 
 from instruments.abstract_instruments.comm import FileCommunicator
+from .. import mock
 
 # TEST CASES #################################################################
 
@@ -33,7 +33,7 @@ def test_filecomm_address_getter():
     mock_name = mock.PropertyMock(return_value="/home/user/file")
     type(comm._filelike).name = mock_name
 
-    assert comm.address ==  "/home/user/file"
+    assert comm.address == "/home/user/file"
     mock_name.assert_called_with()
 
 
@@ -43,7 +43,7 @@ def test_filecomm_address_getter_no_name():
 
     del comm._filelike.name
 
-    assert comm.address ==  None
+    assert comm.address is None
 
 
 def test_filecomm_address_setter():
@@ -55,13 +55,13 @@ def test_filecomm_address_setter():
 def test_filecomm_terminator():
     comm = FileCommunicator(mock.MagicMock())
 
-    assert comm.terminator ==  "\n"
+    assert comm.terminator == "\n"
 
     comm.terminator = "*"
-    assert comm._terminator ==  "*"
+    assert comm._terminator == "*"
 
     comm.terminator = b"*"
-    assert comm._terminator ==  "*"
+    assert comm._terminator == "*"
 
 
 def test_filecomm_timeout_getter():
@@ -87,7 +87,7 @@ def test_filecomm_read_raw():
     comm = FileCommunicator(mock.MagicMock())
     comm._filelike.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
-    assert comm.read_raw() ==  b"abc"
+    assert comm.read_raw() == b"abc"
     comm._filelike.read.assert_has_calls([mock.call(1)] * 4)
     assert comm._filelike.read.call_count == 4
 
@@ -115,7 +115,7 @@ def test_filecomm_query():
     comm._testing = True  # to disable the delay in the _query function
     comm._filelike.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
-    assert comm._query("mock") ==  "abc"
+    assert comm._query("mock") == "abc"
 
 
 def test_filecomm_seek():
@@ -128,7 +128,7 @@ def test_filecomm_tell():
     comm = FileCommunicator(mock.MagicMock())
     comm._filelike.tell.return_value = 5
 
-    assert comm.tell() ==  5
+    assert comm.tell() == 5
     comm._filelike.tell.assert_called_with()
 
 
