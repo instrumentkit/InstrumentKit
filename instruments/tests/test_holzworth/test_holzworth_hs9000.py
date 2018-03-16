@@ -9,7 +9,7 @@ Unit tests for the Holzworth HS9000
 from __future__ import absolute_import
 
 import quantities as pq
-import mock
+from .. import mock
 
 import instruments as ik
 from instruments.tests import expected_protocol

@@ -9,7 +9,7 @@ Unit tests for the serial communication layer
 from __future__ import absolute_import
 
 from nose.tools import raises, eq_
-import mock
+from .. import mock
 import serial
 import quantities as pq
 

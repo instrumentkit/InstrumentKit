@@ -9,7 +9,7 @@ Unit tests for the loopback communication layer
 from __future__ import absolute_import
 
 from nose.tools import raises, eq_
-import mock
+from .. import mock
 
 from instruments.abstract_instruments.comm import LoopbackCommunicator
 

@@ -9,7 +9,7 @@ Module containing tests for the bounded unitful property factories
 from __future__ import absolute_import
 
 from nose.tools import raises, eq_
-import mock
+from .. import mock
 import quantities as pq
 
 from instruments.util_fns import bounded_unitful_property

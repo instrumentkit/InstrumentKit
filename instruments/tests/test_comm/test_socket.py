@@ -11,7 +11,7 @@ from __future__ import absolute_import
 import socket
 
 from nose.tools import raises, eq_
-import mock
+from .. import mock
 import quantities as pq
 
 from instruments.abstract_instruments.comm import SocketCommunicator

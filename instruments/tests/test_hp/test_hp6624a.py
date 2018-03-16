@@ -9,7 +9,7 @@ Unit tests for the HP 6624a power supply
 from __future__ import absolute_import
 
 import quantities as pq
-import mock
+from .. import mock
 from nose.tools import raises
 
 import instruments as ik

@@ -9,7 +9,7 @@ Unit tests for the USBTMC communication layer
 from __future__ import absolute_import
 
 from nose.tools import raises, eq_
-import mock
+from .. import mock
 
 import quantities as pq
 from numpy import array

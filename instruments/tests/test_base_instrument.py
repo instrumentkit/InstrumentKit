@@ -16,8 +16,7 @@ import serial
 from serial.tools.list_ports_common import ListPortInfo
 
 from nose.tools import raises
-import mock
-
+from . import mock
 import numpy as np
 
 import instruments as ik

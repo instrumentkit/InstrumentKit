@@ -19,6 +19,11 @@ from builtins import bytes, str
 
 from nose.tools import nottest, eq_
 
+try:
+    from unittest import mock  # from Python 3.3 onward, this is in the stdlib
+except ImportError:
+    import mock
+
 # FUNCTIONS ##################################################################
 
 
