@@ -8,7 +8,8 @@ Unit tests for the USBTMC communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 from .. import mock
 
 import quantities as pq
@@ -30,10 +31,10 @@ def test_usbtmccomm_init(mock_usbtmc):
     mock_usbtmc.Instrument.assert_called_with("foobar", var1=123)
 
 
-@raises(ImportError)
 @mock.patch(patch_path, new=None)
 def test_usbtmccomm_init_missing_module():
-    _ = USBTMCCommunicator()
+    with pytest.raises(ImportError):
+        _ = USBTMCCommunicator()
 
 
 @mock.patch(patch_path)
@@ -131,18 +132,18 @@ def test_usbtmccomm_query(mock_usbtmc):
     comm._filelike.ask.assert_called_with("mock", num=10, encoding="utf-8")
 
 
-@raises(NotImplementedError)
 @mock.patch(patch_path)
 def test_usbtmccomm_seek(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm.seek(1)
+    with pytest.raises(NotImplementedError):
+        comm = USBTMCCommunicator()
+        comm.seek(1)
 
 
-@raises(NotImplementedError)
 @mock.patch(patch_path)
 def test_usbtmccomm_tell(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm.tell()
+    with pytest.raises(NotImplementedError):
+        comm = USBTMCCommunicator()
+        comm.tell()
 
 
 @mock.patch(patch_path)

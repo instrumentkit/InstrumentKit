@@ -8,7 +8,8 @@ Unit tests for the GI GPIBUSB communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 from .. import mock
 import serial
 import quantities as pq
@@ -71,17 +72,17 @@ def test_gpibusbcomm_address():
     port_name.assert_called_with("/dev/foobar")
 
 
-@raises(ValueError)
 def test_gpibusbcomm_address_out_of_range():
-    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    with pytest.raises(ValueError):
+        comm = GPIBCommunicator(mock.MagicMock(), 1)
 
-    comm.address = 31
+        comm.address = 31
 
 
-@raises(TypeError)
 def test_gpibusbcomm_address_wrong_type():
-    comm = GPIBCommunicator(mock.MagicMock(), 1)
-    comm.address = "derp"
+    with pytest.raises(TypeError):
+        comm = GPIBCommunicator(mock.MagicMock(), 1)
+        comm.address = "derp"
 
 
 def test_gpibusbcomm_eoi():
@@ -118,11 +119,11 @@ def test_gpibusbcomm_eoi_old_firmware():
     comm._file.sendcmd.assert_called_with("+eoi:0")
 
 
-@raises(TypeError)
 def test_gpibusbcomm_eoi_bad_type():
-    comm = GPIBCommunicator(mock.MagicMock(), 1)
-    comm._version = 5
-    comm.eoi = "abc"
+    with pytest.raises(TypeError):
+        comm = GPIBCommunicator(mock.MagicMock(), 1)
+        comm._version = 5
+        comm.eoi = "abc"
 
 
 def test_gpibusbcomm_eos_rn():
@@ -158,11 +159,11 @@ def test_gpibusbcomm_eos_n():
     comm._file.sendcmd.assert_called_with("++eos 2")
 
 
-@raises(ValueError)
 def test_gpibusbcomm_eos_invalid():
-    comm = GPIBCommunicator(mock.MagicMock(), 1)
-    comm._version = 5
-    comm.eos = "*"
+    with pytest.raises(ValueError):
+        comm = GPIBCommunicator(mock.MagicMock(), 1)
+        comm._version = 5
+        comm.eos = "*"
 
 
 def test_gpibusbcomm_eos_old_firmware():

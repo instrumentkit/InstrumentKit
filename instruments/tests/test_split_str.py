@@ -10,7 +10,8 @@ from __future__ import absolute_import
 
 import quantities as pq
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 
 from instruments.util_fns import (
     split_unit_str
@@ -108,22 +109,22 @@ def test_split_unit_str_scientific_notation():
     eq_(units, pq.dimensionless)
 
 
-@raises(ValueError)
 def test_split_unit_str_empty_string():
     """
     split_unit_str: Given an empty string, I expect the function to raise
     a ValueError.
     """
-    _ = split_unit_str("")
+    with pytest.raises(ValueError):
+        _ = split_unit_str("")
 
 
-@raises(ValueError)
 def test_split_unit_str_only_exponential():
     """
     split_unit_str: Given a string with only an exponential, I expect the
     function to raise a ValueError.
     """
-    _ = split_unit_str("E3")
+    with pytest.raises(ValueError):
+        _ = split_unit_str("E3")
 
 
 def test_split_unit_str_magnitude_with_decimal():
@@ -141,10 +142,10 @@ def test_split_unit_str_magnitude_with_decimal():
     eq_(units, "foobars")
 
 
-@raises(ValueError)
 def test_split_unit_str_only_units():
     """
     split_unit_str: Given a bad string containing only units (ie, no numbers),
     I expect the function to raise a ValueError.
     """
-    _ = split_unit_str("foobars")
+    with pytest.raises(ValueError):
+        _ = split_unit_str("foobars")

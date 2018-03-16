@@ -12,7 +12,8 @@ from builtins import range
 
 from enum import Enum
 import quantities as pq
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 
 from instruments.util_fns import (
     ProxyList,
@@ -91,38 +92,38 @@ def test_ProxyList_iterator():
         i = i + 1
 
 
-@raises(IndexError)
 def test_ProxyList_invalid_idx_enum():
-    class ProxyChild(object):
+    with pytest.raises(IndexError):
+        class ProxyChild(object):
 
-        def __init__(self, parent, name):
-            self._parent = parent
-            self._name = name
+            def __init__(self, parent, name):
+                self._parent = parent
+                self._name = name
 
-    class MockEnum(Enum):
-        a = "aa"
-        b = "bb"
+        class MockEnum(Enum):
+            a = "aa"
+            b = "bb"
 
-    parent = object()
+        parent = object()
 
-    proxy_list = ProxyList(parent, ProxyChild, MockEnum)
+        proxy_list = ProxyList(parent, ProxyChild, MockEnum)
 
-    _ = proxy_list['c']  # Should raise IndexError
+        _ = proxy_list['c']  # Should raise IndexError
 
 
-@raises(IndexError)
 def test_ProxyList_invalid_idx():
-    class ProxyChild(object):
+    with pytest.raises(IndexError):
+        class ProxyChild(object):
 
-        def __init__(self, parent, name):
-            self._parent = parent
-            self._name = name
+            def __init__(self, parent, name):
+                self._parent = parent
+                self._name = name
 
-    parent = object()
+        parent = object()
 
-    proxy_list = ProxyList(parent, ProxyChild, range(5))
+        proxy_list = ProxyList(parent, ProxyChild, range(5))
 
-    _ = proxy_list[10]  # Should raise IndexError
+        _ = proxy_list[10]  # Should raise IndexError
 
 
 def test_assume_units_correct():
@@ -161,15 +162,15 @@ def test_temperature_conversion():
     eq_(out.magnitude, 270)
 
 
-@raises(ValueError)
 def test_temperater_conversion_failure():
-    blo = 70.0 * pq.degF
-    convert_temperature(blo, pq.V)
+    with pytest.raises(ValueError):
+        blo = 70.0 * pq.degF
+        convert_temperature(blo, pq.V)
 
 
-@raises(ValueError)
 def test_assume_units_failures():
-    assume_units(1, 'm').rescale('s')
+    with pytest.raises(ValueError):
+        assume_units(1, 'm').rescale('s')
 
 def test_setattr_expression_simple():
     class A(object):

@@ -8,7 +8,8 @@ Unit tests for the loopback communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 from .. import mock
 
 from instruments.abstract_instruments.comm import LoopbackCommunicator
@@ -132,16 +133,16 @@ def test_loopbackcomm_query():
     comm.read.assert_called_with(10)
 
 
-@raises(NotImplementedError)
 def test_loopbackcomm_seek():
-    comm = LoopbackCommunicator()
-    comm.seek(1)
+    with pytest.raises(NotImplementedError):
+        comm = LoopbackCommunicator()
+        comm.seek(1)
 
 
-@raises(NotImplementedError)
 def test_loopbackcomm_tell():
-    comm = LoopbackCommunicator()
-    comm.tell()
+    with pytest.raises(NotImplementedError):
+        comm = LoopbackCommunicator()
+        comm.tell()
 
 
 def test_loopbackcomm_flush_input():

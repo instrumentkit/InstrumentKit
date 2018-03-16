@@ -8,7 +8,8 @@ Module containing tests for the bounded unitful property factories
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 from .. import mock
 import quantities as pq
 
@@ -37,32 +38,32 @@ def test_bounded_unitful_property_basics():
     mock_inst.property = 1000 * pq.hertz
 
 
-@raises(ValueError)
 def test_bounded_unitful_property_set_outside_max():
-    class BoundedUnitfulMock(MockInstrument):
-        property, property_min, property_max = bounded_unitful_property(
-            'MOCK',
-            units=pq.hertz
-        )
+    with pytest.raises(ValueError):
+        class BoundedUnitfulMock(MockInstrument):
+            property, property_min, property_max = bounded_unitful_property(
+                'MOCK',
+                units=pq.hertz
+            )
 
-    mock_inst = BoundedUnitfulMock(
-        {'MOCK?': '1000', 'MOCK:MIN?': '10', 'MOCK:MAX?': '9999'})
+        mock_inst = BoundedUnitfulMock(
+            {'MOCK?': '1000', 'MOCK:MIN?': '10', 'MOCK:MAX?': '9999'})
 
-    mock_inst.property = 10000 * pq.hertz  # Should raise ValueError
+        mock_inst.property = 10000 * pq.hertz  # Should raise ValueError
 
 
-@raises(ValueError)
 def test_bounded_unitful_property_set_outside_min():
-    class BoundedUnitfulMock(MockInstrument):
-        property, property_min, property_max = bounded_unitful_property(
-            'MOCK',
-            units=pq.hertz
-        )
+    with pytest.raises(ValueError):
+        class BoundedUnitfulMock(MockInstrument):
+            property, property_min, property_max = bounded_unitful_property(
+                'MOCK',
+                units=pq.hertz
+            )
 
-    mock_inst = BoundedUnitfulMock(
-        {'MOCK?': '1000', 'MOCK:MIN?': '10', 'MOCK:MAX?': '9999'})
+        mock_inst = BoundedUnitfulMock(
+            {'MOCK?': '1000', 'MOCK:MIN?': '10', 'MOCK:MAX?': '9999'})
 
-    mock_inst.property = 1 * pq.hertz  # Should raise ValueError
+        mock_inst.property = 1 * pq.hertz  # Should raise ValueError
 
 
 def test_bounded_unitful_property_min_fmt_str():

@@ -10,7 +10,7 @@ from __future__ import absolute_import
 
 import quantities as pq
 import numpy as np
-from nose.tools import raises
+import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -128,14 +128,14 @@ def test_sample_rate():  # sends index of VALID_SAMPLE_RATES
         inst.sample_rate = "trigger"
 
 
-@raises(ValueError)
 def test_sample_rate_invalid():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        inst.sample_rate = "foobar"
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            inst.sample_rate = "foobar"
 
 
 def test_buffer_mode():
@@ -194,16 +194,16 @@ def test_auto_offset():
         inst.auto_offset("x")
 
 
-@raises(ValueError)
 def test_auto_offset_invalid():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [
-            "AOFF 1",
-        ],
-        []
-    ) as inst:
-        inst.auto_offset(inst.Mode.theta)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [
+                "AOFF 1",
+            ],
+            []
+        ) as inst:
+            inst.auto_offset(inst.Mode.theta)
 
 
 def test_auto_phase():
@@ -270,14 +270,14 @@ def test_take_measurement():
         np.testing.assert_array_equal(resp, [[1.234, 5.678], [0.456, 5.321]])
 
 
-@raises(ValueError)
 def test_take_measurement_invalid_num_samples():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        _ = inst.take_measurement(sample_rate=1, num_samples=16384)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            _ = inst.take_measurement(sample_rate=1, num_samples=16384)
 
 
 def test_set_offset_expand():
@@ -302,54 +302,54 @@ def test_set_offset_expand_mode_as_str():
         inst.set_offset_expand(mode="x", offset=0, expand=1)
 
 
-@raises(ValueError)
 def test_set_offset_expand_invalid_mode():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        inst.set_offset_expand(mode=inst.Mode.theta, offset=0, expand=1)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            inst.set_offset_expand(mode=inst.Mode.theta, offset=0, expand=1)
 
 
-@raises(ValueError)
 def test_set_offset_expand_invalid_offset():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        inst.set_offset_expand(mode=inst.Mode.x, offset=106, expand=1)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            inst.set_offset_expand(mode=inst.Mode.x, offset=106, expand=1)
 
 
-@raises(ValueError)
 def test_set_offset_expand_invalid_expand():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        inst.set_offset_expand(mode=inst.Mode.x, offset=0, expand=5)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            inst.set_offset_expand(mode=inst.Mode.x, offset=0, expand=5)
 
 
-@raises(TypeError)
 def test_set_offset_expand_invalid_type_offset():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        inst.set_offset_expand(mode=inst.Mode.x, offset="derp", expand=1)
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            inst.set_offset_expand(mode=inst.Mode.x, offset="derp", expand=1)
 
 
-@raises(TypeError)
 def test_set_offset_expand_invalid_type_expand():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        inst.set_offset_expand(mode=inst.Mode.x, offset=0, expand="derp")
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            inst.set_offset_expand(mode=inst.Mode.x, offset=0, expand="derp")
 
 
 def test_start_scan():
@@ -404,34 +404,34 @@ def test_data_snap_mode_as_str():
         np.testing.assert_array_equal(data, expected)
 
 
-@raises(ValueError)
 def test_data_snap_invalid_snap_mode1():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        _ = inst.data_snap(mode1=inst.Mode.xnoise, mode2=inst.Mode.y)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            _ = inst.data_snap(mode1=inst.Mode.xnoise, mode2=inst.Mode.y)
 
 
-@raises(ValueError)
 def test_data_snap_invalid_snap_mode2():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        _ = inst.data_snap(mode1=inst.Mode.x, mode2=inst.Mode.ynoise)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            _ = inst.data_snap(mode1=inst.Mode.x, mode2=inst.Mode.ynoise)
 
 
-@raises(ValueError)
 def test_data_snap_identical_modes():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        _ = inst.data_snap(mode1=inst.Mode.x, mode2=inst.Mode.x)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            _ = inst.data_snap(mode1=inst.Mode.x, mode2=inst.Mode.x)
 
 
 def test_read_data_buffer():
@@ -468,14 +468,14 @@ def test_read_data_buffer_mode_as_str():
         np.testing.assert_array_equal(data, expected)
 
 
-@raises(ValueError)
 def test_read_data_buffer_invalid_mode():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        _ = inst.read_data_buffer(channel=inst.Mode.x)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            _ = inst.read_data_buffer(channel=inst.Mode.x)
 
 
 def test_clear_data_buffer():
@@ -519,43 +519,43 @@ def test_set_channel_display_params_as_str():
         )
 
 
-@raises(ValueError)
 def test_set_channel_display_invalid_channel():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        inst.set_channel_display(
-            channel=inst.Mode.x,
-            display=inst.Mode.x,
-            ratio=inst.Mode.none
-        )
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            inst.set_channel_display(
+                channel=inst.Mode.x,
+                display=inst.Mode.x,
+                ratio=inst.Mode.none
+            )
 
 
-@raises(ValueError)
 def test_set_channel_display_invalid_display():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        inst.set_channel_display(
-            channel=inst.Mode.ch1,
-            display=inst.Mode.y,  # y is only valid for ch2, not ch1!
-            ratio=inst.Mode.none
-        )
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            inst.set_channel_display(
+                channel=inst.Mode.ch1,
+                display=inst.Mode.y,  # y is only valid for ch2, not ch1!
+                ratio=inst.Mode.none
+            )
 
 
-@raises(ValueError)
 def test_set_channel_display_invalid_ratio():
-    with expected_protocol(
-        ik.srs.SRS830,
-        [],
-        []
-    ) as inst:
-        inst.set_channel_display(
-            channel=inst.Mode.ch1,
-            display=inst.Mode.x,
-            ratio=inst.Mode.xnoise
-        )
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.srs.SRS830,
+            [],
+            []
+        ) as inst:
+            inst.set_channel_display(
+                channel=inst.Mode.ch1,
+                display=inst.Mode.x,
+                ratio=inst.Mode.xnoise
+            )

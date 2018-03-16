@@ -8,7 +8,8 @@ Module containing tests for the unitful property factories
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 import quantities as pq
 
 from instruments.util_fns import unitful_property
@@ -62,24 +63,24 @@ def test_unitful_property_no_units_on_set():
     eq_(mock_inst.value, 'MOCK {:e}\n'.format(1000))
 
 
-@raises(ValueError)
 def test_unitful_property_wrong_units():
-    class UnitfulMock(MockInstrument):
-        unitful_property = unitful_property('MOCK', pq.hertz)
+    with pytest.raises(ValueError):
+        class UnitfulMock(MockInstrument):
+            unitful_property = unitful_property('MOCK', pq.hertz)
 
-    mock_inst = UnitfulMock()
+        mock_inst = UnitfulMock()
 
-    mock_inst.unitful_property = 1 * pq.volt
+        mock_inst.unitful_property = 1 * pq.volt
 
 
-@raises(AttributeError)
 def test_unitful_property_writeonly_reading_fails():
-    class UnitfulMock(MockInstrument):
-        unitful_property = unitful_property('MOCK', pq.hertz, writeonly=True)
+    with pytest.raises(AttributeError):
+        class UnitfulMock(MockInstrument):
+            unitful_property = unitful_property('MOCK', pq.hertz, writeonly=True)
 
-    mock_inst = UnitfulMock()
+        mock_inst = UnitfulMock()
 
-    _ = mock_inst.unitful_property
+        _ = mock_inst.unitful_property
 
 
 def test_unitful_property_writeonly_writing_passes():
@@ -92,14 +93,14 @@ def test_unitful_property_writeonly_writing_passes():
     eq_(mock_inst.value, 'MOCK {:e}\n'.format(1))
 
 
-@raises(AttributeError)
 def test_unitful_property_readonly_writing_fails():
-    class UnitfulMock(MockInstrument):
-        unitful_property = unitful_property('MOCK', pq.hertz, readonly=True)
+    with pytest.raises(AttributeError):
+        class UnitfulMock(MockInstrument):
+            unitful_property = unitful_property('MOCK', pq.hertz, readonly=True)
 
-    mock_inst = UnitfulMock({'MOCK?': '1'})
+        mock_inst = UnitfulMock({'MOCK?': '1'})
 
-    mock_inst.unitful_property = 1 * pq.hertz
+        mock_inst.unitful_property = 1 * pq.hertz
 
 
 def test_unitful_property_readonly_reading_passes():
@@ -144,26 +145,26 @@ def test_unitful_property_valid_range_functions():
     eq_(mock_inst.value, 'MOCK {:e}\nMOCK {:e}\n'.format(0, 10))
 
 
-@raises(ValueError)
 def test_unitful_property_minimum_value():
-    class UnitfulMock(MockInstrument):
-        unitful_property = unitful_property(
-            'MOCK', pq.hertz, valid_range=(0, 10))
+    with pytest.raises(ValueError):
+        class UnitfulMock(MockInstrument):
+            unitful_property = unitful_property(
+                'MOCK', pq.hertz, valid_range=(0, 10))
 
-    mock_inst = UnitfulMock()
+        mock_inst = UnitfulMock()
 
-    mock_inst.unitful_property = -1
+        mock_inst.unitful_property = -1
 
 
-@raises(ValueError)
 def test_unitful_property_maximum_value():
-    class UnitfulMock(MockInstrument):
-        unitful_property = unitful_property(
-            'MOCK', pq.hertz, valid_range=(0, 10))
+    with pytest.raises(ValueError):
+        class UnitfulMock(MockInstrument):
+            unitful_property = unitful_property(
+                'MOCK', pq.hertz, valid_range=(0, 10))
 
-    mock_inst = UnitfulMock()
+        mock_inst = UnitfulMock()
 
-    mock_inst.unitful_property = 11
+        mock_inst.unitful_property = 11
 
 
 def test_unitful_property_input_decoration():

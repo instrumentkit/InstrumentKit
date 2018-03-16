@@ -8,7 +8,8 @@ Module containing tests for the property factories
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 
 from instruments.util_fns import rproperty
 from . import MockInstrument
@@ -38,20 +39,20 @@ def test_rproperty_basic():
     eq_(mock_inst.mockproperty, 1)
 
 
-@raises(AttributeError)
 def test_rproperty_readonly_writing_fails():
-    class Mock(MockInstrument):
+    with pytest.raises(AttributeError):
+        class Mock(MockInstrument):
 
-        def __init__(self):
-            super(Mock, self).__init__()
-            self._value = 0
+            def __init__(self):
+                super(Mock, self).__init__()
+                self._value = 0
 
-        def mockset(self, newval):  # pragma: no cover
-            self._value = newval
-        mockproperty = rproperty(fget=None, fset=mockset, readonly=True)
+            def mockset(self, newval):  # pragma: no cover
+                self._value = newval
+            mockproperty = rproperty(fget=None, fset=mockset, readonly=True)
 
-    mock_inst = Mock()
-    mock_inst.mockproperty = 1
+        mock_inst = Mock()
+        mock_inst.mockproperty = 1
 
 
 def test_rproperty_readonly_reading_passes():
@@ -69,20 +70,20 @@ def test_rproperty_readonly_reading_passes():
     eq_(mock_inst.mockproperty, 0)
 
 
-@raises(AttributeError)
 def test_rproperty_writeonly_reading_fails():
-    class Mock(MockInstrument):
+    with pytest.raises(AttributeError):
+        class Mock(MockInstrument):
 
-        def __init__(self):
-            super(Mock, self).__init__()
-            self._value = 0
+            def __init__(self):
+                super(Mock, self).__init__()
+                self._value = 0
 
-        def mockget(self):  # pragma: no cover
-            return self._value
-        mockproperty = rproperty(fget=mockget, fset=None, writeonly=True)
+            def mockget(self):  # pragma: no cover
+                return self._value
+            mockproperty = rproperty(fget=mockget, fset=None, writeonly=True)
 
-    mock_inst = Mock()
-    eq_(mock_inst.mockproperty, 0)
+        mock_inst = Mock()
+        eq_(mock_inst.mockproperty, 0)
 
 
 def test_rproperty_writeonly_writing_passes():
@@ -100,6 +101,6 @@ def test_rproperty_writeonly_writing_passes():
     mock_inst.mockproperty = 1
 
 
-@raises(ValueError)
 def test_rproperty_readonly_and_writeonly():
-    _ = rproperty(readonly=True, writeonly=True)
+    with pytest.raises(ValueError):
+        _ = rproperty(readonly=True, writeonly=True)

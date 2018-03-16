@@ -10,7 +10,7 @@ from __future__ import absolute_import
 
 import quantities as pq
 import numpy as np
-from nose.tools import raises
+import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -34,20 +34,20 @@ def test_hp3456a_trigger_mode():
         dmm.trigger_mode = dmm.TriggerMode.hold
 
 
-@raises(ValueError)
 def test_hp3456a_number_of_digits():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [
-            "HO0T4SO1",
-            "W6STG",
-            "REG"
-        ], [
-            "+06.00000E+0"
-        ],
-        sep="\r"
-    ) as dmm:
-        dmm.number_of_digits = 7
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [
+                "HO0T4SO1",
+                "W6STG",
+                "REG"
+            ], [
+                "+06.00000E+0"
+            ],
+            sep="\r"
+        ) as dmm:
+            dmm.number_of_digits = 7
 
 
 def test_hp3456a_number_of_digits_invalid():
@@ -112,20 +112,20 @@ def test_hp3456a_nplc():
         assert dmm.nplc == 1
 
 
-@raises(ValueError)
 def test_hp3456a_nplc_invalid():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [
-            "HO0T4SO1",
-            "W1STI",
-            "REI"
-        ], [
-            "+1.00000E+0"
-        ],
-        sep="\r"
-    ) as dmm:
-        dmm.nplc = 0
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [
+                "HO0T4SO1",
+                "W1STI",
+                "REI"
+            ], [
+                "+1.00000E+0"
+            ],
+            sep="\r"
+        ) as dmm:
+            dmm.nplc = 0
 
 
 def test_hp3456a_mode():
@@ -350,48 +350,48 @@ def test_hp3456a_input_range():
         dmm.input_range = 1e3 * pq.ohm
 
 
-@raises(ValueError)
 def test_hp3456a_input_range_invalid_str():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [],
-        [],
-        sep="\r"
-    ) as dmm:
-        dmm.input_range = "derp"
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [],
+            [],
+            sep="\r"
+        ) as dmm:
+            dmm.input_range = "derp"
 
 
-@raises(ValueError)
 def test_hp3456a_input_range_invalid_range():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [],
-        [],
-        sep="\r"
-    ) as dmm:
-        dmm.input_range = 1 * pq.ohm
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [],
+            [],
+            sep="\r"
+        ) as dmm:
+            dmm.input_range = 1 * pq.ohm
 
 
-@raises(TypeError)
 def test_hp3456a_input_range_bad_type():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [],
-        [],
-        sep="\r"
-    ) as dmm:
-        dmm.input_range = True
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [],
+            [],
+            sep="\r"
+        ) as dmm:
+            dmm.input_range = True
 
 
-@raises(ValueError)
 def test_hp3456a_input_range_bad_units():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [],
-        [],
-        sep="\r"
-    ) as dmm:
-        dmm.input_range = 1 * pq.amp
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [],
+            [],
+            sep="\r"
+        ) as dmm:
+            dmm.input_range = 1 * pq.amp
 
 
 def test_hp3456a_relative():
@@ -411,15 +411,15 @@ def test_hp3456a_relative():
         assert dmm.relative is True
 
 
-@raises(TypeError)
 def test_hp3456a_relative_bad_type():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [],
-        [],
-        sep="\r"
-    ) as dmm:
-        dmm.relative = "derp"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [],
+            [],
+            sep="\r"
+        ) as dmm:
+            dmm.relative = "derp"
 
 
 def test_hp3456a_auto_zero():
@@ -454,34 +454,34 @@ def test_hp3456a_filter():
         dmm.filter = True
 
 
-@raises(TypeError)
 def test_hp3456a_register_read_bad_name():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [],
-        [],
-        sep="\r"
-    ) as dmm:
-        dmm._register_read("foobar")
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [],
+            [],
+            sep="\r"
+        ) as dmm:
+            dmm._register_read("foobar")
 
 
-@raises(TypeError)
 def test_hp3456a_register_write_bad_name():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [],
-        [],
-        sep="\r"
-    ) as dmm:
-        dmm._register_write("foobar", 1)
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [],
+            [],
+            sep="\r"
+        ) as dmm:
+            dmm._register_write("foobar", 1)
 
 
-@raises(ValueError)
 def test_hp3456a_register_write_bad_register():
-    with expected_protocol(
-        ik.hp.HP3456a,
-        [],
-        [],
-        sep="\r"
-    ) as dmm:
-        dmm._register_write(dmm.Register.mean, 1)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.hp.HP3456a,
+            [],
+            [],
+            sep="\r"
+        ) as dmm:
+            dmm._register_write(dmm.Register.mean, 1)

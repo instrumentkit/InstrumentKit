@@ -8,7 +8,8 @@ Unit tests for the VXI11 communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 from .. import mock
 
 from instruments.abstract_instruments.comm import VXI11Communicator
@@ -26,10 +27,10 @@ def test_vxi11comm_init(mock_vxi11):
     mock_vxi11.Instrument.assert_called_with("host")
 
 
-@raises(ImportError)
 @mock.patch(import_base, new=None)
 def test_vxi11comm_init_no_vxi11():
-    _ = VXI11Communicator("host")
+    with pytest.raises(ImportError):
+        _ = VXI11Communicator("host")
 
 
 @mock.patch(import_base)
@@ -135,22 +136,22 @@ def test_vxi11comm_query(mock_vxi11):
     comm._inst.ask.assert_called_with("mock", num=10)
 
 
-@raises(NotImplementedError)
 @mock.patch(import_base)
 def test_vxi11comm_seek(mock_vxi11):
-    comm = VXI11Communicator()
-    comm.seek(1)
+    with pytest.raises(NotImplementedError):
+        comm = VXI11Communicator()
+        comm.seek(1)
 
 
-@raises(NotImplementedError)
 @mock.patch(import_base)
 def test_vxi11comm_tell(mock_vxi11):
-    comm = VXI11Communicator()
-    comm.tell()
+    with pytest.raises(NotImplementedError):
+        comm = VXI11Communicator()
+        comm.tell()
 
 
-@raises(NotImplementedError)
 @mock.patch(import_base)
 def test_vxi11comm_flush(mock_vxi11):
-    comm = VXI11Communicator()
-    comm.flush_input()
+    with pytest.raises(NotImplementedError):
+        comm = VXI11Communicator()
+        comm.flush_input()

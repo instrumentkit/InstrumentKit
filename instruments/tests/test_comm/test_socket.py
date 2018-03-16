@@ -10,7 +10,8 @@ from __future__ import absolute_import
 
 import socket
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 from .. import mock
 import quantities as pq
 
@@ -29,9 +30,9 @@ def test_socketcomm_init():
     assert comm._conn == socket_object
 
 
-@raises(TypeError)
 def test_socketcomm_init_wrong_filelike():
-    _ = SocketCommunicator("derp")
+    with pytest.raises(TypeError):
+        _ = SocketCommunicator("derp")
 
 
 def test_socketcomm_address():
@@ -43,10 +44,10 @@ def test_socketcomm_address():
     comm._conn.getpeername.assert_called_with()
 
 
-@raises(NotImplementedError)
 def test_socketcomm_address_setting():
-    comm = SocketCommunicator(socket.socket())
-    comm.address = "foobar"
+    with pytest.raises(NotImplementedError):
+        comm = SocketCommunicator(socket.socket())
+        comm.address = "foobar"
 
 
 def test_socketcomm_terminator():
@@ -117,13 +118,13 @@ def test_loopbackcomm_read_raw_2char_terminator():
     assert comm._conn.recv.call_count == 5
 
 
-@raises(IOError)
 def test_serialcomm_read_raw_timeout():
-    comm = SocketCommunicator(socket.socket())
-    comm._conn = mock.MagicMock()
-    comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b""])
+    with pytest.raises(IOError):
+        comm = SocketCommunicator(socket.socket())
+        comm._conn = mock.MagicMock()
+        comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b""])
 
-    _ = comm.read_raw(-1)
+        _ = comm.read_raw(-1)
 
 
 def test_socketcomm_write_raw():
@@ -156,16 +157,16 @@ def test_socketcomm_query():
     comm.read.assert_called_with(10)
 
 
-@raises(NotImplementedError)
 def test_socketcomm_seek():
-    comm = SocketCommunicator(socket.socket())
-    comm.seek(1)
+    with pytest.raises(NotImplementedError):
+        comm = SocketCommunicator(socket.socket())
+        comm.seek(1)
 
 
-@raises(NotImplementedError)
 def test_socketcomm_tell():
-    comm = SocketCommunicator(socket.socket())
-    comm.tell()
+    with pytest.raises(NotImplementedError):
+        comm = SocketCommunicator(socket.socket())
+        comm.tell()
 
 
 def test_socketcomm_flush_input():

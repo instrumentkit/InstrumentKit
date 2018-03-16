@@ -8,7 +8,8 @@ Unit tests for the serial communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 from .. import mock
 import serial
 import quantities as pq
@@ -26,9 +27,9 @@ def test_serialcomm_init():
     assert isinstance(comm._conn, serial.Serial) is True
 
 
-@raises(TypeError)
 def test_serialcomm_init_wrong_filelike():
-    _ = SerialCommunicator("derp")
+    with pytest.raises(TypeError):
+        _ = SerialCommunicator("derp")
 
 
 def test_serialcomm_address():
@@ -109,13 +110,13 @@ def test_loopbackcomm_read_raw_2char_terminator():
     assert comm._conn.read.call_count == 5
 
 
-@raises(IOError)
 def test_serialcomm_read_raw_timeout():
-    comm = SerialCommunicator(serial.Serial())
-    comm._conn = mock.MagicMock()
-    comm._conn.read = mock.MagicMock(side_effect=[b"a", b"b", b""])
+    with pytest.raises(IOError):
+        comm = SerialCommunicator(serial.Serial())
+        comm._conn = mock.MagicMock()
+        comm._conn.read = mock.MagicMock(side_effect=[b"a", b"b", b""])
 
-    _ = comm.read_raw(-1)
+        _ = comm.read_raw(-1)
 
 
 def test_serialcomm_write_raw():
@@ -148,16 +149,16 @@ def test_serialcomm_query():
     comm.read.assert_called_with(10)
 
 
-@raises(NotImplementedError)
 def test_serialcomm_seek():
-    comm = SerialCommunicator(serial.Serial())
-    comm.seek(1)
+    with pytest.raises(NotImplementedError):
+        comm = SerialCommunicator(serial.Serial())
+        comm.seek(1)
 
 
-@raises(NotImplementedError)
 def test_serialcomm_tell():
-    comm = SerialCommunicator(serial.Serial())
-    comm.tell()
+    with pytest.raises(NotImplementedError):
+        comm = SerialCommunicator(serial.Serial())
+        comm.tell()
 
 
 def test_serialcomm_flush_input():

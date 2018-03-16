@@ -8,7 +8,8 @@ Unit tests for the file communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 from .. import mock
 
 from instruments.abstract_instruments.comm import FileCommunicator
@@ -46,10 +47,10 @@ def test_filecomm_address_getter_no_name():
     eq_(comm.address, None)
 
 
-@raises(NotImplementedError)
 def test_filecomm_address_setter():
-    comm = FileCommunicator(mock.MagicMock())
-    comm.address = "abc123"
+    with pytest.raises(NotImplementedError):
+        comm = FileCommunicator(mock.MagicMock())
+        comm.address = "abc123"
 
 
 def test_filecomm_terminator():
@@ -64,16 +65,16 @@ def test_filecomm_terminator():
     eq_(comm._terminator, "*")
 
 
-@raises(NotImplementedError)
 def test_filecomm_timeout_getter():
-    comm = FileCommunicator(mock.MagicMock())
-    _ = comm.timeout
+    with pytest.raises(NotImplementedError):
+        comm = FileCommunicator(mock.MagicMock())
+        _ = comm.timeout
 
 
-@raises(NotImplementedError)
 def test_filecomm_timeout_setter():
-    comm = FileCommunicator(mock.MagicMock())
-    comm.timeout = 1
+    with pytest.raises(NotImplementedError):
+        comm = FileCommunicator(mock.MagicMock())
+        comm.timeout = 1
 
 
 def test_filecomm_close():

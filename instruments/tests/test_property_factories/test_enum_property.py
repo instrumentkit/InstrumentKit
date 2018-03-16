@@ -9,7 +9,8 @@ Module containing tests for the enum property factories
 from __future__ import absolute_import
 
 from enum import Enum, IntEnum
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 
 from instruments.util_fns import enum_property
 from . import MockInstrument
@@ -41,18 +42,18 @@ def test_enum_property():
     eq_(mock_inst.value, 'MOCK:A?\nMOCK:B?\nMOCK:A bb\nMOCK:B aa\nMOCK:B bb\n')
 
 
-@raises(ValueError)
 def test_enum_property_invalid():
-    class SillyEnum(Enum):
-        a = 'aa'
-        b = 'bb'
+    with pytest.raises(ValueError):
+        class SillyEnum(Enum):
+            a = 'aa'
+            b = 'bb'
 
-    class EnumMock(MockInstrument):
-        a = enum_property('MOCK:A', SillyEnum)
+        class EnumMock(MockInstrument):
+            a = enum_property('MOCK:A', SillyEnum)
 
-    mock_inst = EnumMock({'MOCK:A?': 'aa', 'MOCK:B?': 'bb'})
+        mock_inst = EnumMock({'MOCK:A?': 'aa', 'MOCK:B?': 'bb'})
 
-    mock_inst.a = 'c'
+        mock_inst.a = 'c'
 
 
 def test_enum_property_set_fmt():
@@ -146,17 +147,17 @@ def test_enum_property_output_decoration_not_a_function():
     eq_(mock_instrument.value, 'MOCK:A 0.23\n')
 
 
-@raises(AttributeError)
 def test_enum_property_writeonly_reading_fails():
-    class SillyEnum(Enum):
-        a = 'aa'
+    with pytest.raises(AttributeError):
+        class SillyEnum(Enum):
+            a = 'aa'
 
-    class EnumMock(MockInstrument):
-        a = enum_property('MOCK:A', SillyEnum, writeonly=True)
+        class EnumMock(MockInstrument):
+            a = enum_property('MOCK:A', SillyEnum, writeonly=True)
 
-    mock_instrument = EnumMock()
+        mock_instrument = EnumMock()
 
-    _ = mock_instrument.a
+        _ = mock_instrument.a
 
 
 def test_enum_property_writeonly_writing_passes():
@@ -172,17 +173,17 @@ def test_enum_property_writeonly_writing_passes():
     eq_(mock_instrument.value, 'MOCK:A aa\n')
 
 
-@raises(AttributeError)
 def test_enum_property_readonly_writing_fails():
-    class SillyEnum(Enum):
-        a = 'aa'
+    with pytest.raises(AttributeError):
+        class SillyEnum(Enum):
+            a = 'aa'
 
-    class EnumMock(MockInstrument):
-        a = enum_property('MOCK:A', SillyEnum, readonly=True)
+        class EnumMock(MockInstrument):
+            a = enum_property('MOCK:A', SillyEnum, readonly=True)
 
-    mock_instrument = EnumMock({'MOCK:A?': 'aa'})
+        mock_instrument = EnumMock({'MOCK:A?': 'aa'})
 
-    mock_instrument.a = SillyEnum.a
+        mock_instrument.a = SillyEnum.a
 
 
 def test_enum_property_readonly_reading_passes():

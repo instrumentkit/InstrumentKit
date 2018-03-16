@@ -8,7 +8,8 @@ Module containing tests for the bool property factories
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
+from nose.tools import eq_
+import pytest
 
 from instruments.util_fns import bool_property
 from . import MockInstrument
@@ -45,14 +46,14 @@ def test_bool_property_set_fmt():
     eq_(mock_instrument.value, 'MOCK1=ON\n')
 
 
-@raises(AttributeError)
 def test_bool_property_readonly_writing_fails():
-    class BoolMock(MockInstrument):
-        mock1 = bool_property('MOCK1', readonly=True)
+    with pytest.raises(AttributeError):
+        class BoolMock(MockInstrument):
+            mock1 = bool_property('MOCK1', readonly=True)
 
-    mock_instrument = BoolMock({'MOCK1?': 'OFF'})
+        mock_instrument = BoolMock({'MOCK1?': 'OFF'})
 
-    mock_instrument.mock1 = True
+        mock_instrument.mock1 = True
 
 
 def test_bool_property_readonly_reading_passes():
@@ -64,14 +65,14 @@ def test_bool_property_readonly_reading_passes():
     eq_(mock_instrument.mock1, False)
 
 
-@raises(AttributeError)
 def test_bool_property_writeonly_reading_fails():
-    class BoolMock(MockInstrument):
-        mock1 = bool_property('MOCK1', writeonly=True)
+    with pytest.raises(AttributeError):
+        class BoolMock(MockInstrument):
+            mock1 = bool_property('MOCK1', writeonly=True)
 
-    mock_instrument = BoolMock({'MOCK1?': 'OFF'})
+        mock_instrument = BoolMock({'MOCK1?': 'OFF'})
 
-    _ = mock_instrument.mock1
+        _ = mock_instrument.mock1
 
 
 def test_bool_property_writeonly_writing_passes():
