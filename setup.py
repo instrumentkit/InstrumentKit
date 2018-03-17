@@ -36,7 +36,7 @@ CLASSIFIERS = [
 ]
 INSTALL_REQUIRES = [
     "numpy",
-    "pyserial",
+    "pyserial>=3.3",
     "quantities",
     "enum34",
     "future",
