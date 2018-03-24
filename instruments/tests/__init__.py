@@ -17,7 +17,10 @@ from io import BytesIO
 
 from builtins import bytes, str
 
-from nose.tools import nottest, eq_
+try:
+    from unittest import mock  # from Python 3.3 onward, this is in the stdlib
+except ImportError:
+    import mock
 
 # FUNCTIONS ##################################################################
 
@@ -90,7 +93,6 @@ Got:
     #     """Only read {} bytes out of {}""".format(current, end)
 
 
-@nottest
 def unit_eq(a, b, msg=None, thresh=1e-5):
     """
     Asserts that two unitful quantites ``a`` and ``b``
@@ -103,7 +105,6 @@ def unit_eq(a, b, msg=None, thresh=1e-5):
     assert a.units == b.units, "{} and {} have different units".format(a, b)
 
 
-@nottest
 def make_name_test(ins_class, name_cmd="*IDN?"):
     """
     Given an instrument class, produces a test which asserts that the instrument
@@ -111,5 +112,5 @@ def make_name_test(ins_class, name_cmd="*IDN?"):
     """
     def test():
         with expected_protocol(ins_class, name_cmd + "\n", "NAME\n") as ins:
-            eq_(ins.name, "NAME")
+            assert ins.name == "NAME"
     return test

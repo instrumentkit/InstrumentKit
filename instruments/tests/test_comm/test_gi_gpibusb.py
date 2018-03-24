@@ -8,13 +8,13 @@ Unit tests for the GI GPIBUSB communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
-import mock
+import pytest
 import serial
 import quantities as pq
 
 from instruments.abstract_instruments.comm import GPIBCommunicator, SerialCommunicator
 from instruments.tests import unit_eq
+from .. import mock
 
 # TEST CASES #################################################################
 
@@ -34,10 +34,10 @@ def test_gpibusbcomm_init_correct_values_new_firmware():
     mock_gpib.query.return_value = "5"
     comm = GPIBCommunicator(mock_gpib, 1)
 
-    eq_(comm._terminator, "\n")
-    eq_(comm._version, 5)
-    eq_(comm._eos, "\n")
-    eq_(comm._eoi, True)
+    assert comm._terminator == "\n"
+    assert comm._version == 5
+    assert comm._eos == "\n"
+    assert comm._eoi is True
     unit_eq(comm._timeout, 1000 * pq.millisecond)
 
 
@@ -47,7 +47,7 @@ def test_gpibusbcomm_init_correct_values_old_firmware():
     mock_gpib.query.return_value = "4"
     comm = GPIBCommunicator(mock_gpib, 1)
 
-    eq_(comm._eos, 10)
+    assert comm._eos == 10
 
 
 def test_gpibusbcomm_address():
@@ -58,30 +58,30 @@ def test_gpibusbcomm_address():
     type(comm._file).address = port_name
 
     # Check that our address function is working
-    eq_(comm.address, (1, "/dev/address"))
+    assert comm.address == (1, "/dev/address")
     port_name.assert_called_with()
 
     # Able to set GPIB address
     comm.address = 5
-    eq_(comm._gpib_address, 5)
+    assert comm._gpib_address == 5
 
     # Able to set address with a list
     comm.address = [6, "/dev/foobar"]
-    eq_(comm._gpib_address, 6)
+    assert comm._gpib_address == 6
     port_name.assert_called_with("/dev/foobar")
 
 
-@raises(ValueError)
 def test_gpibusbcomm_address_out_of_range():
-    comm = GPIBCommunicator(mock.MagicMock(), 1)
+    with pytest.raises(ValueError):
+        comm = GPIBCommunicator(mock.MagicMock(), 1)
 
-    comm.address = 31
+        comm.address = 31
 
 
-@raises(TypeError)
 def test_gpibusbcomm_address_wrong_type():
-    comm = GPIBCommunicator(mock.MagicMock(), 1)
-    comm.address = "derp"
+    with pytest.raises(TypeError):
+        comm = GPIBCommunicator(mock.MagicMock(), 1)
+        comm.address = "derp"
 
 
 def test_gpibusbcomm_eoi():
@@ -90,14 +90,14 @@ def test_gpibusbcomm_eoi():
 
     comm._file.sendcmd = mock.MagicMock()
     comm.eoi = True
-    eq_(comm.eoi, True)
-    eq_(comm._eoi, True)
+    assert comm.eoi is True
+    assert comm._eoi is True
     comm._file.sendcmd.assert_called_with("++eoi 1")
 
     comm._file.sendcmd = mock.MagicMock()
     comm.eoi = False
-    eq_(comm.eoi, False)
-    eq_(comm._eoi, False)
+    assert comm.eoi is False
+    assert comm._eoi is False
     comm._file.sendcmd.assert_called_with("++eoi 0")
 
 
@@ -107,22 +107,22 @@ def test_gpibusbcomm_eoi_old_firmware():
 
     comm._file.sendcmd = mock.MagicMock()
     comm.eoi = True
-    eq_(comm.eoi, True)
-    eq_(comm._eoi, True)
+    assert comm.eoi is True
+    assert comm._eoi is True
     comm._file.sendcmd.assert_called_with("+eoi:1")
 
     comm._file.sendcmd = mock.MagicMock()
     comm.eoi = False
-    eq_(comm.eoi, False)
-    eq_(comm._eoi, False)
+    assert comm.eoi is False
+    assert comm._eoi is False
     comm._file.sendcmd.assert_called_with("+eoi:0")
 
 
-@raises(TypeError)
 def test_gpibusbcomm_eoi_bad_type():
-    comm = GPIBCommunicator(mock.MagicMock(), 1)
-    comm._version = 5
-    comm.eoi = "abc"
+    with pytest.raises(TypeError):
+        comm = GPIBCommunicator(mock.MagicMock(), 1)
+        comm._version = 5
+        comm.eoi = "abc"
 
 
 def test_gpibusbcomm_eos_rn():
@@ -131,8 +131,8 @@ def test_gpibusbcomm_eos_rn():
 
     comm._file.sendcmd = mock.MagicMock()
     comm.eos = "\r\n"
-    eq_(comm.eos, "\r\n")
-    eq_(comm._eos, "\r\n")
+    assert comm.eos == "\r\n"
+    assert comm._eos == "\r\n"
     comm._file.sendcmd.assert_called_with("++eos 0")
 
 
@@ -142,8 +142,8 @@ def test_gpibusbcomm_eos_r():
 
     comm._file.sendcmd = mock.MagicMock()
     comm.eos = "\r"
-    eq_(comm.eos, "\r")
-    eq_(comm._eos, "\r")
+    assert comm.eos == "\r"
+    assert comm._eos == "\r"
     comm._file.sendcmd.assert_called_with("++eos 1")
 
 
@@ -153,16 +153,16 @@ def test_gpibusbcomm_eos_n():
 
     comm._file.sendcmd = mock.MagicMock()
     comm.eos = "\n"
-    eq_(comm.eos, "\n")
-    eq_(comm._eos, "\n")
+    assert comm.eos == "\n"
+    assert comm._eos == "\n"
     comm._file.sendcmd.assert_called_with("++eos 2")
 
 
-@raises(ValueError)
 def test_gpibusbcomm_eos_invalid():
-    comm = GPIBCommunicator(mock.MagicMock(), 1)
-    comm._version = 5
-    comm.eos = "*"
+    with pytest.raises(ValueError):
+        comm = GPIBCommunicator(mock.MagicMock(), 1)
+        comm._version = 5
+        comm.eos = "*"
 
 
 def test_gpibusbcomm_eos_old_firmware():
@@ -171,7 +171,7 @@ def test_gpibusbcomm_eos_old_firmware():
 
     comm._file.sendcmd = mock.MagicMock()
     comm.eos = "\n"
-    eq_(comm._eos, 10)
+    assert comm._eos == 10
     comm._file.sendcmd.assert_called_with("+eos:10")
 
 
@@ -180,16 +180,16 @@ def test_gpibusbcomm_terminator():
     comm._version = 5
 
     # Default terminator should be eoi
-    eq_(comm.terminator, "eoi")
-    eq_(comm._eoi, True)
+    assert comm.terminator == "eoi"
+    assert comm._eoi is True
 
     comm.terminator = "\n"
-    eq_(comm.terminator, "\n")
-    eq_(comm._eoi, False)
+    assert comm.terminator == "\n"
+    assert comm._eoi is False
 
     comm.terminator = "eoi"
-    eq_(comm.terminator, "eoi")
-    eq_(comm._eoi, True)
+    assert comm.terminator == "eoi"
+    assert comm._eoi is True
 
 
 def test_gpibusbcomm_timeout():
@@ -215,7 +215,7 @@ def test_gpibusbcomm_read_raw():
     comm._version = 5
     comm._file.read_raw = mock.MagicMock(return_value=b"abc")
 
-    eq_(comm.read_raw(3), b"abc")
+    assert comm.read_raw(3) == b"abc"
     comm._file.read_raw.assert_called_with(3)
 
 
@@ -257,7 +257,7 @@ def test_gpibusbcomm_query():
     comm._file.read = mock.MagicMock(return_value="answer")
     comm.sendcmd = mock.MagicMock()
 
-    eq_(comm._query("mock?"), "answer")
+    assert comm._query("mock?") == "answer"
     comm.sendcmd.assert_called_with("mock?")
     comm._file.read.assert_called_with(-1)
 
@@ -273,7 +273,7 @@ def test_gpibusbcomm_query_no_question_mark():
     comm._file.read = mock.MagicMock(return_value="answer")
     comm.sendcmd = mock.MagicMock()
 
-    eq_(comm._query("mock"), "answer")
+    assert comm._query("mock") == "answer"
     comm.sendcmd.assert_called_with("mock")
     comm._file.read.assert_called_with(-1)
     comm._file.sendcmd.assert_has_calls([mock.call("+read")])

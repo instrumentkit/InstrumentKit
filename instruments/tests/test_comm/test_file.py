@@ -8,10 +8,10 @@ Unit tests for the file communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
-import mock
+import pytest
 
 from instruments.abstract_instruments.comm import FileCommunicator
+from .. import mock
 
 # TEST CASES #################################################################
 
@@ -33,7 +33,7 @@ def test_filecomm_address_getter():
     mock_name = mock.PropertyMock(return_value="/home/user/file")
     type(comm._filelike).name = mock_name
 
-    eq_(comm.address, "/home/user/file")
+    assert comm.address == "/home/user/file"
     mock_name.assert_called_with()
 
 
@@ -43,37 +43,37 @@ def test_filecomm_address_getter_no_name():
 
     del comm._filelike.name
 
-    eq_(comm.address, None)
+    assert comm.address is None
 
 
-@raises(NotImplementedError)
 def test_filecomm_address_setter():
-    comm = FileCommunicator(mock.MagicMock())
-    comm.address = "abc123"
+    with pytest.raises(NotImplementedError):
+        comm = FileCommunicator(mock.MagicMock())
+        comm.address = "abc123"
 
 
 def test_filecomm_terminator():
     comm = FileCommunicator(mock.MagicMock())
 
-    eq_(comm.terminator, "\n")
+    assert comm.terminator == "\n"
 
     comm.terminator = "*"
-    eq_(comm._terminator, "*")
+    assert comm._terminator == "*"
 
     comm.terminator = b"*"
-    eq_(comm._terminator, "*")
+    assert comm._terminator == "*"
 
 
-@raises(NotImplementedError)
 def test_filecomm_timeout_getter():
-    comm = FileCommunicator(mock.MagicMock())
-    _ = comm.timeout
+    with pytest.raises(NotImplementedError):
+        comm = FileCommunicator(mock.MagicMock())
+        _ = comm.timeout
 
 
-@raises(NotImplementedError)
 def test_filecomm_timeout_setter():
-    comm = FileCommunicator(mock.MagicMock())
-    comm.timeout = 1
+    with pytest.raises(NotImplementedError):
+        comm = FileCommunicator(mock.MagicMock())
+        comm.timeout = 1
 
 
 def test_filecomm_close():
@@ -87,7 +87,7 @@ def test_filecomm_read_raw():
     comm = FileCommunicator(mock.MagicMock())
     comm._filelike.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
-    eq_(comm.read_raw(), b"abc")
+    assert comm.read_raw() == b"abc"
     comm._filelike.read.assert_has_calls([mock.call(1)] * 4)
     assert comm._filelike.read.call_count == 4
 
@@ -115,7 +115,7 @@ def test_filecomm_query():
     comm._testing = True  # to disable the delay in the _query function
     comm._filelike.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
-    eq_(comm._query("mock"), "abc")
+    assert comm._query("mock") == "abc"
 
 
 def test_filecomm_seek():
@@ -128,7 +128,7 @@ def test_filecomm_tell():
     comm = FileCommunicator(mock.MagicMock())
     comm._filelike.tell.return_value = 5
 
-    eq_(comm.tell(), 5)
+    assert comm.tell() == 5
     comm._filelike.tell.assert_called_with()
 
 

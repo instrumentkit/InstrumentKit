@@ -15,9 +15,7 @@ from builtins import bytes
 import serial
 from serial.tools.list_ports_common import ListPortInfo
 
-from nose.tools import raises
-import mock
-
+import pytest
 import numpy as np
 
 import instruments as ik
@@ -29,6 +27,8 @@ from instruments.abstract_instruments.comm import (
     USBTMCCommunicator, VXI11Communicator, serial_manager, SerialCommunicator
 )
 from instruments.errors import AcknowledgementError, PromptError
+
+from . import mock
 
 # TESTS ######################################################################
 
@@ -63,23 +63,23 @@ def test_instrument_binblockread_two_reads():
     np.testing.assert_array_equal(calls_expected, calls_actual)
 
 
-@raises(IOError)
 def test_instrument_binblockread_too_many_reads():
-    inst = ik.Instrument.open_test()
-    data = bytes.fromhex("00000001000200030004")
-    inst._file.read_raw = mock.MagicMock(
-        side_effect=[b"#", b"2", b"10", data[:6], b"", b"", b""]
-    )
+    with pytest.raises(IOError):
+        inst = ik.Instrument.open_test()
+        data = bytes.fromhex("00000001000200030004")
+        inst._file.read_raw = mock.MagicMock(
+            side_effect=[b"#", b"2", b"10", data[:6], b"", b"", b""]
+        )
 
-    _ = inst.binblockread(2)
+        _ = inst.binblockread(2)
 
 
-@raises(IOError)
 def test_instrument_binblockread_bad_block_start():
-    inst = ik.Instrument.open_test()
-    inst._file.read_raw = mock.MagicMock(return_value=b"@")
+    with pytest.raises(IOError):
+        inst = ik.Instrument.open_test()
+        inst._file.read_raw = mock.MagicMock(return_value=b"@")
 
-    _ = inst.binblockread(2)
+        _ = inst.binblockread(2)
 
 
 # OPEN CONNECTION TESTS
@@ -180,73 +180,73 @@ def test_instrument_open_serial_by_usb_ids_and_serial_number(mock_serial_manager
     )
 
 
-@raises(serial.SerialException)
 @mock.patch("instruments.abstract_instruments.instrument.comports")
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial_by_usb_ids_multiple_matches(_, mock_comports):
-    fake_device = ListPortInfo()
-    fake_device.vid = 0
-    fake_device.pid = 1000
-    fake_device.serial_number = 'a1'
-    fake_device.device = 'COM1'
+    with pytest.raises(serial.SerialException):
+        fake_device = ListPortInfo()
+        fake_device.vid = 0
+        fake_device.pid = 1000
+        fake_device.serial_number = 'a1'
+        fake_device.device = 'COM1'
 
-    fake_device2 = ListPortInfo()
-    fake_device2.vid = 0
-    fake_device2.pid = 1000
-    fake_device2.serial_number = 'b2'
-    fake_device2.device = 'COM2'
+        fake_device2 = ListPortInfo()
+        fake_device2.vid = 0
+        fake_device2.pid = 1000
+        fake_device2.serial_number = 'b2'
+        fake_device2.device = 'COM2'
 
-    mock_comports.return_value = [fake_device, fake_device2]
+        mock_comports.return_value = [fake_device, fake_device2]
 
-    _ = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000)
+        _ = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000)
 
 
-@raises(ValueError)
 @mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial_by_usb_ids_incorrect_serial_num(mock_serial_manager):
-    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
-    _ = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000, serial_number="xyz")
+    with pytest.raises(ValueError):
+        mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+        _ = ik.Instrument.open_serial(baud=1234, vid=0, pid=1000, serial_number="xyz")
 
 
-@raises(ValueError)
 @mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial_by_usb_ids_cant_find(mock_serial_manager):
-    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
-    _ = ik.Instrument.open_serial(baud=1234, vid=1234, pid=1000)
+    with pytest.raises(ValueError):
+        mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+        _ = ik.Instrument.open_serial(baud=1234, vid=1234, pid=1000)
 
 
-@raises(ValueError)
 @mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial_no_port(mock_serial_manager):
-    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
-    _ = ik.Instrument.open_serial(baud=1234)
+    with pytest.raises(ValueError):
+        mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+        _ = ik.Instrument.open_serial(baud=1234)
 
 
-@raises(ValueError)
 @mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial_by_usb_ids_and_port(mock_serial_manager):
-    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
-    _ = ik.Instrument.open_serial(port="COM1", baud=1234, vid=1234, pid=1000)
+    with pytest.raises(ValueError):
+        mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+        _ = ik.Instrument.open_serial(port="COM1", baud=1234, vid=1234, pid=1000)
 
 
-@raises(ValueError)
 @mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial_by_usb_vid_no_pid(mock_serial_manager):
-    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
-    _ = ik.Instrument.open_serial(baud=1234, vid=1234)
+    with pytest.raises(ValueError):
+        mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+        _ = ik.Instrument.open_serial(baud=1234, vid=1234)
 
 
-@raises(ValueError)
 @mock.patch("instruments.abstract_instruments.instrument.comports", new=fake_comports)
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial_by_usb_pid_no_vid(mock_serial_manager):
-    mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
-    _ = ik.Instrument.open_serial(baud=1234, pid=1234)
+    with pytest.raises(ValueError):
+        mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
+        _ = ik.Instrument.open_serial(baud=1234, pid=1234)
 
 
 # TEST OPEN_GPIBUSB ##########################################################
@@ -274,10 +274,10 @@ def test_instrument_open_gpibusb(mock_serial_manager, mock_gpib_comm):
     )
 
 
-@raises(ImportError)
 @mock.patch("instruments.abstract_instruments.instrument.visa", new=None)
 def test_instrument_open_visa_import_error():
-    _ = ik.Instrument.open_visa("abc123")
+    with pytest.raises(ImportError):
+        _ = ik.Instrument.open_visa("abc123")
 
 
 @mock.patch("instruments.abstract_instruments.instrument.VisaCommunicator")
@@ -419,16 +419,16 @@ def test_instrument_open_from_uri_vxi11(mock_open_conn):
     mock_open_conn.assert_called_with("TCPIP::192.168.1.105::gpib,5::INSTR")
 
 
-@raises(NotImplementedError)
 def test_instrument_open_from_uri_invalid_scheme():
-    _ = ik.Instrument.open_from_uri("foo://bar")
+    with pytest.raises(NotImplementedError):
+        _ = ik.Instrument.open_from_uri("foo://bar")
 
 
 # INIT TESTS
 
-@raises(TypeError)
 def test_instrument_init_bad_filelike():
-    _ = ik.Instrument(mock.MagicMock())
+    with pytest.raises(TypeError):
+        _ = ik.Instrument(mock.MagicMock())
 
 
 def test_instrument_init():
@@ -503,19 +503,19 @@ def test_instrument_sendcmd_noprompt_multiple_ack():
     inst._file.sendcmd.assert_called_with("foobar")
 
 
-@raises(AcknowledgementError)
 def test_instrument_sendcmd_bad_ack():
-    mock_filelike = mock.MagicMock()
-    mock_filelike.__class__ = AbstractCommunicator
-    inst = ik.Instrument(mock_filelike)
+    with pytest.raises(AcknowledgementError):
+        mock_filelike = mock.MagicMock()
+        mock_filelike.__class__ = AbstractCommunicator
+        inst = ik.Instrument(mock_filelike)
 
-    def new_ack(msg):
-        return msg
+        def new_ack(msg):
+            return msg
 
-    inst._ack_expected = new_ack
-    inst.read = mock.MagicMock(return_value="derp")
+        inst._ack_expected = new_ack
+        inst.read = mock.MagicMock(return_value="derp")
 
-    inst.sendcmd("foobar")
+        inst.sendcmd("foobar")
 
 
 def test_instrument_sendcmd_noack():
@@ -531,16 +531,16 @@ def test_instrument_sendcmd_noack():
     inst._file.sendcmd.assert_called_with("foobar")
 
 
-@raises(PromptError)
 def test_instrument_sendcmd_noack_bad_prompt():
-    mock_filelike = mock.MagicMock()
-    mock_filelike.__class__ = AbstractCommunicator
-    inst = ik.Instrument(mock_filelike)
+    with pytest.raises(PromptError):
+        mock_filelike = mock.MagicMock()
+        mock_filelike.__class__ = AbstractCommunicator
+        inst = ik.Instrument(mock_filelike)
 
-    inst.prompt = "> "
-    inst.read = mock.MagicMock(return_value="* ")
+        inst.prompt = "> "
+        inst.read = mock.MagicMock(return_value="* ")
 
-    inst.sendcmd("foobar")
+        inst.sendcmd("foobar")
 
 
 def test_instrument_sendcmd():
@@ -622,19 +622,19 @@ def test_instrument_query_noprompt_multiple_ack():
     inst.read.assert_called_with(-1)
 
 
-@raises(AcknowledgementError)
 def test_instrument_query_bad_ack():
-    mock_filelike = mock.MagicMock()
-    mock_filelike.__class__ = AbstractCommunicator
-    inst = ik.Instrument(mock_filelike)
-    inst.read = mock.MagicMock(return_value="derp")
+    with pytest.raises(AcknowledgementError):
+        mock_filelike = mock.MagicMock()
+        mock_filelike.__class__ = AbstractCommunicator
+        inst = ik.Instrument(mock_filelike)
+        inst.read = mock.MagicMock(return_value="derp")
 
-    def new_ack(msg):
-        return msg
+        def new_ack(msg):
+            return msg
 
-    inst._ack_expected = new_ack
+        inst._ack_expected = new_ack
 
-    _ = inst.query("foobar?")
+        _ = inst.query("foobar?")
 
 
 def test_instrument_query_noack():
@@ -659,17 +659,17 @@ def test_instrument_query_noack():
     inst.read.assert_called_with(2)
 
 
-@raises(PromptError)
 def test_instrument_query_noack_bad_prompt():
-    mock_filelike = mock.MagicMock()
-    mock_filelike.__class__ = AbstractCommunicator
-    inst = ik.Instrument(mock_filelike)
-    inst._file.query.return_value = "datas"
+    with pytest.raises(PromptError):
+        mock_filelike = mock.MagicMock()
+        mock_filelike.__class__ = AbstractCommunicator
+        inst = ik.Instrument(mock_filelike)
+        inst._file.query.return_value = "datas"
 
-    inst.prompt = "> "
-    inst.read = mock.MagicMock(return_value="* ")
+        inst.prompt = "> "
+        inst.read = mock.MagicMock(return_value="* ")
 
-    _ = inst.query("foobar?")
+        _ = inst.query("foobar?")
 
 
 def test_instrument_query():

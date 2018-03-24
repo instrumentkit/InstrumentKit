@@ -8,7 +8,7 @@ Module containing tests for the Thorlabs LCC25
 
 from __future__ import absolute_import
 
-from nose.tools import raises
+import pytest
 import quantities as pq
 
 import instruments as ik
@@ -53,36 +53,36 @@ def test_lcc25_frequency():
         lcc.frequency = 10.0
 
 
-@raises(ValueError)
 def test_lcc25_frequency_lowlimit():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [
-            "freq=0.0"
-        ],
-        [
-            "freq=0.0",
-            ">"
-        ],
-        sep="\r"
-    ) as lcc:
-        lcc.frequency = 0.0
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [
+                "freq=0.0"
+            ],
+            [
+                "freq=0.0",
+                ">"
+            ],
+            sep="\r"
+        ) as lcc:
+            lcc.frequency = 0.0
 
 
-@raises(ValueError)
 def test_lcc25_frequency_highlimit():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [
-            "freq=160.0"
-        ],
-        [
-            "freq=160.0",
-            ">"
-        ],
-        sep="\r"
-    ) as lcc:
-        lcc.frequency = 160.0
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [
+                "freq=160.0"
+            ],
+            [
+                "freq=160.0",
+                ">"
+            ],
+            sep="\r"
+        ) as lcc:
+            lcc.frequency = 160.0
 
 
 def test_lcc25_mode():
@@ -104,14 +104,14 @@ def test_lcc25_mode():
         lcc.mode = ik.thorlabs.LCC25.Mode.voltage1
 
 
-@raises(ValueError)
 def test_lcc25_mode_invalid():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [],
-        []
-    ) as lcc:
-        lcc.mode = "blo"
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [],
+            []
+        ) as lcc:
+            lcc.mode = "blo"
 
 
 def test_lcc25_enable():
@@ -133,14 +133,14 @@ def test_lcc25_enable():
         lcc.enable = True
 
 
-@raises(TypeError)
 def test_lcc25_enable_invalid_type():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [],
-        []
-    ) as lcc:
-        lcc.enable = "blo"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [],
+            []
+        ) as lcc:
+            lcc.enable = "blo"
 
 
 def test_lcc25_extern():
@@ -162,14 +162,14 @@ def test_lcc25_extern():
         lcc.extern = True
 
 
-@raises(TypeError)
 def test_tc200_extern_invalid_type():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [],
-        []
-    ) as tc:
-        tc.extern = "blo"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [],
+            []
+        ) as tc:
+            tc.extern = "blo"
 
 
 def test_lcc25_remote():
@@ -191,14 +191,14 @@ def test_lcc25_remote():
         lcc.remote = True
 
 
-@raises(TypeError)
 def test_tc200_remote_invalid_type():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [],
-        []
-    ) as tc:
-        tc.remote = "blo"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [],
+            []
+        ) as tc:
+            tc.remote = "blo"
 
 
 def test_lcc25_voltage1():
@@ -302,20 +302,20 @@ def test_lcc25_dwell():
         lcc.dwell = 10
 
 
-@raises(ValueError)
 def test_lcc25_dwell_positive():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [
-            "dwell=-10"
-        ],
-        [
-            "dwell=-10",
-            ">"
-        ],
-        sep="\r"
-    ) as lcc:
-        lcc.dwell = -10
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [
+                "dwell=-10"
+            ],
+            [
+                "dwell=-10",
+                ">"
+            ],
+            sep="\r"
+        ) as lcc:
+            lcc.dwell = -10
 
 
 def test_lcc25_increment():
@@ -337,20 +337,20 @@ def test_lcc25_increment():
         lcc.increment = 10.0
 
 
-@raises(ValueError)
 def test_lcc25_increment_positive():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [
-            "increment=-10"
-        ],
-        [
-            "increment=-10",
-            ">"
-        ],
-        sep="\r"
-    ) as lcc:
-        lcc.increment = -10
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [
+                "increment=-10"
+            ],
+            [
+                "increment=-10",
+                ">"
+            ],
+            sep="\r"
+        ) as lcc:
+            lcc.increment = -10
 
 
 def test_lcc25_default():
@@ -401,15 +401,15 @@ def test_lcc25_set_settings():
         lcc.set_settings(2)
 
 
-@raises(ValueError)
 def test_lcc25_set_settings_invalid():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [],
-        [],
-        sep="\r"
-    ) as lcc:
-        lcc.set_settings(5)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [],
+            [],
+            sep="\r"
+        ) as lcc:
+            lcc.set_settings(5)
 
 
 def test_lcc25_get_settings():
@@ -428,15 +428,15 @@ def test_lcc25_get_settings():
         lcc.get_settings(2)
 
 
-@raises(ValueError)
 def test_lcc25_get_settings_invalid():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [],
-        [],
-        sep="\r"
-    ) as lcc:
-        lcc.get_settings(5)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [],
+            [],
+            sep="\r"
+        ) as lcc:
+            lcc.get_settings(5)
 
 
 def test_lcc25_test_mode():
@@ -455,21 +455,21 @@ def test_lcc25_test_mode():
         lcc.test_mode()
 
 
-@raises(TypeError)
 def test_lcc25_remote_invalid_type():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [],
-        []
-    ) as lcc:
-        lcc.remote = "blo"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [],
+            []
+        ) as lcc:
+            lcc.remote = "blo"
 
 
-@raises(TypeError)
 def test_lcc25_extern_invalid_type():
-    with expected_protocol(
-        ik.thorlabs.LCC25,
-        [],
-        []
-    ) as lcc:
-        lcc.extern = "blo"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.thorlabs.LCC25,
+            [],
+            []
+        ) as lcc:
+            lcc.extern = "blo"
