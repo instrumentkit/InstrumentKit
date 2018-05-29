@@ -193,4 +193,4 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         msg += self._terminator
-        return self._conn.ask(msg)
+        return self._conn.query(msg)
