@@ -62,6 +62,7 @@ def read(*parts):
     with codecs.open(os.path.join(HERE, *parts), "rb", "utf-8") as f:
         return f.read()
 
+
 META_FILE = read(META_PATH)
 
 
@@ -77,18 +78,23 @@ def find_meta(meta):
         return meta_match.group(1)
     raise RuntimeError("Unable to find __{meta}__ string.".format(meta=meta))
 
+
 # MAIN #######################################################################
 
-if __name__ == "__main__":
-    setup(
-        name=find_meta("title"),
-        version=find_meta("version"),
-        url=find_meta("uri"),
-        author=find_meta("author"),
-        author_email=find_meta("email"),
-        packages=PACKAGES,
-        install_requires=INSTALL_REQUIRES,
-        extras_require=EXTRAS_REQUIRE,
-        description=find_meta("description"),
-        classifiers=CLASSIFIERS
-    )
+
+setup(
+    name=find_meta("title"),
+    version=find_meta("version"),
+    url=find_meta("uri"),
+    author=find_meta("author"),
+    author_email=find_meta("email"),
+    packages=PACKAGES,
+    install_requires=INSTALL_REQUIRES,
+    extras_require=EXTRAS_REQUIRE,
+    tests_require=[
+        'pytest >= 2.9.1',
+        'hypothesis'
+    ],
+    description=find_meta("description"),
+    classifiers=CLASSIFIERS
+)
