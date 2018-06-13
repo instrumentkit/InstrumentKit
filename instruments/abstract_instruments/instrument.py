@@ -151,7 +151,7 @@ class Instrument(object):
                 )
         return value
 
-    def read(self, size=-1):
+    def read(self, size=-1, encoding="utf-8"):
         """
         Read the last line.
 
@@ -161,7 +161,7 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        return self._file.read(size)
+        return self._file.read(size, encoding)
 
     # PROPERTIES #
 

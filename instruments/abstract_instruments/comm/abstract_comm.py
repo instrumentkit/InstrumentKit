@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 
 import abc
 import logging
+import struct
 
 from future.utils import with_metaclass
 
@@ -202,7 +203,14 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
         :return: The read string from the connection
         :rtype: `str`
         """
-        return self.read_raw(size).decode(encoding)
+        if encoding == 'utf-8':
+            return self.read_raw(size).decode(encoding)
+
+        elif encoding == 'IEEE-754/64':
+            return struct.unpack('>d', self.read_raw(size))[0]
+
+        else:
+            raise NotImplemented
 
     def sendcmd(self, msg):
         """
