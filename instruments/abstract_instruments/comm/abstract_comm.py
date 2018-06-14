@@ -210,7 +210,7 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
             return struct.unpack('>d', self.read_raw(size))[0]
 
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
     def sendcmd(self, msg):
         """
