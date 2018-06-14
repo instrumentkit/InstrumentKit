@@ -37,6 +37,7 @@ CLASSIFIERS = [
 INSTALL_REQUIRES = [
     "numpy",
     "pyserial>=3.3",
+    'pyvisa>=1.9.0,<1.10.0'
     "quantities",
     "enum34",
     "future",
@@ -45,10 +46,6 @@ INSTALL_REQUIRES = [
     "pyusb",
     "ruamel.yaml"
 ]
-
-EXTRAS_REQUIRE = {
-    'pyvisa==1.9.0'
-}
 
 
 # HELPER FUNCTONS ############################################################
@@ -92,7 +89,6 @@ setup(
     author_email=find_meta("email"),
     packages=PACKAGES,
     install_requires=INSTALL_REQUIRES,
-    extras_require=EXTRAS_REQUIRE,
     tests_require=[
         'pytest >= 2.9.1',
         'hypothesis'
