@@ -222,7 +222,7 @@ class PM100USB(SCPIInstrument):
 
     })
 
-    def read(self, size=-1):
+    def read(self, size=-1, encoding='utf-8'):
         """
         Reads a measurement from this instrument, according to its current
         configuration mode.
