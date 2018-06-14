@@ -1,5 +1,6 @@
 numpy
 pyserial
+pyvisa==1.9.0
 quantities>=0.12.1
 future>=0.15
 enum34
