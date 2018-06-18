@@ -37,7 +37,7 @@ CLASSIFIERS = [
 INSTALL_REQUIRES = [
     "numpy",
     "pyserial>=3.3",
-    'pyvisa>=1.9.0,<1.10.0'
+    "pyvisa>=1.9.0",
     "quantities",
     "enum34",
     "future",
