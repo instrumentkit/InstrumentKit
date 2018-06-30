@@ -124,14 +124,11 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `bytes`
         """
         if size >= 0:
-            while len(self._buf) < size:
-                data = self._conn.read()
-                if data == "":
-                    break
-                self._buf += data
+            self._buf += self._conn.read_bytes(size)
             msg = self._buf[:size]
             # Remove the front of the buffer.
             del self._buf[:size]
+
         elif size == -1:
             # Read the whole contents, appending the buffer we've already read.
             msg = self._buf + self._conn.read()
@@ -193,4 +190,4 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         msg += self._terminator
-        return self._conn.ask(msg)
+        return self._conn.query(msg)

@@ -710,13 +710,13 @@ def test_instrument_read():
     inst._file.read.return_value = "foobar"
 
     assert inst.read() == "foobar"
-    inst._file.read.assert_called_with(-1)
+    inst._file.read.assert_called_with(-1, 'utf-8')
 
     inst._file = mock.MagicMock()
     inst._file.read.return_value = "foobar"
 
     assert inst.read(6) == "foobar"
-    inst._file.read.assert_called_with(6)
+    inst._file.read.assert_called_with(6, 'utf-8')
 
 
 def test_instrument_write():
