@@ -7,3 +7,4 @@ Module containing Yokogawa instruments
 from __future__ import absolute_import
 
 from .yokogawa7651 import Yokogawa7651
+from .yokogawa6370 import Yokogawa6370
