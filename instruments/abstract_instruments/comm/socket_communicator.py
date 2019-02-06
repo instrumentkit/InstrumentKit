@@ -91,7 +91,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         Shutdown and close the `socket.socket` connection.
         """
         try:
-            self._conn.shutdown()
+            self._conn.shutdown(socket.SHUT_RDWR)
         finally:
             self._conn.close()
 
