@@ -39,13 +39,13 @@ INSTALL_REQUIRES = [
     "numpy",
     "pyserial>=3.3",
     "pyvisa>=1.9",
-    "quantities",
+    "quantities>=0.12.1",
     "enum34",
-    "future",
-    "python-vxi11",
+    "future>=0.15",
+    "python-vxi11>=0.8",
     "python-usbtmc",
     "pyusb",
-    "ruamel.yaml"
+    "ruamel.yaml~=0.15.37"
 ]
 
 
