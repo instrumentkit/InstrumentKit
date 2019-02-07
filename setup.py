@@ -81,6 +81,8 @@ def find_meta(meta):
 
 # MAIN #######################################################################
 
+with open("README.rst", "r") as fh:
+    long_description = fh.read()
 
 setup(
     name=find_meta("title"),
@@ -95,5 +97,7 @@ setup(
         'hypothesis'
     ],
     description=find_meta("description"),
+    long_description=long_description,
+    long_description_content_type="text/restructedtext",
     classifiers=CLASSIFIERS
 )
