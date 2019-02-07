@@ -99,6 +99,25 @@ def test_loopbackcomm_read_raw_2char_terminator():
     assert mock_stdin.read.call_count == 5
 
 
+def test_loopbackcomm_read_raw_terminator_is_empty_string():
+    mock_stdin = mock.MagicMock()
+    mock_stdin.read.side_effect = [b"abc"]
+    comm = LoopbackCommunicator(stdin=mock_stdin)
+    comm._terminator = ""
+
+    assert comm.read_raw() == b"abc"
+    mock_stdin.read.assert_has_calls([mock.call(-1)])
+    assert mock_stdin.read.call_count == 1
+
+
+def test_loopbackcomm_read_raw_size_zero():
+    with pytest.raises(ValueError):
+        mock_stdin = mock.MagicMock()
+        mock_stdin.read.side_effect = [b"abc"]
+        comm = LoopbackCommunicator(stdin=mock_stdin)
+        comm.read_raw(size=0)
+
+
 def test_loopbackcomm_write_raw():
     mock_stdout = mock.MagicMock()
     comm = LoopbackCommunicator(stdout=mock_stdout)
