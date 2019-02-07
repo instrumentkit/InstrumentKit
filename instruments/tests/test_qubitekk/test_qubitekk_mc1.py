@@ -8,7 +8,7 @@ Module containing tests for the Qubitekk MC1
 
 from __future__ import absolute_import
 
-from nose.tools import raises
+import pytest
 
 import quantities as pq
 import instruments as ik
@@ -201,12 +201,12 @@ def test_mc1_move():
         mc.move(0)
 
 
-@raises(ValueError)
 def test_mc1_move_value_error():
-    with expected_protocol(
-        ik.qubitekk.MC1,
-        [":MOVE -1000"],
-        [""],
-        sep="\r"
-    ) as mc:
-        mc.move(-1000)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.qubitekk.MC1,
+            [":MOVE -1000"],
+            [""],
+            sep="\r"
+        ) as mc:
+            mc.move(-1000)

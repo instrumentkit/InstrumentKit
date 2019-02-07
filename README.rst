@@ -5,8 +5,8 @@ InstrumentKit
     :target: https://travis-ci.org/Galvant/InstrumentKit
     :alt: Travis-CI build status
 
-.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/dev.svg?maxAge=2592000
-    :target: https://coveralls.io/r/Galvant/InstrumentKit?branch=dev
+.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/master.svg?maxAge=2592000
+    :target: https://coveralls.io/github/Galvant/InstrumentKit?branch=master
     :alt: Coveralls code coverage
 
 .. image:: https://readthedocs.org/projects/instrumentkit/badge/?version=latest
@@ -111,7 +111,7 @@ send, one can use the following functions to do so:
 Python Version Compatibility
 ----------------------------
 
-At this time, Python 2.7, 3.4, 3.5, and 3.6 are supported. Should you encounter
+At this time, Python 2.7, 3.4, 3.5, 3.6, and 3.7 are supported. Should you encounter
 any problems with this library that occur in one version or another, please
 do not hesitate to let us know.
 

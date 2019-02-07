@@ -8,10 +8,10 @@ Unit tests for the loopback communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
-import mock
+import pytest
 
 from instruments.abstract_instruments.comm import LoopbackCommunicator
+from .. import mock
 
 # TEST CASES #################################################################
 
@@ -34,7 +34,7 @@ def test_loopbackcomm_address(mock_sys):
     comm._conn = mock.MagicMock()
 
     # Check that our address function is working
-    eq_(comm.address, "address")
+    assert comm.address == "address"
     mock_name.assert_called_with()
 
 
@@ -42,28 +42,28 @@ def test_loopbackcomm_terminator():
     comm = LoopbackCommunicator()
 
     # Default terminator should be \n
-    eq_(comm.terminator, "\n")
+    assert comm.terminator == "\n"
 
     comm.terminator = b"*"
-    eq_(comm.terminator, "*")
-    eq_(comm._terminator, "*")
+    assert comm.terminator == "*"
+    assert comm._terminator == "*"
 
     comm.terminator = u"\r"
-    eq_(comm.terminator, u"\r")
-    eq_(comm._terminator, u"\r")
+    assert comm.terminator == u"\r"
+    assert comm._terminator == u"\r"
 
     comm.terminator = "\r\n"
-    eq_(comm.terminator, "\r\n")
-    eq_(comm._terminator, "\r\n")
+    assert comm.terminator == "\r\n"
+    assert comm._terminator == "\r\n"
 
 
 def test_loopbackcomm_timeout():
     comm = LoopbackCommunicator()
 
-    eq_(comm.timeout, 0)
+    assert comm.timeout == 0
 
     comm.timeout = 10
-    eq_(comm.timeout, 0)  # setting should be ignored
+    assert comm.timeout == 0  # setting should be ignored
 
 
 def test_loopbackcomm_close():
@@ -79,7 +79,7 @@ def test_loopbackcomm_read_raw():
     mock_stdin.read.side_effect = [b"a", b"b", b"c", b"\n"]
     comm = LoopbackCommunicator(stdin=mock_stdin)
 
-    eq_(comm.read_raw(), b"abc")
+    assert comm.read_raw() == b"abc"
     mock_stdin.read.assert_has_calls([mock.call(1)]*4)
     assert mock_stdin.read.call_count == 4
 
@@ -94,7 +94,7 @@ def test_loopbackcomm_read_raw_2char_terminator():
     comm = LoopbackCommunicator(stdin=mock_stdin)
     comm._terminator = "\r\n"
 
-    eq_(comm.read_raw(), b"abc")
+    assert comm.read_raw() == b"abc"
     mock_stdin.read.assert_has_calls([mock.call(1)]*5)
     assert mock_stdin.read.call_count == 5
 
@@ -124,7 +124,7 @@ def test_loopbackcomm_query():
     comm.read = mock.MagicMock(return_value="answer")
     comm.sendcmd = mock.MagicMock()
 
-    eq_(comm._query("mock"), "answer")
+    assert comm._query("mock") == "answer"
     comm.sendcmd.assert_called_with("mock")
     comm.read.assert_called_with(-1)
 
@@ -132,16 +132,16 @@ def test_loopbackcomm_query():
     comm.read.assert_called_with(10)
 
 
-@raises(NotImplementedError)
 def test_loopbackcomm_seek():
-    comm = LoopbackCommunicator()
-    comm.seek(1)
+    with pytest.raises(NotImplementedError):
+        comm = LoopbackCommunicator()
+        comm.seek(1)
 
 
-@raises(NotImplementedError)
 def test_loopbackcomm_tell():
-    comm = LoopbackCommunicator()
-    comm.tell()
+    with pytest.raises(NotImplementedError):
+        comm = LoopbackCommunicator()
+        comm.tell()
 
 
 def test_loopbackcomm_flush_input():

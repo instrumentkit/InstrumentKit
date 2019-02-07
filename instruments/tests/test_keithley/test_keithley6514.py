@@ -9,7 +9,7 @@ Unit tests for the Keithley 6514 electrometer
 from __future__ import absolute_import
 
 import quantities as pq
-from nose.tools import raises
+import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -28,10 +28,10 @@ def test_valid_range():
     assert inst._valid_range(inst.Mode.charge) == inst.ValidRange.charge
 
 
-@raises(ValueError)
 def test_valid_range_invalid():
-    inst = ik.keithley.Keithley6514.open_test()
-    inst._valid_range(inst.TriggerMode.immediate)
+    with pytest.raises(ValueError):
+        inst = ik.keithley.Keithley6514.open_test()
+        inst._valid_range(inst.TriggerMode.immediate)
 
 
 def test_parse_measurement():
@@ -176,18 +176,18 @@ def test_input_range():
         inst.input_range = 20 * pq.volt
 
 
-@raises(ValueError)
 def test_input_range_invalid():
-    with expected_protocol(
-        ik.keithley.Keithley6514,
-        [
-            "FUNCTION?"
-        ],
-        [
-            '"VOLT:DC"'
-        ]
-    ) as inst:
-        inst.input_range = 10 * pq.volt
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.keithley.Keithley6514,
+            [
+                "FUNCTION?"
+            ],
+            [
+                '"VOLT:DC"'
+            ]
+        ) as inst:
+            inst.input_range = 10 * pq.volt
 
 
 def test_auto_config():

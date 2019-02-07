@@ -8,7 +8,7 @@ Module containing tests for the Qubitekk CC1
 
 from __future__ import absolute_import
 
-from nose.tools import raises
+import pytest
 import quantities as pq
 
 import instruments as ik
@@ -56,22 +56,22 @@ def test_cc1_window():
         cc.window = 7
 
 
-@raises(ValueError)
 def test_cc1_window_error():
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":ACKN OF",
-            "FIRM?",
-            ":WIND 10"
-        ],
-        [
-            "",
-            "Firmware v2.010"
-        ],
-        sep="\n"
-    ) as cc:
-        cc.window = 10
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?",
+                ":WIND 10"
+            ],
+            [
+                "",
+                "Firmware v2.010"
+            ],
+            sep="\n"
+        ) as cc:
+            cc.window = 10
 
 
 def test_cc1_delay():
@@ -95,40 +95,40 @@ def test_cc1_delay():
         cc.delay = 2
 
 
-@raises(ValueError)
 def test_cc1_delay_error1():
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":ACKN OF",
-            "FIRM?",
-            ":DELA -1"
-        ],
-        [
-            "",
-            "Firmware v2.010"
-        ],
-        sep="\n"
-    ) as cc:
-        cc.delay = -1
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?",
+                ":DELA -1"
+            ],
+            [
+                "",
+                "Firmware v2.010"
+            ],
+            sep="\n"
+        ) as cc:
+            cc.delay = -1
 
 
-@raises(ValueError)
 def test_cc1_delay_error2():
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":ACKN OF",
-            "FIRM?",
-            ":DELA 1"
-        ],
-        [
-            "",
-            "Firmware v2.010"
-        ],
-        sep="\n"
-    ) as cc:
-        cc.delay = 1
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?",
+                ":DELA 1"
+            ],
+            [
+                "",
+                "Firmware v2.010"
+            ],
+            sep="\n"
+        ) as cc:
+            cc.delay = 1
 
 
 def test_cc1_dwell_old_firmware():
@@ -172,22 +172,22 @@ def test_cc1_dwell_new_firmware():
         cc.dwell_time = 2
 
 
-@raises(ValueError)
 def test_cc1_dwell_time_error():
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":ACKN OF",
-            "FIRM?",
-            ":DWEL -1"
-        ],
-        [
-            "",
-            "Firmware v2.010"
-        ],
-        sep="\n"
-    ) as cc:
-        cc.dwell_time = -1
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?",
+                ":DWEL -1"
+            ],
+            [
+                "",
+                "Firmware v2.010"
+            ],
+            sep="\n"
+        ) as cc:
+            cc.dwell_time = -1
 
 
 def test_cc1_firmware():
@@ -303,22 +303,22 @@ def test_cc1_gate_old_firmware():
         cc.gate = False
 
 
-@raises(TypeError)
 def test_cc1_gate_error():
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":ACKN OF",
-            "FIRM?",
-            ":GATE blo"
-        ],
-        [
-            "",
-            "Firmware v2.010"
-        ],
-        sep="\n"
-    ) as cc:
-        cc.gate = "blo"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?",
+                ":GATE blo"
+            ],
+            [
+                "",
+                "Firmware v2.010"
+            ],
+            sep="\n"
+        ) as cc:
+            cc.gate = "blo"
 
 
 def test_cc1_subtract_new_firmware():
@@ -345,23 +345,23 @@ def test_cc1_subtract_new_firmware():
         cc.subtract = False
 
 
-@raises(TypeError)
 def test_cc1_subtract_error():
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":ACKN OF",
-            "FIRM?",
-            ":SUBT blo"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?",
+                ":SUBT blo"
 
-        ],
-        [
-            "",
-            "Firmware v2.010"
-        ],
-        sep="\n"
-    ) as cc:
-        cc.subtract = "blo"
+            ],
+            [
+                "",
+                "Firmware v2.010"
+            ],
+            sep="\n"
+        ) as cc:
+            cc.subtract = "blo"
 
 
 def test_cc1_trigger_mode():
@@ -410,21 +410,21 @@ def test_cc1_trigger_mode_old_firmware():
         cc.trigger_mode = cc.TriggerMode.start_stop
 
 
-@raises(ValueError)
 def test_cc1_trigger_mode_error():
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":ACKN OF",
-            "FIRM?"
-        ],
-        [
-            "",
-            "Firmware v2.010"
-        ],
-        sep="\n"
-    ) as cc:
-        cc.trigger_mode = "blo"
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?"
+            ],
+            [
+                "",
+                "Firmware v2.010"
+            ],
+            sep="\n"
+        ) as cc:
+            cc.trigger_mode = "blo"
 
 
 def test_cc1_clear():
@@ -473,37 +473,37 @@ def test_acknowledge():
         cc.clear_counts()
 
 
-@raises(NotImplementedError)
 def test_acknowledge_notimplementederror():
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":ACKN OF",
-            "FIRM?"
-        ],
-        [
-            "Unknown Command",
-            "Firmware v2.001"
+    with pytest.raises(NotImplementedError):
+        with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?"
+            ],
+            [
+                "Unknown Command",
+                "Firmware v2.001"
 
-        ],
-        sep="\n"
-    ) as cc:
-        cc.acknowledge = True
+            ],
+            sep="\n"
+        ) as cc:
+            cc.acknowledge = True
 
 
-@raises(NotImplementedError)
 def test_acknowledge_not_implemented_error():  # pylint: disable=protected-access
-    with expected_protocol(
-        ik.qubitekk.CC1,
-        [
-            ":ACKN OF",
-            "FIRM?"
-        ],
-        [
-            "Unknown Command",
-            "Firmware v2.001"
+    with pytest.raises(NotImplementedError):
+        with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?"
+            ],
+            [
+                "Unknown Command",
+                "Firmware v2.001"
 
-        ],
-        sep="\n"
-    ) as cc:
-        cc.acknowledge = True
+            ],
+            sep="\n"
+        ) as cc:
+            cc.acknowledge = True

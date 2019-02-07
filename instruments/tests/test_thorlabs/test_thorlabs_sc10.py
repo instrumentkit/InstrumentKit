@@ -8,7 +8,7 @@ Module containing tests for the Thorlabs SC10
 
 from __future__ import absolute_import
 
-from nose.tools import raises
+import pytest
 import quantities as pq
 
 import instruments as ik
@@ -52,15 +52,15 @@ def test_sc10_enable():
         sc.enable = True
 
 
-@raises(TypeError)
 def test_sc10_enable_invalid():
-    with expected_protocol(
-        ik.thorlabs.SC10,
-        [],
-        [],
-        sep="\r"
-    ) as sc:
-        sc.enable = 10
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.thorlabs.SC10,
+            [],
+            [],
+            sep="\r"
+        ) as sc:
+            sc.enable = 10
 
 
 def test_sc10_repeat():
@@ -82,15 +82,15 @@ def test_sc10_repeat():
         sc.repeat = 10
 
 
-@raises(ValueError)
 def test_sc10_repeat_invalid():
-    with expected_protocol(
-        ik.thorlabs.SC10,
-        [],
-        [],
-        sep="\r"
-    ) as sc:
-        sc.repeat = -1
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.SC10,
+            [],
+            [],
+            sep="\r"
+        ) as sc:
+            sc.repeat = -1
 
 
 def test_sc10_mode():
@@ -112,15 +112,15 @@ def test_sc10_mode():
         sc.mode = ik.thorlabs.SC10.Mode.auto
 
 
-@raises(ValueError)
 def test_sc10_mode_invalid():
-    with expected_protocol(
-        ik.thorlabs.SC10,
-        [],
-        [],
-        sep="\r"
-    ) as sc:
-        sc.mode = "blo"
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.SC10,
+            [],
+            [],
+            sep="\r"
+        ) as sc:
+            sc.mode = "blo"
 
 
 def test_sc10_trigger():
@@ -218,15 +218,15 @@ def test_sc10_baud_rate():
         sc.baud_rate = 115200
 
 
-@raises(ValueError)
 def test_sc10_baud_rate_error():
-    with expected_protocol(
-        ik.thorlabs.SC10,
-        [],
-        [],
-        sep="\r"
-    ) as sc:
-        sc.baud_rate = 115201
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.thorlabs.SC10,
+            [],
+            [],
+            sep="\r"
+        ) as sc:
+            sc.baud_rate = 115201
 
 
 def test_sc10_closed():

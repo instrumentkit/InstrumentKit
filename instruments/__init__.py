@@ -36,7 +36,7 @@ from .config import load_instruments
 # In keeping with PEP-396, we define a version number of the form
 # {major}.{minor}[.{postrelease}]{prerelease-tag}
 
-__version__ = "0.3.1"
+__version__ = "0.4.2"
 
 __title__ = "instrumentkit"
 __description__ = "Test and measurement communication library"
@@ -46,4 +46,4 @@ __author__ = "Steven Casagrande"
 __email__ = "scasagrande@galvant.ca"
 
 __license__ = "AGPLv3"
-__copyright__ = "Copyright (c) 2012-2016 Steven Casagrande"
+__copyright__ = "Copyright (c) 2012-2019 Steven Casagrande"
