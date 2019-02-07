@@ -110,16 +110,14 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         if self._stdin is not None:
             if size == -1 or size is None:
                 result = bytes()
-                if len(self._terminator) > 0:
+                if self._terminator:
                     while result.endswith(self._terminator.encode("utf-8")) is False:
                         c = self._stdin.read(1)
                         if c == b'':
                             break
                         result += c
                     return result[:-len(self._terminator)]
-                else:
-                    result = self._stdin.read(-1)
-                    return result
+                return self._stdin.read(-1)
 
             elif size > 0:
                 input_var = self._stdin.read(size)

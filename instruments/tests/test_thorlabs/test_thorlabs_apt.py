@@ -12,7 +12,7 @@ from __future__ import absolute_import
 
 import struct
 
-from nose.tools import raises
+import pytest
 import quantities as pq
 
 import instruments as ik
