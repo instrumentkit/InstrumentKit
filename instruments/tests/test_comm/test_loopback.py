@@ -110,12 +110,12 @@ def test_loopbackcomm_read_raw_terminator_is_empty_string():
     assert mock_stdin.read.call_count == 1
 
 
-def test_loopbackcomm_read_raw_size_zero():
+def test_loopbackcomm_read_raw_size_invalid():
     with pytest.raises(ValueError):
         mock_stdin = mock.MagicMock()
         mock_stdin.read.side_effect = [b"abc"]
         comm = LoopbackCommunicator(stdin=mock_stdin)
-        comm.read_raw(size=0)
+        comm.read_raw(size=-2)
 
 
 def test_loopbackcomm_write_raw():
