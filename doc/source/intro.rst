@@ -36,11 +36,10 @@ $ pip install -r requirements.txt
 - `PyUSB`_ (version 1.0a or higher, required for raw USB support)
 - `python-usbtmc`_
 - `ruamel.yaml`_ (required for configuration file support)
+- `PyVISA`_ (required for accessing instruments via VISA library)
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
-
-- `PyVISA`_ (required for accessing instruments via VISA library)
 
 .. _PySerial: http://pyserial.sourceforge.net/
 .. _quantities: http://pythonhosted.org/quantities/
