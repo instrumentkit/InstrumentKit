@@ -26,6 +26,7 @@ CLASSIFIERS = [
     "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Intended Audience :: Science/Research",
@@ -38,13 +39,13 @@ INSTALL_REQUIRES = [
     "numpy",
     "pyserial>=3.3",
     "pyvisa>=1.9",
-    "quantities",
+    "quantities>=0.12.1",
     "enum34",
-    "future",
-    "python-vxi11",
+    "future>=0.15",
+    "python-vxi11>=0.8",
     "python-usbtmc",
     "pyusb",
-    "ruamel.yaml"
+    "ruamel.yaml~=0.15.37"
 ]
 
 
@@ -80,6 +81,8 @@ def find_meta(meta):
 
 # MAIN #######################################################################
 
+with open("README.rst", "r") as fh:
+    long_description = fh.read()
 
 setup(
     name=find_meta("title"),
@@ -94,5 +97,7 @@ setup(
         'hypothesis'
     ],
     description=find_meta("description"),
+    long_description=long_description,
+    long_description_content_type="text/restructedtext",
     classifiers=CLASSIFIERS
 )
