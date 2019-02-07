@@ -1,4 +1,4 @@
-numpy==1.12.1
+numpy
 pyserial
 pyvisa>=1.9
 quantities>=0.12.1
