@@ -26,7 +26,7 @@ before_script:
   - pylint --version
 script:
   - pytest --cov=instruments
-  - pylint --py3k instruments
+  - if [[ $TRAVIS_PYTHON_VERSION != 3.7 ]]; then pylint --py3k instruments; fi
   - if [[ $TRAVIS_PYTHON_VERSION != 3.7 ]]; then pylint --disable=I instruments; fi
 after_success:
   - coveralls
