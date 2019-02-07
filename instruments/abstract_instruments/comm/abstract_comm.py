@@ -11,6 +11,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import abc
+import codecs
 import logging
 import struct
 
@@ -203,14 +204,14 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
         :return: The read string from the connection
         :rtype: `str`
         """
-        if encoding == 'utf-8':
+        try:
+            codecs.lookup(encoding)
             return self.read_raw(size).decode(encoding)
-
-        elif encoding == 'IEEE-754/64':
-            return struct.unpack('>d', self.read_raw(size))[0]
-
-        else:
-            raise ValueError("Encoding {} is not currently supported.".format(encoding))
+        except LookupError:
+            if encoding == 'IEEE-754/64':
+                return struct.unpack('>d', self.read_raw(size))[0]
+            else:
+                raise ValueError("Encoding {} is not currently supported.".format(encoding))
 
     def sendcmd(self, msg):
         """
