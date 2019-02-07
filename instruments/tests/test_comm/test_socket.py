@@ -88,7 +88,7 @@ def test_socketcomm_close():
     comm._conn = mock.MagicMock()
 
     comm.close()
-    comm._conn.shutdown.assert_called_with()
+    comm._conn.shutdown.assert_called_with(socket.SHUT_RDWR)
     comm._conn.close.assert_called_with()
 
 
