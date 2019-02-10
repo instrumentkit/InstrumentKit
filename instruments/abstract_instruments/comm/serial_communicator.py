@@ -118,13 +118,23 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
             return resp
         elif size == -1:
             result = bytes()
-            while result.endswith(self._terminator.encode("utf-8")) is False:
+            # If the terminator is empty, we can't use endswith, but must
+            # read as many bytes as are available.
+            # On the other hand, if terminator is nonempty, we can check
+            # that the tail end of the buffer matches it.
+            c = None
+            term = self._terminator.encode('utf-8') if self._terminator else None
+            while not (
+                    result.endswith(term)
+                    if term is not None else
+                    c == b''
+            ):
                 c = self._conn.read(1)
-                if c == b'':
+                if c == b'' and term is not None:
                     raise IOError("Serial connection timed out before reading "
                                   "a termination character.")
                 result += c
-            return result[:-len(self._terminator)]
+            return result[:-len(term)] if term is not None else result
         else:
             raise ValueError("Must read a positive value of characters.")
 

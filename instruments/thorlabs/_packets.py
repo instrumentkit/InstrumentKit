@@ -15,6 +15,18 @@ import struct
 
 message_header_nopacket = struct.Struct('<HBBBB')
 message_header_wpacket = struct.Struct('<HHBB')
+hw_info_data = struct.Struct(
+    '<'    # Declare endianness.
+    '4s'   # serial_number
+    '8s'   # model_number
+    'H'    # hw_type_int
+    'BBBx' # fw_version
+    '48s'  # notes
+    '12x'  # padding
+    'H'    # hw_version
+    'H'    # mod_state
+    'H'    # n_channels
+)
 
 # CLASSES #####################################################################
 
@@ -166,7 +178,7 @@ ThorLabs APT packet:
 
         # Check if 0x80 is set on header byte 4. If so, then this packet
         # has data.
-        if struct.unpack("B", header[4])[0] & 0x80:
+        if struct.unpack("B", header[4:5])[0] & 0x80:
             msg_id, length, dest, source = message_header_wpacket.unpack(
                 header)
             dest = dest ^ 0x80  # Turn off 0x80.
