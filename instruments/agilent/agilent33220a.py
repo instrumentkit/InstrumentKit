@@ -78,14 +78,6 @@ class Agilent33220a(SCPIFunctionGenerator):
 
     # PROPERTIES #
 
-    @property
-    def frequency(self):
-        return super(Agilent33220a, self).frequency
-
-    @frequency.setter
-    def frequency(self, newval):
-        super(Agilent33220a, self).frequency = newval
-
     function = enum_property(
         command="FUNC",
         enum=Function,
@@ -182,13 +174,11 @@ class Agilent33220a(SCPIFunctionGenerator):
     def load_resistance(self, newval):
         if isinstance(newval, self.LoadResistance):
             newval = newval.value
-        elif isinstance(newval, int):
+        else:
+            newval = assume_units(newval, pq.ohm).rescale(pq.ohm).magnitude
             if (newval < 0) or (newval > 10000):
                 raise ValueError(
                     "Load resistance must be between 0 and 10,000")
-            newval = assume_units(newval, pq.ohm).rescale(pq.ohm).magnitude
-        else:
-            raise TypeError("Not a valid load resistance type.")
         self.sendcmd("OUTP:LOAD {}".format(newval))
 
     @property
