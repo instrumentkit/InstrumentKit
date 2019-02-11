@@ -87,7 +87,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
 
     function = enum_property(
         command="FUNC",
-        enum=FunctionGenerator.Function,  # pylint: disable=undefined-variable
+        enum=FunctionGenerator.Function,
         doc="""
         Gets/sets the output function of the function generator
 
