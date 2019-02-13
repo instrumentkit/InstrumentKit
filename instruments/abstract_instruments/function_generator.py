@@ -18,7 +18,7 @@ import quantities as pq
 
 from instruments.abstract_instruments import Instrument
 import instruments.units as u
-from instruments.util_fns import assume_units
+from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
 
@@ -31,6 +31,175 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
     All applicable concrete instruments should inherit from this ABC to
     provide a consistent interface to the user.
     """
+
+    def __init__(self, filelike):
+        super(FunctionGenerator, self).__init__(filelike)
+        self._channel_count = 1
+
+    # pylint:disable=protected-access
+    class Channel(with_metaclass(abc.ABCMeta, object)):
+        """
+        Abstract base class for physical channels on a function generator.
+
+        All applicable concrete instruments should inherit from this ABC to
+        provide a consistent interface to the user.
+
+        Function generators that only have a single channel do not need to
+        define their own concrete implementation of this class. Ones with
+        multiple channels need their own definition of this class, where
+        this class contains the concrete implementations of the below
+        abstract methods. Instruments with 1 channel have their concrete
+        implementations at the parent instrument level.
+        """
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+
+        # ABSTRACT PROPERTIES #
+
+        @property
+        def frequency(self):
+            """
+            Gets/sets the the output frequency of the function generator. This is
+            an abstract property.
+
+            :type: `~quantities.Quantity`
+            """
+            if self._parent._channel_count == 1:
+                return self._parent.frequency
+            else:
+                raise NotImplementedError()
+
+        @frequency.setter
+        def frequency(self, newval):
+            if self._parent._channel_count == 1:
+                self._parent.frequency = newval
+            else:
+                raise NotImplementedError()
+
+        @property
+        def function(self):
+            """
+            Gets/sets the output function mode of the function generator. This is
+            an abstract property.
+
+            :type: `~enum.Enum`
+            """
+            if self._parent._channel_count == 1:
+                return self._parent.function
+            else:
+                raise NotImplementedError()
+
+        @function.setter
+        def function(self, newval):
+            if self._parent._channel_count == 1:
+                self._parent.function = newval
+            else:
+                raise NotImplementedError()
+
+        @property
+        def offset(self):
+            """
+            Gets/sets the output offset voltage of the function generator. This is
+            an abstract property.
+
+            :type: `~quantities.Quantity`
+            """
+            if self._parent._channel_count == 1:
+                return self._parent.offset
+            else:
+                raise NotImplementedError()
+
+        @offset.setter
+        def offset(self, newval):
+            if self._parent._channel_count == 1:
+                self._parent.offset = newval
+            else:
+                raise NotImplementedError()
+
+        @property
+        def phase(self):
+            """
+            Gets/sets the output phase of the function generator. This is an
+            abstract property.
+
+            :type: `~quantities.Quantity`
+            """
+            if self._parent._channel_count == 1:
+                return self._parent.phase
+            else:
+                raise NotImplementedError()
+
+        @phase.setter
+        def phase(self, newval):
+            if self._parent._channel_count == 1:
+                self._parent.phase = newval
+            else:
+                raise NotImplementedError()
+
+        def _get_amplitude_(self):
+            if self._parent._channel_count == 1:
+                return self._parent._get_amplitude_()
+            else:
+                raise NotImplementedError()
+
+        def _set_amplitude_(self, magnitude, units):
+            if self._parent._channel_count == 1:
+                self._parent._set_amplitude_(magnitude=magnitude, units=units)
+            else:
+                raise NotImplementedError()
+
+        @property
+        def amplitude(self):
+            """
+            Gets/sets the output amplitude of the function generator.
+
+            If set with units of :math:`\\text{dBm}`, then no voltage mode can
+            be passed.
+
+            If set with units of :math:`\\text{V}` as a `~quantities.Quantity` or a
+            `float` without a voltage mode, then the voltage mode is assumed to be
+            peak-to-peak.
+
+            :units: As specified, or assumed to be :math:`\\text{V}` if not
+                specified.
+            :type: Either a `tuple` of a `~quantities.Quantity` and a
+                `FunctionGenerator.VoltageMode`, or a `~quantities.Quantity`
+                if no voltage mode applies.
+            """
+            mag, units = self._get_amplitude_()
+
+            if units == self._parent.VoltageMode.dBm:
+                return pq.Quantity(mag, u.dBm)
+
+            return pq.Quantity(mag, pq.V), units
+
+        @amplitude.setter
+        def amplitude(self, newval):
+            # Try and rescale to dBm... if it succeeds, set the magnitude
+            # and units accordingly, otherwise handle as a voltage.
+            try:
+                newval_dbm = newval.rescale(u.dBm)
+                mag = float(newval_dbm.magnitude)
+                units = self._parent.VoltageMode.dBm
+            except (AttributeError, ValueError):
+                # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
+                if not isinstance(newval, tuple):
+                    mag = newval
+                    units = self._parent.VoltageMode.peak_to_peak
+                else:
+                    mag, units = newval
+
+                # Finally, convert the magnitude out to a float.
+                mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
+
+            self._set_amplitude_(mag, units)
+
+        def sendcmd(self, cmd):
+            self._parent.sendcmd(cmd)
+
+        def query(self, cmd, size=-1):
+            return self._parent.query(cmd, size)
 
     # ENUMS #
 
@@ -53,20 +222,21 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
         noise = 'NOIS'
         arbitrary = 'ARB'
 
-    # ABSTRACT METHODS #
+    @property
+    def channel(self):
+        return ProxyList(self, self.Channel, range(self._channel_count))
 
-    @abc.abstractmethod
-    def _get_amplitude_(self):
-        pass
-
-    @abc.abstractmethod
-    def _set_amplitude_(self, magnitude, units):
-        pass
-
-    # ABSTRACT PROPERTIES #
+    # PASSTHROUGH PROPERTIES #
 
     @property
-    @abc.abstractmethod
+    def amplitude(self):
+        return self.channel[0].amplitude
+
+    @amplitude.setter
+    def amplitude(self, newval):
+        self.channel[0].amplitude = newval
+
+    @property
     def frequency(self):
         """
         Gets/sets the the output frequency of the function generator. This is
@@ -74,15 +244,19 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~quantities.Quantity`
         """
-        pass
+        if self._channel_count > 1:
+            return self.channel[0].frequency
+        else:
+            raise NotImplementedError()
 
     @frequency.setter
-    @abc.abstractmethod
     def frequency(self, newval):
-        pass
+        if self._channel_count > 1:
+            self.channel[0].frequency = newval
+        else:
+            raise NotImplementedError()
 
     @property
-    @abc.abstractmethod
     def function(self):
         """
         Gets/sets the output function mode of the function generator. This is
@@ -90,15 +264,19 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
+        if self._channel_count > 1:
+            return self.channel[0].function
+        else:
+            raise NotImplementedError()
 
     @function.setter
-    @abc.abstractmethod
     def function(self, newval):
-        pass
+        if self._channel_count > 1:
+            self.channel[0].function = newval
+        else:
+            raise NotImplementedError()
 
     @property
-    @abc.abstractmethod
     def offset(self):
         """
         Gets/sets the output offset voltage of the function generator. This is
@@ -106,15 +284,19 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~quantities.Quantity`
         """
-        pass
+        if self._channel_count > 1:
+            return self.channel[0].offset
+        else:
+            raise NotImplementedError()
 
     @offset.setter
-    @abc.abstractmethod
     def offset(self, newval):
-        pass
+        if self._channel_count > 1:
+            self.channel[0].offset = newval
+        else:
+            raise NotImplementedError()
 
     @property
-    @abc.abstractmethod
     def phase(self):
         """
         Gets/sets the output phase of the function generator. This is an
@@ -122,57 +304,14 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~quantities.Quantity`
         """
-        pass
+        if self._channel_count > 1:
+            return self.channel[0].phase
+        else:
+            raise NotImplementedError()
 
     @phase.setter
-    @abc.abstractmethod
     def phase(self, newval):
-        pass
-
-    # CONCRETE PROPERTIES #
-
-    @property
-    def amplitude(self):
-        """
-        Gets/sets the output amplitude of the function generator.
-
-        If set with units of :math:`\\text{dBm}`, then no voltage mode can
-        be passed.
-
-        If set with units of :math:`\\text{V}` as a `~quantities.Quantity` or a
-        `float` without a voltage mode, then the voltage mode is assumed to be
-        peak-to-peak.
-
-        :units: As specified, or assumed to be :math:`\\text{V}` if not
-            specified.
-        :type: Either a `tuple` of a `~quantities.Quantity` and a
-            `FunctionGenerator.VoltageMode`, or a `~quantities.Quantity`
-            if no voltage mode applies.
-        """
-        mag, units = self._get_amplitude_()
-
-        if units == self.VoltageMode.dBm:
-            return pq.Quantity(mag, u.dBm)
-
-        return pq.Quantity(mag, pq.V), units
-
-    @amplitude.setter
-    def amplitude(self, newval):
-        # Try and rescale to dBm... if it succeeds, set the magnitude
-        # and units accordingly, otherwise handle as a voltage.
-        try:
-            newval_dbm = newval.rescale(u.dBm)
-            mag = float(newval_dbm.magnitude)
-            units = self.VoltageMode.dBm
-        except (AttributeError, ValueError):
-            # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
-            if not isinstance(newval, tuple):
-                mag = newval
-                units = self.VoltageMode.peak_to_peak
-            else:
-                mag, units = newval
-
-            # Finally, convert the magnitude out to a float.
-            mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
-
-        self._set_amplitude_(mag, units)
+        if self._channel_count > 1:
+            self.channel[0].phase = newval
+        else:
+            raise NotImplementedError()

@@ -26,7 +26,7 @@ except ImportError:
 
 
 @contextlib.contextmanager
-def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n"):
+def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n", repeat=1):
     """
     Given an instrument class, expected output from the host and expected input
     from the instrument, asserts that the protocol in a context block proceeds
@@ -35,7 +35,8 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n"):
     For an example of how to write tests using this context manager, see
     the ``make_name_test`` function below.
 
-    :param type ins_class: Instrument class to use for the protocol assertion.
+    :param ins_class: Instrument class to use for the protocol assertion.
+    :type ins_class: `~instruments.Instrument`
     :param host_to_ins: Data to be sent by the host to the instrument;
         this is checked against the actual data sent by the instrument class
         during the execution of this context manager.
@@ -46,9 +47,17 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n"):
         be used to assert correct behaviour within the context.
     :type ins_to_host: ``str`` or ``list``; if ``list``, each line is
         concatenated with the separator given by ``sep``.
+    :param str sep: Character to be inserted after each string in both
+        host_to_ins and ins_to_host parameters. This is typically the
+        termination character you would like to have inserted.
+    :param int repeat: The number of times the host_to_ins and
+        ins_to_host data sets should be duplicated. Typically the default
+        value of 1 is sufficient, but increasing this is useful when
+        testing multiple calls in the same test that should have the same
+        command transactions.
     """
     if isinstance(sep, bytes):
-        sep = sep.encode("utf-8")
+        sep = sep.decode("utf-8")
 
     # Normalize assertion and playback strings.
     if isinstance(ins_to_host, list):
@@ -60,6 +69,7 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n"):
                       (sep.encode("utf-8") if ins_to_host else b"")
     elif isinstance(ins_to_host, str):
         ins_to_host = ins_to_host.encode("utf-8")
+    ins_to_host *= repeat
 
     if isinstance(host_to_ins, list):
         host_to_ins = [
@@ -70,6 +80,7 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n"):
                       (sep.encode("utf-8") if host_to_ins else b"")
     elif isinstance(host_to_ins, str):
         host_to_ins = host_to_ins.encode("utf-8")
+    host_to_ins *= repeat
 
     stdin = BytesIO(ins_to_host)
     stdout = BytesIO()
