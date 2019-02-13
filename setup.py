@@ -98,6 +98,6 @@ setup(
     ],
     description=find_meta("description"),
     long_description=long_description,
-    long_description_content_type="text/restructedtext",
+    long_description_content_type="text/x-rst",
     classifiers=CLASSIFIERS
 )
