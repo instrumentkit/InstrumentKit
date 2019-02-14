@@ -8,8 +8,6 @@ Module containing tests for the string property factories
 
 from __future__ import absolute_import
 
-from nose.tools import eq_
-
 from instruments.util_fns import string_property
 from . import MockInstrument
 
@@ -24,10 +22,10 @@ def test_string_property_basics():
 
     mock_inst = StringMock({'MOCK?': '"foobar"'})
 
-    eq_(mock_inst.mock_property, 'foobar')
+    assert mock_inst.mock_property == 'foobar'
 
     mock_inst.mock_property = 'foo'
-    eq_(mock_inst.value, 'MOCK?\nMOCK "foo"\n')
+    assert mock_inst.value == 'MOCK?\nMOCK "foo"\n'
 
 
 def test_string_property_different_bookmark_symbol():
@@ -36,10 +34,10 @@ def test_string_property_different_bookmark_symbol():
 
     mock_inst = StringMock({'MOCK?': '%^foobar%^'})
 
-    eq_(mock_inst.mock_property, 'foobar')
+    assert mock_inst.mock_property == 'foobar'
 
     mock_inst.mock_property = 'foo'
-    eq_(mock_inst.value, 'MOCK?\nMOCK %^foo%^\n')
+    assert mock_inst.value == 'MOCK?\nMOCK %^foo%^\n'
 
 
 def test_string_property_no_bookmark_symbol():
@@ -48,7 +46,19 @@ def test_string_property_no_bookmark_symbol():
 
     mock_inst = StringMock({'MOCK?': 'foobar'})
 
-    eq_(mock_inst.mock_property, 'foobar')
+    assert mock_inst.mock_property == 'foobar'
 
     mock_inst.mock_property = 'foo'
-    eq_(mock_inst.value, 'MOCK?\nMOCK foo\n')
+    assert mock_inst.value == 'MOCK?\nMOCK foo\n'
+
+
+def test_string_property_set_cmd():
+    class StringMock(MockInstrument):
+        mock_property = string_property('MOCK', set_cmd='FOOBAR')
+
+    mock_inst = StringMock({'MOCK?': '"derp"'})
+
+    assert mock_inst.mock_property == 'derp'
+
+    mock_inst.mock_property = 'qwerty'
+    assert mock_inst.value == 'MOCK?\nFOOBAR "qwerty"\n'

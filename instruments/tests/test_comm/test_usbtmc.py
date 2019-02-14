@@ -8,14 +8,14 @@ Unit tests for the USBTMC communication layer
 
 from __future__ import absolute_import
 
-from nose.tools import raises, eq_
-import mock
+import pytest
 
 import quantities as pq
 from numpy import array
 
 from instruments.abstract_instruments.comm import USBTMCCommunicator
 from instruments.tests import unit_eq
+from .. import mock
 
 # TEST CASES #################################################################
 
@@ -30,20 +30,20 @@ def test_usbtmccomm_init(mock_usbtmc):
     mock_usbtmc.Instrument.assert_called_with("foobar", var1=123)
 
 
-@raises(ImportError)
 @mock.patch(patch_path, new=None)
 def test_usbtmccomm_init_missing_module():
-    _ = USBTMCCommunicator()
+    with pytest.raises(ImportError):
+        _ = USBTMCCommunicator()
 
 
 @mock.patch(patch_path)
 def test_usbtmccomm_terminator_getter(mock_usbtmc):
     comm = USBTMCCommunicator()
 
-    term_char = mock.PropertyMock(return_value="\n")
+    term_char = mock.PropertyMock(return_value=10)
     type(comm._filelike).term_char = term_char
 
-    eq_(comm.terminator, "\n")
+    assert comm.terminator == "\n"
     term_char.assert_called_with()
 
 
@@ -55,11 +55,11 @@ def test_usbtmccomm_terminator_setter(mock_usbtmc):
     type(comm._filelike).term_char = term_char
 
     comm.terminator = "*"
-    eq_(comm._terminator, "*")
+    assert comm._terminator == "*"
     term_char.assert_called_with(42)
 
-    comm.terminator = b"*"  # pylint: disable=redefined-variable-type
-    eq_(comm._terminator, "*")
+    comm.terminator = b"*"
+    assert comm._terminator == "*"
     term_char.assert_called_with(42)
 
 
@@ -74,10 +74,10 @@ def test_usbtmccomm_timeout(mock_usbtmc):
     timeout.assert_called_with()
 
     comm.timeout = 10
-    timeout.assert_called_with(array(10000.0))
+    timeout.assert_called_with(array(10.0))
 
     comm.timeout = 1000 * pq.millisecond
-    timeout.assert_called_with(array(1000.0))
+    timeout.assert_called_with(array(1.0))
 
 
 @mock.patch(patch_path)
@@ -93,7 +93,7 @@ def test_usbtmccomm_read_raw(mock_usbtmc):
     comm = USBTMCCommunicator()
     comm._filelike.read_raw = mock.MagicMock(return_value=b"abc")
 
-    eq_(comm.read_raw(), b"abc")
+    assert comm.read_raw() == b"abc"
     comm._filelike.read_raw.assert_called_with(num=-1)
     assert comm._filelike.read_raw.call_count == 1
 
@@ -124,25 +124,25 @@ def test_usbtmccomm_query(mock_usbtmc):
     comm = USBTMCCommunicator()
     comm._filelike.ask = mock.MagicMock(return_value="answer")
 
-    eq_(comm._query("mock"), "answer")
+    assert comm._query("mock") == "answer"
     comm._filelike.ask.assert_called_with("mock", num=-1, encoding="utf-8")
 
     comm._query("mock", size=10)
     comm._filelike.ask.assert_called_with("mock", num=10, encoding="utf-8")
 
 
-@raises(NotImplementedError)
 @mock.patch(patch_path)
 def test_usbtmccomm_seek(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm.seek(1)
+    with pytest.raises(NotImplementedError):
+        comm = USBTMCCommunicator()
+        comm.seek(1)
 
 
-@raises(NotImplementedError)
 @mock.patch(patch_path)
 def test_usbtmccomm_tell(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm.tell()
+    with pytest.raises(NotImplementedError):
+        comm = USBTMCCommunicator()
+        comm.tell()
 
 
 @mock.patch(patch_path)

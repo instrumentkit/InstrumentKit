@@ -10,6 +10,10 @@ Thumbs.db
 ## Build directories ##
 doc/_build
 
+## Venv
+.venv/
+
+
 ## setup.py generated files ##
 MANIFEST
 
@@ -20,6 +24,7 @@ MANIFEST
 *.so
 
 # Packages
+.egg/
 *.egg
 *.egg-info
 dist
@@ -41,6 +46,7 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+.pytest_cache
 
 #Translations
 *.mo
@@ -50,3 +56,12 @@ nosetests.xml
 
 #pycharm generated
 .idea
+
+# VS Code IDE internals
+.vscode/
+
+# nosetests metadata
+.noseids
+
+# Hypothesis files
+.hypothesis/

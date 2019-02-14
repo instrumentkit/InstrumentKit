@@ -33,20 +33,19 @@ $ pip install -r requirements.txt
 - `enum34`_
 - `future`_
 - `python-vxi11`_
-- `PyUSB`_
+- `PyUSB`_ (version 1.0a or higher, required for raw USB support)
 - `python-usbtmc`_
-- `PyYAML`_
+- `ruamel.yaml`_ (required for configuration file support)
+- `PyVISA`_ (required for accessing instruments via VISA library)
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
-
-- `PyVISA`_ (required for accessing instruments via VISA library)
 
 .. _PySerial: http://pyserial.sourceforge.net/
 .. _quantities: http://pythonhosted.org/quantities/
 .. _enum34: https://pypi.python.org/pypi/enum34
 .. _future: https://pypi.python.org/pypi/future
-.. _PyYAML: https://bitbucket.org/xi/pyyaml
+.. _ruamel.yaml: http://yaml.readthedocs.io
 .. _PyUSB: http://sourceforge.net/apps/trac/pyusb/
 .. _PyVISA: http://pyvisa.sourceforge.net/
 .. _python-usbtmc: https://pypi.python.org/pypi/python-usbtmc

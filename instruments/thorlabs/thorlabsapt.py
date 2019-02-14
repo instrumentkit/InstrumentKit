@@ -12,11 +12,14 @@ from __future__ import division
 import re
 import struct
 import logging
+import codecs
+import warnings
 
 from builtins import range
 import quantities as pq
 
 from instruments.thorlabs import _abstract, _packets, _cmds
+from instruments.util_fns import assume_units
 
 # LOGGING #####################################################################
 
@@ -107,13 +110,14 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                 data=None
             )
             hw_info = self.querypacket(
-                req_packet, expect=_cmds.ThorLabsCommands.HW_GET_INFO)
+                req_packet, expect=_cmds.ThorLabsCommands.HW_GET_INFO,
+                expect_data_len=84
+            )
 
-            self._serial_number = str(hw_info.data[0:4]).encode('hex')
-            self._model_number = str(
-                hw_info.data[4:12]).replace('\x00', '').strip()
+            self._serial_number = codecs.encode(hw_info.data[0:4], 'hex').decode('ascii')
+            self._model_number = hw_info.data[4:12].decode('ascii').replace('\x00', '').strip()
 
-            hw_type_int = struct.unpack('<H', str(hw_info.data[12:14]))[0]
+            hw_type_int = struct.unpack('<H', hw_info.data[12:14])[0]
             if hw_type_int == 45:
                 self._hw_type = 'Multi-channel controller motherboard'
             elif hw_type_int == 44:
@@ -124,17 +128,17 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             # Note that the fourth byte is padding, so we strip out the first
             # three bytes and format them.
             # pylint: disable=invalid-format-index
-            self._fw_version = "{0[0]}.{0[1]}.{0[2]}".format(
-                str(hw_info.data[14:18]).encode('hex')
+            self._fw_version = "{0[0]:x}.{0[1]:x}.{0[2]:x}".format(
+                hw_info.data[14:18]
             )
-            self._notes = str(hw_info.data[18:66]).replace('\x00', '').strip()
+            self._notes = hw_info.data[18:66].replace(b'\x00', b'').decode('ascii').strip()
 
             self._hw_version = struct.unpack(
-                '<H', str(hw_info.data[78:80]))[0]
+                '<H', hw_info.data[78:80])[0]
             self._mod_state = struct.unpack(
-                '<H', str(hw_info.data[80:82]))[0]
+                '<H', hw_info.data[80:82])[0]
             self._n_channels = struct.unpack(
-                '<H', str(hw_info.data[82:84]))[0]
+                '<H', hw_info.data[82:84])[0]
         except IOError as e:
             logger.error("Exception occured while fetching hardware info: %s", e)
 
@@ -443,6 +447,8 @@ class APTMotorController(ThorLabsAPT):
 
         # INSTANCE VARIABLES #
 
+        _motor_model = None
+
         #: Sets the scale between the encoder counts and physical units
         #: for the position, velocity and acceleration parameters of this
         #: channel. By default, set to dimensionless, indicating that the proper
@@ -463,7 +469,10 @@ class APTMotorController(ThorLabsAPT):
         #: For more details, see the APT protocol documentation.
         scale_factors = (pq.Quantity(1, 'dimensionless'), ) * 3
 
+        _motion_timeout = pq.Quantity(10, 'second')
+
         __SCALE_FACTORS_BY_MODEL = {
+            # TODO: add other tables here.
             re.compile('TST001|BSC00.|BSC10.|MST601'): {
                 # Note that for these drivers, the scale factors are identical
                 # for position, velcoity and acceleration. This is not true for
@@ -476,7 +485,13 @@ class APTMotorController(ThorLabsAPT):
                 'FW103':  (pq.Quantity(25600 / 360, 'ct/deg'),) * 3,
                 'NR360':  (pq.Quantity(25600 / 5.4546, 'ct/deg'),) * 3
             },
-            # TODO: add other tables here.
+
+            re.compile('TDC001|KDC101'): {
+                'MTS25-Z8': (1 / pq.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
+                'MTS50-Z8': (1 / pq.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
+                # TODO: Z8xx and Z6xx models. Need to add regex support to motor models, too.
+                'PRM1-Z8': (pq.Quantity(1919.64, 'ct/deg'), NotImplemented, NotImplemented),
+            }
         }
 
         __STATUS_BIT_MASK = {
@@ -494,9 +509,20 @@ class APTMotorController(ThorLabsAPT):
             'INTERLOCK_STATE':      0x00001000
         }
 
+        # IK-SPECIFIC PROPERTIES #
+        # These properties don't correspond to any particular functionality
+        # of the underlying device, but control how we interact with it.
+
+        @property
+        def motion_timeout(self):
+            return self._motion_timeout
+        @motion_timeout.setter
+        def motion_timeout(self, newval):
+            self._motion_timeout = assume_units(newval, pq.second)
+
         # UNIT CONVERSION METHODS #
 
-        def set_scale(self, motor_model):
+        def _set_scale(self, motor_model):
             """
             Sets the scale factors for this motor channel, based on the model
             of the attached motor and the specifications of the driver of which
@@ -516,6 +542,38 @@ class APTMotorController(ThorLabsAPT):
             # model.
             logger.warning("Scale factors for controller %s and motor %s are "
                            "unknown", self._apt.model_number, motor_model)
+
+        # We copy the docstring below, so it's OK for this method
+        # to not have a docstring of its own.
+        # pylint: disable=missing-docstring
+        def set_scale(self, motor_model):
+            warnings.warn(
+                "The set_scale method has been deprecated in favor "
+                "of the motor_model property.",
+                DeprecationWarning
+            )
+            return self._set_scale(motor_model)
+
+        set_scale.__doc__ = _set_scale.__doc__
+
+        @property
+        def motor_model(self):
+            """
+            Gets or sets the model name of the attached motor.
+            Note that the scale factors for this motor channel are based on the model
+            of the attached motor and the specifications of the driver of which
+            this is a channel, such that setting a new motor model will update
+            the scale factors accordingly.
+
+            :type: `str` or `None`
+            """
+            return self._motor_model
+
+        @motor_model.setter
+        def motor_model(self, newval):
+            self._set_scale(newval)
+            self._motor_model = newval
+
 
         # MOTOR COMMANDS #
 
@@ -606,7 +664,10 @@ class APTMotorController(ThorLabsAPT):
                 source=0x01,
                 data=None
             )
-            self._apt.sendpacket(pkt)
+            _ = self._apt.querypacket(pkt,
+                                      expect=_cmds.ThorLabsCommands.MOT_MOVE_HOMED,
+                                      timeout=self.motion_timeout
+                                     )
 
         def move(self, pos, absolute=True):
             """
@@ -655,7 +716,8 @@ class APTMotorController(ThorLabsAPT):
 
             _ = self._apt.querypacket(
                 pkt,
-                expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED
+                expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED,
+                timeout=self.motion_timeout
             )
 
     _channel_type = MotorChannel

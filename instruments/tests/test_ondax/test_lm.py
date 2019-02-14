@@ -8,7 +8,7 @@ Unit tests for the Ondax Laser Module
 
 from __future__ import absolute_import
 
-from nose.tools import raises
+import pytest
 
 import quantities
 
@@ -62,15 +62,15 @@ def test_acc_disable():
         assert not lm.acc.enabled
 
 
-@raises(TypeError)
 def test_acc_enable_not_boolean():
-    with expected_protocol(
-            ondax.LM,
-            [],
-            [],
-            sep="\r"
-    ) as lm:
-        lm.acc.enabled = "foobar"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+                ondax.LM,
+                [],
+                [],
+                sep="\r"
+        ) as lm:
+            lm.acc.enabled = "foobar"
 
 
 def test_acc_on():
@@ -145,15 +145,15 @@ def test_apc_disable():
         assert not lm.apc.enabled
 
 
-@raises(TypeError)
 def test_apc_enable_not_boolean():
-    with expected_protocol(
-            ondax.LM,
-            [],
-            [],
-            sep="\r"
-    ) as lm:
-        lm.apc.enabled = "foobar"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+                ondax.LM,
+                [],
+                [],
+                sep="\r"
+        ) as lm:
+            lm.apc.enabled = "foobar"
 
 
 
@@ -249,15 +249,15 @@ def test_modulation_disabled():
         assert not lm.modulation.enabled
 
 
-@raises(TypeError)
 def test_modulation_enable_not_boolean():
-    with expected_protocol(
-            ondax.LM,
-            [],
-            [],
-            sep="\r"
-    ) as lm:
-        lm.modulation.enabled = "foobar"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+                ondax.LM,
+                [],
+                [],
+                sep="\r"
+        ) as lm:
+            lm.modulation.enabled = "foobar"
 
 
 def test_tec_current():
@@ -318,15 +318,15 @@ def test_tec_disable():
         assert not lm.tec.enabled
 
 
-@raises(TypeError)
 def test_tec_enable_not_boolean():
-    with expected_protocol(
-            ondax.LM,
-            [],
-            [],
-            sep="\r"
-    ) as lm:
-        lm.tec.enabled = "foobar"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+                ondax.LM,
+                [],
+                [],
+                sep="\r"
+        ) as lm:
+            lm.tec.enabled = "foobar"
 
 
 def test_firmware():
@@ -469,15 +469,15 @@ def test_disable():
         assert not lm.enabled
 
 
-@raises(TypeError)
 def test_enable_not_boolean():
-    with expected_protocol(
-            ondax.LM,
-            [],
-            [],
-            sep="\r"
-    ) as lm:
-        lm.enabled = "foobar"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+                ondax.LM,
+                [],
+                [],
+                sep="\r"
+        ) as lm:
+            lm.enabled = "foobar"
 
 
 def test_save():

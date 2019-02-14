@@ -48,8 +48,8 @@ class TopMode(Instrument):
             return [msg, "reboot process started."]
         elif "start-correction" in msg:
             return [msg, "()"]
-        else:
-            return msg
+
+        return msg
 
     # ENUMS #
 
@@ -326,7 +326,7 @@ class TopMode(Instrument):
 
         if isinstance(value, str):
             self.query("(param-set! '{} \"{}\")".format(param, value))
-        elif isinstance(value, tuple) or isinstance(value, list):
+        elif isinstance(value, (tuple, list)):
             self.query("(param-set! '{} '({}))".format(param, " ".join(value)))
         elif isinstance(value, bool):
             value = "t" if value else "f"

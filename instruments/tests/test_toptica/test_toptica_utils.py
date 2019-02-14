@@ -9,7 +9,7 @@ Module containing tests for Topical util functions
 from __future__ import absolute_import
 import datetime
 
-from nose.tools import raises
+import pytest
 
 from instruments.toptica import toptica_utils
 
@@ -22,9 +22,9 @@ def test_convert_boolean():
     assert toptica_utils.convert_toptica_boolean("Error: -3") is None
 
 
-@raises(ValueError)
 def test_convert_boolean_value():
-    toptica_utils.convert_toptica_boolean("blo")
+    with pytest.raises(ValueError):
+        toptica_utils.convert_toptica_boolean("blo")
 
 
 def test_convert_toptica_datetime():

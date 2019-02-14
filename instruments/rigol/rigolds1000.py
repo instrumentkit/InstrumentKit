@@ -60,9 +60,6 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
             is designed to be initialized by the `RigolDS1000Series` class.
         """
 
-        def __init__(self, parent, name):
-            super(RigolDS1000Series.DataSource, self).__init__(parent, name)
-
         @property
         def name(self):
             return self._name

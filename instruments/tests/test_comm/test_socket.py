@@ -10,12 +10,12 @@ from __future__ import absolute_import
 
 import socket
 
-from nose.tools import raises, eq_
-import mock
+import pytest
 import quantities as pq
 
 from instruments.abstract_instruments.comm import SocketCommunicator
 from instruments.tests import unit_eq
+from .. import mock
 
 # TEST CASES #################################################################
 
@@ -29,9 +29,9 @@ def test_socketcomm_init():
     assert comm._conn == socket_object
 
 
-@raises(TypeError)
 def test_socketcomm_init_wrong_filelike():
-    _ = SocketCommunicator("derp")
+    with pytest.raises(TypeError):
+        _ = SocketCommunicator("derp")
 
 
 def test_socketcomm_address():
@@ -39,33 +39,33 @@ def test_socketcomm_address():
     comm._conn = mock.MagicMock()
     comm._conn.getpeername.return_value = "127.0.0.1", 1234
 
-    eq_(comm.address, ("127.0.0.1", 1234))
+    assert comm.address == ("127.0.0.1", 1234)
     comm._conn.getpeername.assert_called_with()
 
 
-@raises(NotImplementedError)
 def test_socketcomm_address_setting():
-    comm = SocketCommunicator(socket.socket())
-    comm.address = "foobar"
+    with pytest.raises(NotImplementedError):
+        comm = SocketCommunicator(socket.socket())
+        comm.address = "foobar"
 
 
 def test_socketcomm_terminator():
     comm = SocketCommunicator(socket.socket())
 
     # Default terminator should be \n
-    eq_(comm.terminator, "\n")
+    assert comm.terminator == "\n"
 
     comm.terminator = b"*"
-    eq_(comm.terminator, "*")
-    eq_(comm._terminator, "*")
+    assert comm.terminator == "*"
+    assert comm._terminator == "*"
 
-    comm.terminator = u"\r"  # pylint: disable=redefined-variable-type
-    eq_(comm.terminator, u"\r")
-    eq_(comm._terminator, u"\r")
+    comm.terminator = u"\r"
+    assert comm.terminator == u"\r"
+    assert comm._terminator == u"\r"
 
     comm.terminator = "\r\n"
-    eq_(comm.terminator, "\r\n")
-    eq_(comm._terminator, "\r\n")
+    assert comm.terminator == "\r\n"
+    assert comm._terminator == "\r\n"
 
 
 def test_socketcomm_timeout():
@@ -88,7 +88,7 @@ def test_socketcomm_close():
     comm._conn = mock.MagicMock()
 
     comm.close()
-    comm._conn.shutdown.assert_called_with()
+    comm._conn.shutdown.assert_called_with(socket.SHUT_RDWR)
     comm._conn.close.assert_called_with()
 
 
@@ -97,7 +97,7 @@ def test_socketcomm_read_raw():
     comm._conn = mock.MagicMock()
     comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
-    eq_(comm.read_raw(), b"abc")
+    assert comm.read_raw() == b"abc"
     comm._conn.recv.assert_has_calls([mock.call(1)]*4)
     assert comm._conn.recv.call_count == 4
 
@@ -112,18 +112,18 @@ def test_loopbackcomm_read_raw_2char_terminator():
     comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\r", b"\n"])
     comm._terminator = "\r\n"
 
-    eq_(comm.read_raw(), b"abc")
+    assert comm.read_raw() == b"abc"
     comm._conn.recv.assert_has_calls([mock.call(1)] * 5)
     assert comm._conn.recv.call_count == 5
 
 
-@raises(IOError)
 def test_serialcomm_read_raw_timeout():
-    comm = SocketCommunicator(socket.socket())
-    comm._conn = mock.MagicMock()
-    comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b""])
+    with pytest.raises(IOError):
+        comm = SocketCommunicator(socket.socket())
+        comm._conn = mock.MagicMock()
+        comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b""])
 
-    _ = comm.read_raw(-1)
+        _ = comm.read_raw(-1)
 
 
 def test_socketcomm_write_raw():
@@ -148,7 +148,7 @@ def test_socketcomm_query():
     comm.read = mock.MagicMock(return_value="answer")
     comm.sendcmd = mock.MagicMock()
 
-    eq_(comm._query("mock"), "answer")
+    assert comm._query("mock") == "answer"
     comm.sendcmd.assert_called_with("mock")
     comm.read.assert_called_with(-1)
 
@@ -156,16 +156,16 @@ def test_socketcomm_query():
     comm.read.assert_called_with(10)
 
 
-@raises(NotImplementedError)
 def test_socketcomm_seek():
-    comm = SocketCommunicator(socket.socket())
-    comm.seek(1)
+    with pytest.raises(NotImplementedError):
+        comm = SocketCommunicator(socket.socket())
+        comm.seek(1)
 
 
-@raises(NotImplementedError)
 def test_socketcomm_tell():
-    comm = SocketCommunicator(socket.socket())
-    comm.tell()
+    with pytest.raises(NotImplementedError):
+        comm = SocketCommunicator(socket.socket())
+        comm.tell()
 
 
 def test_socketcomm_flush_input():

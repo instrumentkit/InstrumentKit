@@ -9,7 +9,7 @@ InstrumentKit Development Guide
     code_style
     testing
     util_fns
-    
+
 Introduction
 ============
 
@@ -34,7 +34,7 @@ provided ``dev-requirements.txt``::
 $ pip install -r dev-requirements.txt
 
 - mock
-- nose
+- pytest
 - pylint
 
 Optional Development Dependencies

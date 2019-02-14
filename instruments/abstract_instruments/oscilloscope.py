@@ -49,8 +49,10 @@ class OscilloscopeDataSource(with_metaclass(abc.ABCMeta, object)):
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
-        else:
-            return other.name == self.name
+
+        return other.name == self.name
+
+    __hash__ = None
 
     # PROPERTIES #
 

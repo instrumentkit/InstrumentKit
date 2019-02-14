@@ -43,9 +43,6 @@ class Agilent33220a(SCPIFunctionGenerator):
 
     """
 
-    def __init__(self, filelike):
-        super(Agilent33220a, self).__init__(filelike)
-
     # ENUMS #
 
     class Function(Enum):
@@ -81,16 +78,8 @@ class Agilent33220a(SCPIFunctionGenerator):
 
     # PROPERTIES #
 
-    @property
-    def frequency(self):
-        return super(Agilent33220a, self).frequency
-
-    @frequency.setter
-    def frequency(self, newval):
-        super(Agilent33220a, self).frequency = newval
-
     function = enum_property(
-        name="FUNC",
+        command="FUNC",
         enum=Function,
         doc="""
         Gets/sets the output function of the function generator
@@ -101,7 +90,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     duty_cycle = int_property(
-        name="FUNC:SQU:DCYC",
+        command="FUNC:SQU:DCYC",
         doc="""
         Gets/sets the duty cycle of a square wave.
 
@@ -114,7 +103,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     ramp_symmetry = int_property(
-        name="FUNC:RAMP:SYMM",
+        command="FUNC:RAMP:SYMM",
         doc="""
         Gets/sets the ramp symmetry for ramp waves.
 
@@ -127,7 +116,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     output = bool_property(
-        name="OUTP",
+        command="OUTP",
         inst_true="ON",
         inst_false="OFF",
         doc="""
@@ -141,7 +130,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     output_sync = bool_property(
-        name="OUTP:SYNC",
+        command="OUTP:SYNC",
         inst_true="ON",
         inst_false="OFF",
         doc="""
@@ -152,7 +141,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     )
 
     output_polarity = enum_property(
-        name="OUTP:POL",
+        command="OUTP:POL",
         enum=OutputPolarity,
         doc="""
         Gets/sets the polarity of the waveform relative to the offset voltage.
@@ -185,13 +174,11 @@ class Agilent33220a(SCPIFunctionGenerator):
     def load_resistance(self, newval):
         if isinstance(newval, self.LoadResistance):
             newval = newval.value
-        elif isinstance(newval, int):
+        else:
+            newval = assume_units(newval, pq.ohm).rescale(pq.ohm).magnitude
             if (newval < 0) or (newval > 10000):
                 raise ValueError(
                     "Load resistance must be between 0 and 10,000")
-            newval = assume_units(newval, pq.ohm).rescale(pq.ohm).magnitude
-        else:
-            raise TypeError("Not a valid load resistance type.")
         self.sendcmd("OUTP:LOAD {}".format(newval))
 
     @property

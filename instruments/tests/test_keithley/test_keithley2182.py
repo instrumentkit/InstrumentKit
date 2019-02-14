@@ -10,7 +10,7 @@ from __future__ import absolute_import
 
 import quantities as pq
 import numpy as np
-from nose.tools import raises
+import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -73,23 +73,23 @@ def test_channel_measure_temperature():
         assert channel.measure() == 1.234 * pq.celsius
 
 
-@raises(ValueError)
 def test_channel_measure_unknown_temperature_units():
-    with expected_protocol(
-        ik.keithley.Keithley2182,
-        [
-            "SENS:CHAN 1",
-            "SENS:DATA:FRES?",
-            "SENS:FUNC?",
-            "UNIT:TEMP?"
-        ],
-        [
-            "1.234",
-            "TEMP",
-            "Z"
-        ]
-    ) as inst:
-        inst.channel[0].measure()
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.keithley.Keithley2182,
+            [
+                "SENS:CHAN 1",
+                "SENS:DATA:FRES?",
+                "SENS:FUNC?",
+                "UNIT:TEMP?"
+            ],
+            [
+                "1.234",
+                "TEMP",
+                "Z"
+            ]
+        ) as inst:
+            inst.channel[0].measure()
 
 
 def test_units():
@@ -166,14 +166,14 @@ def test_measure():
         assert inst.measure() == 1.234 * pq.volt
 
 
-@raises(TypeError)
 def test_measure_invalid_mode():
-    with expected_protocol(
-        ik.keithley.Keithley2182,
-        [],
-        []
-    ) as inst:
-        inst.measure("derp")
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.keithley.Keithley2182,
+            [],
+            []
+        ) as inst:
+            inst.measure("derp")
 
 
 def test_relative_get():
@@ -227,11 +227,11 @@ def test_relative_set_start_disabled():
         inst.relative = True
 
 
-@raises(TypeError)
 def test_relative_set_wrong_type():
-    with expected_protocol(
-        ik.keithley.Keithley2182,
-        [],
-        []
-    ) as inst:
-        inst.relative = "derp"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.keithley.Keithley2182,
+            [],
+            []
+        ) as inst:
+            inst.relative = "derp"

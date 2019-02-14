@@ -35,9 +35,6 @@ class Keithley2182(SCPIMultimeter):
 
     """
 
-    def __init__(self, filelike):
-        super(Keithley2182, self).__init__(filelike)
-
     # INNER CLASSES #
 
     class Channel(Multimeter):

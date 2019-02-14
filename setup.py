@@ -23,9 +23,9 @@ CLASSIFIERS = [
     "Programming Language :: Python :: 2",
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.3",
-    "Programming Language :: Python :: 3.4",
     "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
     "Operating System :: OS Independent",
     "License :: OSI Approved :: GNU Affero General Public License v3",
     "Intended Audience :: Science/Research",
@@ -36,18 +36,17 @@ CLASSIFIERS = [
 ]
 INSTALL_REQUIRES = [
     "numpy",
-    "pyserial",
-    "quantities",
+    "pyserial>=3.3",
+    "pyvisa>=1.9",
+    "quantities>=0.12.1",
     "enum34",
-    "future",
-    "python-vxi11",
+    "future>=0.15",
+    "python-vxi11>=0.8",
     "python-usbtmc",
     "pyusb",
-    "pyyaml"
+    "ruamel.yaml~=0.15.37"
 ]
-EXTRAS_REQUIRE = {
-    'VISA': ["pyvisa"]
-}
+
 
 # HELPER FUNCTONS ############################################################
 
@@ -61,6 +60,7 @@ def read(*parts):
     """
     with codecs.open(os.path.join(HERE, *parts), "rb", "utf-8") as f:
         return f.read()
+
 
 META_FILE = read(META_PATH)
 
@@ -77,18 +77,26 @@ def find_meta(meta):
         return meta_match.group(1)
     raise RuntimeError("Unable to find __{meta}__ string.".format(meta=meta))
 
+
 # MAIN #######################################################################
 
-if __name__ == "__main__":
-    setup(
-        name=find_meta("title"),
-        version=find_meta("version"),
-        url=find_meta("uri"),
-        author=find_meta("author"),
-        author_email=find_meta("email"),
-        packages=PACKAGES,
-        install_requires=INSTALL_REQUIRES,
-        extras_require=EXTRAS_REQUIRE,
-        description=find_meta("description"),
-        classifiers=CLASSIFIERS
-    )
+with open("README.rst", "r") as fh:
+    long_description = fh.read()
+
+setup(
+    name=find_meta("title"),
+    version=find_meta("version"),
+    url=find_meta("uri"),
+    author=find_meta("author"),
+    author_email=find_meta("email"),
+    packages=PACKAGES,
+    install_requires=INSTALL_REQUIRES,
+    tests_require=[
+        'pytest >= 2.9.1',
+        'hypothesis'
+    ],
+    description=find_meta("description"),
+    long_description=long_description,
+    long_description_content_type="text/restructedtext",
+    classifiers=CLASSIFIERS
+)

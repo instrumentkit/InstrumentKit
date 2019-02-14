@@ -9,11 +9,11 @@ Unit tests for the HP 6624a power supply
 from __future__ import absolute_import
 
 import quantities as pq
-import mock
-from nose.tools import raises
+import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
+from .. import mock
 
 # TESTS #######################################################################
 
@@ -206,15 +206,15 @@ def test_all_voltage():
         hp.voltage = (1 * pq.V, 2 * pq.V, 3 * pq.V, 4 * pq.V)
 
 
-@raises(ValueError)
 def test_all_voltage_wrong_length():
-    with expected_protocol(
-        ik.hp.HP6624a,
-        [],
-        [],
-        sep="\n"
-    ) as hp:
-        hp.voltage = (1 * pq.volt, 2 * pq.volt)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.hp.HP6624a,
+            [],
+            [],
+            sep="\n"
+        ) as hp:
+            hp.voltage = (1 * pq.volt, 2 * pq.volt)
 
 
 def test_all_current():
@@ -249,15 +249,15 @@ def test_all_current():
         hp.current = (1 * pq.A, 2 * pq.A, 3 * pq.A, 4 * pq.A)
 
 
-@raises(ValueError)
 def test_all_current_wrong_length():
-    with expected_protocol(
-        ik.hp.HP6624a,
-        [],
-        [],
-        sep="\n"
-    ) as hp:
-        hp.current = (1 * pq.amp, 2 * pq.amp)
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.hp.HP6624a,
+            [],
+            [],
+            sep="\n"
+        ) as hp:
+            hp.current = (1 * pq.amp, 2 * pq.amp)
 
 
 def test_all_voltage_sense():
@@ -323,23 +323,23 @@ def test_channel_count():
         hp.channel_count = 3
 
 
-@raises(TypeError)
 def test_channel_count_wrong_type():
-    with expected_protocol(
-        ik.hp.HP6624a,
-        [],
-        [],
-        sep="\n"
-    ) as hp:
-        hp.channel_count = "foobar"
+    with pytest.raises(TypeError):
+        with expected_protocol(
+            ik.hp.HP6624a,
+            [],
+            [],
+            sep="\n"
+        ) as hp:
+            hp.channel_count = "foobar"
 
 
-@raises(ValueError)
 def test_channel_count_too_small():
-    with expected_protocol(
-        ik.hp.HP6624a,
-        [],
-        [],
-        sep="\n"
-    ) as hp:
-        hp.channel_count = 0
+    with pytest.raises(ValueError):
+        with expected_protocol(
+            ik.hp.HP6624a,
+            [],
+            [],
+            sep="\n"
+        ) as hp:
+            hp.channel_count = 0

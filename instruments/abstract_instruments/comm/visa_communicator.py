@@ -45,7 +45,8 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         if visa is None:
             raise ImportError("PyVISA required for accessing VISA instruments.")
 
-        version = int(visa.__version__.replace(".", ""))
+        version = int(visa.__version__.replace(".", "").ljust(3, "0"))
+        # pylint: disable=no-member
         if (version < 160 and isinstance(conn, visa.Instrument)) or \
                 (version >= 160 and isinstance(conn, visa.Resource)):
             self._conn = conn
@@ -123,14 +124,11 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `bytes`
         """
         if size >= 0:
-            while len(self._buf) < size:
-                data = self._conn.read()
-                if data == "":
-                    break
-                self._buf += data
+            self._buf += self._conn.read_bytes(size)
             msg = self._buf[:size]
             # Remove the front of the buffer.
             del self._buf[:size]
+
         elif size == -1:
             # Read the whole contents, appending the buffer we've already read.
             msg = self._buf + self._conn.read()
@@ -148,7 +146,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         :param bytes msg: Bytes to be sent to the instrument over the VISA
             connection.
         """
-        self._conn.write(msg)
+        self._conn.write_raw(msg)
 
     def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
         return NotImplemented
@@ -192,4 +190,4 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         msg += self._terminator
-        return self._conn.ask(msg)
+        return self._conn.query(msg)

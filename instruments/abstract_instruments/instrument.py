@@ -151,7 +151,7 @@ class Instrument(object):
                 )
         return value
 
-    def read(self, size=-1):
+    def read(self, size=-1, encoding="utf-8"):
         """
         Read the last line.
 
@@ -161,7 +161,7 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        return self._file.read(size)
+        return self._file.read(size, encoding)
 
     # PROPERTIES #
 
@@ -310,7 +310,8 @@ class Instrument(object):
     # CLASS METHODS #
 
     URI_SCHEMES = ["serial", "tcpip", "gpib+usb",
-                   "gpib+serial", "visa", "file", "usbtmc", "vxi11"]
+                   "gpib+serial", "visa", "file", "usbtmc", "vxi11",
+                   "test"]
 
     @classmethod
     def open_from_uri(cls, uri):
@@ -330,6 +331,7 @@ class Instrument(object):
             gpib+serial:///dev/ttyACM0/15 # Currently non-functional.
             visa://USB::0x0699::0x0401::C0000001::0::INSTR
             usbtmc://USB::0x0699::0x0401::C0000001::0::INSTR
+            test://
 
         For the ``serial`` URI scheme, baud rates may be explicitly specified
         using the query parameter ``baud=``, as in the example
@@ -415,6 +417,8 @@ class Instrument(object):
             #   vxi11://192.168.1.104
             #   vxi11://TCPIP::192.168.1.105::gpib,5::INSTR
             return cls.open_vxi11(parsed_uri.netloc, **kwargs)
+        elif parsed_uri.scheme == "test":
+            return cls.open_test(**kwargs)
         else:
             raise NotImplementedError("Invalid scheme or not yet "
                                       "implemented.")

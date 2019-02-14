@@ -77,9 +77,6 @@ class HP6632b(SCPIInstrument, HP6652a):
     array(10.0) * V
     """
 
-    def __init__(self, filelike):
-        super(HP6632b, self).__init__(filelike)
-
     # ENUMS ##
 
     class ALCBandwidth(IntEnum):
@@ -471,6 +468,9 @@ class HP6632b(SCPIInstrument, HP6652a):
                 done = True
             else:
                 result.append(
-                    self.ErrorCodes(err) if err in self.ErrorCodes else err)
+                    self.ErrorCodes(err)
+                    if any(err == item.value for item in self.ErrorCodes)
+                    else err
+                )
 
         return result
