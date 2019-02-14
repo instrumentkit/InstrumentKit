@@ -236,6 +236,12 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
     def amplitude(self, newval):
         self.channel[0].amplitude = newval
 
+    def _get_amplitude_(self):
+        raise NotImplementedError()
+
+    def _set_amplitude_(self, magnitude, units):
+        raise NotImplementedError()
+
     @property
     def frequency(self):
         """
