@@ -13,8 +13,8 @@ import abc
 from enum import Enum
 
 from future.utils import with_metaclass
+from builtins import range
 import quantities as pq
-
 
 from instruments.abstract_instruments import Instrument
 import instruments.units as u
