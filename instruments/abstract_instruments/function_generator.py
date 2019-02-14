@@ -12,8 +12,8 @@ from __future__ import division
 import abc
 from enum import Enum
 
-from future.utils import with_metaclass
 from builtins import range
+from future.utils import with_metaclass
 import quantities as pq
 
 from instruments.abstract_instruments import Instrument
