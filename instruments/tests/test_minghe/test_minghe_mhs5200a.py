@@ -8,11 +8,11 @@ Module containing tests for the MingHe MHS52000a
 
 from __future__ import absolute_import
 
-from nose.tools import raises
+import pytest
 import quantities as pq
 
 import instruments as ik
-from instruments.tests import expected_protocol, unit_eq
+from instruments.tests import expected_protocol
 
 
 # TESTS ######################################################################
@@ -41,19 +41,15 @@ def test_mhs_amplitude():
         mhs.channel[1].amplitude = 8.0*pq.V
 
 
-@raises(NotImplementedError)
 def test_mhs_amplitude_dbm_notimplemented():
     with expected_protocol(
         ik.minghe.MHS5200,
-        [
-            ":s1a660"
-        ],
-        [
-            "ok"
-        ],
+        [],
+        [],
         sep="\r\n"
     ) as mhs:
-        mhs.channel[0].amplitude = 6.6*ik.units.dBm
+        with pytest.raises(NotImplementedError):
+            mhs.channel[0].amplitude = 6.6*ik.units.dBm
 
 
 def test_mhs_duty_cycle():
