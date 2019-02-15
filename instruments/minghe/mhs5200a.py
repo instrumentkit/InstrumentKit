@@ -83,7 +83,7 @@ class MHS5200(FunctionGenerator):
             Gets/Sets the duty cycle of this channel.
 
             :units: A fraction
-            :type: `~quantities.Quantity`
+            :type: `float`
             """
             query = ":r{0}d".format(self._chan)
             response = self._mhs.query(query)
@@ -100,7 +100,6 @@ class MHS5200(FunctionGenerator):
             """
             Gets/Sets the enable state of this channel.
 
-            :param newval: the enable state
             :type: `bool`
             """
             query = ":r{0}b".format(self._chan)
@@ -138,8 +137,8 @@ class MHS5200(FunctionGenerator):
             """
             Gets/Sets the offset of this channel.
 
-            :param new_val: The fraction of the duty cycle to offset the
-            function by.
+            The fraction of the duty cycle to offset the function by.
+
             :type: `float`
             """
             # need to convert
@@ -208,6 +207,7 @@ class MHS5200(FunctionGenerator):
 
         For instance, this would print the counts of the first channel::
 
+        >>> import instruments as ik
         >>> mhs = ik.minghe.MHS5200.open_serial(vid=1027, pid=24577,
         baud=19200, timeout=1)
         >>> print(mhs.channel[0].frequency)
