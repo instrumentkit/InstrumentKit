@@ -9,6 +9,7 @@ Provides support for the Yokogawa 6370 optical spectrum analyzer.
 from __future__ import absolute_import
 from __future__ import division
 
+from builtins import range
 from enum import IntEnum, Enum
 
 import quantities as pq
@@ -18,8 +19,8 @@ from instruments.abstract_instruments import (
     OSAChannel,
 )
 from instruments.util_fns import (
-    enum_property, string_property, int_property, unitful_property,
-    unitless_property, bounded_unitful_property, ProxyList, assume_units
+    enum_property, unitful_property, unitless_property,
+    bounded_unitful_property, ProxyList
 )
 
 
@@ -67,14 +68,14 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
             cmd = ":TRAC:Y? {0}".format(self._name)
             self._parent.sendcmd(cmd)
             data = self._parent.binblockread(data_width=4, fmt="<d")
-            self._parent._file.read_raw(1)
+            self._parent._file.read_raw(1)  # pylint: disable=protected-access
             return data
 
         def wavelength(self, bin_format=True):
             cmd = ":TRAC:X? {0}".format(self._name)
             self._parent.sendcmd(cmd)
             data = self._parent.binblockread(data_width=4, fmt="<d")
-            self._parent._file.read_raw(1)
+            self._parent._file.read_raw(1)  # pylint: disable=protected-access
             return data
 
     # ENUMS #
@@ -85,7 +86,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         SINGLE = 1
         REPEAT = 2
-        AUTO   = 3
+        AUTO = 3
 
     class Traces(Enum):
         """
@@ -157,9 +158,9 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
     )
 
-    points = unitless_property( 
-       ":SENS:SWE:POIN",
-       doc="""
+    points = unitless_property(
+        ":SENS:SWE:POIN",
+        doc="""
         An integer property that controls the number of points in a trace.
         """
     )
@@ -167,7 +168,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     sweep_mode = enum_property(
         ":INIT:SMOD",
         SweepModes,
-        input_decoration=lambda val: int(val),
+        input_decoration=int,
         doc="""
         A property to control the Sweep Mode as oe of Yokogawa6370.SweepMode. 
         Effective only after a self.start_sweep()."""

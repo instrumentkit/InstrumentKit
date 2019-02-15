@@ -24,4 +24,3 @@ from .optical_spectrum_analyzer import (
     OSAChannel,
     OpticalSpectrumAnalyzer,
 )
-
