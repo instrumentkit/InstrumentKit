@@ -15,9 +15,10 @@ from __future__ import unicode_literals
 import os
 import collections
 import socket
+import serial
 
 from builtins import map
-from serial import SerialException
+from serial import SerialException 
 from serial.tools.list_ports import comports
 
 from future.standard_library import install_aliases
@@ -41,7 +42,7 @@ except (ImportError, WindowsError, OSError):
 from instruments.abstract_instruments.comm import (
     SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
     LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,
-    USBTMCCommunicator, VXI11Communicator, serial_manager
+    USBTMCCommunicator, VXI11Communicator, serial_manager, SerialCommunicator
 )
 from instruments.errors import AcknowledgementError, PromptError
 
@@ -527,6 +528,26 @@ class Instrument(object):
             write_timeout=write_timeout
         )
         return cls(ser)
+
+    @classmethod
+    def open_serial_remote(cls, url=None, baud=115200, dsrdtr=False, rtscts=False,
+                    xonxoff = True, timeout=3):
+        """
+        This method follows updates in the API for PySerial so that IK can use the new 
+        serial.serial_for_url constuctor for serial devices.
+        TODO: Finish me
+        """
+        # baudrate=9600, bytesize=8, parity='N', stopbits=1, timeout=None, xonxoff=False, rtscts=False, dsrdtr=False
+        #Should put in parsing to check for valid URL?
+        ser = serial.serial_for_url(
+            url, 
+            baudrate=baud,
+            timeout=timeout,
+            xonxoff=xonxoff, 
+            rtscts=rtscts, 
+            dsrdtr=dsrdtr
+        )
+        return cls(SerialCommunicator(ser))
 
     @classmethod
     def open_gpibusb(cls, port, gpib_address, timeout=3, write_timeout=3):

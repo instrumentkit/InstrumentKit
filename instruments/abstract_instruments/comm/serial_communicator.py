@@ -34,7 +34,13 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, conn):
         super(SerialCommunicator, self).__init__(self)
 
-        if isinstance(conn, serial.Serial):
+        allowed_bases = (serial.Serial, )
+        try:
+            allowed_bases += (serial.serialutil.SerialBase, )
+        except AttributeError:
+            pass
+
+        if isinstance(conn, allowed_bases):
             self._conn = conn
             self._terminator = "\n"
             self._debug = False
@@ -182,8 +188,10 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
-        msg += self._terminator
-        self.write(msg)
+
+        message = msg.decode(encoding='UTF-8')
+        message += self._terminator
+        self.write(message)
 
     def _query(self, msg, size=-1):
         """
