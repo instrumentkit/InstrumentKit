@@ -321,6 +321,9 @@ class Fluke3000(Multimeter):
         # Loop over possible channels, store device locations
         value = 0.
         if mode == self.Mode.temperature:
+            if "PH" not in result:
+                return value
+        
             data = result.split('PH=')[-1]
             least = int(data[:2], 16)
             most = int(data[2:4], 16)
