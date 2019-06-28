@@ -79,7 +79,7 @@ class Fluke3000(Multimeter):
         communication.
         """
         super(Fluke3000, self).__init__(filelike)
-        self.timeout = 1 * pq.second
+        self.timeout = 5 * pq.second
         self.terminator = "\r"
         self._null = False
         self.positions = {}
