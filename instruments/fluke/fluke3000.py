@@ -90,7 +90,7 @@ class Fluke3000(Multimeter):
     class Module(Enum):
 
         """
-        Enum containing the supported mode codes
+        Enum containing the supported module codes
         """
         #: Temperature module
         t3000 = "t3000"
@@ -222,7 +222,7 @@ class Fluke3000(Multimeter):
         self.scan()
         if not self.positions:
             self.reset()                # Resets the PC3000 dongle
-            self.query("rfdis")       # Discovers connected modules
+            self.query("rfdis")         # Discovers connected modules
             time.sleep(10)              # Wait for modules to connect
             self.scan()
             
@@ -298,11 +298,21 @@ class Fluke3000(Multimeter):
         :rtype: `~quantities.quantity.Quantity`
 
         """
-        modevalue = mode.value
-        units = UNITS[mode]
+        module = self._get_module(mode)
+        if module not in self.positions.keys():
+            raise ValueError("Device necessary to measure {} is not available".format(mode))
 
-        value = self.query("rfemd 01 0") # TODO must format module ID
-        value = self._parse(value, mode)
+        port_id = self.positions[module]
+        value = None
+        init_time = time.time()
+        while not value and time.time() - init_time < float(self.timeout):
+            value = self.query("{} 0{} 0".format(mode.value, port_id))
+            value = self._parse(value, mode)
+
+        if not value:
+            raise ValueError("Failed to read out Fluke3000 with mode {}".format(mode))
+
+        units = UNITS[mode]
         return value * units
         
     def _parse(self, result, mode):
@@ -319,7 +329,7 @@ class Fluke3000(Multimeter):
 
         """
         # Loop over possible channels, store device locations
-        value = 0.
+        value = None
         if mode == self.Mode.temperature:
             if "PH" not in result:
                 return value
@@ -330,10 +340,15 @@ class Fluke3000(Multimeter):
             sign = 1 if data[6:8] == '02' else -1
             return sign*float(most*255+least)/10        
         else:
-            error = "Mode {} not implemented".format(mode)
-            raise NotImplementedError(error)
+            raise NotImplementedError("Mode {} not implemented".format(mode))
 
         return value
+
+    def _get_module(self, mode):
+        if mode == self.Mode.temperature:
+            return self.Module.t3000
+        else:
+            raise ValueError("No module associated with mode {}".format(mode))
         
 # UNITS #######################################################################
 
