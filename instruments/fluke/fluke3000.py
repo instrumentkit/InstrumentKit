@@ -79,7 +79,7 @@ class Fluke3000(Multimeter):
         communication.
         """
         super(Fluke3000, self).__init__(filelike)
-        self.timeout = 5 * pq.second
+        self.timeout = 0.5 * pq.second
         self.terminator = "\r"
         self._null = False
         self.positions = {}
@@ -227,7 +227,9 @@ class Fluke3000(Multimeter):
             self.scan()
             
         if not self.positions:
-            raise ValueError("No Fluke3000 modules available")  
+            raise ValueError("No Fluke3000 modules available")
+
+        self.timeout = 0.1 * pq.second
             
     def reset(self):
         """
@@ -305,7 +307,7 @@ class Fluke3000(Multimeter):
         port_id = self.positions[module]
         value = None
         init_time = time.time()
-        while not value and time.time() - init_time < float(self.timeout):
+        while not value and time.time() - init_time < 1:
             value = self.query("{} 0{} 0".format(mode.value, port_id))
             value = self._parse(value, mode)
 
