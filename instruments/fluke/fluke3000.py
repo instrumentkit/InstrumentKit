@@ -79,7 +79,7 @@ class Fluke3000(Multimeter):
         communication.
         """
         super(Fluke3000, self).__init__(filelike)
-        self.timeout = 0.5 * pq.second
+        self.timeout = 10 * pq.second
         self.terminator = "\r"
         self._null = False
         self.positions = {}
@@ -219,24 +219,23 @@ class Fluke3000(Multimeter):
         Connect to available modules and returns
         a dictionary of the modules found and their location
         """
-        self.scan()
+        self.scan()                     # Look for connected devices
         if not self.positions:
             self.reset()                # Resets the PC3000 dongle
-            self.query("rfdis")         # Discovers connected modules
-            time.sleep(10)              # Wait for modules to connect
-            self.scan()
+            self.query("rfdis", 3)      # Discovers connected modules
+            self.scan()                 # Look for connected devices
             
         if not self.positions:
             raise ValueError("No Fluke3000 modules available")
 
-        self.timeout = 0.1 * pq.second
-            
+        self.timeout = 3 * pq.second
+        
     def reset(self):
         """
         Resets the device and unbinds all modules
         """
-        self.query("ri") # Resets the device
-        self.query("rfsm 1") # Turns comms on
+        self.query("ri", 3)             # Resets the device
+        self.query("rfsm 1", 2)         # Turns comms on
                 
     def scan(self):
         """
@@ -247,11 +246,13 @@ class Fluke3000(Multimeter):
         positions = {}
         for port_id in range(1, 7):
             # Check if a device is connected to port port_id
-            output = self.query("rfebd 0{} 1".format(port_id))
-            if "PH" not in output:
+            self.sendcmd("rfebd 0{} 1".format(port_id))
+            output = self.read()
+            if "RFEBD" not in output:
                 break
             
-            # If it is, identify the device
+            # If it is, read the next line and identify the device
+            output = self.read()
             module_id = int(output.split("PH=")[-1])
             if module_id == 64:
                 positions[self.Module.t3000] = port_id
@@ -260,30 +261,41 @@ class Fluke3000(Multimeter):
                 raise NotImplementedError(error)
                 
         self.positions = positions
-        
-    def query(self, cmd):
+
+    def read_lines(self, nlines=1):
+        """
+        Function that keeps reading until reaches a termination
+        character a set amount of times. This is implemented
+        to handle the mutiline output of the PC3000
+
+        :param int nlines: Number of termination characters to reach
+        :return: Array of lines read out
+        :rtype: Array of `str`
+        """
+        lines = []
+        i = 0
+        while i < nlines:
+            try:
+                lines.append(self.read())
+                i += 1
+            except :
+                continue
+
+        return lines
+
+    def query(self, cmd, nlines=1):
         """
         Function used to send a command to the instrument while allowing
         for multiline output (multiple termination characters)
 
         :param str cmd: Command that will be sent to the instrument
-        :return: The result from the query
-        :rtype: `str`
+        :param int nlines: Number of termination characters to reach
+        :return: The multiline result from the query
+        :rtype: Array of `str`
         """
-        # First send the command
         self.sendcmd(cmd)
-        time.sleep(0.1)
+        return self.read_lines(nlines)
     
-        # While there is something to readout, keep going
-        result = ""
-        while True:
-            try:
-                result += self.read()
-            except:
-                break
-            
-        return result      
-
     def measure(self, mode):
         """Instruct the Fluke3000 to perform a one time measurement. 
 
@@ -308,8 +320,8 @@ class Fluke3000(Multimeter):
         value = None
         init_time = time.time()
         while value is None and time.time() - init_time < 1:
-            value = self.query("{} 0{} 0".format(mode.value, port_id))
-            value = self._parse(value, mode)
+            value = self.query("{} 0{} 0".format(mode.value, port_id), 2)
+            value = self._parse(value[1], mode)
 
         if value is None:
             raise ValueError("Failed to read out Fluke3000 with mode {}".format(mode))
