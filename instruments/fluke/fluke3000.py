@@ -307,11 +307,11 @@ class Fluke3000(Multimeter):
         port_id = self.positions[module]
         value = None
         init_time = time.time()
-        while not value and time.time() - init_time < 1:
+        while value is None and time.time() - init_time < 1:
             value = self.query("{} 0{} 0".format(mode.value, port_id))
             value = self._parse(value, mode)
 
-        if not value:
+        if value is None:
             raise ValueError("Failed to read out Fluke3000 with mode {}".format(mode))
 
         units = UNITS[mode]
