@@ -79,7 +79,7 @@ class Fluke3000(Multimeter):
         communication.
         """
         super(Fluke3000, self).__init__(filelike)
-        self.timeout = 10 * pq.second
+        self.timeout = 15 * pq.second
         self.terminator = "\r"
         self._null = False
         self.positions = {}
@@ -92,16 +92,32 @@ class Fluke3000(Multimeter):
         """
         Enum containing the supported module codes
         """
+        #: Multimeter
+        m3000 = 46333030304643
         #: Temperature module
-        t3000 = "t3000"
+        t3000 = 54333030304643
     
     class Mode(Enum):
 
         """
         Enum containing the supported mode codes
         """
+        #: AC Voltage
+        voltage_ac  = "01"
+        #: DC Voltage
+        voltage_dc  = "02"
+        #: AC Current
+        current_ac  = "03"
+        #: DC Current
+        current_dc  = "04"
+        #: Frequency
+        frequency   = "05"
         #: Temperature
-        temperature = "rfemd"
+        temperature = "07"
+        #: Resistance
+        resistance  = "0B"
+        #: Capacitance
+        capacitance = "0F"
         
     class TriggerMode(IntEnum):
 
@@ -246,15 +262,17 @@ class Fluke3000(Multimeter):
         positions = {}
         for port_id in range(1, 7):
             # Check if a device is connected to port port_id
-            self.sendcmd("rfebd 0{} 1".format(port_id))
-            output = self.read()
+            output = self.query("rfebd 0{} 0".format(port_id))[0]
             if "RFEBD" not in output:
                 break
             
-            # If it is, read the next line and identify the device
-            output = self.read()
+            # If it is, identify the device
+            self.read()
+            output = self.query('rfgus 0{}'.format(port_id), 2)[-1]
             module_id = int(output.split("PH=")[-1])
-            if module_id == 64:
+            if module_id == self.Module.m3000.value:
+                positions[self.Module.m3000] = port_id
+            elif module_id == self.Module.t3000.value:
                 positions[self.Module.t3000] = port_id
             else:
                 error = "Module ID {} not implemented".format(module_id)
@@ -268,9 +286,13 @@ class Fluke3000(Multimeter):
         character a set amount of times. This is implemented
         to handle the mutiline output of the PC3000
 
-        :param int nlines: Number of termination characters to reach
+        :param nlines: Number of termination characters to reach
+
+        :type: 'int'
+
         :return: Array of lines read out
         :rtype: Array of `str`
+
         """
         lines = []
         i = 0
@@ -288,10 +310,15 @@ class Fluke3000(Multimeter):
         Function used to send a command to the instrument while allowing
         for multiline output (multiple termination characters)
 
-        :param str cmd: Command that will be sent to the instrument
-        :param int nlines: Number of termination characters to reach
+        :param cmd: Command that will be sent to the instrument
+        :param nlines: Number of termination characters to reach
+
+        :type cmd: 'str'
+        :type nlines: 'int'
+
         :return: The multiline result from the query
         :rtype: Array of `str`
+
         """
         self.sendcmd(cmd)
         return self.read_lines(nlines)
@@ -304,33 +331,66 @@ class Fluke3000(Multimeter):
         >>> dmm = ik.fluke.Fluke3000.open_serial("/dev/ttyUSB0")
         >>> print dmm.measure(dmm.Mode.temperature)
 
-        :param mode: Desired measurement mode. 
-        
+        :param mode: Desired measurement mode.
+
         :type mode: `Fluke3000.Mode`
 
         :return: A measurement from the multimeter.
         :rtype: `~quantities.quantity.Quantity`
 
         """
+        # Check that the mode is supported
+        if not isinstance(mode, self.Mode):
+            raise ValueError("Mode {} is not supported".format(mode))
+
+        # Check that the module associated with this mode is available
         module = self._get_module(mode)
         if module not in self.positions.keys():
             raise ValueError("Device necessary to measure {} is not available".format(mode))
 
+        # Query the module
         port_id = self.positions[module]
-        value = None
+        value = ""
         init_time = time.time()
-        while value is None and time.time() - init_time < 1:
-            value = self.query("{} 0{} 0".format(mode.value, port_id), 2)
-            value = self._parse(value[1], mode)
+        while "PH" not in value and time.time() - init_time < self.timeout:
+            # Read out
+            if mode == self.Mode.temperature:
+                # The temperature module supports single readout
+                value = self.query("rfemd 0{} 0".format(port_id), 2)[1]
+            else:
+                # The multimeter does not support single readout,
+                # have to open continuous readout, read, then close it
+                value = self.query("rfemd 0{} 1".format(port_id), 2)[1]
+                self.query("rfemd 0{} 2".format(port_id))
 
-        if value is None:
+        # Parse the output
+        try:
+            value = self._parse(value, mode)
+        except:
             raise ValueError("Failed to read out Fluke3000 with mode {}".format(mode))
 
+        # Return with the appropriate units
         units = UNITS[mode]
         return value * units
         
+    def _get_module(self, mode):
+        """Gets the module associated with this measurement mode.
+
+        :param mode: Desired measurement mode.
+
+        :type mode: `Fluke3000.Mode`
+
+        :return: A Fluke3000 module.
+        :rtype: `Fluke3000.Module`
+
+        """
+        if mode == self.Mode.temperature:
+            return self.Module.t3000
+        else:
+            return self.Module.m3000
+
     def _parse(self, result, mode):
-        """Parses the module output depending on the measurement made
+        """Parses the module output.
 
         :param result: Output of the query. 
         :param mode: Desired measurement mode. 
@@ -339,34 +399,79 @@ class Fluke3000(Multimeter):
         :type mode: `Fluke3000.Mode`
 
         :return: A measurement from the multimeter.
+        :rtype: `Quantity`
+
+        """
+        # Check that a value is contained
+        if "PH" not in result:
+            raise ValueError("Cannot parse a string that does not contain a return value")
+
+        # Check that the multimeter is in the right mode (fifth byte)
+        data = result.split('PH=')[-1]
+        if data[8:10] != mode.value:
+            raise ValueError("The 3000FC Multimeter is not in the right mode: {}".format(mode))
+
+        # The first two bytes encode the value
+        value = int(data[2:4]+data[:2], 16)
+
+        # The fourth byte encodes a prefactor
+        byte = '{0:08b}'.format(int(data[6:8], 16))
+        try:
+            scale = self._parse_factor(byte)
+        except:
+            raise ValueError("Could not parse the prefactor byte: {}".format(byte))
+
+        # Combine and return
+        return scale*value
+
+    def _parse_factor(self, byte):
+        """Parses the measurement prefactor.
+
+        :param byte: Binary encoding of the byte.
+
+        :type result: `str`
+
+        :return: A prefactor.
         :rtype: `float`
 
         """
-        # Loop over possible channels, store device locations
-        value = None
-        if mode == self.Mode.temperature:
-            if "PH" not in result:
-                return value
-        
-            data = result.split('PH=')[-1]
-            least = int(data[:2], 16)
-            most = int(data[2:4], 16)
-            sign = 1 if data[6:8] == '02' else -1
-            return sign*float(most*255+least)/10        
-        else:
-            raise NotImplementedError("Mode {} not implemented".format(mode))
+        # The first bit encodes the sign (0 positive, 1 negative)
+        sign = 1 if byte[0] == '0' else -1
 
-        return value
+        # The second to fourth bits encode the metric prefix
+        code = int(byte[1:4], 2)
+        if code not in PREFIXES.keys():
+            raise ValueError("Metric prefix not recognized: {}".format(code))
+        prefix = PREFIXES[code]
 
-    def _get_module(self, mode):
-        if mode == self.Mode.temperature:
-            return self.Module.t3000
-        else:
-            raise ValueError("No module associated with mode {}".format(mode))
-        
+        # The sixth and seventh bit encode the decimal place
+        scale = 10**(-int(byte[5:7], 2))
+
+        # Return the combination
+        return sign*prefix*scale
+
 # UNITS #######################################################################
 
 UNITS = {
     None: 1,
-    Fluke3000.Mode.temperature: pq.celsius
+    Fluke3000.Mode.voltage_ac:  pq.volt,
+    Fluke3000.Mode.voltage_dc:  pq.volt,
+    Fluke3000.Mode.current_ac:  pq.amp,
+    Fluke3000.Mode.current_dc:  pq.amp,
+    Fluke3000.Mode.frequency:   pq.hertz,
+    Fluke3000.Mode.temperature: pq.celsius,
+    Fluke3000.Mode.resistance:  pq.ohm,
+    Fluke3000.Mode.capacitance: pq.farad
 }
+
+# METRIC PREFIXES #############################################################
+
+PREFIXES = {
+    0: 1e0,
+    2: 1e6,
+    3: 1e3,
+    4: 1e-3,
+    5: 1e-6,
+    6: 1e-9
+}
+
