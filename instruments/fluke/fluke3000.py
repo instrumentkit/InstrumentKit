@@ -440,7 +440,7 @@ class Fluke3000(Multimeter):
             raise ValueError(error)
 
         # Extract the value from the first two bytes
-        value = self._parse_factor(data)
+        value = self._parse_value(data)
 
         # Extract the prefactor from the fourth byte
         try:
