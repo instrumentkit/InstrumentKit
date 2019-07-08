@@ -235,6 +235,7 @@ class Fluke3000(Multimeter):
         Connect to available modules and returns
         a dictionary of the modules found and their location
         """
+        self.flush()                    # Flush serial
         self.scan()                     # Look for connected devices
         if not self.positions:
             self.reset()                # Resets the PC3000 dongle
@@ -245,6 +246,17 @@ class Fluke3000(Multimeter):
             raise ValueError("No Fluke3000 modules available")
 
         self.timeout = 3 * pq.second
+
+    def flush(self):
+        timeout = self.timeout
+        self.timeout = 0.1 * pq.second
+        init_time = time.time()
+        while time.time() - init_time < timeout:
+            try:
+                self.read()
+            except:
+                break
+        self.timeout = timeout
         
     def reset(self):
         """
@@ -264,7 +276,7 @@ class Fluke3000(Multimeter):
             # Check if a device is connected to port port_id
             output = self.query("rfebd 0{} 0".format(port_id))[0]
             if "RFEBD" not in output:
-                break
+                continue
             
             # If it is, identify the device
             self.read()
@@ -277,7 +289,11 @@ class Fluke3000(Multimeter):
             else:
                 error = "Module ID {} not implemented".format(module_id)
                 raise NotImplementedError(error)
-                
+
+            # Reset device readout    
+            self.query('rfemd 0{} 2'.format(port_id))
+
+        self.flush()
         self.positions = positions
 
     def read_lines(self, nlines=1):
@@ -349,10 +365,10 @@ class Fluke3000(Multimeter):
             raise ValueError("Device necessary to measure {} is not available".format(mode))
 
         # Query the module
+        value = ''
         port_id = self.positions[module]
-        value = ""
         init_time = time.time()
-        while "PH" not in value and time.time() - init_time < self.timeout:
+        while time.time() - init_time < self.timeout:
             # Read out
             if mode == self.Mode.temperature:
                 # The temperature module supports single readout
@@ -362,6 +378,14 @@ class Fluke3000(Multimeter):
                 # have to open continuous readout, read, then close it
                 value = self.query("rfemd 0{} 1".format(port_id), 2)[1]
                 self.query("rfemd 0{} 2".format(port_id))
+
+            # Check that value is consistent with the request, break
+            if "PH" in value:
+                data = value.split("PH=")[-1]
+                if self._parse_mode(data) != mode.value:
+                    self.flush()
+                else:
+                    break
 
         # Parse the output
         try:
@@ -406,35 +430,69 @@ class Fluke3000(Multimeter):
         if "PH" not in result:
             raise ValueError("Cannot parse a string that does not contain a return value")
 
-        # Check that the multimeter is in the right mode (fifth byte)
+        # Isolate the data string from the output
         data = result.split('PH=')[-1]
-        if data[8:10] != mode.value:
-            raise ValueError("The 3000FC Multimeter is not in the right mode: {}".format(mode))
 
-        # The first two bytes encode the value
-        value = int(data[2:4]+data[:2], 16)
+        # Check that the multimeter is in the right mode (fifth byte)
+        if self._parse_mode(data) != mode.value:
+            error =  "Mode {} was requested but the Fluke 3000FC Multimeter is in ".format(mode.name)
+            error += "mode {} instead, could not read the requested quantity.".format(self.Mode(data[8:10]).name)
+            raise ValueError(error)
 
-        # The fourth byte encodes a prefactor
-        byte = '{0:08b}'.format(int(data[6:8], 16))
+        # Extract the value from the first two bytes
+        value = self._parse_factor(data)
+
+        # Extract the prefactor from the fourth byte
         try:
-            scale = self._parse_factor(byte)
+            scale = self._parse_factor(data)
         except:
-            raise ValueError("Could not parse the prefactor byte: {}".format(byte))
+            raise ValueError("Could not parse the prefactor byte")
 
         # Combine and return
         return scale*value
 
-    def _parse_factor(self, byte):
+    def _parse_mode(self, data):
+        """Parses the measurement mode.
+
+        :param data: Measurement output.
+
+        :type data: `str`
+
+        :return: A Mode string.
+        :rtype: `str`
+
+        """
+        # The fixth dual hex byte encodes the measurement mode
+        return data[8:10]
+
+    def _parse_value(self, data):
+        """Parses the measurement value.
+
+        :param data: Measurement output.
+
+        :type data: `str`
+
+        :return: A value.
+        :rtype: `float`
+
+        """
+        # The second dual hex byte is the most significant byte
+        return int(data[2:4]+data[:2], 16)
+
+    def _parse_factor(self, data):
         """Parses the measurement prefactor.
 
-        :param byte: Binary encoding of the byte.
+        :param data: Measurement output.
 
-        :type result: `str`
+        :type data: `str`
 
         :return: A prefactor.
         :rtype: `float`
 
         """
+        # Convert the fourth dual hex byte to an 8 bits string
+        byte = '{0:08b}'.format(int(data[6:8], 16))
+
         # The first bit encodes the sign (0 positive, 1 negative)
         sign = 1 if byte[0] == '0' else -1
 
@@ -467,11 +525,11 @@ UNITS = {
 # METRIC PREFIXES #############################################################
 
 PREFIXES = {
-    0: 1e0,
-    2: 1e6,
-    3: 1e3,
-    4: 1e-3,
-    5: 1e-6,
-    6: 1e-9
+    0: 1e0,     # None
+    2: 1e6,     # Mega
+    3: 1e3,     # Kilo
+    4: 1e-3,    # milli
+    5: 1e-6,    # micro
+    6: 1e-9     # nano
 }
 
