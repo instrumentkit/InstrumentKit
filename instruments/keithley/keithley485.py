@@ -50,8 +50,8 @@ from instruments.abstract_instruments import Instrument
 class Keithley485(Instrument):
 
     """
-    The Keithley Model 485 is a 3 1/2 digit resolution autoranging
-    pico-ampmeter with a +- 2000 count LCD. It is designed for low
+    The Keithley Model 485 is a 4 1/2 digit resolution autoranging
+    pico-ampmeter with a +- 20000 count LCD. It is designed for low
     current measurement requirements from 0.1pA to 2mA.
 
     The device needs some processing time (manual reports 300-500ms) after a
@@ -414,7 +414,7 @@ class Keithley485(Instrument):
                 'linefreq': linefreq,
                 'terminator': self.terminator}
 
-    def measure(self, mode=0):
+    def measure(self, mode=Mode.current_dc):
         """
         Perform a measurement with the Keithley 485.
 
@@ -423,7 +423,7 @@ class Keithley485(Instrument):
 
         :rtype: `~quantities.quantity.Quantity`
         """
-        if not isinstance(mode, self.Mode):
+        if not isinstance(mode, Keithley485.Mode):
             raise ValueError('This mode is not supported: {}'.format(mode.name))
 
         self.trigger()
@@ -445,13 +445,13 @@ class Keithley485(Instrument):
         (status, function, base, current) = \
             struct.unpack('@1c2s1c10s', bytes(measurement, 'utf-8'))
 
-        valid = {'status': {b'N': 'normal',
-                            b'C': 'zerocheck',
-                            b'O': 'overflow',
-                            b'Z': 'relative'},
+        valid = {'status':   {b'N': 'normal',
+                              b'C': 'zerocheck',
+                              b'O': 'overflow',
+                              b'Z': 'relative'},
                  'function': {b'DC': 'dc-current'},
-                 'base': {b'A': '10',
-                          b'L': 'log10'}}
+                 'base':     {b'A': '10',
+                              b'L': 'log10'}}
         try:
             status = valid['status'][status]
             function = valid['function'][function]
