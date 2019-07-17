@@ -271,7 +271,7 @@ class Keithley485(Instrument):
         :type: `~quantities.quantity.Quantity` or `str`
         """
         value = float(self.parse_status_word(self.get_status_word())['range'])
-        return value * pq.ohm
+        return value * pq.amp
 
     @input_range.setter
     def input_range(self, newval):
@@ -435,7 +435,7 @@ class Keithley485(Instrument):
         """
         Perform a measurement with the Keithley 485.
 
-        The usual mode parameter is ignored for the Keithley 485 as the only
+        The usual mode parameter is defaulted for the Keithley 485 as the only
         valid mode is current.
 
         :rtype: `~quantities.quantity.Quantity`
@@ -473,7 +473,7 @@ class Keithley485(Instrument):
             status = valid['status'][status]
             function = valid['function'][function]
             base = valid['base'][base]
-            current = float(current) * pq.ohm
+            current = float(current) * pq.amp
         except:
             raise Exception('Cannot parse measurement: {}'.format(measurement))
 
