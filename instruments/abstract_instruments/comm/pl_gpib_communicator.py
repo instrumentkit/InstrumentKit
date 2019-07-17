@@ -283,4 +283,4 @@ class PLGPIBCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         self._sendcmd(msg)
-        return self._file.read(size)
+        return self._file.read(size).replace(self._eos, '')
