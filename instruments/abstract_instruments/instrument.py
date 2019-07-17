@@ -40,9 +40,8 @@ except (ImportError, WindowsError, OSError):
 
 from instruments.abstract_instruments.comm import (
     SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
-    LoopbackCommunicator, GPIBCommunicator, PLGPIBCommunicator,
-    AbstractCommunicator, USBTMCCommunicator, VXI11Communicator,
-    serial_manager
+    LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,
+    USBTMCCommunicator, VXI11Communicator, serial_manager
 )
 from instruments.errors import AcknowledgementError, PromptError
 
@@ -560,10 +559,7 @@ class Instrument(object):
             timeout=timeout,
             write_timeout=write_timeout
         )
-        if not prologix:
-            return cls(GPIBCommunicator(ser, gpib_address))
-        else:
-            return cls(PLGPIBCommunicator(ser, gpib_address))
+        return cls(GPIBCommunicator(ser, gpib_address, prologix))
 
     @classmethod
     def open_gpibethernet(cls, host, port, gpib_address, prologix=False):
@@ -574,10 +570,7 @@ class Instrument(object):
         """
         conn = socket.socket()
         conn.connect((host, port))
-        if not prologix:
-            return cls(GPIBCommunicator(conn, gpib_address))
-        else:
-            return cls(PLGPIBCommunicator(conn, gpib_address))
+        return cls(GPIBCommunicator(conn, gpib_address, prologix))
 
     @classmethod
     def open_visa(cls, resource_name):

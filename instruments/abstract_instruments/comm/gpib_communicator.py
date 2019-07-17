@@ -34,18 +34,20 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, filelike, gpib_address):
+    def __init__(self, filelike, gpib_address, prologix=False):
         super(GPIBCommunicator, self).__init__(self)
 
         self._file = filelike
         self._gpib_address = gpib_address
+        self._prologix = prologix
         self._file.terminator = "\r"
-        self._version = int(self._file.query("+ver"))
+        if not prologix:
+            self._version = int(self._file.query("+ver"))
         self._terminator = None
         self.terminator = "\n"
         self._eoi = True
         self._timeout = 1000 * pq.millisecond
-        if self._version <= 4:
+        if not self._prologix and self._version <= 4:
             self._eos = 10
         else:
             self._eos = "\n"
@@ -95,10 +97,10 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     @timeout.setter
     def timeout(self, newval):
         newval = assume_units(newval, pq.second)
-        if self._version <= 4:
+        if not self._prologix and self._version <= 4:
             newval = newval.rescale(pq.second)
             self._file.sendcmd('+t:{}'.format(newval.magnitude))
-        elif self._version >= 5:
+        else:
             newval = newval.rescale(pq.millisecond)
             self._file.sendcmd("++read_tmo_ms {}".format(newval.magnitude))
         self._file.timeout = newval.rescale(pq.second)
@@ -127,7 +129,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if isinstance(newval, str):
             newval = newval.lower()
 
-        if self._version <= 4:
+        if not self._prologix and self._version <= 4:
             if newval == 'eoi':
                 self.eoi = True
             elif not isinstance(newval, int):
@@ -148,7 +150,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                 self.eoi = False
                 self.eos = newval
                 self._terminator = chr(newval)
-        elif self._version >= 5:
+        else:
             if newval != "eoi":
                 self.eos = newval
                 self.eoi = False
@@ -182,10 +184,11 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if not isinstance(newval, bool):
             raise TypeError("EOI status must be specified as a boolean")
         self._eoi = newval
-        if self._version >= 5:
-            self._file.sendcmd("++eoi {}".format('1' if newval else '0'))
-        else:
+        if not self._prologix and self._version <= 4:
             self._file.sendcmd("+eoi:{}".format('1' if newval else '0'))
+        else:
+            self._file.sendcmd("++eoi {}".format('1' if newval else '0'))
+
 
     @property
     def eos(self):
@@ -203,12 +206,12 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @eos.setter
     def eos(self, newval):
-        if self._version <= 4:
+        if not self._prologix and self._version <= 4:
             if isinstance(newval, (str, bytes)):
                 newval = ord(newval)
             self._file.sendcmd("+eos:{}".format(newval))
             self._eos = newval
-        elif self._version >= 5:
+        else:
             if isinstance(newval, int):
                 newval = str(chr(newval))
             if newval == "\r\n":
@@ -309,12 +312,20 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
         if msg == '':
             return
-        self._file.sendcmd('+a:' + str(self._gpib_address))
-        time.sleep(sleep_time)
-        self.eoi = self.eoi
-        time.sleep(sleep_time)
-        self.timeout = self.timeout
-        time.sleep(sleep_time)
+
+        if not self._prologix:
+            self._file.sendcmd('+a:' + str(self._gpib_address))
+            time.sleep(sleep_time)
+            self.eoi = self.eoi
+            time.sleep(sleep_time)
+            self.timeout = self.timeout
+            time.sleep(sleep_time)
+        else:
+            # TODO need to set the address
+            #self._file.sendcmd('++addr ' + str(self._gpib_address))
+            #time.sleep(sleep_time)
+            pass
+
         self.eos = self.eos
         time.sleep(sleep_time)
         self._file.sendcmd(msg)
@@ -338,6 +349,6 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         self.sendcmd(msg)
-        if '?' not in msg:
+        if not self._prologix and '?' not in msg:
             self._file.sendcmd('+read')
         return self._file.read(size).strip()
