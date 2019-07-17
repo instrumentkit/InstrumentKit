@@ -40,8 +40,9 @@ except (ImportError, WindowsError, OSError):
 
 from instruments.abstract_instruments.comm import (
     SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
-    LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,
-    USBTMCCommunicator, VXI11Communicator, serial_manager
+    LoopbackCommunicator, GPIBCommunicator, PLGPIBCommunicator,
+    AbstractCommunicator, USBTMCCommunicator, VXI11Communicator,
+    serial_manager
 )
 from instruments.errors import AcknowledgementError, PromptError
 
@@ -529,7 +530,7 @@ class Instrument(object):
         return cls(ser)
 
     @classmethod
-    def open_gpibusb(cls, port, gpib_address, timeout=3, write_timeout=3):
+    def open_gpibusb(cls, port, gpib_address, timeout=3, write_timeout=3, prologix=False):
         """
         Opens an instrument, connecting via a
         `Galvant Industries GPIB-USB adapter`_.
@@ -559,10 +560,13 @@ class Instrument(object):
             timeout=timeout,
             write_timeout=write_timeout
         )
-        return cls(GPIBCommunicator(ser, gpib_address))
+        if not prologix:
+            return cls(GPIBCommunicator(ser, gpib_address))
+        else:
+            return cls(PLGPIBCommunicator(ser, gpib_address))
 
     @classmethod
-    def open_gpibethernet(cls, host, port, gpib_address):
+    def open_gpibethernet(cls, host, port, gpib_address, prologix=False):
         """
         .. warning:: The GPIB-Ethernet adapter that this connection would
             use does not actually exist, and thus this class method should
@@ -570,7 +574,10 @@ class Instrument(object):
         """
         conn = socket.socket()
         conn.connect((host, port))
-        return cls(GPIBCommunicator(conn, gpib_address))
+        if not prologix:
+            return cls(GPIBCommunicator(conn, gpib_address))
+        else:
+            return cls(PLGPIBCommunicator(conn, gpib_address))
 
     @classmethod
     def open_visa(cls, resource_name):
