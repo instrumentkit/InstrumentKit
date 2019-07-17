@@ -13,8 +13,7 @@ from .usb_communicator import USBCommunicator
 from .serial_communicator import SerialCommunicator
 from .visa_communicator import VisaCommunicator
 from .loopback_communicator import LoopbackCommunicator
-from .gi_gpib_communicator import GPIBCommunicator
-from .pl_gpib_communicator import PLGPIBCommunicator
+from .gpib_communicator import GPIBCommunicator
 from .file_communicator import FileCommunicator
 from .usbtmc_communicator import USBTMCCommunicator
 from .vxi11_communicator import VXI11Communicator
