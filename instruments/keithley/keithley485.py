@@ -373,46 +373,63 @@ class Keithley485(Instrument):
             raise ValueError('Status word starts with wrong '
                              'prefix: {}'.format(statusword))
 
-        (drive, polarity, drycircuit, operate, rng,
-         relative, eoi, trigger, sqrondata, sqronerror,
-         linefreq) = struct.unpack('@8c2s2s2', statusword[3:])
+        (zerocheck, log, range, relative, eoi,
+         trigger, datamask, errormask) = \
+            struct.unpack('@6c2s2s', bytes(statusword[3:], 'utf-8'))
 
-        valid = {'drive': {'0': 'pulsed',
-                           '1': 'dc'},
-                 'polarity': {'0': '+',
-                              '1': '-'},
-                 'range': {'0': 'auto',
-                           '1': 2e-9,
-                           '2': 2e-8,
-                           '3': 2e-7,
-                           '4': 2e-6,
-                           '5': 2e-5,
-                           '6': 2e-4,
-                           '7': 2e-4},
-                 'linefreq': {'0': '60Hz',
-                              '1': '50Hz'}}
+        valid = {'range':       {b'0': 'auto',
+                                 b'1': 2e-9,
+                                 b'2': 2e-8,
+                                 b'3': 2e-7,
+                                 b'4': 2e-6,
+                                 b'5': 2e-5,
+                                 b'6': 2e-4,
+                                 b'7': 2e-3},
+                 'eoi':         {b'0': 'send',
+                                 b'1': 'omit'},
+                 'trigger':     {b'0': 'continuous_ontalk',
+                                 b'1': 'oneshot_ontalk',
+                                 b'2': 'continuous_onget',
+                                 b'3': 'oneshot_onget',
+                                 b'4': 'continuous_onx',
+                                 b'1': 'oneshot_onx'},
+                 'datamask':    {b'00': 'srq_disabled',
+                                 b'01': 'read_of',
+                                 b'08': 'read_done',
+                                 b'09': 'read_done_of',
+                                 b'16': 'busy',
+                                 b'17': 'busy_read_of',
+                                 b'24': 'busy_read_done',
+                                 b'25': 'busy_read_done_of'},
+                 'errormask':   {b'00': 'srq_disabled',
+                                 b'01': 'idcc0',
+                                 b'02': 'idcc',
+                                 b'03': 'idcc0_idcc',
+                                 b'04': 'not_remote',
+                                 b'05': 'not_remote_iddc0',
+                                 b'06': 'not_remote_idcc',
+                                 b'07': 'not_remote_idcc0_idcc'}
+                }
 
         try:
-            drive = valid['drive'][drive]
-            polarity = valid['polarity'][polarity]
-            rng = valid['range'][rng]
-            linefreq = valid['linefreq'][linefreq]
+            range = valid['range'][range]
+            eoi = valid['eoi'][eoi]
+            trigger = valid['trigger'][trigger]
+            datamask = valid['datamask'][datamask]
+            errormask = valid['errormask'][errormask]
         except:
             raise RuntimeError('Cannot parse status '
                                'word: {}'.format(statusword))
 
-        return {'drive': drive,
-                'polarity': polarity,
-                'drycircuit': (drycircuit == '1'),
-                'operate': (operate == '1'),
-                'range': rng,
-                'relative': (relative == '1'),
+        return {'zerocheck': zerocheck == 1,
+                'log': log == 1,
+                'range': range,
+                'relative': relative == 1,
                 'eoi': eoi,
-                'trigger': (trigger == '1'),
-                'sqrondata': sqrondata,
-                'sqronerror': sqronerror,
-                'linefreq': linefreq,
-                'terminator': self.terminator}
+                'trigger': trigger,
+                'datamask': datamask,
+                'errormask': errormask,
+                'terminator':self.terminator}
 
     def measure(self, mode=Mode.current_dc):
         """
@@ -445,13 +462,13 @@ class Keithley485(Instrument):
         (status, function, base, current) = \
             struct.unpack('@1c2s1c10s', bytes(measurement, 'utf-8'))
 
-        valid = {'status':   {b'N': 'normal',
-                              b'C': 'zerocheck',
-                              b'O': 'overflow',
-                              b'Z': 'relative'},
-                 'function': {b'DC': 'dc-current'},
-                 'base':     {b'A': '10',
-                              b'L': 'log10'}}
+        valid = {'status':    {b'N': 'normal',
+                               b'C': 'zerocheck',
+                               b'O': 'overflow',
+                               b'Z': 'relative'},
+                 'function':  {b'DC': 'dc-current'},
+                 'base':      {b'A': '10',
+                               b'L': 'log10'}}
         try:
             status = valid['status'][status]
             function = valid['function'][function]
