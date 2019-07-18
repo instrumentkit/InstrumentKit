@@ -529,7 +529,7 @@ class Instrument(object):
         return cls(ser)
 
     @classmethod
-    def open_gpibusb(cls, port, gpib_address, timeout=3, write_timeout=3, prologix=False):
+    def open_gpibusb(cls, port, gpib_address, timeout=3, write_timeout=3, model=GPIBCommunicator.Model.gi):
         """
         Opens an instrument, connecting via a
         `Galvant Industries GPIB-USB adapter`_.
@@ -559,10 +559,10 @@ class Instrument(object):
             timeout=timeout,
             write_timeout=write_timeout
         )
-        return cls(GPIBCommunicator(ser, gpib_address, prologix))
+        return cls(GPIBCommunicator(ser, gpib_address, model))
 
     @classmethod
-    def open_gpibethernet(cls, host, port, gpib_address, prologix=False):
+    def open_gpibethernet(cls, host, port, gpib_address, model=GPIBCommunicator.Model.gi):
         """
         .. warning:: The GPIB-Ethernet adapter that this connection would
             use does not actually exist, and thus this class method should
@@ -570,7 +570,7 @@ class Instrument(object):
         """
         conn = socket.socket()
         conn.connect((host, port))
-        return cls(GPIBCommunicator(conn, gpib_address, prologix))
+        return cls(GPIBCommunicator(conn, gpib_address, model))
 
     @classmethod
     def open_visa(cls, resource_name):
