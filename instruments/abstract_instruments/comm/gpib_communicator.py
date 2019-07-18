@@ -39,19 +39,19 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, filelike, gpib_address, model=0):
         super(GPIBCommunicator, self).__init__(self)
         if not isinstance(model, GPIBCommunicator.Model):
-            raise ValueError('GPIB Controller not supported:'.format(model.value))
+            raise ValueError('GPIB Controller not supported: {}'.format(model.value))
 
         self._file = filelike
         self._gpib_address = gpib_address
-        self._prologix = prologix
+        self._model = model
         self._file.terminator = "\r"
-        if not prologix:
+        if self._model == GPIBCommunicator.Model.gi:
             self._version = int(self._file.query("+ver"))
         self._terminator = None
         self.terminator = "\n"
         self._eoi = True
         self._timeout = 1000 * pq.millisecond
-        if not self._prologix and self._version <= 4:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             self._eos = 10
         else:
             self._eos = "\n"
@@ -112,7 +112,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     @timeout.setter
     def timeout(self, newval):
         newval = assume_units(newval, pq.second)
-        if not self._prologix and self._version <= 4:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             newval = newval.rescale(pq.second)
             self._file.sendcmd('+t:{}'.format(newval.magnitude))
         else:
@@ -144,7 +144,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if isinstance(newval, str):
             newval = newval.lower()
 
-        if not self._prologix and self._version <= 4:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             if newval == 'eoi':
                 self.eoi = True
             elif not isinstance(newval, int):
@@ -199,7 +199,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if not isinstance(newval, bool):
             raise TypeError("EOI status must be specified as a boolean")
         self._eoi = newval
-        if not self._prologix and self._version <= 4:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             self._file.sendcmd("+eoi:{}".format('1' if newval else '0'))
         else:
             self._file.sendcmd("++eoi {}".format('1' if newval else '0'))
@@ -221,7 +221,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @eos.setter
     def eos(self, newval):
-        if not self._prologix and self._version <= 4:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             if isinstance(newval, (str, bytes)):
                 newval = ord(newval)
             self._file.sendcmd("+eos:{}".format(newval))
@@ -328,7 +328,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if msg == '':
             return
 
-        if not self._prologix:
+        if self._model == GPIBCommunicator.Model.gi:
             self._file.sendcmd('+a:' + str(self._gpib_address))
             time.sleep(sleep_time)
             self.eoi = self.eoi
@@ -364,6 +364,6 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         self.sendcmd(msg)
-        if not self._prologix and '?' not in msg:
+        if self._model == GPIBCommunicator.Model.gi and '?' not in msg:
             self._file.sendcmd('+read')
         return self._file.read(size).strip()
