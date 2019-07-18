@@ -14,6 +14,8 @@ from __future__ import unicode_literals
 import io
 import time
 
+from enum import Enum
+
 from builtins import chr, str, bytes
 import quantities as pq
 
@@ -34,8 +36,10 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, filelike, gpib_address, prologix=False):
+    def __init__(self, filelike, gpib_address, model=0):
         super(GPIBCommunicator, self).__init__(self)
+        if not isinstance(model, GPIBCommunicator.Model):
+            raise ValueError('GPIB Controller not supported:'.format(model.value))
 
         self._file = filelike
         self._gpib_address = gpib_address
@@ -51,6 +55,17 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             self._eos = 10
         else:
             self._eos = "\n"
+
+    # ENUMS #
+
+    class Model(Enum):
+        """
+        Enum containing the supported GPIB controller models
+        """
+        #: Galvant Industries
+        gi = "Galvant Industries"
+        #: Prologix, LLC
+        pl = "Prologix"
 
     # PROPERTIES #
 
