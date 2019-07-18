@@ -64,9 +64,9 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         Enum containing the supported GPIB controller models
         """
         #: Galvant Industries
-        gi = "Galvant Industries"
+        gi = "gi"
         #: Prologix, LLC
-        pl = "Prologix"
+        pl = "pl"
 
     # PROPERTIES #
 
