@@ -270,7 +270,8 @@ def test_instrument_open_gpibusb(mock_serial_manager, mock_gpib_comm):
 
     mock_gpib_comm.assert_called_with(
         mock_serial_manager.new_serial_connection.return_value,
-        1
+        1,
+        0
     )
 
 
