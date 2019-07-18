@@ -63,6 +63,7 @@ class Keithley485(Instrument):
         Initialise the instrument
         """
         super(Keithley485, self).__init__(filelike)
+        pass
 
     # ENUMS #
 
@@ -71,7 +72,7 @@ class Keithley485(Instrument):
         Enum containing the supported mode codes
         """
         #: DC Current
-        current_dc  = 0
+        current_dc = 0
 
     class Polarity(IntEnum):
         """
@@ -392,7 +393,7 @@ class Keithley485(Instrument):
                                  b'2': 'continuous_onget',
                                  b'3': 'oneshot_onget',
                                  b'4': 'continuous_onx',
-                                 b'1': 'oneshot_onx'},
+                                 b'5': 'oneshot_onx'},
                  'datamask':    {b'00': 'srq_disabled',
                                  b'01': 'read_of',
                                  b'08': 'read_done',
