@@ -257,7 +257,7 @@ def test_instrument_open_gpibusb(mock_serial_manager, mock_gpib_comm):
     mock_serial_manager.new_serial_connection.return_value.__class__ = SerialCommunicator
     mock_gpib_comm.return_value.__class__ = GPIBCommunicator
 
-    inst = ik.Instrument.open_gpibusb("/dev/port", gpib_address=1)
+    inst = ik.Instrument.open_gpibusb("/dev/port", gpib_address=1, model="gi")
 
     assert isinstance(inst._file, GPIBCommunicator) is True
 
@@ -271,7 +271,7 @@ def test_instrument_open_gpibusb(mock_serial_manager, mock_gpib_comm):
     mock_gpib_comm.assert_called_with(
         mock_serial_manager.new_serial_connection.return_value,
         1,
-        GPIBCommunicator.Model.gi
+        "gi"
     )
 
 
