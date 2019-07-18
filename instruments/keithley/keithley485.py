@@ -58,13 +58,6 @@ class Keithley485(Instrument):
     command has been transmitted.
     """
 
-    def __init__(self, filelike):
-        """
-        Initialise the instrument
-        """
-        super(Keithley485, self).__init__(filelike)
-        pass
-
     # ENUMS #
 
     class Mode(IntEnum):

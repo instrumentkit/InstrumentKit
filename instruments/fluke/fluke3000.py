@@ -172,7 +172,7 @@ class Fluke3000(Multimeter):
         """
         The `Fluke3000` FC is autoranging only
         """
-        return NotImplementedError
+        raise NotImplementedError
 
     @property
     def relative(self):
@@ -188,7 +188,7 @@ class Fluke3000(Multimeter):
         """
         The `Fluke3000` FC does not support relative measurements
         """
-        return NotImplementedError
+        raise NotImplementedError
 
     # METHODS ##
 
@@ -210,13 +210,16 @@ class Fluke3000(Multimeter):
         self.timeout = 3 * pq.second
 
     def flush(self):
+        """
+        Flushes the serial output cache
+        """
         timeout = self.timeout
         self.timeout = 0.1 * pq.second
         init_time = time.time()
         while time.time() - init_time < timeout:
             try:
                 self.read()
-            except:
+            except OSError:
                 break
         self.timeout = timeout
 
@@ -278,7 +281,7 @@ class Fluke3000(Multimeter):
             try:
                 lines.append(self.read())
                 i += 1
-            except:
+            except OSError:
                 continue
 
         return lines
