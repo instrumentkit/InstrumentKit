@@ -36,7 +36,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, filelike, gpib_address, model=0):
+    def __init__(self, filelike, gpib_address, model=Model.gi):
         super(GPIBCommunicator, self).__init__(self)
         if not isinstance(model, GPIBCommunicator.Model):
             raise ValueError('GPIB Controller not supported: {}'.format(model.value))
