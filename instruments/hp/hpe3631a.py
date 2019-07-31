@@ -98,7 +98,6 @@ class HPe3631a(PowerSupply):
         """
 
         def __init__(self, hp, idx):
-            print('init channel', idx)
             self._hp = hp
             self._idx = idx
 
@@ -123,7 +122,6 @@ class HPe3631a(PowerSupply):
             :rtype: `str`
             """
             if self._idx != self._hp._idx:
-                print('modifying channel')
                 self._hp.channelid = self._idx+1
             return self._hp.query(cmd)
 
