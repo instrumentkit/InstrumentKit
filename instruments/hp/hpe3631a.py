@@ -82,10 +82,10 @@ class HPe3631a(PowerSupply):
 
     def __init__(self, filelike):
         super(HPe3631a, self).__init__(filelike)
-        self.channels = [0,1,2]  # List of channels
-        self.idx = 0             # Current channel to be set on the device
-        self.channelid = 1       # Set the channel
-        self.sendcmd('SYST:REM') # Puts the device in remote operation
+        self.channels = [0, 1, 2] # List of channels
+        self.idx = 0              # Current channel to be set on the device
+        self.channelid = 1        # Set the channel
+        self.sendcmd('SYST:REM')  # Puts the device in remote operation
         time.sleep(0.1)
 
     # INNER CLASSES #
