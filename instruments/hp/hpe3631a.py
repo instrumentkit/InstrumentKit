@@ -72,9 +72,9 @@ class HPe3631a(PowerSupply):
     This module is designed for the power supply to be set to
     a specific channel and remain set afterwards as this device
     does not offer commands to set or read multiple channels
-    without calling the channel set command each time. It is
+    without calling the channel set command each time (0.5s). It is
     possible to call a specific channel through psu.channel[idx],
-    which will automatically reset the channel id, if necessary.
+    which will automatically reset the channel id, when necessary.
 
     This module is likely to work as is for the Agilent E3631 and
     Keysight E3631 which seem to be rebranded but identical devices.
@@ -83,7 +83,8 @@ class HPe3631a(PowerSupply):
     def __init__(self, filelike):
         super(HPe3631a, self).__init__(filelike)
         self.channel_count = 3   # Total number of channels
-        self.channelid = 1       # Current channel set on the device
+        self.idx = 0             # Current channel to be set on the device
+        self.channelid = 1       # Set the channel
         self.sendcmd('SYST:REM') # Puts the device in remote operation
         time.sleep(0.1)
 
@@ -108,7 +109,7 @@ class HPe3631a(PowerSupply):
 
             :param str cmd: Command that will be sent to the instrument
             """
-            if self._idx != self._hp._idx:
+            if self._idx != self._hp.idx:
                 self._hp.channelid = self._idx+1
             self._hp.sendcmd(cmd)
 
@@ -121,7 +122,7 @@ class HPe3631a(PowerSupply):
             :return: The result from the query
             :rtype: `str`
             """
-            if self._idx != self._hp._idx:
+            if self._idx != self._hp.idx:
                 self._hp.channelid = self._idx+1
             return self._hp.query(cmd)
 
@@ -218,17 +219,17 @@ class HPe3631a(PowerSupply):
         return ProxyList(self, HPe3631a.Channel, range(self.channel_count))
 
     @property
-    def channelid(self, idx):
+    def channelid(self):
         """
         Select the active channel (0=P6V, 1=P25V, 2=N25V)
         """
-        return self._idx+1
+        return self.idx+1
 
     @channelid.setter
     def channelid(self, newval):
         if newval not in [1, 2, 3]:
             raise ValueError('Channel {idx} not available, choose 1, 2 or 3'.format(idx=newval))
-        self._idx = newval-1
+        self.idx = newval-1
         self.sendcmd('INST:NSEL {idx}'.format(idx=newval))
         time.sleep(0.5)
 
@@ -241,11 +242,11 @@ class HPe3631a(PowerSupply):
             of units Volts.
         :type: `list` of `~quantities.quantity.Quantity` with units Volt
         """
-        return self.channel[self._idx].voltage
+        return self.channel[self.idx].voltage
 
     @voltage.setter
     def voltage(self, newval):
-        self.channel[self._idx].voltage = newval
+        self.channel[self.idx].voltage = newval
 
     @property
     def current(self):
@@ -256,11 +257,11 @@ class HPe3631a(PowerSupply):
             of units Amps.
         :type: `list` of `~quantities.quantity.Quantity` with units Amp
         """
-        return self.channel[self._idx].current
+        return self.channel[self.idx].current
 
     @current.setter
     def current(self, newval):
-        self.channel[self._idx].current = newval
+        self.channel[self.idx].current = newval
 
     @property
     def voltage_sense(self):
@@ -271,11 +272,11 @@ class HPe3631a(PowerSupply):
             of units Volts.
         :type: `list` of `~quantities.quantity.Quantity` with units Volt
         """
-        return self.channel[self._idx].voltage_sense
+        return self.channel[self.idx].voltage_sense
 
     @voltage_sense.setter
     def voltage_sense(self, newval):
-        self.channel[self._idx].voltage_sense = newval
+        self.channel[self.idx].voltage_sense = newval
 
     @property
     def current_sense(self):
@@ -286,11 +287,11 @@ class HPe3631a(PowerSupply):
             of units Amps.
         :type: `list` of `~quantities.quantity.Quantity` with units Amp
         """
-        return self.channel[self._idx].current_sense
+        return self.channel[self.idx].current_sense
 
     @current_sense.setter
     def current_sense(self, newval):
-        self.channel[self._idx].current_sense = newval
+        self.channel[self.idx].current_sense = newval
 
     @property
     def output(self):
@@ -301,8 +302,4 @@ class HPe3631a(PowerSupply):
             of units Volts.
         :type: `list` of `~quantities.quantity.Quantity` with units Volt
         """
-        return self.channel[self._idx].output
-
-    @voltage.setter
-    def output(self, newval):
-        self.channel[self._idx].output = newval
+        return self.channel[self.idx].output
