@@ -82,7 +82,7 @@ class HPe3631a(PowerSupply):
 
     def __init__(self, filelike):
         super(HPe3631a, self).__init__(filelike)
-        self.channel_count = 3   # Total number of channels
+        self.channels = [0,1,2]  # List of channels
         self.idx = 0             # Current channel to be set on the device
         self.channelid = 1       # Set the channel
         self.sendcmd('SYST:REM') # Puts the device in remote operation
@@ -216,7 +216,7 @@ class HPe3631a(PowerSupply):
         .. seealso::
             `HPe3631a` for example using this property.
         """
-        return ProxyList(self, HPe3631a.Channel, range(self.channel_count))
+        return ProxyList(self, HPe3631a.Channel, self.channels)
 
     @property
     def channelid(self):
