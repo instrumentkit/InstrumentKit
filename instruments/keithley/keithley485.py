@@ -35,7 +35,6 @@ Kit project.
 
 from __future__ import absolute_import
 from __future__ import division
-import time
 import struct
 
 from enum import IntEnum, Enum
@@ -376,6 +375,8 @@ class Keithley485(Instrument):
             status = self.Status(status)
             if status != self.Status.normal:
                 raise ValueError('Instrument not in normal mode: {}'.format(status.name))
+            if function != b'DC':
+                raise ValueError('Instrument not returning DC function: {}'.format(function))
             current = float(current) * pq.amp if base == b'A' else 10**(float(current)) * pq.amp
         except:
             raise Exception('Cannot parse measurement: {}'.format(measurement))
