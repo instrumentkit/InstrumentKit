@@ -37,7 +37,7 @@ from __future__ import absolute_import
 from __future__ import division
 import struct
 
-from enum import IntEnum, Enum
+from enum import Enum
 
 import quantities as pq
 
@@ -59,7 +59,7 @@ class Keithley485(Instrument):
 
     # ENUMS #
 
-    class Trigger(IntEnum):
+    class Trigger(Enum):
         """
         Enum containing valid trigger modes for the Keithley 485
         """
@@ -70,7 +70,7 @@ class Keithley485(Instrument):
         continuous_onx = 4
         oneshot_onx = 5
 
-    class SRQDataMask(IntEnum):
+    class SRQDataMask(Enum):
         """
         Enum containing valid SRQ data masks for the Keithley 485
         """
@@ -83,7 +83,7 @@ class Keithley485(Instrument):
         busy_read_done = 24
         busy_read_done_ovf = 25
 
-    class SRQErrorMask(IntEnum):
+    class SRQErrorMask(Enum):
         """
         Enum containing valid SRQ error masks for the Keithley 485
         """
@@ -241,7 +241,7 @@ class Keithley485(Instrument):
     def trigger(self, newval):
         if isinstance(newval, str):
             newval = Keithley485.Trigger[newval]
-        if newval not in Keithley485.Trigger:
+        if not isinstance(newval, Keithley485.Trigger):
             raise TypeError('Drive must be specified as a '
                             'Keithley485.Trigger, got {} '
                             'instead.'.format(newval))
