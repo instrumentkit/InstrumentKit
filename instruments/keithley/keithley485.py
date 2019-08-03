@@ -119,7 +119,7 @@ class Keithley485(Instrument):
 
         :type: `bool`
         """
-        return self.parse_status_word(self.get_status_word())['zerocheck']
+        return self.get_status()['zerocheck']
 
     @zero_check.setter
     def zero_check(self, newval):
@@ -139,7 +139,7 @@ class Keithley485(Instrument):
 
         :type: `bool`
         """
-        return self.parse_status_word(self.get_status_word())['log']
+        return self.get_status()['log']
 
     @log.setter
     def log(self, newval):
@@ -155,7 +155,7 @@ class Keithley485(Instrument):
 
         :type: `~quantities.quantity.Quantity` or `str`
         """
-        value = float(self.parse_status_word(self.get_status_word())['range'])
+        value = float(self.get_status()['range'])
         return value * pq.amp
 
     @range.setter
@@ -202,7 +202,7 @@ class Keithley485(Instrument):
 
         :type: `bool`
         """
-        return self.parse_status_word(self.get_status_word())['relative']
+        return self.get_status()['relative']
 
     @relative.setter
     def relative(self, newval):
@@ -233,7 +233,7 @@ class Keithley485(Instrument):
 
         :type: `Keithley485.Trigger`
         """
-        return self.parse_status_word(self.get_status_word())['trigger']
+        return self.get_status()['trigger']
 
     @trigger.setter
     def trigger(self, newval):
@@ -259,7 +259,7 @@ class Keithley485(Instrument):
 
         :type: `bool`
         """
-        return not self.parse_status_word(self.get_status_word())['eoi']
+        return not self.get_status()['eoi']
 
     @eoi.setter
     def eoi(self, newval):
@@ -278,11 +278,22 @@ class Keithley485(Instrument):
         """
         self.sendcmd('R0X')
 
-    def get_status_word(self):
+    def get_status(self):
+        """
+        Gets and parses the status word.
+
+        Returns a `dict` with the following keys:
+        ``{zerocheck,log,range,relative,eoi,relative,
+        trigger,datamask,errormask,terminator}``
+
+        :rtype: `dict`
+        """
+        return self._parse_status_word(self._get_status_word())
+
+    def _get_status_word(self):
         """
         The device will not always respond with the statusword when asked. We
-        use a simple heuristic here: request it up to 5 times, using a 1s
-        delay to allow the keithley some thinking time.
+        use a simple heuristic here: request it up to 5 times.
 
         :rtype: `str`
         """
@@ -297,7 +308,7 @@ class Keithley485(Instrument):
 
         return statusword[:-1]
 
-    def parse_status_word(self, statusword):
+    def _parse_status_word(self, statusword):
         """
         Parse the status word returned by the function
         `~Keithley485.get_status_word`.
@@ -353,9 +364,9 @@ class Keithley485(Instrument):
 
         :rtype: `~quantities.quantity.Quantity`
         """
-        return self.parse_measurement(self.query('X'))
+        return self._parse_measurement(self.query('X'))
 
-    def parse_measurement(self, measurement):
+    def _parse_measurement(self, measurement):
         """
         Parse the measurement string returned by the instrument.
 
