@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Unit tests for the GI GPIBUSB communication layer
+Unit tests for the GPIBUSB communication layer
 """
 
 # IMPORTS ####################################################################
@@ -199,7 +199,7 @@ def test_gpibusbcomm_timeout():
     unit_eq(comm.timeout, 1000 * pq.millisecond)
 
     comm.timeout = 5000 * pq.millisecond
-    comm._file.sendcmd.assert_called_with("++read_tmo_ms 5000.0")
+    comm._file.sendcmd.assert_called_with("++read_tmo_ms 5000")
 
 
 def test_gpibusbcomm_close():
@@ -235,7 +235,7 @@ def test_gpibusbcomm_sendcmd():
     comm._file.sendcmd.assert_has_calls([
         mock.call("+a:1"),
         mock.call("++eoi 1"),
-        mock.call("++read_tmo_ms 1000.0"),
+        mock.call("++read_tmo_ms 1000"),
         mock.call("++eos 2"),
         mock.call("mock")
     ])
