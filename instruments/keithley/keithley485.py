@@ -231,17 +231,17 @@ class Keithley485(Instrument):
         It is recommended to leave it in the default mode (T0, continuous on talk),
         and simply ignore the output when other commands are called.
 
-        :type: `Keithley485.Trigger`
+        :type: `Keithley485.TriggerMode`
         """
         return self.get_status()['trigger']
 
     @trigger_mode.setter
     def trigger_mode(self, newval):
         if isinstance(newval, str):
-            newval = Keithley485.Trigger[newval]
-        if not isinstance(newval, Keithley485.Trigger):
+            newval = Keithley485.TriggerMode[newval]
+        if not isinstance(newval, Keithley485.TriggerMode):
             raise TypeError('Drive must be specified as a '
-                            'Keithley485.Trigger, got {} '
+                            'Keithley485.TriggerMode, got {} '
                             'instead.'.format(newval))
         self.sendcmd('T{}X'.format(newval.value))
 
