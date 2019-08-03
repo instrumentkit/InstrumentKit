@@ -125,7 +125,7 @@ class Keithley485(Instrument):
     def zero_check(self, newval):
         if not isinstance(newval, bool):
             raise TypeError('Zero Check mode must be a boolean.')
-        self.query('C{}X'.format(int(newval)))
+        self.sendcmd('C{}X'.format(int(newval)))
 
     @property
     def log(self):
@@ -145,7 +145,7 @@ class Keithley485(Instrument):
     def log(self, newval):
         if not isinstance(newval, bool):
             raise TypeError('Log mode must be a boolean.')
-        self.query('D{}X'.format(int(newval)))
+        self.sendcmd('D{}X'.format(int(newval)))
 
     @property
     def range(self):
@@ -180,7 +180,7 @@ class Keithley485(Instrument):
         else:
             raise TypeError('Range setting must be specified as a float, int, '
                             'or the string "auto", got {}'.format(type(newval)))
-        self.query('R{}X'.format(newval))
+        self.sendcmd('R{}X'.format(newval))
 
     @property
     def relative(self):
@@ -208,7 +208,7 @@ class Keithley485(Instrument):
     def relative(self, newval):
         if not isinstance(newval, bool):
             raise TypeError('Relative mode must be a boolean.')
-        self.query('Z{}X'.format(int(newval)))
+        self.sendcmd('Z{}X'.format(int(newval)))
 
     @property
     def trigger(self):
@@ -220,15 +220,13 @@ class Keithley485(Instrument):
 
         The two types are continuous and one-shot. Continuous has the instrument
         continuously sample the current. One-shot performs a single
-        current measurement.
+        current measurement when requested to do so.
 
         The three trigger sources are on talk, on GET, and on "X". On talk
         refers to addressing the instrument to talk over GPIB. On GET is when
         the instrument receives the GPIB command byte for "group execute
         trigger". Last, on "X" is when one sends the ASCII character "X" to the
-        instrument. This character is used as a general execute to confirm
-        commands send to the instrument. In InstrumentKit, "X" is sent after
-        each command so it is not suggested that one uses on "X" triggering.
+        instrument.
 
         It is recommended to leave it in the default mode (T0, continuous on talk),
         and simply ignore the output when other commands are called.
@@ -245,7 +243,7 @@ class Keithley485(Instrument):
             raise TypeError('Drive must be specified as a '
                             'Keithley485.Trigger, got {} '
                             'instead.'.format(newval))
-        self.query('T{}X'.format(newval.value))
+        self.sendcmd('T{}X'.format(newval.value))
 
     @property
     def eoi(self):
@@ -267,7 +265,7 @@ class Keithley485(Instrument):
     def eoi(self, newval):
         if not isinstance(newval, bool):
             raise TypeError('EOI mode must be a boolean.')
-        self.query('K{}X'.format(1-int(newval)))
+        self.sendcmd('K{}X'.format(1-int(newval)))
 
     # METHODS #
 
