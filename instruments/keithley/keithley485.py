@@ -59,7 +59,7 @@ class Keithley485(Instrument):
 
     # ENUMS #
 
-    class Trigger(Enum):
+    class TriggerMode(Enum):
         """
         Enum containing valid trigger modes for the Keithley 485
         """
@@ -148,7 +148,7 @@ class Keithley485(Instrument):
         self.sendcmd('D{}X'.format(int(newval)))
 
     @property
-    def range(self):
+    def input_range(self):
         """
         Gets/sets the range (R) of the Keithley 485 input terminals. The valid
         ranges are one of ``{AUTO|2e-9|2e-8|2e-7|2e-6|2e-5|2e-4|2e-3}``
@@ -158,8 +158,8 @@ class Keithley485(Instrument):
         value = float(self.get_status()['range'])
         return value * pq.amp
 
-    @range.setter
-    def range(self, newval):
+    @input_range.setter
+    def input_range(self, newval):
         valid = ('auto', 2e-9, 2e-8, 2e-7, 2e-6, 2e-5, 2e-4, 2e-3)
         if isinstance(newval, str):
             newval = newval.lower()
@@ -211,7 +211,7 @@ class Keithley485(Instrument):
         self.sendcmd('Z{}X'.format(int(newval)))
 
     @property
-    def trigger(self):
+    def trigger_mode(self):
         """
         Gets/sets the trigger mode (T) of the Keithley 485.
 
@@ -235,8 +235,8 @@ class Keithley485(Instrument):
         """
         return self.get_status()['trigger']
 
-    @trigger.setter
-    def trigger(self, newval):
+    @trigger_mode.setter
+    def trigger_mode(self, newval):
         if isinstance(newval, str):
             newval = Keithley485.Trigger[newval]
         if not isinstance(newval, Keithley485.Trigger):
@@ -341,7 +341,7 @@ class Keithley485(Instrument):
 
         try:
             range = valid_range[range]
-            trigger = self.Trigger(int(trigger)).name
+            trigger = self.TriggerMode(int(trigger)).name
             datamask = self.SRQDataMask(int(datamask)).name
             errormask = self.SRQErrorMask(int(errormask)).name
         except:
