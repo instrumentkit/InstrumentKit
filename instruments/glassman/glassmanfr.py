@@ -279,18 +279,18 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
     # METHODS ##
 
-    def sendcmd(self, msg):
+    def sendcmd(self, cmd):
         """
         Overrides the default `setcmd` by padding the front of each
         command sent to the instrument with an SOH character and the
         back of it with a checksum.
 
-        :param str msg: The command message to send to the instrument
+        :param str cmd: The command message to send to the instrument
         """
-        checksum = self._get_checksum(msg)
-        self._file.sendcmd('\x01' + msg + checksum) # Add SOH and checksum
+        checksum = self._get_checksum(cmd)
+        self._file.sendcmd('\x01' + cmd + checksum) # Add SOH and checksum
 
-    def query(self, msg, size=-1):
+    def query(self, cmd, size=-1):
         """
         Overrides the default `query` by padding the front of each
         command sent to the instrument with an SOH character and the
@@ -300,15 +300,15 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         returned by the instrument is consistent with the message. If
         the message returned is an error, it parses it and raises.
 
-        :param str msg: The query message to send to the instrument
+        :param str cmd: The query message to send to the instrument
         :param int size: The number of bytes to read back from the instrument
             response.
         :return: The instrument response to the query
         :rtype: `str`
         """
-        self.sendcmd(msg)
+        self.sendcmd(cmd)
         result = self._file.read(size)
-        if result[0] != getattr(self.ResponseCode, msg[0]).value and result[0] != 'E':
+        if result[0] != getattr(self.ResponseCode, cmd[0]).value and result[0] != 'E':
             raise ValueError('Invalid response code: {}'.format(result))
         if result[0] == 'A':
             return "Acknowledged"
