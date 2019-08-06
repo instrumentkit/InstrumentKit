@@ -55,6 +55,13 @@ class Keithley485(Instrument):
 
     The device needs some processing time (manual reports 300-500ms) after a
     command has been transmitted.
+
+    Example usage:
+
+    >>> import instruments as ik
+    >>> inst = ik.keithley.keithley485.open_gpibusb("/dev/ttyUSB0", 22)
+    >>> inst.measure()  # Measures the current
+    array(-1.278e-10) * A
     """
 
     # ENUMS #
@@ -63,46 +70,72 @@ class Keithley485(Instrument):
         """
         Enum containing valid trigger modes for the Keithley 485
         """
+        #: Continuously measures current, returns on talk
         continuous_ontalk = 0
+        #: Measures current once and returns on talk
         oneshot_ontalk = 1
+        #: Continuously measures current, returns on `GET`
         continuous_onget = 2
+        #: Measures current once and returns on `GET`
         oneshot_onget = 3
+        #: Continuously measures current, returns on `X`
         continuous_onx = 4
+        #: Measures current once and returns on `X`
         oneshot_onx = 5
 
     class SRQDataMask(Enum):
         """
         Enum containing valid SRQ data masks for the Keithley 485
         """
+        #: Service request (SRQ) disabled
         srq_disabled = 0
+        #: Read overflow
         read_ovf = 1
+        #: Read done
         read_done = 8
+        #: Read done or read overflow
         read_done_ovf = 9
+        #: Device busy
         busy = 16
+        #: Device busy or read overflow
         busy_read_ovf = 17
+        #: Device busy or read overflow
         busy_read_done = 24
+        #: Device busy, read done or read overflow
         busy_read_done_ovf = 25
 
     class SRQErrorMask(Enum):
         """
         Enum containing valid SRQ error masks for the Keithley 485
         """
+        #: Service request (SRQ) disabled
         srq_disabled = 0
+        #: Illegal Device-Dependent Command Option (IDDCO)
         idcco = 1
+        #: Illegal Device-Dependent Command (IDDC)
         idcc = 2
+        #: IDDCO or IDDC
         idcco_idcc = 3
+        #: Device not in remote
         not_remote = 4
+        #: Device not in remote or IDDCO
         not_remote_idcco = 5
+        #: Device not in remote or IDDC
         not_remote_idcc = 6
+        #: Device not in remote, IDDCO or IDDC
         not_remote_idcco_idcc = 7
 
     class Status(Enum):
         """
         Enum containing valid status keys in the measurement string
         """
+        #: Measurement normal
         normal = b'N'
+        #: Measurement zero-check
         zerocheck = b'C'
+        #: Measurement overflow
         overflow = b'O'
+        #: Measurement relative
         relative = b'Z'
 
     # PROPERTIES #
@@ -375,7 +408,7 @@ class Keithley485(Instrument):
         :param measurement: String to be unpacked and parsed
         :type: `str`
 
-        :rtype: `dict`
+        :rtype: `~quantities.quantity.Quantity`
         """
         (status, function, base, current) = \
             struct.unpack('@1c2s1c10s', bytes(measurement, 'utf-8'))
