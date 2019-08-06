@@ -61,14 +61,6 @@ class HPe3631a(PowerSupply):
     - Channel 2 is a positive +25V/1A channel (P25V)
     - Channel 3 is a negative -25V/1A channel (N25V)
 
-    Example usage:
-
-    >>> import instruments as ik
-    >>> psu = ik.hp.HPe3631a.open_gpibusb("/dev/ttyUSB0", 10)
-    >>> psu.channelid = 2   # Sets channel to P25V
-    >>> psu.voltage = 12.5  # Sets voltage to 12.5V
-    >>> print(psu.voltage)  # Reads back set current
-
     This module is designed for the power supply to be set to
     a specific channel and remain set afterwards as this device
     does not offer commands to set or read multiple channels
@@ -78,6 +70,17 @@ class HPe3631a(PowerSupply):
 
     This module is likely to work as is for the Agilent E3631 and
     Keysight E3631 which seem to be rebranded but identical devices.
+
+    Example usage:
+
+    >>> import instruments as ik
+    >>> psu = ik.hp.HPe3631a.open_gpibusb("/dev/ttyUSB0", 10)
+    >>> psu.channelid = 2           # Sets channel to P25V
+    >>> psu.voltage = 12.5          # Sets voltage to 12.5V
+    >>> psu.voltage                 # Reads back set voltage
+    array(12.5) * V
+    >>> psu.voltage_sense           # Reads back sensed voltage
+    array(12.501) * V
     """
 
     def __init__(self, filelike):
@@ -132,12 +135,19 @@ class HPe3631a(PowerSupply):
         def mode(self):
             """
             Gets/sets the mode for the specified channel.
+
+            The constant-voltage/constant-current modes of the power supply
+            are selected automatically depending on the load (resistance)
+            connected to the power supply. If the load greater than the set
+            V/I is connected, a voltage V is applied and the current flowing
+            is lower than I. If the load is smaller than V/I, the set current
+            I acts as a current limiter and the voltage is lower than V.
             """
-            raise NotImplementedError
+            return 'auto'
 
         @mode.setter
         def mode(self, newval):
-            raise NotImplementedError
+            raise NotImplementedError('The `HPe3631a` sets its mode automatically')
 
         voltage, voltage_min, voltage_max = bounded_unitful_property(
             "SOUR:VOLT",
