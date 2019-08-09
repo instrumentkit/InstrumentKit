@@ -302,7 +302,7 @@ class Fluke3000(Multimeter):
         :rtype: Array of `str`
 
         """
-        return [self.read() for i in range(nlines)]
+        return [self.read() for _ in range(nlines)]
 
     def query_lines(self, cmd, nlines=1):
         """
