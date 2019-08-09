@@ -68,20 +68,45 @@ class Fluke3000(Multimeter):
     and binds them to the PC3000 dongle. At each initialization, this class
     checks what device has been bound and saves their module number.
 
-    This class is a work in progress, it currently only supports the t3000
-    FC Wireless Temperature Module as it is the only instrument available
-    to the author. It also only supports single readout.
+    This class has been tested with the 3000 FC Wireless Multimeter and
+    the t3000 FC Wireless Temperature Module. They have been operated
+    separately and simultaneously. It does not support the Wireless AC/DC
+    Voltage Modules as the author did not have them on hand.
+
+    It is important to note that the mode of the multimeter cannot be set
+    remotely. If must be set on the device prior to the measurement. If
+    the measurement read back from the multimeter is not expressed in the
+    expected units, this module will raise an error.
+
+    Example usage:
+
+    >>> import instruments as ik
+    >>> mult = ik.fluke.fluke3000.open_serial("/dev/ttyUSB0", 115200)
+    >>> mult.measure(mult.Mode.voltage_dc) # Measures the DC voltage
+    array(12.345) * V
+
+    It is crucial not to kill this program in the process of making a measurement,
+    as for the Fluke 3000 FC Wireless Multimeter, one has to open continuous
+    readout, make a read and close it. If the process is killed, the read out
+    may not be closed and the serial cache will be constantly filled with measurements
+    that will interfere with any status query. If the multimeter is stuck in
+    continuous trigger after a bad kill, simply do:
+
+    >>> mult.reset()
+    >>> mult.connect()
+
+    Follow the same procedure if you want to add/remove an instrument to/from
+    the readout chain as the code will not look for new instruments if some
+    have already been connected to the PC3000 dongle.
     """
 
     def __init__(self, filelike):
         """
-        Initialise the instrument, and set the required eos, eoi needed for
-        communication.
+        Initialize the instrument, and set the properties needed for communication.
         """
         super(Fluke3000, self).__init__(filelike)
-        self.timeout = 15 * pq.second
+        self.timeout = 3 * pq.second
         self.terminator = "\r"
-        self._null = False
         self.positions = {}
         self.connect()
 
@@ -90,7 +115,7 @@ class Fluke3000(Multimeter):
     class Module(Enum):
 
         """
-        Enum containing the supported module codes
+        Enum containing the supported modules serial numbers.
         """
         #: Multimeter
         m3000 = 46333030304643
@@ -100,7 +125,7 @@ class Fluke3000(Multimeter):
     class Mode(Enum):
 
         """
-        Enum containing the supported mode codes
+        Enum containing the supported mode codes.
         """
         #: AC Voltage
         voltage_ac = "01"
@@ -123,20 +148,16 @@ class Fluke3000(Multimeter):
 
         """
         Enum with valid trigger modes.
+
+        The only supported mode is to trigger the device once when a
+        measurement is queried. This device does support continuous
+        triggering but it would quickly flood the serial input cache as
+        readouts do not overwrite each other and are accumulated.
         """
+        #: Single trigger on query
         single = 1
 
     # PROPERTIES ##
-
-    mode = enum_property(
-        "",
-        Mode,
-        doc="""Set the measurement mode.
-
-        :type: `Fluke3000.Mode`
-        """,
-        writeonly=True,
-        set_fmt="{}{}")
 
     module = enum_property(
         "",
@@ -144,6 +165,16 @@ class Fluke3000(Multimeter):
         doc="""Set the measurement module.
 
         :type: `Fluke3000.Module`
+        """,
+        writeonly=True,
+        set_fmt="{}{}")
+
+    mode = enum_property(
+        "",
+        Mode,
+        doc="""Set the measurement mode.
+
+        :type: `Fluke3000.Mode`
         """,
         writeonly=True,
         set_fmt="{}{}")
@@ -163,21 +194,20 @@ class Fluke3000(Multimeter):
     @property
     def input_range(self):
         """
-        The `Fluke3000` FC is autoranging only
+        The `Fluke3000` FC is an autoranging only multimeter.
+
+        :rtype: `str`
         """
-        raise NotImplementedError
+        return 'auto'
 
     @input_range.setter
     def input_range(self, value):
-        """
-        The `Fluke3000` FC is autoranging only
-        """
-        raise NotImplementedError
+        raise NotImplementedError('The `Fluke3000` FC is an autoranging only multimeter')
 
     @property
     def relative(self):
         """
-        The `Fluke3000` FC does not support relative measurements
+        The `Fluke3000` FC does not support relative measurements.
 
         :rtype: `bool`
         """
@@ -185,33 +215,35 @@ class Fluke3000(Multimeter):
 
     @relative.setter
     def relative(self, value):
-        """
-        The `Fluke3000` FC does not support relative measurements
-        """
-        raise NotImplementedError
+        raise NotImplementedError("The `Fluke3000` FC does not support relative measurements")
 
     # METHODS ##
 
     def connect(self):
         """
-        Connect to available modules and returns
-        a dictionary of the modules found and their location
+        Connect to available modules and returns a dictionary
+        of the modules found and their port ID.
         """
-        self.flush()                     # Flush serial
-        self.scan()                      # Look for connected devices
+        self.flush()                      # Flush serial
+        self.scan()                       # Look for connected devices
         if not self.positions:
-            self.reset()                 # Resets the PC3000 dongle
-            self.query_lines("rfdis", 3) # Discovers connected modules
-            self.scan()                  # Look for connected devices
+            self.reset()                  # Reset the PC3000 dongle
+            timeout = self.timeout        # Store default timeout
+            self.timeout = 30 * pq.second # PC 3000 can take a while to bind with wireless devices
+            self.query_lines("rfdis", 3)  # Discover available modules and bind them
+            self.timeout = timeout        # Restore default timeout
+            self.scan()                   # Look for connected devices
 
         if not self.positions:
-            raise ValueError("No Fluke3000 modules available")
-
-        self.timeout = 3 * pq.second
+            raise ValueError("No `Fluke3000` modules available")
 
     def flush(self):
         """
-        Flushes the serial output cache
+        Flushes the serial input cache.
+
+        This device outputs a terminator after each output line.
+        The serial input cache is flushed by repeatedly reading
+        until a terminator is not found.
         """
         timeout = self.timeout
         self.timeout = 0.1 * pq.second
@@ -225,15 +257,15 @@ class Fluke3000(Multimeter):
 
     def reset(self):
         """
-        Resets the device and unbinds all modules
+        Resets the device and unbinds all modules.
         """
         self.query_lines("ri", 3)             # Resets the device
         self.query_lines("rfsm 1", 2)         # Turns comms on
 
     def scan(self):
         """
-        Search for available modules and returns
-        a dictionary of the modules found and their location
+        Search for available modules and reformatturns a dictionary
+        of the modules found and their port ID.
         """
         # Loop over possible channels, store device locations
         positions = {}
@@ -252,44 +284,30 @@ class Fluke3000(Multimeter):
             elif module_id == self.Module.t3000.value:
                 positions[self.Module.t3000] = port_id
             else:
-                error = "Module ID {} not implemented".format(module_id)
-                raise NotImplementedError(error)
+                raise NotImplementedError("Module ID {} not implemented".format(module_id))
 
-            # Reset device readout
-            self.query('rfemd 0{} 2'.format(port_id))
-
-        self.flush()
         self.positions = positions
 
     def read_lines(self, nlines=1):
         """
         Function that keeps reading until reaches a termination
         character a set amount of times. This is implemented
-        to handle the mutiline output of the PC3000
+        to handle the mutiline output of the PC3000.
 
         :param nlines: Number of termination characters to reach
 
-        :type: 'int'
+        :type nlines: 'int'
 
         :return: Array of lines read out
         :rtype: Array of `str`
 
         """
-        lines = []
-        i = 0
-        while i < nlines:
-            try:
-                lines.append(self.read())
-                i += 1
-            except OSError:
-                continue
-
-        return lines
+        return [self.read() for i in range(nlines)]
 
     def query_lines(self, cmd, nlines=1):
         """
-        Function used to send a command to the instrument while allowing
-        for multiline output (multiple termination characters)
+        Function used to send a query to the instrument while allowing
+        for the multiline output of the PC3000.
 
         :param cmd: Command that will be sent to the instrument
         :param nlines: Number of termination characters to reach
@@ -306,11 +324,6 @@ class Fluke3000(Multimeter):
 
     def measure(self, mode):
         """Instruct the Fluke3000 to perform a one time measurement.
-
-        Example usage:
-
-        >>> dmm = ik.fluke.Fluke3000.open_serial("/dev/ttyUSB0")
-        >>> print dmm.measure(dmm.Mode.temperature)
 
         :param mode: Desired measurement mode.
 
@@ -348,15 +361,12 @@ class Fluke3000(Multimeter):
             if "PH" in value:
                 data = value.split("PH=")[-1]
                 if self._parse_mode(data) != mode.value:
-                    self.flush()
+                    self.query("rfemd 0{} 2".format(port_id))
                 else:
                     break
 
         # Parse the output
-        try:
-            value = self._parse(value, mode)
-        except:
-            raise ValueError("Failed to read out Fluke3000 with mode {}".format(mode))
+        value = self._parse(value, mode)
 
         # Return with the appropriate units
         units = UNITS[mode]
@@ -400,19 +410,16 @@ class Fluke3000(Multimeter):
 
         # Check that the multimeter is in the right mode (fifth byte)
         if self._parse_mode(data) != mode.value:
-            error = ('Mode {} was requested but the Fluke 3000FC Multimeter '
-                     'is in mode {} instead, could not read the requested'
-                     'quantity.').format(mode.name, self.Mode(data[8:10]).name)
+            error = ("Mode {} was requested but the Fluke 3000FC Multimeter "
+                     "is in mode {} instead. Could not read the requested "
+                     "quantity.").format(mode.name, self.Mode(data[8:10]).name)
             raise ValueError(error)
 
         # Extract the value from the first two bytes
         value = self._parse_value(data)
 
         # Extract the prefactor from the fourth byte
-        try:
-            scale = self._parse_factor(data)
-        except:
-            raise ValueError("Could not parse the prefactor byte")
+        scale = self._parse_factor(data)
 
         # Combine and return
         return scale*value
@@ -460,7 +467,7 @@ class Fluke3000(Multimeter):
 
         """
         # Convert the fourth dual hex byte to an 8 bits string
-        byte = '{0:08b}'.format(int(data[6:8], 16))
+        byte = format(int(data[6:8], 16), '08b')
 
         # The first bit encodes the sign (0 positive, 1 negative)
         sign = 1 if byte[0] == '0' else -1
