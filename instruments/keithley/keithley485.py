@@ -35,7 +35,8 @@ Kit project.
 
 from __future__ import absolute_import
 from __future__ import division
-import struct
+from builtins import bytes
+from struct import unpack
 
 from enum import Enum
 
@@ -363,7 +364,7 @@ class Keithley485(Instrument):
 
         (zerocheck, log, range, relative, eoi_mode,
          trigger, datamask, errormask) = \
-            struct.unpack('@6c2s2s', bytes(statusword[3:], 'utf-8'))
+            unpack('@6c2s2s', bytes(statusword[3:], 'utf-8'))
 
         valid_range = {b'0': 'auto',
                        b'1': 2e-9,
@@ -414,7 +415,7 @@ class Keithley485(Instrument):
         :rtype: `~quantities.quantity.Quantity`
         """
         (status, function, base, current) = \
-            struct.unpack('@1c2s1c10s', bytes(measurement, 'utf-8'))
+            unpack('@1c2s1c10s', bytes(measurement, 'utf-8'))
 
         try:
             status = self.Status(status)

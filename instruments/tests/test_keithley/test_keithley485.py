@@ -17,7 +17,7 @@ from instruments.tests import expected_protocol
 
 def test_zero_check():
     with expected_protocol(
-    ik.keithley.Keithley485,
+        ik.keithley.Keithley485,
         [
             "C0X",
             "C1X",
@@ -28,11 +28,11 @@ def test_zero_check():
     ) as inst:
         inst.zero_check = False
         inst.zero_check = True
-        assert inst.zero_check == True
+        assert inst.zero_check
 
 def test_log():
     with expected_protocol(
-    ik.keithley.Keithley485,
+        ik.keithley.Keithley485,
         [
             "D0X",
             "D1X",
@@ -43,11 +43,11 @@ def test_log():
     ) as inst:
         inst.log = False
         inst.log = True
-        assert inst.log == True
+        assert inst.log
 
 def test_input_range():
     with expected_protocol(
-    ik.keithley.Keithley485,
+        ik.keithley.Keithley485,
         [
             "R0X",
             "R7X",
@@ -62,7 +62,7 @@ def test_input_range():
 
 def test_relative():
     with expected_protocol(
-    ik.keithley.Keithley485,
+        ik.keithley.Keithley485,
         [
             "Z0X",
             "Z1X",
@@ -73,11 +73,11 @@ def test_relative():
     ) as inst:
         inst.relative = False
         inst.relative = True
-        assert inst.relative == True
+        assert inst.relative
 
 def test_eoi_mode():
     with expected_protocol(
-    ik.keithley.Keithley485,
+        ik.keithley.Keithley485,
         [
             "K0X",
             "K1X",
@@ -88,11 +88,11 @@ def test_eoi_mode():
     ) as inst:
         inst.eoi_mode = True
         inst.eoi_mode = False
-        assert inst.eoi_mode == False
+        assert not inst.eoi_mode
 
 def test_trigger_mode():
     with expected_protocol(
-    ik.keithley.Keithley485,
+        ik.keithley.Keithley485,
         [
             "T0X",
             "T5X",
@@ -107,7 +107,7 @@ def test_trigger_mode():
 
 def test_auto_range():
     with expected_protocol(
-    ik.keithley.Keithley485,
+        ik.keithley.Keithley485,
         [
             "R0X",
             "U0X"
@@ -120,7 +120,7 @@ def test_auto_range():
 
 def test_get_status():
     with expected_protocol(
-    ik.keithley.Keithley485,
+        ik.keithley.Keithley485,
         [
             "U0X"
         ], [
@@ -131,7 +131,7 @@ def test_get_status():
 
 def test_measure():
     with expected_protocol(
-    ik.keithley.Keithley485,
+        ik.keithley.Keithley485,
         [
             "X",
             "X"
