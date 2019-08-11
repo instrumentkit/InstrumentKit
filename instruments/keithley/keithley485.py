@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# keithley485.py: Driver for the Keithley 485 pico-ampmeter.
+# keithley485.py: Driver for the Keithley 485 picoammeter.
 #
 # © 2019 Francois Drielsma (francois.drielsma@gmail.com).
 #
@@ -22,7 +22,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Driver for the Keithley 485 pico-ampmeter.
+Driver for the Keithley 485 picoammeter.
 
 Originally contributed and copyright held by Francois Drielsma
 (francois.drielsma@gmail.com).
@@ -50,7 +50,7 @@ class Keithley485(Instrument):
 
     """
     The Keithley Model 485 is a 4 1/2 digit resolution autoranging
-    pico-ampmeter with a +- 20000 count LCD. It is designed for low
+    picoammeter with a +- 20000 count LCD. It is designed for low
     current measurement requirements from 0.1pA to 2mA.
 
     The device needs some processing time (manual reports 300-500ms) after a
@@ -184,11 +184,13 @@ class Keithley485(Instrument):
     def input_range(self):
         """
         Gets/sets the range (R) of the Keithley 485 input terminals. The valid
-        ranges are one of ``{AUTO|2e-9|2e-8|2e-7|2e-6|2e-5|2e-4|2e-3}``
+        ranges are one of ``{auto|2e-9|2e-8|2e-7|2e-6|2e-5|2e-4|2e-3}``
 
         :type: `~quantities.quantity.Quantity` or `str`
         """
-        value = float(self.get_status()['range'])
+        value = self.get_status()['range']
+        if isinstance(value, str):
+            return value
         return value * pq.amp
 
     @input_range.setter
@@ -244,6 +246,28 @@ class Keithley485(Instrument):
         self.sendcmd('Z{}X'.format(int(newval)))
 
     @property
+    def eoi_mode(self):
+        """
+        Gets/sets the 'eoi' mode (K) of the Keithley 485.
+
+        The model 485 will normally send an end of interrupt (EOI)
+        during the last byte of its data string or status word.
+        The EOI reponse of the instrument may be included or omitted.
+        Warning: the default setting (K0) includes it.
+
+        See the Keithley 485 manual for more information.
+
+        :type: `bool`
+        """
+        return self.get_status()['eoi_mode']
+
+    @eoi_mode.setter
+    def eoi_mode(self, newval):
+        if not isinstance(newval, bool):
+            raise TypeError('EOI mode must be a boolean.')
+        self.sendcmd('K{}X'.format(1-int(newval)))
+
+    @property
     def trigger_mode(self):
         """
         Gets/sets the trigger mode (T) of the Keithley 485.
@@ -277,28 +301,6 @@ class Keithley485(Instrument):
                             'Keithley485.TriggerMode, got {} '
                             'instead.'.format(newval))
         self.sendcmd('T{}X'.format(newval.value))
-
-    @property
-    def eoi(self):
-        """
-        Gets/sets the 'eoi' mode (K) of the Keithley 485.
-
-        The model 485 will normally send an end of interrupt (EOI)
-        during the last byte of its data string or status word.
-        The EOI reponse of the instrument may be included or omitted.
-        Warning: the default setting (K0) includes it.
-
-        See the Keithley 485 manual for more information.
-
-        :type: `bool`
-        """
-        return not self.get_status()['eoi']
-
-    @eoi.setter
-    def eoi(self, newval):
-        if not isinstance(newval, bool):
-            raise TypeError('EOI mode must be a boolean.')
-        self.sendcmd('K{}X'.format(1-int(newval)))
 
     # METHODS #
 
@@ -359,7 +361,7 @@ class Keithley485(Instrument):
             raise ValueError('Status word starts with wrong '
                              'prefix: {}'.format(statusword))
 
-        (zerocheck, log, range, relative, eoi,
+        (zerocheck, log, range, relative, eoi_mode,
          trigger, datamask, errormask) = \
             struct.unpack('@6c2s2s', bytes(statusword[3:], 'utf-8'))
 
@@ -381,11 +383,12 @@ class Keithley485(Instrument):
             raise RuntimeError('Cannot parse status '
                                'word: {}'.format(statusword))
 
+        print(eoi_mode, eoi_mode == b'0')
         return {'zerocheck': zerocheck == b'1',
                 'log': log == b'1',
                 'range': range,
                 'relative': relative == b'1',
-                'eoi': eoi == b'0',
+                'eoi_mode': eoi_mode == b'0',
                 'trigger': trigger,
                 'datamask': datamask,
                 'errormask': errormask,
