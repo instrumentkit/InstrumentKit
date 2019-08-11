@@ -384,7 +384,6 @@ class Keithley485(Instrument):
             raise RuntimeError('Cannot parse status '
                                'word: {}'.format(statusword))
 
-        print(eoi_mode, eoi_mode == b'0')
         return {'zerocheck': zerocheck == b'1',
                 'log': log == b'1',
                 'range': range,
