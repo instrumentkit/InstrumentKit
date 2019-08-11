@@ -38,12 +38,11 @@ from __future__ import division
 import time
 from builtins import range
 
-from enum import Enum, IntEnum
+from enum import Enum
 
 import quantities as pq
 
 from instruments.abstract_instruments import Multimeter
-from instruments.util_fns import enum_property
 
 # CLASSES #####################################################################
 
@@ -93,6 +92,7 @@ class Fluke3000(Multimeter):
     continuous trigger after a bad kill, simply do:
 
     >>> mult.reset()
+    >>> mult.flush()
     >>> mult.connect()
 
     Follow the same procedure if you want to add/remove an instrument to/from
@@ -113,7 +113,6 @@ class Fluke3000(Multimeter):
     # ENUMS ##
 
     class Module(Enum):
-
         """
         Enum containing the supported modules serial numbers.
         """
@@ -123,7 +122,6 @@ class Fluke3000(Multimeter):
         t3000 = 54333030304643
 
     class Mode(Enum):
-
         """
         Enum containing the supported mode codes.
         """
@@ -144,69 +142,55 @@ class Fluke3000(Multimeter):
         #: Capacitance
         capacitance = "0F"
 
-    class TriggerMode(IntEnum):
+    # PROPERTIES ##
 
+    @property
+    def mode(self):
         """
-        Enum with valid trigger modes.
+        Gets/sets the measurement mode for the multimeter.
+
+        The measurement mode of the multimeter must be set on the
+        device manually and cannot be set remotely. If a multimeter
+        is bound to the PC3000, returns its measurement mode by
+        making a measurement and checking the units bytes in response.
+
+        :rtype: `Fluke3000.Mode`
+        """
+        if self.Module.m3000 not in self.positions.keys():
+            raise KeyError("No `Fluke3000` FC multimeter is connected")
+        port_id = self.positions[self.Module.m3000]
+        value = self.query_lines("rfemd 0{} 1".format(port_id), 2)[-1]
+        self.query("rfemd 0{} 2".format(port_id))
+        data = value.split("PH=")[-1]
+        return self.Mode(self._parse_mode(data))
+
+    @mode.setter
+    def mode(self, newval):
+        raise NotImplementedError("The `Fluke3000` measurement mode can only be set on the device")
+
+    @property
+    def trigger_mode(self):
+        """
+        Gets/sets the trigger mode for the multimeter.
 
         The only supported mode is to trigger the device once when a
         measurement is queried. This device does support continuous
         triggering but it would quickly flood the serial input cache as
         readouts do not overwrite each other and are accumulated.
-        """
-        #: Single trigger on query
-        single = 1
-
-    # PROPERTIES ##
-
-    module = enum_property(
-        "",
-        Module,
-        doc="""Set the measurement module.
-
-        :type: `Fluke3000.Module`
-        """,
-        writeonly=True,
-        set_fmt="{}{}")
-
-    mode = enum_property(
-        "",
-        Mode,
-        doc="""Set the measurement mode.
-
-        :type: `Fluke3000.Mode`
-        """,
-        writeonly=True,
-        set_fmt="{}{}")
-
-    trigger_mode = enum_property(
-        "T",
-        TriggerMode,
-        doc="""Set the trigger mode.
-
-        Note there is only one trigger mode (single).
-
-        :type: `Fluke3000.TriggerMode`
-        """,
-        writeonly=True,
-        set_fmt="{}{}")
-
-    @property
-    def input_range(self):
-        """
-        The `Fluke3000` FC is an autoranging only multimeter.
 
         :rtype: `str`
         """
-        return 'auto'
+        return 'single'
 
-    @input_range.setter
-    def input_range(self, value):
-        raise NotImplementedError('The `Fluke3000` FC is an autoranging only multimeter')
+    @trigger_mode.setter
+    def trigger_mode(self, newval):
+        raise ValueError("The `Fluke3000` only supports single trigger when queried")
 
     @property
     def relative(self):
         """
+        Gets/sets the status of relative measuring mode for the multimeter.
+
         The `Fluke3000` FC does not support relative measurements.
 
         :rtype: `bool`
@@ -214,8 +198,23 @@ class Fluke3000(Multimeter):
         return False
 
     @relative.setter
-    def relative(self, value):
-        raise NotImplementedError("The `Fluke3000` FC does not support relative measurements")
+    def relative(self, newval):
+        raise ValueError("The `Fluke3000` FC does not support relative measurements")
+
+    @property
+    def input_range(self):
+        """
+        Gets/sets the current input range setting of the multimeter.
+
+        The `Fluke3000` FC is an autoranging only multimeter.
+
+        :rtype: `str`
+        """
+        return 'auto'
+
+    @input_range.setter
+    def input_range(self, newval):
+        raise ValueError('The `Fluke3000` FC is an autoranging only multimeter')
 
     # METHODS ##
 
@@ -224,7 +223,6 @@ class Fluke3000(Multimeter):
         Connect to available modules and returns a dictionary
         of the modules found and their port ID.
         """
-        self.flush()                      # Flush serial
         self.scan()                       # Look for connected devices
         if not self.positions:
             self.reset()                  # Reset the PC3000 dongle
@@ -236,31 +234,6 @@ class Fluke3000(Multimeter):
 
         if not self.positions:
             raise ValueError("No `Fluke3000` modules available")
-
-    def flush(self):
-        """
-        Flushes the serial input cache.
-
-        This device outputs a terminator after each output line.
-        The serial input cache is flushed by repeatedly reading
-        until a terminator is not found.
-        """
-        timeout = self.timeout
-        self.timeout = 0.1 * pq.second
-        init_time = time.time()
-        while time.time() - init_time < timeout:
-            try:
-                self.read()
-            except OSError:
-                break
-        self.timeout = timeout
-
-    def reset(self):
-        """
-        Resets the device and unbinds all modules.
-        """
-        self.query_lines("ri", 3)             # Resets the device
-        self.query_lines("rfsm 1", 2)         # Turns comms on
 
     def scan(self):
         """
@@ -287,6 +260,13 @@ class Fluke3000(Multimeter):
                 raise NotImplementedError("Module ID {} not implemented".format(module_id))
 
         self.positions = positions
+
+    def reset(self):
+        """
+        Resets the device and unbinds all modules.
+        """
+        self.query_lines("ri", 3)       # Resets the device
+        self.query_lines("rfsm 1", 2)   # Turns comms on
 
     def read_lines(self, nlines=1):
         """
@@ -322,6 +302,24 @@ class Fluke3000(Multimeter):
         self.sendcmd(cmd)
         return self.read_lines(nlines)
 
+    def flush(self):
+        """
+        Flushes the serial input cache.
+
+        This device outputs a terminator after each output line.
+        The serial input cache is flushed by repeatedly reading
+        until a terminator is not found.
+        """
+        timeout = self.timeout
+        self.timeout = 0.1 * pq.second
+        init_time = time.time()
+        while time.time() - init_time < 1.:
+            try:
+                self.read()
+            except OSError:
+                break
+        self.timeout = timeout
+
     def measure(self, mode):
         """Instruct the Fluke3000 to perform a one time measurement.
 
@@ -346,7 +344,7 @@ class Fluke3000(Multimeter):
         value = ''
         port_id = self.positions[module]
         init_time = time.time()
-        while time.time() - init_time < self.timeout:
+        while time.time() - init_time < 3.:
             # Read out
             if mode == self.Mode.temperature:
                 # The temperature module supports single readout
@@ -361,7 +359,9 @@ class Fluke3000(Multimeter):
             if "PH" in value:
                 data = value.split("PH=")[-1]
                 if self._parse_mode(data) != mode.value:
-                    self.query("rfemd 0{} 2".format(port_id))
+                    if self.Module.m3000 in self.positions.keys():
+                        self.query("rfemd 0{} 2".format(self.positions[self.Module.m3000]))
+                    self.flush()
                 else:
                     break
 
