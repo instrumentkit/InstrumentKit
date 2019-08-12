@@ -7,6 +7,7 @@ Module containing tests for the Glassman FR power supply
 # IMPORTS ####################################################################
 
 from __future__ import absolute_import
+from builtins import round
 
 import quantities as pq
 
