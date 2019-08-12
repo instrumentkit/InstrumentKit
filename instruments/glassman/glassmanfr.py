@@ -34,7 +34,7 @@ Kit project.
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import bytes
+from builtins import bytes, round
 from struct import unpack
 
 from enum import Enum
