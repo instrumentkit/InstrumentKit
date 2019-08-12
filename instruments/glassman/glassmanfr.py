@@ -34,7 +34,8 @@ Kit project.
 
 from __future__ import absolute_import
 from __future__ import division
-import struct
+from builtins import bytes
+from struct import unpack
 
 from enum import Enum
 
@@ -73,7 +74,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
     >>> psu.voltage
     array(100.0) * V
     >>> psu.output = True # Turns on the power supply
-    >>> psu.voltage_sense < 200
+    >>> psu.voltage_sense < 200 * pq.volt
     True
 
     This code uses default values of `voltage_max`, `current_max` and
@@ -82,7 +83,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
     >>> import quantities as pq
     >>> psu.voltage_max = 40.0 * pq.kilovolt
-    >>> psu.current_max = 6.0 * pq.milliamp
+    >>> psu.current_max = 7.5 * pq.milliamp
     >>> psu.polarity = -1
     """
 
@@ -96,8 +97,8 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         self.current_max = 6.0 * pq.milliamp
         self.polarity = +1
         self._device_timeout = True
-        self._voltage = self.voltage_sense
-        self._current = self.current_sense
+        self._voltage = 0. * pq.volt
+        self._current = 0. * pq.amp
 
     # ENUMS #
 
@@ -151,7 +152,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :rtype: 'tuple' of length 1 containing a reference back to the parent
             GlassmanFR object.
         """
-        return self,
+        return [self]
 
     @property
     def voltage(self):
@@ -168,16 +169,6 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         self.set_status(voltage=assume_units(newval, pq.volt))
 
     @property
-    def voltage_sense(self):
-        """
-        Gets the output voltage as measured by the sense wires.
-
-        :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
-        """
-        return self.get_status()['voltage']
-
-    @property
     def current(self):
         """
         Gets/sets the output current setting.
@@ -192,12 +183,22 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         self.set_status(current=assume_units(newval, pq.amp))
 
     @property
+    def voltage_sense(self):
+        """
+        Gets the output voltage as measured by the sense wires.
+
+        :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
+        :type: `~quantities.Quantity`
+        """
+        return self.get_status()['voltage']
+
+    @property
     def current_sense(self):
         """
         Gets/sets the output current as measured by the sense wires.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `~quantities.Quantity`
         """
         return self.get_status()['current']
 
@@ -212,12 +213,10 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         V/I is connected, a voltage V is applied and the current flowing
         is lower than I. If the load is smaller than V/I, the set current
         I acts as a current limiter and the voltage is lower than V.
+
+        :type: `GlassmanFR.Mode`
         """
         return self.get_status()['mode']
-
-    @mode.setter
-    def mode(self, newval):
-        raise NotImplementedError('The `GlassmanFR` sets its mode automatically')
 
     @property
     def output(self):
@@ -339,27 +338,32 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
             self._current = 0. * pq.amp
             cmd = format(4, '013d')
         else:
+            # The maximum value is encoded as the maximum of three hex characters (4095)
             cmd = ''
-            value_max = int(0xfff)-1
+            value_max = int(0xfff)
 
             # If the voltage is not specified, keep it as is
-            self._voltage = assume_units(voltage, pq.volt) if voltage is not None else self.voltage
+            voltage = assume_units(voltage, pq.volt) if voltage is not None else self.voltage
+            ratio = float(voltage.rescale(pq.volt)/self.voltage_max.rescale(pq.volt))
+            voltage_int = int(round(value_max*ratio))
+            self._voltage = self.voltage_max*float(voltage_int)/value_max
             assert self._voltage >= 0. * pq.volt and self._voltage <= self.voltage_max
-            ratio = float(self._voltage.rescale(pq.volt)/self.voltage_max.rescale(pq.volt))
-            cmd += format(int(value_max*ratio), '03X')
+            cmd += format(voltage_int, '03X')
 
             # If the current is not specified, keep it as is
-            self._current = assume_units(current, pq.amp) if current is not None else self.current
+            current = assume_units(current, pq.amp) if current is not None else self.current
+            ratio = float(current.rescale(pq.amp)/self.current_max.rescale(pq.amp))
+            current_int = int(round(value_max*ratio))
+            self._current = self.current_max*float(current_int)/value_max
             assert self._current >= 0. * pq.amp and self._current <= self.current_max
-            ratio = float(self._current.rescale(pq.amp)/self.current_max.rescale(pq.amp))
-            cmd += format(int(value_max*ratio), '03X')
+            cmd += format(current_int, '03X')
 
             # If the output status is not specified, keep it as is
             output = output if output is not None else self.output
             control = '00{}{}'.format(int(output), int(not output))
             cmd += format(int(control, 2), '07X')
 
-        self.query('S' + cmd) # Device acknoledges
+        self.query('S' + cmd) # Device acknowledges
 
     def get_status(self):
         """
@@ -385,7 +389,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :rtype: `dict`
         """
         (voltage, current, monitors) = \
-            struct.unpack('@3s3s3x1c2x', bytes(response, 'utf-8'))
+            unpack('@3s3s3x1c2x', bytes(response, 'utf-8'))
 
         try:
             voltage = self._parse_voltage(voltage)
@@ -440,7 +444,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :rtype: `str, bool, bool`
         '''
         bits = format(int(word, 16), '04b')
-        mode = self.Mode(bits[-1]).name
+        mode = self.Mode(bits[-1])
         fault = bits[-2] == '1'
         output = bits[-3] == '1'
         return mode, fault, output
