@@ -79,33 +79,6 @@ def test_mode():
     ) as inst:
         assert inst.mode == inst.Mode.voltage_dc
 
-def test_trigger_mode():
-    with expected_protocol(
-        ik.fluke.Fluke3000,
-        init_sequence,
-        init_response,
-        '\r'
-    ) as inst:
-        assert inst.trigger_mode == 'single'
-
-def test_relative():
-    with expected_protocol(
-        ik.fluke.Fluke3000,
-        init_sequence,
-        init_response,
-        '\r'
-    ) as inst:
-        assert not inst.relative
-
-def test_input_range():
-    with expected_protocol(
-        ik.fluke.Fluke3000,
-        init_sequence,
-        init_response,
-        '\r'
-    ) as inst:
-        assert inst.input_range == 'auto'
-
 def test_connect():
     with expected_protocol(
         ik.fluke.Fluke3000,
