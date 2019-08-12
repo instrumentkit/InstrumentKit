@@ -157,16 +157,12 @@ class Fluke3000(Multimeter):
         :rtype: `Fluke3000.Mode`
         """
         if self.Module.m3000 not in self.positions.keys():
-            raise KeyError("No `Fluke3000` FC multimeter is connected")
+            raise KeyError("No `Fluke3000` FC multimeter is bound")
         port_id = self.positions[self.Module.m3000]
         value = self.query_lines("rfemd 0{} 1".format(port_id), 2)[-1]
         self.query("rfemd 0{} 2".format(port_id))
         data = value.split("PH=")[-1]
         return self.Mode(self._parse_mode(data))
-
-    @mode.setter
-    def mode(self, newval):
-        raise NotImplementedError("The `Fluke3000` measurement mode can only be set on the device")
 
     @property
     def trigger_mode(self):
@@ -180,11 +176,7 @@ class Fluke3000(Multimeter):
 
         :rtype: `str`
         """
-        return 'single'
-
-    @trigger_mode.setter
-    def trigger_mode(self, newval):
-        raise ValueError("The `Fluke3000` only supports single trigger when queried")
+        raise AttributeError("The `Fluke3000` only supports single trigger when queried")
 
     @property
     def relative(self):
@@ -195,11 +187,7 @@ class Fluke3000(Multimeter):
 
         :rtype: `bool`
         """
-        return False
-
-    @relative.setter
-    def relative(self, newval):
-        raise ValueError("The `Fluke3000` FC does not support relative measurements")
+        raise AttributeError("The `Fluke3000` FC does not support relative measurements")
 
     @property
     def input_range(self):
@@ -210,11 +198,7 @@ class Fluke3000(Multimeter):
 
         :rtype: `str`
         """
-        return 'auto'
-
-    @input_range.setter
-    def input_range(self, newval):
-        raise ValueError('The `Fluke3000` FC is an autoranging only multimeter')
+        return AttributeError('The `Fluke3000` FC is an autoranging only multimeter')
 
     # METHODS ##
 
