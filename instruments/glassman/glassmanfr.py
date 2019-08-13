@@ -100,7 +100,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         self._voltage = 0. * pq.volt
         self._current = 0. * pq.amp
 
-    # ENUMS #
+    # ENUMS ##
 
     class Mode(Enum):
         """
