@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # hpe3631a.py: Driver for the HP E3631A Power Supply
@@ -44,7 +44,7 @@ from instruments.abstract_instruments import (
     PowerSupplyChannel
 )
 from instruments.util_fns import (
-    ProxyList,
+    int_property,
     unitful_property,
     bounded_unitful_property,
     bool_property
@@ -53,10 +53,10 @@ from instruments.util_fns import (
 # CLASSES #####################################################################
 
 
-class HPe3631a(PowerSupply):
+class HPe3631a(PowerSupply, PowerSupplyChannel):
 
     """
-    The HPe3631a is three channels voltage/current supply.
+    The HPe3631a is a three channels voltage/current supply.
     - Channel 1 is a positive +6V/5A channel (P6V)
     - Channel 2 is a positive +25V/1A channel (P25V)
     - Channel 3 is a negative -25V/1A channel (N25V)
@@ -85,15 +85,12 @@ class HPe3631a(PowerSupply):
 
     def __init__(self, filelike):
         super(HPe3631a, self).__init__(filelike)
-        self.channels = [0, 1, 2] # List of channels
-        self.idx = 0              # Current channel to be set on the device
-        self.channelid = 1        # Set the channel
         self.sendcmd('SYST:REM')  # Puts the device in remote operation
         time.sleep(0.1)
 
-    # INNER CLASSES #
+    # INNER CLASSES ##
 
-    class Channel(PowerSupplyChannel):
+    class Channel(object):
         """
         Class representing a power output channel on the HPe3631a.
 
@@ -101,117 +98,20 @@ class HPe3631a(PowerSupply):
             designed to be initialized by the `HPe3631a` class.
         """
 
-        def __init__(self, hp, idx):
-            self._hp = hp
-            self._idx = idx
+        def __init__(self, parent, valid_set):
+            self._parent = parent
+            self._valid_set = valid_set
 
-        def sendcmd(self, cmd):
-            """
-            Function used to send a command to the instrument after
-            checking that it is set to the right channel.
+        def __getitem__(self, idx):
+            # Check that the channel is available. If it is, set the
+            # channelid of the device and return the device object.
+            if self._parent.channelid != idx:
+                self._parent.channelid = idx
+                time.sleep(0.5)
+            return self._parent
 
-            :param str cmd: Command that will be sent to the instrument
-            """
-            if self._idx != self._hp.idx:
-                self._hp.channelid = self._idx+1
-            self._hp.sendcmd(cmd)
-
-        def query(self, cmd):
-            """
-            Function used to send a command to the instrument after
-            checking that it is set to the right channel.
-
-            :param str cmd: Command that will be sent to the instrument
-            :return: The result from the query
-            :rtype: `str`
-            """
-            if self._idx != self._hp.idx:
-                self._hp.channelid = self._idx+1
-            return self._hp.query(cmd)
-
-        # PROPERTIES #
-
-        @property
-        def mode(self):
-            """
-            Gets/sets the mode for the specified channel.
-
-            The constant-voltage/constant-current modes of the power supply
-            are selected automatically depending on the load (resistance)
-            connected to the power supply. If the load greater than the set
-            V/I is connected, a voltage V is applied and the current flowing
-            is lower than I. If the load is smaller than V/I, the set current
-            I acts as a current limiter and the voltage is lower than V.
-            """
-            return 'auto'
-
-        @mode.setter
-        def mode(self, newval):
-            raise NotImplementedError('The `HPe3631a` sets its mode automatically')
-
-        voltage, voltage_min, voltage_max = bounded_unitful_property(
-            "SOUR:VOLT",
-            pq.volt,
-            min_fmt_str="{}? MIN",
-            max_fmt_str="{}? MAX",
-            doc="""
-            Gets/sets the output voltage of the source.
-
-            :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-            :type: `float` or `~quantities.Quantity`
-            """
-        )
-
-        current, current_min, current_max = bounded_unitful_property(
-            "SOUR:CURR",
-            pq.amp,
-            min_fmt_str="{}? MIN",
-            max_fmt_str="{}? MAX",
-            doc="""
-            Gets/sets the output current of the source.
-
-            :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-            :type: `float` or `~quantities.Quantity`
-            """
-        )
-
-        voltage_sense = unitful_property(
-            "MEAS:VOLT",
-            pq.volt,
-            readonly=True,
-            doc="""
-            Gets the actual output voltage as measured by the sense wires.
-
-            :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-            :type: `float` or `~quantities.Quantity`
-            """
-        )
-
-        current_sense = unitful_property(
-            "MEAS:CURR",
-            pq.amp,
-            readonly=True,
-            doc="""
-            Gets the actual output current as measured by the sense wires.
-
-            :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-            :type: `float` or `~quantities.Quantity`
-            """
-        )
-
-        output = bool_property(
-            "OUTP",
-            inst_true="1",
-            inst_false="0s",
-            doc="""
-            Gets/sets the outputting status of the specified channel.
-
-            This is a toggle setting. ON will turn on the channel output
-            while OFF will turn it off.
-
-            :type: `bool`
-            """
-        )
+        def __len__(self):
+            return len(self._valid_set)
 
     # PROPERTIES ##
 
@@ -226,90 +126,92 @@ class HPe3631a(PowerSupply):
         .. seealso::
             `HPe3631a` for example using this property.
         """
-        return ProxyList(self, HPe3631a.Channel, self.channels)
+        return self.Channel(self, [1, 2, 3])
 
     @property
-    def channelid(self):
+    def mode(self):
         """
-        Select the active channel (0=P6V, 1=P25V, 2=N25V)
+        Gets/sets the mode for the specified channel.
+
+        The constant-voltage/constant-current modes of the power supply
+        are selected automatically depending on the load (resistance)
+        connected to the power supply. If the load greater than the set
+        V/I is connected, a voltage V is applied and the current flowing
+        is lower than I. If the load is smaller than V/I, the set current
+        I acts as a current limiter and the voltage is lower than V.
         """
-        return self.idx+1
+        return AttributeError('The `HPe3631a` sets its mode automatically')
 
-    @channelid.setter
-    def channelid(self, newval):
-        if newval not in [1, 2, 3]:
-            raise ValueError('Channel {idx} not available, choose 1, 2 or 3'.format(idx=newval))
-        self.idx = newval-1
-        self.sendcmd('INST:NSEL {idx}'.format(idx=newval))
-        time.sleep(0.5)
+    channelid = int_property(
+        "INST:NSEL",
+        valid_set=[1, 2, 3],
+        doc="""
+        Gets/Sets the active channel ID.
 
-    @property
-    def voltage(self):
+        :type: `HPe3631a.ChannelType`
         """
-        Gets/sets the voltage for the current channel.
+    )
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units Volts.
-        :type: `list` of `~quantities.quantity.Quantity` with units Volt
+    voltage, voltage_min, voltage_max = bounded_unitful_property(
+        "SOUR:VOLT",
+        pq.volt,
+        min_fmt_str="{}? MIN",
+        max_fmt_str="{}? MAX",
+        doc="""
+        Gets/sets the output voltage of the source.
+
+        :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
+        :type: `float` or `~quantities.Quantity`
         """
-        return self.channel[self.idx].voltage
+    )
 
-    @voltage.setter
-    def voltage(self, newval):
-        self.channel[self.idx].voltage = newval
+    current, current_min, current_max = bounded_unitful_property(
+        "SOUR:CURR",
+        pq.amp,
+        min_fmt_str="{}? MIN",
+        max_fmt_str="{}? MAX",
+        doc="""
+        Gets/sets the output current of the source.
 
-    @property
-    def current(self):
+        :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
+        :type: `float` or `~quantities.Quantity`
         """
-        Gets/sets the current for the current channel.
+    )
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units Amps.
-        :type: `list` of `~quantities.quantity.Quantity` with units Amp
+    voltage_sense = unitful_property(
+        "MEAS:VOLT",
+        pq.volt,
+        readonly=True,
+        doc="""
+        Gets the actual output voltage as measured by the sense wires.
+
+        :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
+        :type: `~quantities.Quantity`
         """
-        return self.channel[self.idx].current
+    )
 
-    @current.setter
-    def current(self, newval):
-        self.channel[self.idx].current = newval
+    current_sense = unitful_property(
+        "MEAS:CURR",
+        pq.amp,
+        readonly=True,
+        doc="""
+        Gets the actual output current as measured by the sense wires.
 
-    @property
-    def voltage_sense(self):
+        :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
+        :type: `~quantities.Quantity`
         """
-        Gets/sets the voltage from the sense wires for the current channel.
+    )
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units Volts.
-        :type: `list` of `~quantities.quantity.Quantity` with units Volt
+    output = bool_property(
+        "OUTP",
+        inst_true="1",
+        inst_false="0",
+        doc="""
+        Gets/sets the outputting status of the specified channel.
+
+        This is a toggle setting. ON will turn on the channel output
+        while OFF will turn it off.
+
+        :type: `bool`
         """
-        return self.channel[self.idx].voltage_sense
-
-    @voltage_sense.setter
-    def voltage_sense(self, newval):
-        self.channel[self.idx].voltage_sense = newval
-
-    @property
-    def current_sense(self):
-        """
-        Gets/sets the current from the sense wires for the current channel.
-
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units Amps.
-        :type: `list` of `~quantities.quantity.Quantity` with units Amp
-        """
-        return self.channel[self.idx].current_sense
-
-    @current_sense.setter
-    def current_sense(self, newval):
-        self.channel[self.idx].current_sense = newval
-
-    @property
-    def output(self):
-        """
-        Gets/sets the voltage for the current channel.
-
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
-            of units Volts.
-        :type: `list` of `~quantities.quantity.Quantity` with units Volt
-        """
-        return self.channel[self.idx].output
+    )
