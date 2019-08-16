@@ -43,6 +43,7 @@ from instruments.abstract_instruments import (
     PowerSupply,
     PowerSupplyChannel
 )
+from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import (
     int_property,
     unitful_property,
@@ -53,7 +54,7 @@ from instruments.util_fns import (
 # CLASSES #####################################################################
 
 
-class HPe3631a(PowerSupply, PowerSupplyChannel):
+class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
     """
     The HPe3631a is a three channels voltage/current supply.
