@@ -58,25 +58,21 @@ def test_voltage():
         ik.hp.HPe3631a,
         [
             "SYST:REM", # 0
-            "SOUR:VOLT? MIN",   # 1.1
-            "SOUR:VOLT? MAX",   # 1.2
-            "SOUR:VOLT? MIN",   # 2.1
-            "SOUR:VOLT? MAX",   # 2.2
-            "SOUR:VOLT 3.000000e+00",   # 3
+            "SOUR:VOLT? MAX",   # 1
+            "SOUR:VOLT? MAX",   # 2
+            "SOUR:VOLT? MAX",   # 3.1
+            "SOUR:VOLT 3.000000e+00",   # 3.2
             "SOUR:VOLT?",   # 4
-            "SOUR:VOLT? MIN",   # 5
-            "SOUR:VOLT? MIN",   # 6.1
-            "SOUR:VOLT? MAX"    # 6.2
+            "SOUR:VOLT? MAX",   # 5
+            "SOUR:VOLT? MAX"    # 6
         ],
         [
-            "0.0",  # 1.1
-            "6.0",  # 1.2
-            "0.0",  # 2.1
-            "6.0",  # 2.2
+            "6.0",  # 1
+            "6.0",  # 2
+            "6.0",  # 3.1
             "3.0",  # 4
-            "0.0",  # 5
-            "0.0",  # 6.1
-            "6.0"   # 6.2
+            "6.0",  # 5
+            "6.0"   # 6
         ]
     ) as inst:
         assert inst.voltage_min == 0.0 * pq.volt

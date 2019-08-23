@@ -48,7 +48,9 @@ from instruments.util_fns import (
     int_property,
     unitful_property,
     bounded_unitful_property,
-    bool_property
+    bool_property,
+    split_unit_str,
+    assume_units
 )
 
 # CLASSES #####################################################################
@@ -153,18 +155,76 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         """
     )
 
-    voltage, voltage_min, voltage_max = bounded_unitful_property(
-        "SOUR:VOLT",
-        pq.volt,
-        min_fmt_str="{}? MIN",
-        max_fmt_str="{}? MAX",
-        doc="""
+    @property
+    def voltage(self):
+        '''
         Gets/sets the output voltage of the source.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
+        '''
+        raw = self.query('SOUR:VOLT?')
+        return pq.Quantity(*split_unit_str(raw, pq.volt)).rescale(pq.volt)
+
+    @voltage.setter
+    def voltage(self, newval):
+        '''
+        Gets/sets the output voltage of the source.
+
+        :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
+        :type: `float` or `~quantities.Quantity`
+        '''
+        min_value, max_value = self.voltage_range
+        if newval < min_value:
+            raise ValueError("Voltage quantity is too low. Got {}, minimum "
+                             "value is {}".format(newval, min_value))
+
+        if newval > max_value:
+            raise ValueError("Voltage quantity is too high. Got {}, maximum "
+                             "value is {}".format(newval, max_value))
+
+        # Rescale to the correct unit before printing. This will also
+        # catch bad units.
+        strval = '{:e}'.format(assume_units(newval, pq.volt).rescale(pq.volt).item())
+        self.sendcmd('SOUR:VOLT {}'.format(strval))
+
+    @property
+    def voltage_min(self):
         """
-    )
+        Gets the minimum voltage for the current channel.
+
+        :units: :math:`\\text{V}`.
+        :type: `~quantities.Quantity`
+        """
+        return self.voltage_range[0]
+
+    @property
+    def voltage_max(self):
+        """
+        Gets the maximum voltage for the current channel.
+
+        :units: :math:`\\text{V}`.
+        :type: `~quantities.Quantity`
+        """
+        return self.voltage_range[1]
+
+    @property
+    def voltage_range(self):
+        """
+        Gets the voltage range for the current channel.
+
+        The MAX function SCPI command is designed in such a way
+        on this device that it always returns the largest absolute value.
+        There is no need to query MIN, as it is always 0., but one has to
+        order the values as MAX can be negative.
+
+        :units: :math:`\\text{V}`.
+        :type: array of `~quantities.Quantity`
+        """
+        value = pq.Quantity(*split_unit_str(self.query('SOUR:VOLT? MAX'), pq.volt))
+        if value < 0.:
+            return (value, 0.)
+        return (0., value)
 
     current, current_min, current_max = bounded_unitful_property(
         "SOUR:CURR",
