@@ -13,8 +13,6 @@ from .abstract_instruments import Instrument
 
 from . import agilent
 from . import generic_scpi
-from . import fluke
-from . import glassman
 from . import holzworth
 from . import hp
 from . import keithley
