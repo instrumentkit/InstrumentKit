@@ -544,6 +544,8 @@ class Instrument(object):
             instrument before timing out.
         :param float write_timeout: Number of seconds to wait when writing to the
             instrument before timing out.
+        :param str model: The brand of adapter to be connected to. Currently supported
+            is "gi" for Galvant Industries, and "pl" for Prologix LLC.
 
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
@@ -562,11 +564,19 @@ class Instrument(object):
         return cls(GPIBCommunicator(ser, gpib_address, model))
 
     @classmethod
-    def open_gpibethernet(cls, host, port, gpib_address, model="gi"):
+    def open_gpibethernet(cls, host, port, gpib_address, model="pl"):
         """
-        .. warning:: The GPIB-Ethernet adapter that this connection would
-            use does not actually exist, and thus this class method should
-            not be used.
+        Opens an instrument, connecting via a Prologix GPIBETHERNET adapter.
+
+        :param str host: Name or IP address of the instrument.
+        :param int port: TCP port on which the insturment is listening.
+        :param int gpib_address: Address on the connected GPIB bus assigned to
+            the instrument.
+        :param str model: The brand of adapter to be connected to. Currently supported
+            is "gi" for Galvant Industries, and "pl" for Prologix LLC.
+
+        .. warning:: This function has been setup for use with the Prologix
+            GPIBETHERNET adapter but has not been tested as confirmed working.
         """
         conn = socket.socket()
         conn.connect((host, port))

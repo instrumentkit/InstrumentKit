@@ -11,10 +11,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from enum import Enum
 import io
 import time
-
-from enum import Enum
 
 from builtins import chr, str, bytes
 import quantities as pq
@@ -326,9 +325,9 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if msg == '':
             return
         if self._model == GPIBCommunicator.Model.gi:
-            self._file.sendcmd('+a:' + str(self._gpib_address))
+            self._file.sendcmd("+a:{0}".format(str(self._gpib_address)))
         else:
-            self._file.sendcmd('++addr ' + str(self._gpib_address))
+            self._file.sendcmd("++addr {0}".format(str(self._gpib_address)))
         time.sleep(sleep_time)
         self.eoi = self.eoi
         time.sleep(sleep_time)
