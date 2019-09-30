@@ -220,6 +220,24 @@ class SRSDG645(SCPIInstrument):
             newval = assume_units(newval, 'V').magnitude
             self._parent.sendcmd("LAMP {},{}".format(self._idx, newval))
 
+        @property
+        def level_offset(self):
+            """
+            Amplitude offset (in voltage) of the output level for this output.
+
+            :type: `float` or :class:`~quantities.Quantity`
+            :units: As specified, or :math:`\\text{V}` by default.
+            """
+            return pq.Quantity(
+                float(self._parent.query('LOFF? {}'.format(self._idx))),
+                'V'
+            )
+
+        @level_offset.setter
+        def level_offset(self, newval):
+            newval = assume_units(newval, 'V').magnitude
+            self._parent.sendcmd("LOFF {},{}".format(self._idx, newval))
+
     # PROPERTIES #
 
     @property
