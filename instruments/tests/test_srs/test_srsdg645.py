@@ -20,7 +20,7 @@ test_srsdg645_name = make_name_test(ik.srs.SRSDG645)
 
 def test_srsdg645_output_level():
     """
-    SRSDG645: Checks getting/setting unitful ouput level.
+    SRSDG645: Checks getting/setting unitful output level.
     """
     with expected_protocol(
         ik.srs.SRSDG645,
@@ -38,7 +38,7 @@ def test_srsdg645_output_level():
 
 def test_srsdg645_output_offset():
     """
-    SRSDG645: Checks getting/setting unitful ouput level.
+    SRSDG645: Checks getting/setting unitful output offset.
     """
     with expected_protocol(
         ik.srs.SRSDG645,
