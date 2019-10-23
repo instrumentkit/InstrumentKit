@@ -36,6 +36,24 @@ def test_srsdg645_output_level():
         ddg.output['AB'].level_amplitude = 4.0
 
 
+def test_srsdg645_output_offset():
+    """
+    SRSDG645: Checks getting/setting unitful ouput level.
+    """
+    with expected_protocol(
+        ik.srs.SRSDG645,
+        [
+            "LOFF? 1",
+            "LOFF 1,2.0",
+        ],
+        [
+            "1.2"
+        ]
+    ) as ddg:
+        unit_eq(ddg.output['AB'].level_offset, pq.Quantity(1.2, "V"))
+        ddg.output['AB'].level_offset = 2.0
+
+
 def test_srsdg645_output_polarity():
     """
     SRSDG645: Checks getting/setting
