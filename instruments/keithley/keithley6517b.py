@@ -1,5 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#
+# keithley6517b.py: Driver for the Keithley 6517b Electrometer
+#
+# © 2019 Francois Drielsma (francois.drielsma@gmail.com).
+#
+# This file is a part of the InstrumentKit project.
+# Licensed under the AGPL version 3.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 """
 Provides support for the Keithley 6517b electrometer
 """
@@ -8,7 +29,6 @@ Provides support for the Keithley 6517b electrometer
 
 from __future__ import absolute_import
 from __future__ import division
-from builtins import map
 
 from enum import Enum
 
@@ -35,6 +55,14 @@ class Keithley6517b(SCPIInstrument, Electrometer):
     >>> dmm.measure(dmm.Mode.current)
     array(0.123) * pq.amp
     """
+
+    def __init__(self, filelike):
+        """
+        Auto configs the instrument in to the current readout mode
+        (sets the trigger and communication types rights)
+        """
+        super(Keithley6517b, self).__init__(filelike)
+        self.auto_config(self.mode)
 
     # ENUMS ##
 
@@ -73,9 +101,9 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         """
         voltage_dc = (2, 20, 200)
         current_dc = (20e-12, 200e-12, 2e-9, 20e-9,
-                   200e-9, 2e-6, 20e-6, 200e-6, 2e-3, 20e-3)
-        resistance = (2e3, 20e3, 200e3, 2e6, 20e6, 200e6, 2e9, 20e9, 200e9)
-        charge = (20e-9, 200e-9, 2e-6, 20e-6)
+                      200e-9, 2e-6, 20e-6, 200e-6, 2e-3, 20e-3)
+        resistance = (2e6, 20e6, 200e6, 2e9, 20e9, 200e9, 2e12, 20e12, 200e12)
+        charge = (2e-9, 20e-9, 200e-9, 2e-6)
 
     # PROPERTIES ##
 
@@ -137,7 +165,7 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         """
         # pylint: disable=no-member
         out = self.query('{}:RANGE:AUTO?'.format(self.mode.value))
-        return True if out == '1' else False
+        return out == '1'
 
     @auto_range.setter
     def auto_range(self, newval):
@@ -214,16 +242,16 @@ class Keithley6517b(SCPIInstrument, Electrometer):
     # PRIVATE METHODS ##
 
     def _valid_range(self, mode):
-        if mode == self.Mode.voltage:
-            return self.ValidRange.voltage
-        elif mode == self.Mode.current:
-            return self.ValidRange.current
-        elif mode == self.Mode.resistance:
+        if mode == self.Mode.voltage_dc:
+            return self.ValidRange.voltage_dc
+        if mode == self.Mode.current_dc:
+            return self.ValidRange.current_dc
+        if mode == self.Mode.resistance:
             return self.ValidRange.resistance
-        elif mode == self.Mode.charge:
+        if mode == self.Mode.charge:
             return self.ValidRange.charge
-        else:
-            raise ValueError('Invalid mode.')
+
+        raise ValueError('Invalid mode.')
 
     def _parse_measurement(self, ascii):
         # Split the string in three comma-separated parts (value, time, number of triggers)
