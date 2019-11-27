@@ -273,8 +273,8 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
     def device_timeout(self, newval):
         if not isinstance(newval, bool):
             raise TypeError('Device timeout mode must be a boolean.')
-        self._device_timeout = newval
         self.query('C{}'.format(int(not newval))) # Device acknowledges
+        self._device_timeout = newval
 
     # METHODS ##
 
