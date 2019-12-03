@@ -1,6 +1,6 @@
-attrs==19.2.0
+attrs>=19.2.0
 mock
-pytest==4.6.6
+pytest>=4.6.6
 pytest-mock
 hypothesis
 pylint==1.7.1

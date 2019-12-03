@@ -96,7 +96,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         self.voltage_max = 50.0 * pq.kilovolt
         self.current_max = 6.0 * pq.milliamp
         self.polarity = +1
-        self._device_timeout = True
+        self._device_timeout = False
         self._voltage = 0. * pq.volt
         self._current = 0. * pq.amp
 
