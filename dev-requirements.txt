@@ -1,6 +1,6 @@
 mock
 pytest
 pytest-mock
-hypothesis
+hypothesis==4.28.2
 pylint==1.7.1
 astroid==1.5.3

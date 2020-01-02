@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Provides a communication layer for an instrument connected via a Galvant
-Industries GPIB adapter.
+Industries or Prologix GPIB adapter.
 """
 
 # IMPORTS #####################################################################
@@ -11,6 +11,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 
+from enum import Enum
 import io
 import time
 
@@ -27,28 +28,42 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     """
     Communicates with a SocketCommunicator or SerialCommunicator object for
-    use with Galvant Industries GPIBUSB or GPIBETHERNET adapters.
+    use with Galvant Industries or Prologix GPIBUSB or GPIBETHERNET adapters.
 
     It essentially wraps those physical communication layers with the extra
-    overhead required by the Galvant GPIB adapters.
+    overhead required by the GPIB adapters.
     """
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, filelike, gpib_address):
+    def __init__(self, filelike, gpib_address, model="gi"):
         super(GPIBCommunicator, self).__init__(self)
-
+        self._model = self.Model(model)
         self._file = filelike
         self._gpib_address = gpib_address
         self._file.terminator = "\r"
-        self._version = int(self._file.query("+ver"))
+        if self._model == GPIBCommunicator.Model.gi:
+            self._version = int(self._file.query("+ver"))
+        if self._model == GPIBCommunicator.Model.pl:
+            self._file.sendcmd("++auto 0")
         self._terminator = None
         self.terminator = "\n"
         self._eoi = True
         self._timeout = 1000 * pq.millisecond
-        if self._version <= 4:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             self._eos = 10
         else:
             self._eos = "\n"
+
+    # ENUMS #
+
+    class Model(Enum):
+        """
+        Enum containing the supported GPIB controller models
+        """
+        #: Galvant Industries
+        gi = "gi"
+        #: Prologix, LLC
+        pl = "pl"
 
     # PROPERTIES #
 
@@ -95,12 +110,12 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     @timeout.setter
     def timeout(self, newval):
         newval = assume_units(newval, pq.second)
-        if self._version <= 4:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             newval = newval.rescale(pq.second)
-            self._file.sendcmd('+t:{}'.format(newval.magnitude))
-        elif self._version >= 5:
+            self._file.sendcmd('+t:{}'.format(int(newval.magnitude)))
+        else:
             newval = newval.rescale(pq.millisecond)
-            self._file.sendcmd("++read_tmo_ms {}".format(newval.magnitude))
+            self._file.sendcmd("++read_tmo_ms {}".format(int(newval.magnitude)))
         self._file.timeout = newval.rescale(pq.second)
         self._timeout = newval.rescale(pq.second)
 
@@ -127,7 +142,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if isinstance(newval, str):
             newval = newval.lower()
 
-        if self._version <= 4:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             if newval == 'eoi':
                 self.eoi = True
             elif not isinstance(newval, int):
@@ -148,7 +163,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                 self.eoi = False
                 self.eos = newval
                 self._terminator = chr(newval)
-        elif self._version >= 5:
+        else:
             if newval != "eoi":
                 self.eos = newval
                 self.eoi = False
@@ -182,10 +197,10 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if not isinstance(newval, bool):
             raise TypeError("EOI status must be specified as a boolean")
         self._eoi = newval
-        if self._version >= 5:
-            self._file.sendcmd("++eoi {}".format('1' if newval else '0'))
-        else:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             self._file.sendcmd("+eoi:{}".format('1' if newval else '0'))
+        else:
+            self._file.sendcmd("++eoi {}".format('1' if newval else '0'))
 
     @property
     def eos(self):
@@ -203,12 +218,12 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @eos.setter
     def eos(self, newval):
-        if self._version <= 4:
+        if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             if isinstance(newval, (str, bytes)):
                 newval = ord(newval)
             self._file.sendcmd("+eos:{}".format(newval))
             self._eos = newval
-        elif self._version >= 5:
+        else:
             if isinstance(newval, int):
                 newval = str(chr(newval))
             if newval == "\r\n":
@@ -299,8 +314,8 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     def _sendcmd(self, msg):
         """
         This is the implementation of ``sendcmd`` for communicating with
-        the Galvant Industries GPIB adapter. This function is in turn wrapped by
-        the concrete method `AbstractCommunicator.sendcmd` to provide consistent
+        the GPIB adapters. This function is in turn wrapped by the concrete
+        method `AbstractCommunicator.sendcmd` to provide consistent
         logging functionality across all communication layers.
 
         :param str msg: The command message to send to the instrument
@@ -309,7 +324,10 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
         if msg == '':
             return
-        self._file.sendcmd('+a:' + str(self._gpib_address))
+        if self._model == GPIBCommunicator.Model.gi:
+            self._file.sendcmd("+a:{0}".format(str(self._gpib_address)))
+        else:
+            self._file.sendcmd("++addr {0}".format(str(self._gpib_address)))
         time.sleep(sleep_time)
         self.eoi = self.eoi
         time.sleep(sleep_time)
@@ -323,13 +341,18 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     def _query(self, msg, size=-1):
         """
         This is the implementation of ``query`` for communicating with
-        the Galvant Industries GPIB adapter. This function is in turn wrapped by
-        the concrete method `AbstractCommunicator.query` to provide consistent
+        the GPIB adapters. This function is in turn wrapped by the concrete
+        method `AbstractCommunicator.query` to provide consistent
         logging functionality across all communication layers.
 
-        If a ``?`` is not present in ``msg`` then the adapter will be
-        instructed to get the response from the instrument via the ``+read``
-        command.
+        The Galvant Industries adaptor is set to automatically get a
+        response if a ``?`` is present in ``msg``. If it is not present,
+        then the adapter will be instructed to get the response from the
+        instrument via the ``+read`` command.
+
+        The Prologix adapter is set to not get a response unless told to do
+        so. It is instructed to get a response from the instrument via the
+        ``++read`` command.
 
         :param str msg: The query message to send to the instrument
         :param int size: The number of bytes to read back from the instrument
@@ -338,6 +361,8 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         self.sendcmd(msg)
-        if '?' not in msg:
+        if self._model == GPIBCommunicator.Model.gi and '?' not in msg:
             self._file.sendcmd('+read')
+        if self._model == GPIBCommunicator.Model.pl:
+            self._file.sendcmd('++read')
         return self._file.read(size).strip()
