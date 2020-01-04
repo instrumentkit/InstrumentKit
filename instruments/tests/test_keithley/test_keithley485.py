@@ -13,6 +13,7 @@ import quantities as pq
 import instruments as ik
 from instruments.tests import expected_protocol
 
+
 # TESTS ######################################################################
 
 def test_zero_check():
@@ -30,6 +31,7 @@ def test_zero_check():
         inst.zero_check = True
         assert inst.zero_check
 
+
 def test_log():
     with expected_protocol(
         ik.keithley.Keithley485,
@@ -45,6 +47,7 @@ def test_log():
         inst.log = True
         assert inst.log
 
+
 def test_input_range():
     with expected_protocol(
         ik.keithley.Keithley485,
@@ -56,9 +59,10 @@ def test_input_range():
             "4850070000000:"
         ]
     ) as inst:
-        inst.input_range = 'auto'
+        inst.input_range = "auto"
         inst.input_range = 2e-3
         assert inst.input_range == 2. * pq.milliamp
+
 
 def test_relative():
     with expected_protocol(
@@ -75,6 +79,7 @@ def test_relative():
         inst.relative = True
         assert inst.relative
 
+
 def test_eoi_mode():
     with expected_protocol(
         ik.keithley.Keithley485,
@@ -90,6 +95,7 @@ def test_eoi_mode():
         inst.eoi_mode = False
         assert not inst.eoi_mode
 
+
 def test_trigger_mode():
     with expected_protocol(
         ik.keithley.Keithley485,
@@ -101,9 +107,10 @@ def test_trigger_mode():
             "4850000050000:"
         ]
     ) as inst:
-        inst.trigger_mode = 'continuous_ontalk'
-        inst.trigger_mode = 'oneshot_onx'
-        assert inst.trigger_mode == 'oneshot_onx'
+        inst.trigger_mode = "continuous_ontalk"
+        inst.trigger_mode = "oneshot_onx"
+        assert inst.trigger_mode == "oneshot_onx"
+
 
 def test_auto_range():
     with expected_protocol(
@@ -116,7 +123,8 @@ def test_auto_range():
         ]
     ) as inst:
         inst.auto_range()
-        assert inst.input_range == 'auto'
+        assert inst.input_range == "auto"
+
 
 def test_get_status():
     with expected_protocol(
@@ -128,6 +136,7 @@ def test_get_status():
         ]
     ) as inst:
         inst.get_status()
+
 
 def test_measure():
     with expected_protocol(

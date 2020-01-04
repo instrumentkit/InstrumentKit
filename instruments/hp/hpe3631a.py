@@ -1,4 +1,4 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # hpe3631a.py: Driver for the HP E3631A Power Supply
@@ -88,10 +88,10 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
     def __init__(self, filelike):
         super(HPe3631a, self).__init__(filelike)
-        self.sendcmd('SYST:REM')  # Puts the device in remote operation
+        self.sendcmd("SYST:REM")  # Puts the device in remote operation
         time.sleep(0.1)
 
-    # INNER CLASSES ##
+    # INNER CLASSES #
 
     class Channel(object):
         """
@@ -143,7 +143,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         is lower than I. If the load is smaller than V/I, the set current
         I acts as a current limiter and the voltage is lower than V.
         """
-        return AttributeError('The `HPe3631a` sets its mode automatically')
+        return AttributeError("The `HPe3631a` sets its mode automatically")
 
     channelid = int_property(
         "INST:NSEL",
@@ -157,23 +157,23 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
     @property
     def voltage(self):
-        '''
+        """
         Gets/sets the output voltage of the source.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        '''
-        raw = self.query('SOUR:VOLT?')
+        """
+        raw = self.query("SOUR:VOLT?")
         return pq.Quantity(*split_unit_str(raw, pq.volt)).rescale(pq.volt)
 
     @voltage.setter
     def voltage(self, newval):
-        '''
+        """
         Gets/sets the output voltage of the source.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~quantities.Quantity`
-        '''
+        """
         min_value, max_value = self.voltage_range
         if newval < min_value:
             raise ValueError("Voltage quantity is too low. Got {}, minimum "
@@ -185,7 +185,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
-        strval = '{:e}'.format(assume_units(newval, pq.volt).rescale(pq.volt).item())
+        strval = "{:e}".format(assume_units(newval, pq.volt).rescale(pq.volt).item())
         self.sendcmd('SOUR:VOLT {}'.format(strval))
 
     @property
@@ -221,10 +221,10 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         :units: :math:`\\text{V}`.
         :type: array of `~quantities.Quantity`
         """
-        value = pq.Quantity(*split_unit_str(self.query('SOUR:VOLT? MAX'), pq.volt))
+        value = pq.Quantity(*split_unit_str(self.query("SOUR:VOLT? MAX"), pq.volt))
         if value < 0.:
-            return (value, 0.)
-        return (0., value)
+            return value, 0.
+        return 0., value
 
     current, current_min, current_max = bounded_unitful_property(
         "SOUR:CURR",

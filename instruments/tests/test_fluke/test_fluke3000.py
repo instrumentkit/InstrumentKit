@@ -48,18 +48,19 @@ init_sequence = [
 ]
 init_response = [
     "CR:Ack=0:RFEBD",   # 1.1
-    "ME:R:S#=01:DCC=012:PH=64", # 1.2
+    "ME:R:S#=01:DCC=012:PH=64",  # 1.2
     "CR:Ack=0:RFGUS",   # 2.1
-    "ME:R:S#=01:DCC=004:PH=46333030304643", # 2.2
+    "ME:R:S#=01:DCC=004:PH=46333030304643",  # 2.2
     "CR:Ack=0:RFEBD",   # 3.1
     "ME:R:S#=01:DCC=012:PH=64",  # 3.2
     "CR:Ack=0:RFGUS",   # 4.1
-    "ME:R:S#=02:DCC=004:PH=54333030304643", # 4.2
-    "CR:Ack=2", # 5
-    "CR:Ack=2", # 6
-    "CR:Ack=2", # 7
-    "CR:Ack=2"  # 8
+    "ME:R:S#=02:DCC=004:PH=54333030304643",  # 4.2
+    "CR:Ack=2",  # 5
+    "CR:Ack=2",  # 6
+    "CR:Ack=2",  # 7
+    "CR:Ack=2"   # 8
 ]
+
 
 def test_mode():
     with expected_protocol(
@@ -75,9 +76,10 @@ def test_mode():
             "ME:R:S#=01:DCC=010:PH=00000006020C0600",   # 1.2
             "CR:Ack=0:RFEMD"    # 2
         ],
-        '\r'
+        "\r"
     ) as inst:
         assert inst.mode == inst.Mode.voltage_dc
+
 
 def test_connect():
     with expected_protocol(
@@ -93,28 +95,30 @@ def test_connect():
         [
             "CR:Ack=0:RI",  # 1.1
             "SI:PON=Power On",  # 1.2
-            "RE:O", # 1.3
+            "RE:O",  # 1.3
             "CR:Ack=0:RFSM:Radio On Master",    # 2.1
-            "RE:M", # 2.2
+            "RE:M",  # 2.2
             "CR:Ack=0:RFDIS",   # 3.1
-            "ME:S", # 3.2
-            "ME:D:010200000000", # 3.3
+            "ME:S",  # 3.2
+            "ME:D:010200000000",  # 3.3
         ] +
         init_response,
-        '\r'
+        "\r"
     ) as inst:
         assert inst.positions[ik.fluke.Fluke3000.Module.m3000] == 1
         assert inst.positions[ik.fluke.Fluke3000.Module.t3000] == 2
+
 
 def test_scan():
     with expected_protocol(
         ik.fluke.Fluke3000,
         init_sequence,
         init_response,
-        '\r'
+        "\r"
     ) as inst:
         assert inst.positions[ik.fluke.Fluke3000.Module.m3000] == 1
         assert inst.positions[ik.fluke.Fluke3000.Module.t3000] == 2
+
 
 def test_reset():
     with expected_protocol(
@@ -128,13 +132,14 @@ def test_reset():
         [
             "CR:Ack=0:RI",  # 1.1
             "SI:PON=Power On",  # 1.2
-            "RE:O", # 1.3
+            "RE:O",  # 1.3
             "CR:Ack=0:RFSM:Radio On Master",    # 2.1
-            "RE:M" # 2.2
+            "RE:M"  # 2.2
         ],
-        '\r'
+        "\r"
     ) as inst:
         inst.reset()
+
 
 def test_measure():
     with expected_protocol(
@@ -153,7 +158,7 @@ def test_measure():
             "CR:Ack=0:RFEMD",   # 3.1
             "ME:R:S#=02:DCC=010:PH=FD00C08207220000"    # 3.2
         ],
-        '\r'
+        "\r"
     ) as inst:
         assert inst.measure(inst.Mode.voltage_dc) == 0.509 * pq.volt
         assert inst.measure(inst.Mode.temperature) == -25.3 * pq.celsius

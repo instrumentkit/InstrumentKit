@@ -80,7 +80,7 @@ class Fluke3000(Multimeter):
     Example usage:
 
     >>> import instruments as ik
-    >>> mult = ik.fluke.fluke3000.open_serial("/dev/ttyUSB0", 115200)
+    >>> mult = ik.fluke.Fluke3000.open_serial("/dev/ttyUSB0", 115200)
     >>> mult.measure(mult.Mode.voltage_dc) # Measures the DC voltage
     array(12.345) * V
 
@@ -200,21 +200,21 @@ class Fluke3000(Multimeter):
         """
         return AttributeError('The `Fluke3000` FC is an autoranging only multimeter')
 
-    # METHODS ##
+    # METHODS #
 
     def connect(self):
         """
         Connect to available modules and returns a dictionary
         of the modules found and their port ID.
         """
-        self.scan()                       # Look for connected devices
+        self.scan()                        # Look for connected devices
         if not self.positions:
-            self.reset()                  # Reset the PC3000 dongle
-            timeout = self.timeout        # Store default timeout
-            self.timeout = 30 * pq.second # PC 3000 can take a while to bind with wireless devices
-            self.query_lines("rfdis", 3)  # Discover available modules and bind them
-            self.timeout = timeout        # Restore default timeout
-            self.scan()                   # Look for connected devices
+            self.reset()                   # Reset the PC3000 dongle
+            timeout = self.timeout         # Store default timeout
+            self.timeout = 30 * pq.second  # PC 3000 can take a while to bind with wireless devices
+            self.query_lines("rfdis", 3)   # Discover available modules and bind them
+            self.timeout = timeout         # Restore default timeout
+            self.scan()                    # Look for connected devices
 
         if not self.positions:
             raise ValueError("No `Fluke3000` modules available")
@@ -234,7 +234,7 @@ class Fluke3000(Multimeter):
 
             # If it is, identify the device
             self.read()
-            output = self.query_lines('rfgus 0{}'.format(port_id), 2)[-1]
+            output = self.query_lines("rfgus 0{}".format(port_id), 2)[-1]
             module_id = int(output.split("PH=")[-1])
             if module_id == self.Module.m3000.value:
                 positions[self.Module.m3000] = port_id
@@ -467,6 +467,7 @@ class Fluke3000(Multimeter):
 
         # Return the combination
         return sign*prefix*scale
+
 
 # UNITS #######################################################################
 

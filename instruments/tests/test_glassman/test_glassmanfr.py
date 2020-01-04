@@ -14,6 +14,7 @@ import quantities as pq
 import instruments as ik
 from instruments.tests import expected_protocol
 
+
 # TESTS ######################################################################
 
 def set_defaults(inst):
@@ -25,15 +26,17 @@ def set_defaults(inst):
     inst.current_max = 6.0 * pq.milliamp
     inst.polarity = +1
 
+
 def test_channel():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [],
         [],
-        '\r'
+        "\r"
     ) as inst:
         assert len(inst.channel) == 1
         assert inst.channel[0] == inst
+
 
 def test_voltage():
     with expected_protocol(
@@ -46,11 +49,12 @@ def test_voltage():
             "R00000000000040",
             "A"
         ],
-        '\r'
+        "\r"
     ) as inst:
         set_defaults(inst)
         inst.voltage = 10.0 * pq.kilovolt
         assert inst.voltage == 10.0 * pq.kilovolt
+
 
 def test_current():
     with expected_protocol(
@@ -63,11 +67,12 @@ def test_current():
             "R00000000000040",
             "A"
         ],
-        '\r'
+        "\r"
     ) as inst:
         set_defaults(inst)
         inst.current = 1.2 * pq.milliamp
         assert inst.current == 1.2 * pq.milliamp
+
 
 def test_voltage_sense():
     with expected_protocol(
@@ -78,10 +83,11 @@ def test_voltage_sense():
         [
             "R10A00000010053"
         ],
-        '\r'
+        "\r"
     ) as inst:
         set_defaults(inst)
         assert round(inst.voltage_sense) == 13.0 * pq.kilovolt
+
 
 def test_current_sense():
     with expected_protocol(
@@ -92,10 +98,11 @@ def test_current_sense():
         [
             "R0001550001004C"
         ],
-        '\r'
+        "\r"
     ) as inst:
         set_defaults(inst)
         assert inst.current_sense == 2.0 * pq.milliamp
+
 
 def test_mode():
     with expected_protocol(
@@ -108,10 +115,11 @@ def test_mode():
             "R00000000000040",
             "R00000000010041"
         ],
-        '\r'
+        "\r"
     ) as inst:
         assert inst.mode == inst.Mode.voltage
         assert inst.mode == inst.Mode.current
+
 
 def test_output():
     with expected_protocol(
@@ -128,12 +136,13 @@ def test_output():
             "A",
             "R00000000040044"
         ],
-        '\r'
+        "\r"
     ) as inst:
         inst.output = False
         assert not inst.output
         inst.output = True
         assert inst.output
+
 
 def test_version():
     with expected_protocol(
@@ -144,9 +153,10 @@ def test_version():
         [
             "B1465"
         ],
-        '\r'
+        "\r"
     ) as inst:
-        assert inst.version == '14'
+        assert inst.version == "14"
+
 
 def test_device_timeout():
     with expected_protocol(
@@ -159,12 +169,13 @@ def test_device_timeout():
             "A",
             "A"
         ],
-        '\r'
+        "\r"
     ) as inst:
         inst.device_timeout = True
         assert inst.device_timeout
         inst.device_timeout = False
         assert not inst.device_timeout
+
 
 def test_sendcmd():
     with expected_protocol(
@@ -173,9 +184,10 @@ def test_sendcmd():
             "\x01123ABC5C"
         ],
         [],
-        '\r'
+        "\r"
     ) as inst:
-        inst.sendcmd('123ABC')
+        inst.sendcmd("123ABC")
+
 
 def test_query():
     with expected_protocol(
@@ -186,9 +198,10 @@ def test_query():
         [
             "R123ABC5C"
         ],
-        '\r'
+        "\r"
     ) as inst:
-        inst.query('Q123ABC')
+        inst.query("Q123ABC")
+
 
 def test_reset():
     with expected_protocol(
@@ -199,9 +212,10 @@ def test_reset():
         [
             "A"
         ],
-        '\r'
+        "\r"
     ) as inst:
         inst.reset()
+
 
 def test_set_status():
     with expected_protocol(
@@ -214,7 +228,7 @@ def test_set_status():
             "A",
             "R00000000040044"
         ],
-        '\r'
+        "\r"
     ) as inst:
         set_defaults(inst)
         inst.set_status(voltage=10*pq.kilovolt, current=1.2*pq.milliamp, output=True)

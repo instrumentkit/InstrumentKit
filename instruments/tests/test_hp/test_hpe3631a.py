@@ -13,6 +13,7 @@ import quantities as pq
 import instruments as ik
 from instruments.tests import expected_protocol
 
+
 # TESTS #######################################################################
 
 def test_channel():
@@ -35,11 +36,12 @@ def test_channel():
         assert inst.channel[2] == inst
         assert inst.channelid == 2
 
+
 def test_channelid():
     with expected_protocol(
         ik.hp.HPe3631a,
         [
-            "SYST:REM", # 0
+            "SYST:REM",  # 0
             "INST:NSEL?",   # 1
             "INST:NSEL 2",  # 2
             "INST:NSEL?"    # 3
@@ -53,11 +55,12 @@ def test_channelid():
         inst.channelid = 2
         assert inst.channelid == 2
 
+
 def test_voltage():
     with expected_protocol(
         ik.hp.HPe3631a,
         [
-            "SYST:REM", # 0
+            "SYST:REM",  # 0
             "SOUR:VOLT? MAX",   # 1
             "SOUR:VOLT? MAX",   # 2
             "SOUR:VOLT? MAX",   # 3.1
@@ -88,11 +91,12 @@ def test_voltage():
         except ValueError:
             pass
 
+
 def test_current():
     with expected_protocol(
         ik.hp.HPe3631a,
         [
-            "SYST:REM", # 0
+            "SYST:REM",  # 0
             "SOUR:CURR? MIN",   # 1.1
             "SOUR:CURR? MAX",   # 1.2
             "SOUR:CURR? MIN",   # 2.1
@@ -127,11 +131,12 @@ def test_current():
         except ValueError:
             pass
 
+
 def test_voltage_sense():
     with expected_protocol(
         ik.hp.HPe3631a,
         [
-            "SYST:REM", # 0
+            "SYST:REM",  # 0
             "MEAS:VOLT?"   # 1
         ],
         [
@@ -140,11 +145,12 @@ def test_voltage_sense():
     ) as inst:
         assert inst.voltage_sense == 1.234 * pq.volt
 
+
 def test_current_sense():
     with expected_protocol(
         ik.hp.HPe3631a,
         [
-            "SYST:REM", # 0
+            "SYST:REM",  # 0
             "MEAS:CURR?"   # 1
         ],
         [

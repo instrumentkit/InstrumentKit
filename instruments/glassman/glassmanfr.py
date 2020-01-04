@@ -107,39 +107,39 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Enum containing the possible modes of operations of the instrument
         """
         #: Constant voltage mode
-        voltage = '0'
+        voltage = "0"
         #: Constant current mode
-        current = '1'
+        current = "1"
 
     class ResponseCode(Enum):
         """
         Enum containing the possible reponse codes returned by the instrument.
         """
         #: A set command expects an acknoledge response (`A`)
-        S = 'A'
+        S = "A"
         #: A query command expects a response packet (`R`)
-        Q = 'R'
+        Q = "R"
         #: A version query expects a different response packet (`B`)
-        V = 'B'
+        V = "B"
         #: A configure command expects an acknoledge response (`A`)
-        C = 'A'
+        C = "A"
 
     class ErrorCode(Enum):
         """
         Enum containing the possible error codes returned by the instrument.
         """
         #: Undefined command received (not S, Q, V or C)
-        undefined_command = '1'
+        undefined_command = "1"
         #: The checksum calculated by the instrument does not correspond to the one received
-        checksum_error = '2'
+        checksum_error = "2"
         #: The command was longer than expected
-        extra_bytes = '3'
+        extra_bytes = "3"
         #: The digital control byte set was not one of HV On, HV Off or Power supply Reset
-        illegal_control = '4'
+        illegal_control = "4"
         #: A send command was sent without a reset byte while the power supply is faulted
-        illegal_while_fault = '5'
+        illegal_while_fault = "5"
         #: Command valid, error while executing it
-        processing_error = '6'
+        processing_error = "6"
 
     # PROPERTIES ##
 
@@ -190,7 +190,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `~quantities.Quantity`
         """
-        return self.get_status()['voltage']
+        return self.get_status()["voltage"]
 
     @property
     def current_sense(self):
@@ -200,7 +200,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `~quantities.Quantity`
         """
-        return self.get_status()['current']
+        return self.get_status()["current"]
 
     @property
     def mode(self):
@@ -216,7 +216,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
         :type: `GlassmanFR.Mode`
         """
-        return self.get_status()['mode']
+        return self.get_status()["mode"]
 
     @property
     def output(self):
@@ -228,12 +228,12 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
         :type: `bool`
         """
-        return self.get_status()['output']
+        return self.get_status()["output"]
 
     @output.setter
     def output(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('Ouput status mode must be a boolean.')
+            raise TypeError("Ouput status mode must be a boolean.")
         self.set_status(output=newval)
 
     @property
@@ -245,7 +245,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
         :type: `bool`
         """
-        return self.get_status()['fault']
+        return self.get_status()["fault"]
 
     @property
     def version(self):
@@ -272,9 +272,9 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
     @device_timeout.setter
     def device_timeout(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('Device timeout mode must be a boolean.')
+            raise TypeError("Device timeout mode must be a boolean.")
         self._device_timeout = newval
-        self.query('C{}'.format(int(not newval))) # Device acknowledges
+        self.query("C{}".format(int(not newval)))  # Device acknowledges
 
     # METHODS ##
 
@@ -287,7 +287,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :param str cmd: The command message to send to the instrument
         """
         checksum = self._get_checksum(cmd)
-        self._file.sendcmd('\x01' + cmd + checksum) # Add SOH and checksum
+        self._file.sendcmd("\x01" + cmd + checksum)  # Add SOH and checksum
 
     def query(self, cmd, size=-1):
         """
@@ -307,17 +307,17 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         """
         self.sendcmd(cmd)
         result = self._file.read(size)
-        if result[0] != getattr(self.ResponseCode, cmd[0]).value and result[0] != 'E':
-            raise ValueError('Invalid response code: {}'.format(result))
-        if result[0] == 'A':
+        if result[0] != getattr(self.ResponseCode, cmd[0]).value and result[0] != "E":
+            raise ValueError("Invalid response code: {}".format(result))
+        if result[0] == "A":
             return "Acknowledged"
         if not self._verify_checksum(result):
-            raise ValueError('Invalid checksum: {}'.format(result))
-        if result[0] == 'E':
+            raise ValueError("Invalid checksum: {}".format(result))
+        if result[0] == "E":
             error_name = self.ErrorCode(result[1]).name
-            raise ValueError('Instrument responded with error: {}'.format(error_name))
+            raise ValueError("Instrument responded with error: {}".format(error_name))
 
-        return result[1:-2] # Remove SOH and checksum
+        return result[1:-2]  # Remove SOH and checksum
 
     def reset(self):
         """
@@ -336,7 +336,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         if reset:
             self._voltage = 0. * pq.volt
             self._current = 0. * pq.amp
-            cmd = format(4, '013d')
+            cmd = format(4, "013d")
         else:
             # The maximum value is encoded as the maximum of three hex characters (4095)
             cmd = ''
@@ -347,23 +347,23 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
             ratio = float(voltage.rescale(pq.volt)/self.voltage_max.rescale(pq.volt))
             voltage_int = int(round(value_max*ratio))
             self._voltage = self.voltage_max*float(voltage_int)/value_max
-            assert self._voltage >= 0. * pq.volt and self._voltage <= self.voltage_max
-            cmd += format(voltage_int, '03X')
+            assert 0. * pq.volt <= self._voltage <= self.voltage_max
+            cmd += format(voltage_int, "03X")
 
             # If the current is not specified, keep it as is
             current = assume_units(current, pq.amp) if current is not None else self.current
             ratio = float(current.rescale(pq.amp)/self.current_max.rescale(pq.amp))
             current_int = int(round(value_max*ratio))
             self._current = self.current_max*float(current_int)/value_max
-            assert self._current >= 0. * pq.amp and self._current <= self.current_max
-            cmd += format(current_int, '03X')
+            assert 0. * pq.amp <= self._current <= self.current_max
+            cmd += format(current_int, "03X")
 
             # If the output status is not specified, keep it as is
             output = output if output is not None else self.output
-            control = '00{}{}'.format(int(output), int(not output))
-            cmd += format(int(control, 2), '07X')
+            control = "00{}{}".format(int(output), int(not output))
+            cmd += format(int(control, 2), "07X")
 
-        self.query('S' + cmd) # Device acknowledges
+        self.query("S" + cmd)  # Device acknowledges
 
     def get_status(self):
         """
@@ -374,7 +374,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
         :rtype: `dict`
         """
-        return self._parse_response(self.query('Q'))
+        return self._parse_response(self.query("Q"))
 
     def _parse_response(self, response):
         """
@@ -389,78 +389,78 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :rtype: `dict`
         """
         (voltage, current, monitors) = \
-            unpack('@3s3s3x1c2x', bytes(response, 'utf-8'))
+            unpack("@3s3s3x1c2x", bytes(response, "utf-8"))
 
         try:
             voltage = self._parse_voltage(voltage)
             current = self._parse_current(current)
             mode, fault, output = self._parse_monitors(monitors)
         except:
-            raise RuntimeError('Cannot parse response '
-                               'packet: {}'.format(response))
+            raise RuntimeError("Cannot parse response "
+                               "packet: {}".format(response))
 
-        return {'voltage': voltage,
-                'current': current,
-                'mode': mode,
-                'fault': fault,
-                'output': output}
+        return {"voltage": voltage,
+                "current": current,
+                "mode": mode,
+                "fault": fault,
+                "output": output}
 
     def _parse_voltage(self, word):
-        '''
+        """
         Converts the three-bytes voltage word returned in the
         response packet to a single voltage quantity.
 
-        :param string: Byte string to be parsed
+        :param word: Byte string to be parsed
         :type: `bytes`
 
         :rtype: `~quantities.quantity.Quantity`
-        '''
+        """
         value = int(word.decode('utf-8'), 16)
         value_max = int(0x3ff)
         return self.polarity*self.voltage_max*float(value)/value_max
 
     def _parse_current(self, word):
-        '''
+        """
         Converts the three-bytes current word returned in the
         response packet to a single current quantity.
 
-        :param string: Byte string to be parsed
+        :param word: Byte string to be parsed
         :type: `bytes`
 
         :rtype: `~quantities.quantity.Quantity`
-        '''
-        value = int(word.decode('utf-8'), 16)
+        """
+        value = int(word.decode("utf-8"), 16)
         value_max = int(0x3ff)
         return self.polarity*self.current_max*float(value)/value_max
 
     def _parse_monitors(self, word):
-        '''
+        """
         Converts the monitors byte returned in the response packet
         to a mode, a fault boolean and an output boolean.
 
-        :param string: Byte to be parsed
+        :param word: Byte to be parsed
         :type: `byte`
 
         :rtype: `str, bool, bool`
-        '''
-        bits = format(int(word, 16), '04b')
+        """
+        bits = format(int(word, 16), "04b")
         mode = self.Mode(bits[-1])
-        fault = bits[-2] == '1'
-        output = bits[-3] == '1'
+        fault = bits[-2] == "1"
+        output = bits[-3] == "1"
         return mode, fault, output
 
     def _verify_checksum(self, word):
-        '''
+        """
         Calculates the modulo 256 checksum of a string of characters
         and compares it to the one returned by the instrument.
 
         Returns True if they agree, False otherwise.
 
-        :param string: Byte string to be checked
+        :param word: Byte string to be checked
         :type: `str`
 
         :rtype: `bool`
-        '''
+        """
         data = word[1:-2]
         inst_checksum = word[-2:]
         calc_checksum = self._get_checksum(data)
@@ -468,7 +468,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
     @staticmethod
     def _get_checksum(data):
-        '''
+        """
         Calculates the modulo 256 checksum of a string of characters.
         This checksum, expressed in hexadecimal, is used in every
         communication of this instrument, as a sanity check.
@@ -476,14 +476,14 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Returns a string corresponding to the hexademical value
         of the checksum, without the `0x` prefix.
 
-        :param string: Byte string to be checksummed
+        :param data: Byte string to be checksummed
         :type: `str`
 
         :rtype: `str`
-        '''
+        """
         chrs = list(data)
-        sum = 0
+        total = 0
         for c in chrs:
-            sum += ord(c)
+            total += ord(c)
 
-        return format(sum % 256, '02X')
+        return format(total % 256, "02X")

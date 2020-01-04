@@ -60,7 +60,7 @@ class Keithley485(Instrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> inst = ik.keithley.keithley485.open_gpibusb("/dev/ttyUSB0", 22)
+    >>> inst = ik.keithley.Keithley485.open_gpibusb("/dev/ttyUSB0", 22)
     >>> inst.measure()  # Measures the current
     array(-1.278e-10) * A
     """
@@ -131,13 +131,13 @@ class Keithley485(Instrument):
         Enum containing valid status keys in the measurement string
         """
         #: Measurement normal
-        normal = b'N'
+        normal = b"N"
         #: Measurement zero-check
-        zerocheck = b'C'
+        zerocheck = b"C"
         #: Measurement overflow
-        overflow = b'O'
+        overflow = b"O"
         #: Measurement relative
-        relative = b'Z'
+        relative = b"Z"
 
     # PROPERTIES #
 
@@ -153,13 +153,13 @@ class Keithley485(Instrument):
 
         :type: `bool`
         """
-        return self.get_status()['zerocheck']
+        return self.get_status()["zerocheck"]
 
     @zero_check.setter
     def zero_check(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('Zero Check mode must be a boolean.')
-        self.sendcmd('C{}X'.format(int(newval)))
+            raise TypeError("Zero Check mode must be a boolean.")
+        self.sendcmd("C{}X".format(int(newval)))
 
     @property
     def log(self):
@@ -173,13 +173,13 @@ class Keithley485(Instrument):
 
         :type: `bool`
         """
-        return self.get_status()['log']
+        return self.get_status()["log"]
 
     @log.setter
     def log(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('Log mode must be a boolean.')
-        self.sendcmd('D{}X'.format(int(newval)))
+            raise TypeError("Log mode must be a boolean.")
+        self.sendcmd("D{}X".format(int(newval)))
 
     @property
     def input_range(self):
@@ -189,22 +189,22 @@ class Keithley485(Instrument):
 
         :type: `~quantities.quantity.Quantity` or `str`
         """
-        value = self.get_status()['range']
+        value = self.get_status()["range"]
         if isinstance(value, str):
             return value
         return value * pq.amp
 
     @input_range.setter
     def input_range(self, newval):
-        valid = ('auto', 2e-9, 2e-8, 2e-7, 2e-6, 2e-5, 2e-4, 2e-3)
+        valid = ("auto", 2e-9, 2e-8, 2e-7, 2e-6, 2e-5, 2e-4, 2e-3)
         if isinstance(newval, str):
             newval = newval.lower()
-            if newval == 'auto':
-                self.sendcmd('R0X')
+            if newval == "auto":
+                self.sendcmd("R0X")
                 return
             else:
-                raise ValueError('Only "auto" is acceptable when specifying '
-                                 'the range as a string.')
+                raise ValueError("Only `auto` is acceptable when specifying "
+                                 "the range as a string.")
         if isinstance(newval, pq.quantity.Quantity):
             newval = float(newval)
 
@@ -212,11 +212,11 @@ class Keithley485(Instrument):
             if newval in valid:
                 newval = valid.index(newval)
             else:
-                raise ValueError('Valid range settings are: {}'.format(valid))
+                raise ValueError("Valid range settings are: {}".format(valid))
         else:
-            raise TypeError('Range setting must be specified as a float, int, '
-                            'or the string "auto", got {}'.format(type(newval)))
-        self.sendcmd('R{}X'.format(newval))
+            raise TypeError("Range setting must be specified as a float, int, "
+                            "or the string `auto`, got {}".format(type(newval)))
+        self.sendcmd("R{}X".format(newval))
 
     @property
     def relative(self):
@@ -238,13 +238,13 @@ class Keithley485(Instrument):
 
         :type: `bool`
         """
-        return self.get_status()['relative']
+        return self.get_status()["relative"]
 
     @relative.setter
     def relative(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('Relative mode must be a boolean.')
-        self.sendcmd('Z{}X'.format(int(newval)))
+            raise TypeError("Relative mode must be a boolean.")
+        self.sendcmd("Z{}X".format(int(newval)))
 
     @property
     def eoi_mode(self):
@@ -260,13 +260,13 @@ class Keithley485(Instrument):
 
         :type: `bool`
         """
-        return self.get_status()['eoi_mode']
+        return self.get_status()["eoi_mode"]
 
     @eoi_mode.setter
     def eoi_mode(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('EOI mode must be a boolean.')
-        self.sendcmd('K{}X'.format(1-int(newval)))
+            raise TypeError("EOI mode must be a boolean.")
+        self.sendcmd("K{}X".format(1 - int(newval)))
 
     @property
     def trigger_mode(self):
@@ -291,17 +291,17 @@ class Keithley485(Instrument):
 
         :type: `Keithley485.TriggerMode`
         """
-        return self.get_status()['trigger']
+        return self.get_status()["trigger"]
 
     @trigger_mode.setter
     def trigger_mode(self, newval):
         if isinstance(newval, str):
             newval = Keithley485.TriggerMode[newval]
         if not isinstance(newval, Keithley485.TriggerMode):
-            raise TypeError('Drive must be specified as a '
-                            'Keithley485.TriggerMode, got {} '
-                            'instead.'.format(newval))
-        self.sendcmd('T{}X'.format(newval.value))
+            raise TypeError("Drive must be specified as a "
+                            "Keithley485.TriggerMode, got {} "
+                            "instead.".format(newval))
+        self.sendcmd("T{}X".format(newval.value))
 
     # METHODS #
 
@@ -312,7 +312,7 @@ class Keithley485(Instrument):
         This is the same as calling the `Keithley485.set_current_range`
         method and setting the parameter to "AUTO".
         """
-        self.sendcmd('R0X')
+        self.sendcmd("R0X")
 
     def get_status(self):
         """
@@ -334,13 +334,13 @@ class Keithley485(Instrument):
         :rtype: `str`
         """
         tries = 5
-        statusword = ''
-        while statusword[:3] != '485' and tries != 0:
-            statusword = self.query('U0X')
+        statusword = ""
+        while statusword[:3] != "485" and tries != 0:
+            statusword = self.query("U0X")
             tries -= 1
 
         if statusword is None:
-            raise IOError('could not retrieve status word')
+            raise IOError("Could not retrieve status word")
 
         return statusword[:-1]
 
@@ -358,41 +358,41 @@ class Keithley485(Instrument):
 
         :rtype: `dict`
         """
-        if statusword[:3] != '485':
-            raise ValueError('Status word starts with wrong '
-                             'prefix: {}'.format(statusword))
+        if statusword[:3] != "485":
+            raise ValueError("Status word starts with wrong "
+                             "prefix: {}".format(statusword))
 
-        (zerocheck, log, range, relative, eoi_mode,
+        (zerocheck, log, device_range, relative, eoi_mode,
          trigger, datamask, errormask) = \
-            unpack('@6c2s2s', bytes(statusword[3:], 'utf-8'))
+            unpack("@6c2s2s", bytes(statusword[3:], "utf-8"))
 
-        valid_range = {b'0': 'auto',
-                       b'1': 2e-9,
-                       b'2': 2e-8,
-                       b'3': 2e-7,
-                       b'4': 2e-6,
-                       b'5': 2e-5,
-                       b'6': 2e-4,
-                       b'7': 2e-3}
+        valid_range = {b"0": "auto",
+                       b"1": 2e-9,
+                       b"2": 2e-8,
+                       b"3": 2e-7,
+                       b"4": 2e-6,
+                       b"5": 2e-5,
+                       b"6": 2e-4,
+                       b"7": 2e-3}
 
         try:
-            range = valid_range[range]
+            device_range = valid_range[device_range]
             trigger = self.TriggerMode(int(trigger)).name
             datamask = self.SRQDataMask(int(datamask)).name
             errormask = self.SRQErrorMask(int(errormask)).name
         except:
-            raise RuntimeError('Cannot parse status '
-                               'word: {}'.format(statusword))
+            raise RuntimeError("Cannot parse status "
+                               "word: {}".format(statusword))
 
-        return {'zerocheck': zerocheck == b'1',
-                'log': log == b'1',
-                'range': range,
-                'relative': relative == b'1',
-                'eoi_mode': eoi_mode == b'0',
-                'trigger': trigger,
-                'datamask': datamask,
-                'errormask': errormask,
-                'terminator': self.terminator}
+        return {"zerocheck": zerocheck == b"1",
+                "log": log == b"1",
+                "range": device_range,
+                "relative": relative == b"1",
+                "eoi_mode": eoi_mode == b"0",
+                "trigger": trigger,
+                "datamask": datamask,
+                "errormask": errormask,
+                "terminator": self.terminator}
 
     def measure(self):
         """
@@ -400,7 +400,7 @@ class Keithley485(Instrument):
 
         :rtype: `~quantities.quantity.Quantity`
         """
-        return self._parse_measurement(self.query('X'))
+        return self._parse_measurement(self.query("X"))
 
     def _parse_measurement(self, measurement):
         """
@@ -414,16 +414,16 @@ class Keithley485(Instrument):
         :rtype: `~quantities.quantity.Quantity`
         """
         (status, function, base, current) = \
-            unpack('@1c2s1c10s', bytes(measurement, 'utf-8'))
+            unpack("@1c2s1c10s", bytes(measurement, "utf-8"))
 
         try:
             status = self.Status(status)
             if status != self.Status.normal:
-                raise ValueError('Instrument not in normal mode: {}'.format(status.name))
-            if function != b'DC':
-                raise ValueError('Instrument not returning DC function: {}'.format(function))
-            current = float(current) * pq.amp if base == b'A' else 10**(float(current)) * pq.amp
+                raise ValueError("Instrument not in normal mode: {}".format(status.name))
+            if function != b"DC":
+                raise ValueError("Instrument not returning DC function: {}".format(function))
+            current = float(current) * pq.amp if base == b"A" else 10 ** (float(current)) * pq.amp
         except:
-            raise Exception('Cannot parse measurement: {}'.format(measurement))
+            raise Exception("Cannot parse measurement: {}".format(measurement))
 
         return current
