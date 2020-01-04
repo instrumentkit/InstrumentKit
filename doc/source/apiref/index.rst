@@ -14,11 +14,15 @@ Contents:
     instrument
     generic_scpi
     agilent
+    fluke
+    glassman
     holzworth
     hp
     keithley
     lakeshore
+    minghe
     newport
+    ondax
     other
     oxford
     phasematrix
