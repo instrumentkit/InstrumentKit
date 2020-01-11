@@ -111,7 +111,7 @@ class TC200(Instrument):
         :type: `bool`
         """
         response = self.status
-        return True if int(response) % 2 is 1 else False
+        return True if int(response) % 2 == 1 else False
 
     @enable.setter
     def enable(self, newval):
