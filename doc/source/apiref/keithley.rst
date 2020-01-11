@@ -13,6 +13,13 @@ Keithley
 .. autoclass:: Keithley195
     :members:
     :undoc-members:
+
+:class:`Keithley485` Picoammeter
+================================
+
+.. autoclass:: Keithley485
+    :members:
+    :undoc-members:
     
 :class:`Keithley580` Microohm Meter
 ===================================
