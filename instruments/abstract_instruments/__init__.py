@@ -19,3 +19,8 @@ from .power_supply import (
     PowerSupplyChannel,
     PowerSupply,
 )
+
+from .optical_spectrum_analyzer import (
+    OSAChannel,
+    OpticalSpectrumAnalyzer,
+)
