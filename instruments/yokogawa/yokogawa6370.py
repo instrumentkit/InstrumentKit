@@ -9,7 +9,6 @@ Provides support for the Yokogawa 6370 optical spectrum analyzer.
 from __future__ import absolute_import
 from __future__ import division
 
-from builtins import range
 from enum import IntEnum, Enum
 
 import quantities as pq
@@ -56,11 +55,9 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         .. warning:: This class should NOT be manually created by the user. It
             is designed to be initialized by the `Yokogawa6370` class.
         """
-        _trace_names = ["TRA", "TRB", "TRC", "TRD", "TRE", "TRF", "TRG"]
-
         def __init__(self, parent, idx):
             self._parent = parent
-            self._name = self._trace_names[idx]
+            self._name = idx
 
         # METHODS #
 
@@ -110,11 +107,11 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
         >>> import instruments as ik
         >>> osa = ik.yokogawa.Yokogawa6370.open_gpibusb('/dev/ttyUSB0')
-        >>> dat = osa.channel[0].data # Gets the data of channel 0
+        >>> dat = osa.channel["A"].data # Gets the data of channel 0
 
         :rtype: `list`[`~Yokogawa6370.Channel`]
         """
-        return ProxyList(self, Yokogawa6370.Channel, range(6))
+        return ProxyList(self, Yokogawa6370.Channel, Yokogawa6370.Traces)
 
     start_wl, start_wl_min, start_wl_max = bounded_unitful_property(
         ":SENS:WAV:STAR",
@@ -170,7 +167,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         SweepModes,
         input_decoration=int,
         doc="""
-        A property to control the Sweep Mode as oe of Yokogawa6370.SweepMode. 
+        A property to control the Sweep Mode as one of Yokogawa6370.SweepMode. 
         Effective only after a self.start_sweep()."""
     )
 
@@ -188,21 +185,13 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         Function to query the active Trace data of the OSA.
         """
-        cmd = ":TRAC:Y? {0}".format(self.active_trace.value)
-        self.sendcmd(cmd)
-        data = self.binblockread(data_width=4, fmt="<d")
-        self._file.read_raw(1)
-        return data
+        return self.channel[self.active_trace].data
 
     def wavelength(self):
         """
         Query the wavelength axis of the active trace.
         """
-        cmd = ":TRAC:X? {0}".format(self.active_trace.value)
-        self.sendcmd(cmd)
-        data = self.binblockread(data_width=4, fmt="<d")
-        self._file.read_raw(1)
-        return data
+        return self.channel[self.active_trace].wavelength
 
     def start_sweep(self):
         """
@@ -210,4 +199,4 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
         After changing the sweep mode, the device needs to be triggered before it will update.
         """
-        self.sendcmd('*CLS;:init')
+        self.sendcmd("*CLS;:init")
