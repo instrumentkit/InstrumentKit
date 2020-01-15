@@ -39,12 +39,12 @@ from . import mock
 
 def test_instrument_binblockread():
     with expected_protocol(
-        ik.Instrument,
-        [],
-        [
-            b"#210" + bytes.fromhex("00000001000200030004") + b"0",
-        ],
-        sep="\n"
+            ik.Instrument,
+            [],
+            [
+                b"#210" + bytes.fromhex("00000001000200030004") + b"0",
+            ],
+            sep="\n"
     ) as inst:
         np.testing.assert_array_equal(inst.binblockread(2), [0, 1, 2, 3, 4])
 
