@@ -16,6 +16,8 @@ import instruments as ik
 
 # TESTS ######################################################################
 
+# pylint: disable=missing-function-docstring,redefined-outer-name,protected-access
+
 @pytest.fixture
 def fg():
     return ik.abstract_instruments.FunctionGenerator.open_test()

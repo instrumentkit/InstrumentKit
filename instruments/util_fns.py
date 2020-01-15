@@ -106,8 +106,7 @@ def convert_temperature(temperature, base):
     elif str(newval.units).split(" ")[1] == 'K' and str(base).split(" ")[1] == 'K':
         return_val = newval
     else:
-        raise ValueError(
-            "Unable to convert " + str(newval.units) + " to " + str(base))
+        raise ValueError(f"Unable to convert {str(newval.units)} to {str(base)}")
     return return_val
 
 
@@ -156,12 +155,10 @@ def split_unit_str(s, default_units=pq.dimensionless, lookup=None):
 
         return float(val), lookup(units)
 
-    else:
-        try:
-            return float(s), default_units
-        except ValueError:
-            raise ValueError("Could not split '{}' into value "
-                             "and units.".format(repr(s)))
+    try:
+        return float(s), default_units
+    except ValueError:
+        raise ValueError(f"Could not split '{repr(s)}' into value and units.")
 
 
 def rproperty(fget=None, fset=None, doc=None, readonly=False, writeonly=False):
@@ -478,17 +475,17 @@ def unitful_property(command, units, set_cmd=None, format_code='{:e}', doc=None,
     def _setter(self, newval):
         min_value, max_value = valid_range
         if min_value is not None:
-            if hasattr(min_value, '__call__'):
-                min_value = min_value(self)
+            if callable(min_value):
+                min_value = min_value(self)  # pylint: disable=not-callable
             if newval < min_value:
-                raise ValueError("Unitful quantity is too low. Got {}, minimum "
-                                 "value is {}".format(newval, min_value))
+                raise ValueError(f"Unitful quantity is too low. Got {newval}, "
+                                 f"minimum value is {min_value}")
         if max_value is not None:
-            if hasattr(max_value, '__call__'):
-                max_value = max_value(self)
+            if callable(max_value):
+                max_value = max_value(self)  # pylint: disable=not-callable
             if newval > max_value:
-                raise ValueError("Unitful quantity is too high. Got {}, maximum"
-                                 " value is {}".format(newval, max_value))
+                raise ValueError(f"Unitful quantity is too high. Got {newval}, "
+                                 f"maximum value is {max_value}")
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
         strval = format_code.format(
@@ -614,7 +611,7 @@ def string_property(command, set_cmd=None, bookmark_symbol='"', doc=None,
 # CLASSES #####################################################################
 
 
-class ProxyList(object):
+class ProxyList:
     """
     This is a special class used to generate lists of objects where the valid
     keys are defined by the `valid_set` init parameter. This allows an
@@ -666,8 +663,7 @@ class ProxyList(object):
             if not isinstance(idx, self._valid_set):
                 raise IndexError("Index out of range. Must be "
                                  "in {}.".format(self._valid_set))
-            else:
-                idx = idx.value
+            idx = idx.value
         else:
             if idx not in self._valid_set:
                 raise IndexError("Index out of range. Must be "

@@ -64,46 +64,46 @@ init_response = [
 
 def test_mode():
     with expected_protocol(
-        ik.fluke.Fluke3000,
-        init_sequence +
-        [
-            "rfemd 01 1",   # 1
-            "rfemd 01 2"    # 2
-        ],
-        init_response +
-        [
-            "CR:Ack=0:RFEMD",   # 1.1
-            "ME:R:S#=01:DCC=010:PH=00000006020C0600",   # 1.2
-            "CR:Ack=0:RFEMD"    # 2
-        ],
-        "\r"
+            ik.fluke.Fluke3000,
+            init_sequence +
+            [
+                "rfemd 01 1",   # 1
+                "rfemd 01 2"    # 2
+            ],
+            init_response +
+            [
+                "CR:Ack=0:RFEMD",   # 1.1
+                "ME:R:S#=01:DCC=010:PH=00000006020C0600",   # 1.2
+                "CR:Ack=0:RFEMD"    # 2
+            ],
+            "\r"
     ) as inst:
         assert inst.mode == inst.Mode.voltage_dc
 
 
 def test_connect():
     with expected_protocol(
-        ik.fluke.Fluke3000,
-        none_sequence +
-        [
-            "ri",   # 1
-            "rfsm 1",   # 2
-            "rfdis",    # 3
-        ] +
-        init_sequence,
-        none_response +
-        [
-            "CR:Ack=0:RI",  # 1.1
-            "SI:PON=Power On",  # 1.2
-            "RE:O",  # 1.3
-            "CR:Ack=0:RFSM:Radio On Master",    # 2.1
-            "RE:M",  # 2.2
-            "CR:Ack=0:RFDIS",   # 3.1
-            "ME:S",  # 3.2
-            "ME:D:010200000000",  # 3.3
-        ] +
-        init_response,
-        "\r"
+            ik.fluke.Fluke3000,
+            none_sequence +
+            [
+                "ri",   # 1
+                "rfsm 1",   # 2
+                "rfdis",    # 3
+            ] +
+            init_sequence,
+            none_response +
+            [
+                "CR:Ack=0:RI",  # 1.1
+                "SI:PON=Power On",  # 1.2
+                "RE:O",  # 1.3
+                "CR:Ack=0:RFSM:Radio On Master",    # 2.1
+                "RE:M",  # 2.2
+                "CR:Ack=0:RFDIS",   # 3.1
+                "ME:S",  # 3.2
+                "ME:D:010200000000",  # 3.3
+            ] +
+            init_response,
+            "\r"
     ) as inst:
         assert inst.positions[ik.fluke.Fluke3000.Module.m3000] == 1
         assert inst.positions[ik.fluke.Fluke3000.Module.t3000] == 2
@@ -111,10 +111,10 @@ def test_connect():
 
 def test_scan():
     with expected_protocol(
-        ik.fluke.Fluke3000,
-        init_sequence,
-        init_response,
-        "\r"
+            ik.fluke.Fluke3000,
+            init_sequence,
+            init_response,
+            "\r"
     ) as inst:
         assert inst.positions[ik.fluke.Fluke3000.Module.m3000] == 1
         assert inst.positions[ik.fluke.Fluke3000.Module.t3000] == 2
@@ -122,43 +122,43 @@ def test_scan():
 
 def test_reset():
     with expected_protocol(
-        ik.fluke.Fluke3000,
-        init_sequence +
-        [
-            "ri",   # 1
-            "rfsm 1"   # 2
-        ],
-        init_response +
-        [
-            "CR:Ack=0:RI",  # 1.1
-            "SI:PON=Power On",  # 1.2
-            "RE:O",  # 1.3
-            "CR:Ack=0:RFSM:Radio On Master",    # 2.1
-            "RE:M"  # 2.2
-        ],
-        "\r"
+            ik.fluke.Fluke3000,
+            init_sequence +
+            [
+                "ri",   # 1
+                "rfsm 1"   # 2
+            ],
+            init_response +
+            [
+                "CR:Ack=0:RI",  # 1.1
+                "SI:PON=Power On",  # 1.2
+                "RE:O",  # 1.3
+                "CR:Ack=0:RFSM:Radio On Master",    # 2.1
+                "RE:M"  # 2.2
+            ],
+            "\r"
     ) as inst:
         inst.reset()
 
 
 def test_measure():
     with expected_protocol(
-        ik.fluke.Fluke3000,
-        init_sequence +
-        [
-            "rfemd 01 1",   # 1
-            "rfemd 01 2",   # 2
-            "rfemd 02 0"    # 3
-        ],
-        init_response +
-        [
-            "CR:Ack=0:RFEMD",   # 1.1
-            "ME:R:S#=01:DCC=010:PH=FD010006020C0600",   # 1.2
-            "CR:Ack=0:RFEMD",   # 2
-            "CR:Ack=0:RFEMD",   # 3.1
-            "ME:R:S#=02:DCC=010:PH=FD00C08207220000"    # 3.2
-        ],
-        "\r"
+            ik.fluke.Fluke3000,
+            init_sequence +
+            [
+                "rfemd 01 1",   # 1
+                "rfemd 01 2",   # 2
+                "rfemd 02 0"    # 3
+            ],
+            init_response +
+            [
+                "CR:Ack=0:RFEMD",   # 1.1
+                "ME:R:S#=01:DCC=010:PH=FD010006020C0600",   # 1.2
+                "CR:Ack=0:RFEMD",   # 2
+                "CR:Ack=0:RFEMD",   # 3.1
+                "ME:R:S#=02:DCC=010:PH=FD00C08207220000"    # 3.2
+            ],
+            "\r"
     ) as inst:
         assert inst.measure(inst.Mode.voltage_dc) == 0.509 * pq.volt
         assert inst.measure(inst.Mode.temperature) == -25.3 * pq.celsius

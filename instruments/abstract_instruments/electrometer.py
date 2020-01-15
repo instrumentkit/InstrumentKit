@@ -37,7 +37,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @mode.setter
     @abc.abstractmethod
@@ -53,7 +52,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~quantities.UnitQuantity`
         """
-        pass
 
     @property
     @abc.abstractmethod
@@ -64,7 +62,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @trigger_mode.setter
     @abc.abstractmethod
@@ -80,7 +77,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @input_range.setter
     @abc.abstractmethod
@@ -96,7 +92,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `bool`
         """
-        pass
 
     @zero_check.setter
     @abc.abstractmethod
@@ -112,7 +107,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `bool`
         """
-        pass
 
     @zero_correct.setter
     @abc.abstractmethod

@@ -425,9 +425,6 @@ class APTStrainGaugeReader(APTPiezoDevice):
 
         .. warning:: This is not currently implemented
         """
-        # STRAIN GAUGE COMMANDS #
-
-        pass
 
     _channel_type = StrainGaugeChannel
 
@@ -515,7 +512,14 @@ class APTMotorController(ThorLabsAPT):
 
         @property
         def motion_timeout(self):
+            """
+            Gets/sets the motor channel motion timeout.
+
+            :units: Seconds
+            :type: `~quantities.quantity.Quantity`
+            """
             return self._motion_timeout
+
         @motion_timeout.setter
         def motion_timeout(self, newval):
             self._motion_timeout = assume_units(newval, pq.second)

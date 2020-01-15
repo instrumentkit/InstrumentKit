@@ -24,11 +24,11 @@ from instruments.abstract_instruments import (
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList
 
+
 # CLASSES #####################################################################
 
 
 class _TekTDS224DataSource(OscilloscopeDataSource):
-
     """
     Class representing a data source (channel, math, or ref) on the Tektronix
     TDS 224.
@@ -71,47 +71,42 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
         with self:
 
             if not bin_format:
-                self._tek.sendcmd('DAT:ENC ASCI')
-                                  # Set the data encoding format to ASCII
-                raw = self._tek.query('CURVE?')
+                self._tek.sendcmd("DAT:ENC ASCI")
+                # Set the data encoding format to ASCII
+                raw = self._tek.query("CURVE?")
                 raw = raw.split(',')  # Break up comma delimited string
                 raw = map(float, raw)  # Convert each list element to int
                 raw = np.array(raw)  # Convert into numpy array
             else:
-                self._tek.sendcmd('DAT:ENC RIB')
-                                  # Set encoding to signed, big-endian
+                self._tek.sendcmd("DAT:ENC RIB")
+                # Set encoding to signed, big-endian
                 data_width = self._tek.data_width
-                self._tek.sendcmd('CURVE?')
+                self._tek.sendcmd("CURVE?")
                 raw = self._tek.binblockread(
                     data_width)  # Read in the binary block,
-                                                    # data width of 2 bytes
+                # data width of 2 bytes
 
                 # pylint: disable=protected-access
                 self._tek._file.flush_input()  # Flush input buffer
 
-            yoffs = self._tek.query(
-                'WFMP:{}:YOF?'.format(self.name))  # Retrieve Y offset
-            ymult = self._tek.query(
-                'WFMP:{}:YMU?'.format(self.name))  # Retrieve Y multiply
-            yzero = self._tek.query(
-                'WFMP:{}:YZE?'.format(self.name))  # Retrieve Y zero
+            yoffs = self._tek.query(f"WFMP:{self.name}:YOF?")  # Retrieve Y offset
+            ymult = self._tek.query(f"WFMP:{self.name}:YMU?")  # Retrieve Y multiply
+            yzero = self._tek.query(f"WFMP:{self.name}:YZE?")  # Retrieve Y zero
 
             y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
 
-            xzero = self._tek.query('WFMP:XZE?')  # Retrieve X zero
-            xincr = self._tek.query('WFMP:XIN?')  # Retrieve X incr
-            ptcnt = self._tek.query(
-                'WFMP:{}:NR_P?'.format(self.name))  # Retrieve number
-                                                                  # of data
-                                                                  # points
+            xzero = self._tek.query("WFMP:XZE?")  # Retrieve X zero
+            xincr = self._tek.query("WFMP:XIN?")  # Retrieve X incr
+            ptcnt = self._tek.query(f"WFMP:{self.name}:NR_P?")  # Retrieve number
+            # of data
+            # points
 
             x = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
 
-            return (x, y)
+            return x, y
 
 
 class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
-
     """
     Class representing a channel on the Tektronix TDS 224.
 
@@ -122,7 +117,7 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
     """
 
     def __init__(self, parent, idx):
-        super(_TekTDS224Channel, self).__init__(parent, "CH{}".format(idx + 1))
+        super(_TekTDS224Channel, self).__init__(parent, f"CH{idx + 1}")
         self._idx = idx + 1
 
     @property
@@ -133,19 +128,18 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
         :type: `TekTDS224.Coupling`
         """
         return TekTDS224.Coupling(
-            self._tek.query("CH{}:COUPL?".format(self._idx))
+            self._tek.query(f'CH{self._idx}:COUPL?')
         )
 
     @coupling.setter
     def coupling(self, newval):
         if not isinstance(newval, TekTDS224.Coupling):
-            raise TypeError("Coupling setting must be a `TekTDS224.Coupling`"
-                            " value, got {} instead.".format(type(newval)))
-        self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
+            raise TypeError(f"Coupling setting must be a `TekTDS224.Coupling` value,"
+                            f"got {type(newval)} instead.")
+        self._tek.sendcmd(f"CH{self._idx}:COUPL {newval.value}")
 
 
 class TekTDS224(SCPIInstrument, Oscilloscope):
-
     """
     The Tektronix TDS224 is a multi-channel oscilloscope with analog
     bandwidths of 100MHz.
@@ -205,10 +199,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
 
         :rtype: `_TekTDS224DataSource`
         """
-        return ProxyList(self,
-                         lambda s, idx: _TekTDS224DataSource(
-                             s, "REF{}".format(idx + 1)),
-                         range(4))
+        return ProxyList(self, lambda s, idx: _TekTDS224DataSource(s, f"REF{idx + 1}"), range(4))
 
     @property
     def math(self):
@@ -238,7 +229,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
                 newval = newval.value
             elif hasattr(newval, "name"):  # Is a datasource with a name.
                 newval = newval.name
-        self.sendcmd("DAT:SOU {}".format(newval))
+        self.sendcmd(f"DAT:SOU {newval}")
         if not self._testing:
             time.sleep(0.01)  # Let the instrument catch up.
 
@@ -257,8 +248,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         if int(newval) not in [1, 2]:
             raise ValueError("Only one or two byte-width is supported.")
 
-        self.sendcmd("DATA:WIDTH {}".format(newval))
+        self.sendcmd(f"DATA:WIDTH {newval}")
 
-    @property
     def force_trigger(self):
         raise NotImplementedError

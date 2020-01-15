@@ -38,7 +38,6 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @mode.setter
     @abc.abstractmethod
@@ -54,7 +53,6 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @trigger_mode.setter
     @abc.abstractmethod
@@ -70,7 +68,6 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `bool`
         """
-        pass
 
     @relative.setter
     @abc.abstractmethod
@@ -86,7 +83,6 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~quantities.quantity.Quantity` or `~enum.Enum`
         """
-        pass
 
     @input_range.setter
     @abc.abstractmethod
@@ -100,4 +96,3 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
         """
         Perform a measurement as specified by mode parameter.
         """
-        pass

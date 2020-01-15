@@ -94,7 +94,7 @@ class Instrument(object):
             be sent.
         """
         self._file.sendcmd(str(cmd))
-        ack_expected_list = self._ack_expected(cmd)
+        ack_expected_list = self._ack_expected(cmd)  # pylint: disable=assignment-from-none
         if not isinstance(ack_expected_list, (list, tuple)):
             ack_expected_list = [ack_expected_list]
         for ack_expected in ack_expected_list:
@@ -126,7 +126,7 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        ack_expected_list = self._ack_expected(cmd)
+        ack_expected_list = self._ack_expected(cmd)  # pylint: disable=assignment-from-none
         if not isinstance(ack_expected_list, (list, tuple)):
             ack_expected_list = [ack_expected_list]
 
@@ -138,16 +138,14 @@ class Instrument(object):
                 ack = self.read()
                 if ack != ack_expected:
                     raise AcknowledgementError(
-                        "Incorrect ACK message received: got {} "
-                        "expected {}".format(ack, ack_expected)
+                        f"Incorrect ACK message received: got {ack} expected {ack_expected}"
                     )
             value = self.read(size)  # Now read in our return data
         if self.prompt is not None:
             prompt = self.read(len(self.prompt))
             if prompt != self.prompt:
                 raise PromptError(
-                    "Incorrect prompt message received: got {} "
-                    "expected {}".format(prompt, self.prompt)
+                    f"Incorrect prompt message received: got {prompt} expected {self.prompt}"
                 )
         return value
 

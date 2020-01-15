@@ -215,21 +215,36 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
         """
         Enum containg valid output function modes for many function generators
         """
-        sinusoid = 'SIN'
-        square = 'SQU'
-        triangle = 'TRI'
-        ramp = 'RAMP'
-        noise = 'NOIS'
-        arbitrary = 'ARB'
+        sinusoid = "SIN"
+        square = "SQU"
+        triangle = "TRI"
+        ramp = "RAMP"
+        noise = "NOIS"
+        arbitrary = "ARB"
 
     @property
     def channel(self):
+        """
+        Gets a channel object for the function generator. This should use
+        `~instruments.util_fns.ProxyList` to achieve this.
+
+        The number of channels accessable depends on the value
+        of FunctionGenerator._channel_count
+
+        :rtype: `FunctionGenerator.Channel`
+        """
         return ProxyList(self, self.Channel, range(self._channel_count))
 
     # PASSTHROUGH PROPERTIES #
 
     @property
     def amplitude(self):
+        """
+        Gets/sets the output amplitude of the first channel
+        of the function generator
+
+        :type: `~quantities.Quantity`
+        """
         return self.channel[0].amplitude
 
     @amplitude.setter

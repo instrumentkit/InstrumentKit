@@ -11,11 +11,11 @@ from __future__ import division
 
 import time
 
+from quantities import second
+
 from instruments.thorlabs import _packets
 from instruments.abstract_instruments.instrument import Instrument
 from instruments.util_fns import assume_units
-
-from quantities import second
 
 # CLASSES #####################################################################
 
@@ -29,7 +29,7 @@ class ThorLabsInstrument(Instrument):
 
     def __init__(self, filelike):
         super(ThorLabsInstrument, self).__init__(filelike)
-        self.terminator = ''
+        self.terminator = ""
 
     def sendpacket(self, packet):
         """

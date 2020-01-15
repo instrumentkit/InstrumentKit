@@ -23,17 +23,17 @@ def test_srsdg645_output_level():
     SRSDG645: Checks getting/setting unitful output level.
     """
     with expected_protocol(
-        ik.srs.SRSDG645,
-        [
-            "LAMP? 1",
-            "LAMP 1,4.0",
-        ],
-        [
-            "3.2"
-        ]
+            ik.srs.SRSDG645,
+            [
+                "LAMP? 1",
+                "LAMP 1,4.0",
+            ],
+            [
+                "3.2"
+            ]
     ) as ddg:
-        unit_eq(ddg.output['AB'].level_amplitude, pq.Quantity(3.2, "V"))
-        ddg.output['AB'].level_amplitude = 4.0
+        unit_eq(ddg.output["AB"].level_amplitude, pq.Quantity(3.2, "V"))
+        ddg.output["AB"].level_amplitude = 4.0
 
 
 def test_srsdg645_output_offset():
@@ -41,17 +41,17 @@ def test_srsdg645_output_offset():
     SRSDG645: Checks getting/setting unitful output offset.
     """
     with expected_protocol(
-        ik.srs.SRSDG645,
-        [
-            "LOFF? 1",
-            "LOFF 1,2.0",
-        ],
-        [
-            "1.2"
-        ]
+            ik.srs.SRSDG645,
+            [
+                "LOFF? 1",
+                "LOFF 1,2.0",
+            ],
+            [
+                "1.2"
+            ]
     ) as ddg:
-        unit_eq(ddg.output['AB'].level_offset, pq.Quantity(1.2, "V"))
-        ddg.output['AB'].level_offset = 2.0
+        unit_eq(ddg.output["AB"].level_offset, pq.Quantity(1.2, "V"))
+        ddg.output["AB"].level_offset = 2.0
 
 
 def test_srsdg645_output_polarity():
@@ -59,22 +59,22 @@ def test_srsdg645_output_polarity():
     SRSDG645: Checks getting/setting
     """
     with expected_protocol(
-        ik.srs.SRSDG645,
-        [
-            "LPOL? 1",
-            "LPOL 2,0"
-        ],
-        [
-            "1"
-        ]
+            ik.srs.SRSDG645,
+            [
+                "LPOL? 1",
+                "LPOL 2,0"
+            ],
+            [
+                "1"
+            ]
     ) as ddg:
-        assert ddg.output['AB'].polarity == ddg.LevelPolarity.positive
-        ddg.output['CD'].polarity = ddg.LevelPolarity.negative
+        assert ddg.output["AB"].polarity == ddg.LevelPolarity.positive
+        ddg.output["CD"].polarity = ddg.LevelPolarity.negative
 
 
 def test_srsdg645_trigger_source():
     with expected_protocol(ik.srs.SRSDG645, "DLAY?2\nDLAY 3,2,60.0\n", "0,42\n") as ddg:
-        ref, t = ddg.channel['A'].delay
+        ref, t = ddg.channel["A"].delay
         assert ref == ddg.Channels.T0
-        assert abs((t - pq.Quantity(42, 's')).magnitude) < 1e5
-        ddg.channel['B'].delay = (ddg.channel['A'], pq.Quantity(1, "minute"))
+        assert abs((t - pq.Quantity(42, "s")).magnitude) < 1e5
+        ddg.channel["B"].delay = (ddg.channel["A"], pq.Quantity(1, "minute"))

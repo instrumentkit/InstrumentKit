@@ -23,14 +23,14 @@ def test_channel():
 
 def test_current():
     with expected_protocol(
-        ik.keithley.Keithley6220,
-        [
-            "SOUR:CURR?",
-            "SOUR:CURR {:e}".format(0.05)
-        ],
-        [
-            "0.1",
-        ]
+            ik.keithley.Keithley6220,
+            [
+                "SOUR:CURR?",
+                "SOUR:CURR {:e}".format(0.05)
+            ],
+            [
+                "0.1",
+            ]
     ) as inst:
         assert inst.current == 100 * pq.milliamp
         assert inst.current_min == -105 * pq.milliamp
@@ -40,10 +40,10 @@ def test_current():
 
 def test_disable():
     with expected_protocol(
-        ik.keithley.Keithley6220,
-        [
-            "SOUR:CLE:IMM"
-        ],
-        []
+            ik.keithley.Keithley6220,
+            [
+                "SOUR:CLE:IMM"
+            ],
+            []
     ) as inst:
         inst.disable()
