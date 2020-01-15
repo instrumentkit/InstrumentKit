@@ -156,11 +156,11 @@ class Fluke3000(Multimeter):
 
         :rtype: `Fluke3000.Mode`
         """
-        if self.Module.m3000 not in self.positions.keys():
+        if self.Module.m3000 not in self.positions:
             raise KeyError("No `Fluke3000` FC multimeter is bound")
         port_id = self.positions[self.Module.m3000]
-        value = self.query_lines("rfemd 0{} 1".format(port_id), 2)[-1]
-        self.query("rfemd 0{} 2".format(port_id))
+        value = self.query_lines(f"rfemd 0{port_id} 1", 2)[-1]
+        self.query(f"rfemd 0{port_id} 2")
         data = value.split("PH=")[-1]
         return self.Mode(self._parse_mode(data))
 
@@ -228,20 +228,20 @@ class Fluke3000(Multimeter):
         positions = {}
         for port_id in range(1, 7):
             # Check if a device is connected to port port_id
-            output = self.query("rfebd 0{} 0".format(port_id))
+            output = self.query(f"rfebd 0{port_id} 0")
             if "RFEBD" not in output:
                 continue
 
             # If it is, identify the device
             self.read()
-            output = self.query_lines("rfgus 0{}".format(port_id), 2)[-1]
+            output = self.query_lines(f"rfgus 0{port_id}", 2)[-1]
             module_id = int(output.split("PH=")[-1])
             if module_id == self.Module.m3000.value:
                 positions[self.Module.m3000] = port_id
             elif module_id == self.Module.t3000.value:
                 positions[self.Module.t3000] = port_id
             else:
-                raise NotImplementedError("Module ID {} not implemented".format(module_id))
+                raise NotImplementedError(f"Module ID {module_id} not implemented")
 
         self.positions = positions
 
@@ -317,12 +317,12 @@ class Fluke3000(Multimeter):
         """
         # Check that the mode is supported
         if not isinstance(mode, self.Mode):
-            raise ValueError("Mode {} is not supported".format(mode))
+            raise ValueError(f"Mode {mode} is not supported")
 
         # Check that the module associated with this mode is available
         module = self._get_module(mode)
-        if module not in self.positions.keys():
-            raise ValueError("Device necessary to measure {} is not available".format(mode))
+        if module not in self.positions:
+            raise ValueError(f"Device necessary to measure {mode} is not available")
 
         # Query the module
         value = ''
@@ -332,19 +332,19 @@ class Fluke3000(Multimeter):
             # Read out
             if mode == self.Mode.temperature:
                 # The temperature module supports single readout
-                value = self.query_lines("rfemd 0{} 0".format(port_id), 2)[-1]
+                value = self.query_lines(f"rfemd 0{port_id} 0", 2)[-1]
             else:
                 # The multimeter does not support single readout,
                 # have to open continuous readout, read, then close it
-                value = self.query_lines("rfemd 0{} 1".format(port_id), 2)[-1]
-                self.query("rfemd 0{} 2".format(port_id))
+                value = self.query_lines(f"rfemd 0{port_id} 1", 2)[-1]
+                self.query(f"rfemd 0{port_id} 2")
 
             # Check that value is consistent with the request, break
             if "PH" in value:
                 data = value.split("PH=")[-1]
                 if self._parse_mode(data) != mode.value:
                     if self.Module.m3000 in self.positions.keys():
-                        self.query("rfemd 0{} 2".format(self.positions[self.Module.m3000]))
+                        self.query(f"rfemd 0{self.positions[self.Module.m3000]} 2")
                     self.flush()
                 else:
                     break
@@ -394,9 +394,8 @@ class Fluke3000(Multimeter):
 
         # Check that the multimeter is in the right mode (fifth byte)
         if self._parse_mode(data) != mode.value:
-            error = ("Mode {} was requested but the Fluke 3000FC Multimeter "
-                     "is in mode {} instead. Could not read the requested "
-                     "quantity.").format(mode.name, self.Mode(data[8:10]).name)
+            error = (f"Mode {mode.name} was requested but the Fluke 3000FC Multimeter is in "
+                     f"mode {self.Mode(data[8:10]).name} instead. Could not read the requested quantity.")
             raise ValueError(error)
 
         # Extract the value from the first two bytes
@@ -451,15 +450,15 @@ class Fluke3000(Multimeter):
 
         """
         # Convert the fourth dual hex byte to an 8 bits string
-        byte = format(int(data[6:8], 16), '08b')
+        byte = format(int(data[6:8], 16), "08b")
 
         # The first bit encodes the sign (0 positive, 1 negative)
-        sign = 1 if byte[0] == '0' else -1
+        sign = 1 if byte[0] == "0" else -1
 
         # The second to fourth bits encode the metric prefix
         code = int(byte[1:4], 2)
-        if code not in PREFIXES.keys():
-            raise ValueError("Metric prefix not recognized: {}".format(code))
+        if code not in PREFIXES:
+            raise ValueError(f"Metric prefix not recognized: {code}")
         prefix = PREFIXES[code]
 
         # The sixth and seventh bit encode the decimal place
