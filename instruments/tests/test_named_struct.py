@@ -17,6 +17,7 @@ from instruments.named_struct import (
     Field, StringField, Padding, NamedStruct
 )
 
+
 # TESTS ######################################################################
 
 # We disable pylint warnings that are not as applicable for unit tests.
@@ -33,7 +34,6 @@ class TestNamedStruct(TestCase):
         foo = Foo(a=var1, b=var2)
         assert Foo.unpack(foo.pack()) == foo
 
-
     def test_str(self):
         class Foo(NamedStruct):
             a = StringField(8, strip_null=False)
@@ -47,7 +47,6 @@ class TestNamedStruct(TestCase):
         self.assertEqual(foo.a, '0123456\x00')
         self.assertEqual(foo.b, 'abc')
         self.assertEqual(foo.c, u'α')
-
 
     def test_negative_len(self):
         """

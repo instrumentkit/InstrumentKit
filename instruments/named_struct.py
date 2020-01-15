@@ -85,7 +85,7 @@ class Field:
         raise TypeError("Field is scalar and has no len().")
 
     def __repr__(self):
-        if self._owner_type:
+        if self._owner_type:  # pylint: disable=using-constant-test
             return "<Field {} of {}, fmt={}>".format(
                 self._name, self._owner_type, self._fmt
             )
