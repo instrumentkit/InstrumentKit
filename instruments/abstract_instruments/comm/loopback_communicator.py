@@ -140,7 +140,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         if self._stdout is not None:
             self._stdout.write(msg)
         else:
-            print(" <- {} ".format(repr(msg)))
+            print(f" <- {repr(msg)} ")
 
     def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
         """
@@ -164,7 +164,6 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         For the loopback communicator, this will do nothing and just `pass`.
         """
-        pass
 
     # METHODS #
 
@@ -177,8 +176,8 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
-        if msg != '':
-            msg = "{}{}".format(msg, self._terminator)
+        if msg != "":
+            msg = f"{msg}{self._terminator}"
             self.write(msg)
 
     def _query(self, msg, size=-1):

@@ -31,7 +31,8 @@ class SignalGenerator(with_metaclass(abc.ABCMeta, Instrument)):
 
     # PROPERTIES #
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def channel(self):
         """
         Gets a specific channel object for the SignalGenerator.

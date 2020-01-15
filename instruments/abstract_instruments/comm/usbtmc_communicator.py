@@ -150,7 +150,6 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         For a USBTMC connection, this function does not actually do anything
         and simply returns.
         """
-        pass
 
     # METHODS #
 

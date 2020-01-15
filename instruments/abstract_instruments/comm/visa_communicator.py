@@ -160,7 +160,6 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         entirety of its contents.
         """
         # TODO: Find out how to flush with pyvisa
-        pass
 
     # METHODS #
 

@@ -38,7 +38,6 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @mode.setter
     @abc.abstractmethod
@@ -54,7 +53,6 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `~quantities.quantity.Quantity`
         """
-        pass
 
     @voltage.setter
     @abc.abstractmethod
@@ -70,7 +68,6 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `~quantities.quantity.Quantity`
         """
-        pass
 
     @current.setter
     @abc.abstractmethod
@@ -86,7 +83,6 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `bool`
         """
-        pass
 
     @output.setter
     @abc.abstractmethod
@@ -127,7 +123,6 @@ class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~quantities.quantity.Quantity`
         """
-        pass
 
     @voltage.setter
     @abc.abstractmethod
@@ -143,7 +138,6 @@ class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~quantities.quantity.Quantity`
         """
-        pass
 
     @current.setter
     @abc.abstractmethod

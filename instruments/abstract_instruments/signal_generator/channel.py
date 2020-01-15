@@ -36,7 +36,6 @@ class SGChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `~quantities.quantity.Quantity`
         """
-        pass
 
     @frequency.setter
     @abc.abstractmethod
@@ -51,7 +50,6 @@ class SGChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `~quantities.quantity.Quantity`
         """
-        pass
 
     @power.setter
     @abc.abstractmethod
@@ -66,7 +64,6 @@ class SGChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `~quantities.quantity.Quantity`
         """
-        pass
 
     @phase.setter
     @abc.abstractmethod
@@ -81,7 +78,6 @@ class SGChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `bool`
         """
-        pass
 
     @output.setter
     @abc.abstractmethod
