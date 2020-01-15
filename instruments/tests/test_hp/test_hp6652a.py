@@ -16,38 +16,38 @@ from instruments.tests import expected_protocol
 
 def test_name():
     with expected_protocol(
-        ik.hp.HP6652a,
-        [
-            "*IDN?"
-        ],
-        [
-            "FOO,BAR,AAA,BBBB"
-        ],
-        sep="\n"
+            ik.hp.HP6652a,
+            [
+                "*IDN?"
+            ],
+            [
+                "FOO,BAR,AAA,BBBB"
+            ],
+            sep="\n"
     ) as hp:
         assert hp.name == "FOO BAR"
 
 
 def test_reset():
     with expected_protocol(
-        ik.hp.HP6652a,
-        [
-            "OUTP:PROT:CLE"
-        ],
-        [],
-        sep="\n"
+            ik.hp.HP6652a,
+            [
+                "OUTP:PROT:CLE"
+            ],
+            [],
+            sep="\n"
     ) as hp:
         hp.reset()
 
 
 def test_display_text():
     with expected_protocol(
-        ik.hp.HP6652a,
-        [
-            'DISP:TEXT "TEST"',
-            'DISP:TEXT "TEST AAAAAAAAAA"'
-        ],
-        []
+            ik.hp.HP6652a,
+            [
+                'DISP:TEXT "TEST"',
+                'DISP:TEXT "TEST AAAAAAAAAA"'
+            ],
+            []
     ) as psu:
         assert psu.display_text("TEST") == "TEST"
         assert psu.display_text("TEST AAAAAAAAAAAAAAAA") == "TEST AAAAAAAAAA"
@@ -55,10 +55,10 @@ def test_display_text():
 
 def test_channel():
     with expected_protocol(
-        ik.hp.HP6652a,
-        [],
-        [],
-        sep="\n"
+            ik.hp.HP6652a,
+            [],
+            [],
+            sep="\n"
     ) as hp:
         assert hp.channel[0] == hp
         assert len(hp.channel) == 1
