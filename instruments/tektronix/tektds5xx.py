@@ -461,7 +461,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
 
         self.sendcmd("DATA:WIDTH {}".format(newval))
 
-    @property
     def force_trigger(self):
         raise NotImplementedError
 
