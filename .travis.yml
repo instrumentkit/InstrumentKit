@@ -4,6 +4,7 @@ language: python
 python:
   - "3.6"
   - "3.7"
+  - "3.8"
 install:
   - "pip install -r requirements.txt"
   - "pip install -r dev-requirements.txt"
@@ -23,8 +24,7 @@ before_script:
   - pylint --version
 script:
   - pytest --cov=instruments
-  - if [[ $TRAVIS_PYTHON_VERSION != 3.7 ]]; then pylint --py3k instruments; fi
-  - if [[ $TRAVIS_PYTHON_VERSION != 3.7 ]]; then pylint --disable=I,R instruments; fi
+  - pylint --disable=I,R instruments
 after_success:
   - coveralls
 deploy:
@@ -34,4 +34,4 @@ deploy:
   distributions: "sdist bdist_wheel"
   on:
     tags: true
-    condition: "$TRAVIS_PYTHON_VERSION == 3.7"
+    condition: "$TRAVIS_PYTHON_VERSION == 3.8"
