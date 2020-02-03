@@ -9,14 +9,12 @@ Provides an abstract base class for multimeter instruments
 
 import abc
 
-from future.utils import with_metaclass
-
 from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
 
-class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
+class Multimeter(Instrument, metaclass=abc.ABCMeta):
 
     """
     Abstract base class for multimeter instruments.

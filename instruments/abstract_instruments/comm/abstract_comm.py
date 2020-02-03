@@ -12,12 +12,10 @@ import codecs
 import logging
 import struct
 
-from future.utils import with_metaclass
-
 # CLASSES ####################################################################
 
 
-class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
+class AbstractCommunicator(metaclass=abc.ABCMeta):
 
     """
     Abstract base class for electrometer instruments.

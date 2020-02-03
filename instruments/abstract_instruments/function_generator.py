@@ -10,8 +10,6 @@ Provides an abstract base class for function generator instruments
 import abc
 from enum import Enum
 
-from future.utils import with_metaclass
-
 from instruments.abstract_instruments import Instrument
 import instruments.units as u
 from instruments.util_fns import assume_units, ProxyList
@@ -19,7 +17,7 @@ from instruments.util_fns import assume_units, ProxyList
 # CLASSES #####################################################################
 
 
-class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
+class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
 
     """
     Abstract base class for function generator instruments.
@@ -33,7 +31,7 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
         self._channel_count = 1
 
     # pylint:disable=protected-access
-    class Channel(with_metaclass(abc.ABCMeta, object)):
+    class Channel(metaclass=abc.ABCMeta):
         """
         Abstract base class for physical channels on a function generator.
 

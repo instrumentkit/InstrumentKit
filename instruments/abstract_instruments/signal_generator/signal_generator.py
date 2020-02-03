@@ -9,14 +9,12 @@ Provides an abstract base class for signal generator instruments
 
 import abc
 
-from future.utils import with_metaclass
-
 from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
 
-class SignalGenerator(with_metaclass(abc.ABCMeta, Instrument)):
+class SignalGenerator(Instrument, metaclass=abc.ABCMeta):
 
     """
     Python abstract base class for signal generators (eg microwave sources).
