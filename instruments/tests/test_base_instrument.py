@@ -111,7 +111,7 @@ def test_instrument_open_serial(mock_serial_manager):
     )
 
 
-class fake_serial(object):
+class fake_serial:
     """
     Create a fake serial.Serial() object so that tests can be run without
     accessing a non-existant port.

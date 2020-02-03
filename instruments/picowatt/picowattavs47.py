@@ -35,7 +35,7 @@ class PicowattAVS47(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Sensor(object):
+    class Sensor:
 
         """
         Class representing a sensor on the PicowattAVS47

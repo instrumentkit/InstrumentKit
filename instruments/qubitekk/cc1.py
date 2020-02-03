@@ -86,7 +86,7 @@ class CC1(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Channel(object):
+    class Channel:
 
         """
         Class representing a channel on the Qubitekk CC1.

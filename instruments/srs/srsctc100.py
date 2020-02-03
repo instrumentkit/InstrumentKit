@@ -56,7 +56,7 @@ class SRSCTC100(SCPIInstrument):
         diode = 'Diode'
         rox = 'ROX'
 
-    class Channel(object):
+    class Channel:
 
         """
         Represents an input or output channel on an SRS CTC-100 cryogenic

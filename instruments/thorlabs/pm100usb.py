@@ -72,7 +72,7 @@ class PM100USB(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Sensor(object):
+    class Sensor:
         """
         Class representing a sensor on the ThorLabs PM100USB
 

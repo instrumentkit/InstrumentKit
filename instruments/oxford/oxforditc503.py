@@ -33,7 +33,7 @@ class OxfordITC503(Instrument):
 
     # INNER CLASSES #
 
-    class Sensor(object):
+    class Sensor:
 
         """
         Class representing a probe sensor on the Oxford ITC 503.

@@ -26,7 +26,7 @@ class TekAWG2000(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Channel(object):
+    class Channel:
 
         """
         Class representing a physical channel on the Tektronix AWG 2000

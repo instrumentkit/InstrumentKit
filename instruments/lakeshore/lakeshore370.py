@@ -33,7 +33,7 @@ class Lakeshore370(SCPIInstrument):
 
     # INNER CLASSES ##
 
-    class Channel(object):
+    class Channel:
 
         """
         Class representing a sensor attached to the Lakeshore 370.

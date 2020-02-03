@@ -54,7 +54,7 @@ from instruments.util_fns import ProxyList
 # CLASSES #####################################################################
 
 
-class _TekTDS5xxMeasurement(object):
+class _TekTDS5xxMeasurement:
 
     """
     Class representing a measurement channel on the Tektronix TDS5xx

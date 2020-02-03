@@ -33,7 +33,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     thorlabs source folder.
     """
 
-    class APTChannel(object):
+    class APTChannel:
 
         """
         Represents a channel within the hardware device. One device can have

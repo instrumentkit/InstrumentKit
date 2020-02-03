@@ -16,7 +16,7 @@ from instruments.util_fns import assume_units, ProxyList
 # CLASSES #####################################################################
 
 
-class _SRSDG645Channel(object):
+class _SRSDG645Channel:
 
     """
     Class representing a sensor attached to the SRS DG645.
@@ -166,7 +166,7 @@ class SRSDG645(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Output(object):
+    class Output:
 
         """
         An output from the DDG.

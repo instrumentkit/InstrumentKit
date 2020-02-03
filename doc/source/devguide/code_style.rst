@@ -92,7 +92,7 @@ For example::
 	class SomeInstrument(Instrument):
 		# If there's a more appropriate base class, please use it
 		# in preference to object!
-		class Channel(object):
+		class Channel:
 			# We use a three-argument initializer,
 			# to remember which instrument this channel belongs to,
 			# as well as its index or label on that instrument.
@@ -114,7 +114,7 @@ and appears with the instrument in documentation.
 Since this convention is somewhat recent, you may find older code that uses
 a style more like this::
 
-	class _SomeInstrumentChannel(object):
+	class _SomeInstrumentChannel:
 		# stuff
 
 	class SomeInstrument(Instrument):
@@ -126,7 +126,7 @@ This can be redefined in a backwards-compatible way by bringing the channel
 class inside, then defining a new module-level variable for the old name::
 
 	class SomeInstrument(Instrument):
-		class Channel(object):
+		class Channel:
 			# stuff
 
 		@property

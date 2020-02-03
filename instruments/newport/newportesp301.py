@@ -290,7 +290,7 @@ class NewportESP301(Instrument):
 
 
 # pylint: disable=too-many-public-methods,too-many-instance-attributes
-class NewportESP301Axis(object):
+class NewportESP301Axis:
 
     """
     Encapsulates communication concerning a single axis

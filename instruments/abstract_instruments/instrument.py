@@ -39,7 +39,7 @@ _DEFAULT_FORMATS.update({
 # CLASSES #####################################################################
 
 
-class Instrument(object):
+class Instrument:
 
     """
     This is the base instrument class from which all others are derived from.

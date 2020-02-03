@@ -60,7 +60,7 @@ class TopMode(Instrument):
 
     # INNER CLASSES #
 
-    class Laser(object):
+    class Laser:
 
         """
         Class representing a laser on the Toptica Topmode.

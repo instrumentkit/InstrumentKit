@@ -29,7 +29,7 @@ class Lakeshore340(SCPIInstrument):
 
     # INNER CLASSES ##
 
-    class Sensor(object):
+    class Sensor:
 
         """
         Class representing a sensor attached to the Lakeshore 340.
