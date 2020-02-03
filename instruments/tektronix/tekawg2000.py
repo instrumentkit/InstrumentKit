@@ -13,7 +13,7 @@ from builtins import range
 from enum import Enum
 
 import numpy as np
-import quantities as pq
+import instruments.units as u
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units, ProxyList
@@ -68,16 +68,16 @@ class TekAWG2000(SCPIInstrument):
                 of units Volts.
             :type: `~quantities.Quantity` with units Volts peak-to-peak.
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._tek.query("FG:{}:AMPL?".format(self._name)).strip()),
-                pq.V
+                u.V
             )
 
         @amplitude.setter
         def amplitude(self, newval):
             self._tek.sendcmd("FG:{}:AMPL {}".format(
                 self._name,
-                assume_units(newval, pq.V).rescale(pq.V).magnitude
+                assume_units(newval, u.V).rescale(u.V).magnitude
             ))
 
         @property
@@ -89,16 +89,16 @@ class TekAWG2000(SCPIInstrument):
                 of units Volts.
             :type: `~quantities.Quantity` with units Volts.
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._tek.query("FG:{}:OFFS?".format(self._name)).strip()),
-                pq.V
+                u.V
             )
 
         @offset.setter
         def offset(self, newval):
             self._tek.sendcmd("FG:{}:OFFS {}".format(
                 self._name,
-                assume_units(newval, pq.V).rescale(pq.V).magnitude
+                assume_units(newval, u.V).rescale(u.V).magnitude
             ))
 
         @property
@@ -111,15 +111,15 @@ class TekAWG2000(SCPIInstrument):
                 of units Hertz.
             :type: `~quantities.Quantity` with units Hertz.
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._tek.query("FG:FREQ?").strip()),
-                pq.Hz
+                u.Hz
             )
 
         @frequency.setter
         def frequency(self, newval):
             self._tek.sendcmd("FG:FREQ {}HZ".format(
-                assume_units(newval, pq.Hz).rescale(pq.Hz).magnitude
+                assume_units(newval, u.Hz).rescale(u.Hz).magnitude
             ))
 
         @property

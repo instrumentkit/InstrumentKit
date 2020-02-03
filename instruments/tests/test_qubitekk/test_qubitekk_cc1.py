@@ -9,7 +9,7 @@ Module containing tests for the Qubitekk CC1
 from __future__ import absolute_import
 
 import pytest
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, unit_eq
@@ -52,7 +52,7 @@ def test_cc1_window():
             ],
             sep="\n"
     ) as cc:
-        unit_eq(cc.window, pq.Quantity(2, "ns"))
+        unit_eq(cc.window, u.Quantity(2, "ns"))
         cc.window = 7
 
 
@@ -90,7 +90,7 @@ def test_cc1_delay():
             ],
             sep="\n"
     ) as cc:
-        unit_eq(cc.delay, pq.Quantity(8, "ns"))
+        unit_eq(cc.delay, u.Quantity(8, "ns"))
         cc.delay = 2
 
 
@@ -145,7 +145,7 @@ def test_cc1_dwell_old_firmware():
             ],
             sep="\n"
     ) as cc:
-        unit_eq(cc.dwell_time, pq.Quantity(8, "s"))
+        unit_eq(cc.dwell_time, u.Quantity(8, "s"))
         cc.dwell_time = 2
 
 
@@ -165,7 +165,7 @@ def test_cc1_dwell_new_firmware():
             ],
             sep="\n"
     ) as cc:
-        unit_eq(cc.dwell_time, pq.Quantity(8, "s"))
+        unit_eq(cc.dwell_time, u.Quantity(8, "s"))
         cc.dwell_time = 2
 
 

@@ -10,7 +10,7 @@ from __future__ import absolute_import
 
 import pytest
 
-import quantities as pq
+import instruments.units as u
 import instruments as ik
 from instruments.tests import expected_protocol
 
@@ -48,7 +48,7 @@ def test_mc1_internal_position():
             ],
             sep="\r"
     ) as mc:
-        assert mc.internal_position == -100*pq.ms
+        assert mc.internal_position == -100*u.ms
 
 
 def test_mc1_metric_position():
@@ -62,7 +62,7 @@ def test_mc1_metric_position():
             ],
             sep="\r"
     ) as mc:
-        assert mc.metric_position == -3.14159*pq.mm
+        assert mc.metric_position == -3.14159*u.mm
 
 
 def test_mc1_direction():
@@ -118,7 +118,7 @@ def test_mc1_step():
             ],
             sep="\r"
     ) as mc:
-        assert mc.step_size == 20*pq.ms
+        assert mc.step_size == 20*u.ms
 
 
 def test_mc1_motor():
@@ -148,7 +148,7 @@ def test_mc1_move_timeout():
             ],
             sep="\r"
     ) as mc:
-        assert mc.move_timeout == 200*pq.ms
+        assert mc.move_timeout == 200*u.ms
 
 
 def test_mc1_is_centering():

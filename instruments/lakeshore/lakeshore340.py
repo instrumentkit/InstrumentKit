@@ -10,7 +10,7 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import range
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList
@@ -26,7 +26,7 @@ class Lakeshore340(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> inst = ik.lakeshore.Lakeshore340.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(inst.sensor[0].temperature)
     >>> print(inst.sensor[1].temperature)
@@ -58,7 +58,7 @@ class Lakeshore340(SCPIInstrument):
             :type: `~quantities.quantity.Quantity`
             """
             value = self._parent.query('KRDG?{}'.format(self._idx))
-            return pq.Quantity(float(value), pq.Kelvin)
+            return u.Quantity(float(value), u.Kelvin)
 
     # PROPERTIES ##
 

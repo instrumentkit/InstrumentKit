@@ -11,7 +11,7 @@ Originally contributed by Wil Langford (wil.langford+instrumentkit@gmail.com)
 from __future__ import absolute_import
 from __future__ import division
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import (PowerSupply, PowerSupplyChannel)
 from instruments.util_fns import unitful_property, bool_property
@@ -64,7 +64,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     voltage = unitful_property(
         "VOLT",
-        pq.volt,
+        u.volt,
         doc="""
         Gets/sets the output voltage.
 
@@ -77,7 +77,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     current = unitful_property(
         "CURR",
-        pq.amp,
+        u.amp,
         doc="""
         Gets/sets the output current.
 
@@ -90,7 +90,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     voltage_sense = unitful_property(
         "MEAS:VOLT",
-        pq.volt,
+        u.volt,
         readonly=True,
         doc="""
         Gets the actual output voltage as measured by the sense wires.
@@ -102,7 +102,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     current_sense = unitful_property(
         "MEAS:CURR",
-        pq.amp,
+        u.amp,
         readonly=True,
         doc="""
         Gets the actual output current as measured by the sense wires.
@@ -114,7 +114,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     overvoltage = unitful_property(
         "VOLT:PROT",
-        pq.volt,
+        u.volt,
         doc="""
         Gets/sets the overvoltage protection setting in volts.
 

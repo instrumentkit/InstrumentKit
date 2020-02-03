@@ -8,11 +8,11 @@ Unit tests for the Keithley 6514 electrometer
 
 from __future__ import absolute_import
 
-import quantities as pq
 import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
+import instruments.units as u
 
 # TESTS #######################################################################
 
@@ -44,7 +44,7 @@ def test_parse_measurement():
             ]
     ) as inst:
         reading, timestamp, status = inst._parse_measurement("1.0,1234,5678")
-        assert reading == 1.0 * pq.volt
+        assert reading == 1.0 * u.volt
         assert timestamp == 1234
         assert status == 5678
 
@@ -134,7 +134,7 @@ def test_unit():
                 '"VOLT:DC"'
             ]
     ) as inst:
-        assert inst.unit == pq.volt
+        assert inst.unit == u.volt
 
 
 def test_auto_range():
@@ -171,8 +171,8 @@ def test_input_range():
                 '"VOLT:DC"'
             ]
     ) as inst:
-        assert inst.input_range == 10 * pq.volt
-        inst.input_range = 20 * pq.volt
+        assert inst.input_range == 10 * u.volt
+        inst.input_range = 20 * u.volt
 
 
 def test_input_range_invalid():
@@ -185,7 +185,7 @@ def test_input_range_invalid():
                 '"VOLT:DC"'
             ]
     ) as inst:
-        inst.input_range = 10 * pq.volt
+        inst.input_range = 10 * u.volt
 
 
 def test_auto_config():
@@ -212,7 +212,7 @@ def test_fetch():
             ]
     ) as inst:
         reading, timestamp = inst.fetch()
-        assert reading == 1.0 * pq.volt
+        assert reading == 1.0 * u.volt
         assert timestamp == 1234
 
 
@@ -229,5 +229,5 @@ def test_read():
             ]
     ) as inst:
         reading, timestamp = inst.read_measurements()
-        assert reading == 1.0 * pq.volt
+        assert reading == 1.0 * u.volt
         assert timestamp == 1234

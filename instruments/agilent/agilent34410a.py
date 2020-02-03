@@ -10,7 +10,7 @@ from __future__ import absolute_import
 from __future__ import division
 from builtins import map
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.generic_scpi import SCPIMultimeter
 
@@ -28,7 +28,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> dmm = ik.agilent.Agilent34410a.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(dmm.measure(dmm.Mode.resistance))
 
@@ -173,7 +173,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
             data[0] = float(data[0])
             if data[1] in unit_map:
                 data[1] = unit_map[data[1]]
-            return pq.Quantity(*data)
+            return u.Quantity(*data)
 
     def read_meter(self):
         """
@@ -193,16 +193,16 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
 # UNITS #######################################################################
 
 UNITS = {
-    Agilent34410a.Mode.capacitance: pq.farad,
-    Agilent34410a.Mode.voltage_dc:  pq.volt,
-    Agilent34410a.Mode.voltage_ac:  pq.volt,
-    Agilent34410a.Mode.diode:       pq.volt,
-    Agilent34410a.Mode.current_ac:  pq.amp,
-    Agilent34410a.Mode.current_dc:  pq.amp,
-    Agilent34410a.Mode.resistance:  pq.ohm,
-    Agilent34410a.Mode.fourpt_resistance: pq.ohm,
-    Agilent34410a.Mode.frequency:   pq.hertz,
-    Agilent34410a.Mode.period:      pq.second,
-    Agilent34410a.Mode.temperature: pq.kelvin,
+    Agilent34410a.Mode.capacitance: u.farad,
+    Agilent34410a.Mode.voltage_dc:  u.volt,
+    Agilent34410a.Mode.voltage_ac:  u.volt,
+    Agilent34410a.Mode.diode:       u.volt,
+    Agilent34410a.Mode.current_ac:  u.amp,
+    Agilent34410a.Mode.current_dc:  u.amp,
+    Agilent34410a.Mode.resistance:  u.ohm,
+    Agilent34410a.Mode.fourpt_resistance: u.ohm,
+    Agilent34410a.Mode.frequency:   u.hertz,
+    Agilent34410a.Mode.period:      u.second,
+    Agilent34410a.Mode.temperature: u.kelvin,
     Agilent34410a.Mode.continuity:  1,
 }

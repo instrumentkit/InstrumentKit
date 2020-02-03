@@ -9,7 +9,7 @@ Provides support for SCPI compliant function generators
 from __future__ import absolute_import
 from __future__ import division
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
@@ -27,9 +27,9 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> inst = ik.generic_scpi.SCPIFunctionGenerator.open_tcpip("192.168.1.1")
-    >>> inst.frequency = 1 * pq.kHz
+    >>> inst.frequency = 1 * u.kHz
     """
 
     # CONSTANTS #
@@ -76,7 +76,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
 
     frequency = unitful_property(
         command="FREQ",
-        units=pq.Hz,
+        units=u.Hz,
         doc="""
         Gets/sets the output frequency.
 
@@ -97,7 +97,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
 
     offset = unitful_property(
         command="VOLT:OFFS",
-        units=pq.volt,
+        units=u.volt,
         doc="""
         Gets/sets the offset voltage of the function generator.
 

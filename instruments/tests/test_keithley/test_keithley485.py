@@ -8,7 +8,7 @@ Module containing tests for the Keithley 485 picoammeter
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -61,7 +61,7 @@ def test_input_range():
     ) as inst:
         inst.input_range = "auto"
         inst.input_range = 2e-3
-        assert inst.input_range == 2. * pq.milliamp
+        assert inst.input_range == 2. * u.milliamp
 
 
 def test_relative():
@@ -149,5 +149,5 @@ def test_measure():
                 "NDCL-9.0000E+0"
             ]
     ) as inst:
-        assert inst.measure() == 1.2345 * pq.nanoamp
-        assert inst.measure() == 1. * pq.nanoamp
+        assert inst.measure() == 1.2345 * u.nanoamp
+        assert inst.measure() == 1. * u.nanoamp

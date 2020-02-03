@@ -8,7 +8,7 @@ Unit tests for the Picowatt AVS47
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -46,7 +46,7 @@ def test_sensor_resistance_same_channel():
                 "123"
             ]
     ) as inst:
-        assert inst.sensor[0].resistance == 123 * pq.ohm
+        assert inst.sensor[0].resistance == 123 * u.ohm
 
 
 def test_sensor_resistance_different_channel():
@@ -66,7 +66,7 @@ def test_sensor_resistance_different_channel():
                 "123"
             ]
     ) as inst:
-        assert inst.sensor[0].resistance == 123 * pq.ohm
+        assert inst.sensor[0].resistance == 123 * u.ohm
 
 
 def test_remote():

@@ -13,7 +13,7 @@ from __future__ import absolute_import, division
 from builtins import range, map
 from enum import Enum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import (
@@ -31,9 +31,9 @@ class MC1(Instrument):
     def __init__(self, filelike):
         super(MC1, self).__init__(filelike)
         self.terminator = "\r"
-        self._increment = 1*pq.ms
-        self._lower_limit = -300*pq.ms
-        self._upper_limit = 300*pq.ms
+        self._increment = 1*u.ms
+        self._lower_limit = -300*u.ms
+        self._upper_limit = 300*u.ms
         self._firmware = None
         self._controller = None
 
@@ -60,7 +60,7 @@ class MC1(Instrument):
 
     @increment.setter
     def increment(self, newval):
-        self._increment = assume_units(newval, pq.ms).rescale(pq.ms)
+        self._increment = assume_units(newval, u.ms).rescale(u.ms)
 
     @property
     def lower_limit(self):
@@ -74,7 +74,7 @@ class MC1(Instrument):
 
     @lower_limit.setter
     def lower_limit(self, newval):
-        self._lower_limit = assume_units(newval, pq.ms).rescale(pq.ms)
+        self._lower_limit = assume_units(newval, u.ms).rescale(u.ms)
 
     @property
     def upper_limit(self):
@@ -88,7 +88,7 @@ class MC1(Instrument):
 
     @upper_limit.setter
     def upper_limit(self, newval):
-        self._upper_limit = assume_units(newval, pq.ms).rescale(pq.ms)
+        self._upper_limit = assume_units(newval, u.ms).rescale(u.ms)
 
     direction = unitful_property(
         command="DIRE",
@@ -99,7 +99,7 @@ class MC1(Instrument):
         :type: `~quantities.Quantity`
         :units: milliseconds
         """,
-        units=pq.ms,
+        units=u.ms,
         readonly=True
     )
 
@@ -113,8 +113,8 @@ class MC1(Instrument):
         :units: milliseconds
         """,
         format_code='{:.0f}',
-        units=pq.ms,
-        valid_range=(0*pq.ms, 100*pq.ms),
+        units=u.ms,
+        valid_range=(0*u.ms, 100*u.ms),
         set_fmt=":{} {}"
     )
 
@@ -140,7 +140,7 @@ class MC1(Instrument):
         :type: `~quantities.Quantity`
         :units: millimeters
         """,
-        units=pq.mm,
+        units=u.mm,
         readonly=True
     )
 
@@ -167,8 +167,8 @@ class MC1(Instrument):
         :units: milliseconds
         """,
         format_code='{:.0f}',
-        units=pq.ms,
-        valid_range=(1*pq.ms, 100*pq.ms),
+        units=u.ms,
+        valid_range=(1*u.ms, 100*u.ms),
         set_fmt=":{} {}"
     )
 
@@ -247,7 +247,7 @@ class MC1(Instrument):
         :type new_position: `~quantities.Quantity`
         """
         if self.lower_limit <= new_position <= self.upper_limit:
-            new_position = assume_units(new_position, pq.ms).rescale(pq.ms)
+            new_position = assume_units(new_position, u.ms).rescale(u.ms)
             clock_cycles = new_position/self.step_size
             cmd = ":MOVE "+str(int(clock_cycles))
             self.sendcmd(cmd)

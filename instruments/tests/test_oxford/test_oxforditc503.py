@@ -8,7 +8,7 @@ Unit tests for the Oxford ITC 503 temperature controller
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -42,4 +42,4 @@ def test_sensor_temperature():
             sep="\r"
     ) as inst:
         sensor = inst.sensor[0]
-        assert sensor.temperature == 123 * pq.kelvin
+        assert sensor.temperature == 123 * u.kelvin

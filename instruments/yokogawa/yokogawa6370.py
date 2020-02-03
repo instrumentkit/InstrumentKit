@@ -11,7 +11,7 @@ from __future__ import division
 
 from enum import IntEnum, Enum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import (
     OpticalSpectrumAnalyzer,
@@ -33,9 +33,9 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> inst = ik.yokogawa.Yokogawa6370.open_visa('TCPIP0:192.168.0.35')
-    >>> inst.start_wl = 1030e-9 * pq.m
+    >>> inst.start_wl = 1030e-9 * u.m
     """
 
     def __init__(self, *args, **kwargs):
@@ -115,7 +115,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     start_wl, start_wl_min, start_wl_max = bounded_unitful_property(
         ":SENS:WAV:STAR",
-        pq.meter,
+        u.meter,
         doc="""
         The start wavelength in m.
         """,
@@ -124,7 +124,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     stop_wl, stop_wl_min, stop_wl_max = bounded_unitful_property(
         ":SENS:WAV:STOP",
-        pq.meter,
+        u.meter,
         doc="""
         The stop wavelength in m.
         """,
@@ -133,7 +133,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     bandwidth = unitful_property(
         ":SENS:BAND:RES",
-        pq.meter,
+        u.meter,
         doc="""
         The bandwidth in m.
         """
@@ -141,7 +141,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     span = unitful_property(
         ":SENS:WAV:SPAN",
-        pq.meter,
+        u.meter,
         doc="""
         A floating point property that controls the wavelength span in m.
         """
@@ -149,7 +149,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     center_wl = unitful_property(
         ":SENS:WAV:CENT",
-        pq.meter,
+        u.meter,
         doc="""
          A floating point property that controls the center wavelength m.
         """

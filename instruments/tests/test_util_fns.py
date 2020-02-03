@@ -9,11 +9,11 @@ Module containing tests for util_fns.py
 from __future__ import absolute_import
 
 from builtins import range
-
 from enum import Enum
-import quantities as pq
+
 import pytest
 
+import instruments.units as u
 from instruments.util_fns import (
     ProxyList,
     assume_units, convert_temperature,
@@ -126,7 +126,7 @@ def test_ProxyList_invalid_idx():
 
 
 def test_assume_units_correct():
-    m = pq.Quantity(1, 'm')
+    m = u.Quantity(1, 'm')
 
     # Check that unitful quantities are kept unitful.
     assert assume_units(m, 'mm').rescale('mm').magnitude == 1000
@@ -136,35 +136,35 @@ def test_assume_units_correct():
 
 
 def test_temperature_conversion():
-    blo = 70.0 * pq.degF
-    out = convert_temperature(blo, pq.degC)
+    blo = 70.0 * u.degF
+    out = convert_temperature(blo, u.degC)
     assert out.magnitude == 21.11111111111111
-    out = convert_temperature(blo, pq.degK)
+    out = convert_temperature(blo, u.degK)
     assert out.magnitude == 294.2055555555555
-    out = convert_temperature(blo, pq.degF)
+    out = convert_temperature(blo, u.degF)
     assert out.magnitude == 70.0
 
-    blo = 20.0 * pq.degC
-    out = convert_temperature(blo, pq.degF)
+    blo = 20.0 * u.degC
+    out = convert_temperature(blo, u.degF)
     assert out.magnitude == 68
-    out = convert_temperature(blo, pq.degC)
+    out = convert_temperature(blo, u.degC)
     assert out.magnitude == 20.0
-    out = convert_temperature(blo, pq.degK)
+    out = convert_temperature(blo, u.degK)
     assert out.magnitude == 293.15
 
-    blo = 270 * pq.degK
-    out = convert_temperature(blo, pq.degC)
+    blo = 270 * u.degK
+    out = convert_temperature(blo, u.degC)
     assert out.magnitude == -3.1499999999999773
-    out = convert_temperature(blo, pq.degF)
+    out = convert_temperature(blo, u.degF)
     assert out.magnitude == 141.94736842105263
-    out = convert_temperature(blo, pq.K)
+    out = convert_temperature(blo, u.K)
     assert out.magnitude == 270
 
 
 def test_temperater_conversion_failure():
     with pytest.raises(ValueError):
-        blo = 70.0 * pq.degF
-        convert_temperature(blo, pq.V)
+        blo = 70.0 * u.degF
+        convert_temperature(blo, u.V)
 
 
 def test_assume_units_failures():

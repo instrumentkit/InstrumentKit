@@ -13,7 +13,7 @@ from __future__ import absolute_import
 import struct
 
 import pytest
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.thorlabs._packets import ThorLabsPacket, hw_info_data

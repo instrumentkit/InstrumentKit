@@ -14,7 +14,6 @@ from enum import Enum
 
 from builtins import range
 from future.utils import with_metaclass
-import quantities as pq
 
 from instruments.abstract_instruments import Instrument
 import instruments.units as u
@@ -170,9 +169,9 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
             mag, units = self._get_amplitude_()
 
             if units == self._parent.VoltageMode.dBm:
-                return pq.Quantity(mag, u.dBm)
+                return u.Quantity(mag, u.dBm)
 
-            return pq.Quantity(mag, pq.V), units
+            return u.Quantity(mag, u.V), units
 
         @amplitude.setter
         def amplitude(self, newval):
@@ -191,7 +190,7 @@ class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
                     mag, units = newval
 
                 # Finally, convert the magnitude out to a float.
-                mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
+                mag = float(assume_units(mag, u.V).rescale(u.V).magnitude)
 
             self._set_amplitude_(mag, units)
 

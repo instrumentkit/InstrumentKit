@@ -13,7 +13,7 @@ from __future__ import division
 from builtins import range
 
 from enum import IntEnum
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import (
@@ -133,7 +133,7 @@ class SC10(Instrument):
 
     open_time = unitful_property(
         "open",
-        pq.ms,
+        u.ms,
         format_code="{:.0f}",
         set_fmt="{}={}",
         valid_range=(0, 999999),
@@ -148,7 +148,7 @@ class SC10(Instrument):
 
     shut_time = unitful_property(
         "shut",
-        pq.ms,
+        u.ms,
         format_code="{:.0f}",
         set_fmt="{}={}",
         valid_range=(0, 999999),

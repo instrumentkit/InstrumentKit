@@ -8,7 +8,7 @@ Module containing tests for the SRS DG645
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
@@ -32,7 +32,7 @@ def test_srsdg645_output_level():
                 "3.2"
             ]
     ) as ddg:
-        unit_eq(ddg.output["AB"].level_amplitude, pq.Quantity(3.2, "V"))
+        unit_eq(ddg.output["AB"].level_amplitude, u.Quantity(3.2, "V"))
         ddg.output["AB"].level_amplitude = 4.0
 
 
@@ -50,7 +50,7 @@ def test_srsdg645_output_offset():
                 "1.2"
             ]
     ) as ddg:
-        unit_eq(ddg.output["AB"].level_offset, pq.Quantity(1.2, "V"))
+        unit_eq(ddg.output["AB"].level_offset, u.Quantity(1.2, "V"))
         ddg.output["AB"].level_offset = 2.0
 
 
@@ -76,5 +76,5 @@ def test_srsdg645_trigger_source():
     with expected_protocol(ik.srs.SRSDG645, "DLAY?2\nDLAY 3,2,60.0\n", "0,42\n") as ddg:
         ref, t = ddg.channel["A"].delay
         assert ref == ddg.Channels.T0
-        assert abs((t - pq.Quantity(42, "s")).magnitude) < 1e5
-        ddg.channel["B"].delay = (ddg.channel["A"], pq.Quantity(1, "minute"))
+        assert abs((t - u.Quantity(42, "s")).magnitude) < 1e5
+        ddg.channel["B"].delay = (ddg.channel["A"], u.Quantity(1, "minute"))

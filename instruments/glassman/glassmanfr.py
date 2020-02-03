@@ -39,7 +39,7 @@ from struct import unpack
 
 from enum import Enum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import (
     PowerSupply,
@@ -74,16 +74,16 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
     >>> psu.voltage
     array(100.0) * V
     >>> psu.output = True # Turns on the power supply
-    >>> psu.voltage_sense < 200 * pq.volt
+    >>> psu.voltage_sense < 200 * u.volt
     True
 
     This code uses default values of `voltage_max`, `current_max` and
     `polarity` that are only valid of the FR50R6 in its positive setting.
     If your power supply differs, reset those values by calling:
 
-    >>> import quantities as pq
-    >>> psu.voltage_max = 40.0 * pq.kilovolt
-    >>> psu.current_max = 7.5 * pq.milliamp
+    >>> import instruments.units as u
+    >>> psu.voltage_max = 40.0 * u.kilovolt
+    >>> psu.current_max = 7.5 * u.milliamp
     >>> psu.polarity = -1
     """
 
@@ -93,12 +93,12 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         """
         super(GlassmanFR, self).__init__(filelike)
         self.terminator = "\r"
-        self.voltage_max = 50.0 * pq.kilovolt
-        self.current_max = 6.0 * pq.milliamp
+        self.voltage_max = 50.0 * u.kilovolt
+        self.current_max = 6.0 * u.milliamp
         self.polarity = +1
         self._device_timeout = False
-        self._voltage = 0. * pq.volt
-        self._current = 0. * pq.amp
+        self._voltage = 0. * u.volt
+        self._current = 0. * u.amp
 
     # ENUMS ##
 
@@ -166,7 +166,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
     @voltage.setter
     def voltage(self, newval):
-        self.set_status(voltage=assume_units(newval, pq.volt))
+        self.set_status(voltage=assume_units(newval, u.volt))
 
     @property
     def current(self):
@@ -180,7 +180,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
     @current.setter
     def current(self, newval):
-        self.set_status(current=assume_units(newval, pq.amp))
+        self.set_status(current=assume_units(newval, u.amp))
 
     @property
     def voltage_sense(self):
@@ -334,8 +334,8 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         kept as what they were set to previously.
         """
         if reset:
-            self._voltage = 0. * pq.volt
-            self._current = 0. * pq.amp
+            self._voltage = 0. * u.volt
+            self._current = 0. * u.amp
             cmd = format(4, "013d")
         else:
             # The maximum value is encoded as the maximum of three hex characters (4095)
@@ -343,19 +343,19 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
             value_max = int(0xfff)
 
             # If the voltage is not specified, keep it as is
-            voltage = assume_units(voltage, pq.volt) if voltage is not None else self.voltage
-            ratio = float(voltage.rescale(pq.volt)/self.voltage_max.rescale(pq.volt))
+            voltage = assume_units(voltage, u.volt) if voltage is not None else self.voltage
+            ratio = float(voltage.rescale(u.volt)/self.voltage_max.rescale(u.volt))
             voltage_int = int(round(value_max*ratio))
             self._voltage = self.voltage_max*float(voltage_int)/value_max
-            assert 0. * pq.volt <= self._voltage <= self.voltage_max
+            assert 0. * u.volt <= self._voltage <= self.voltage_max
             cmd += format(voltage_int, "03X")
 
             # If the current is not specified, keep it as is
-            current = assume_units(current, pq.amp) if current is not None else self.current
-            ratio = float(current.rescale(pq.amp)/self.current_max.rescale(pq.amp))
+            current = assume_units(current, u.amp) if current is not None else self.current
+            ratio = float(current.rescale(u.amp)/self.current_max.rescale(u.amp))
             current_int = int(round(value_max*ratio))
             self._current = self.current_max*float(current_int)/value_max
-            assert 0. * pq.amp <= self._current <= self.current_max
+            assert 0. * u.amp <= self._current <= self.current_max
             cmd += format(current_int, "03X")
 
             # If the output status is not specified, keep it as is

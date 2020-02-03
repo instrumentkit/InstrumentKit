@@ -19,7 +19,7 @@ from contextlib import contextmanager
 from builtins import range, map
 from enum import IntEnum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import Instrument
 from instruments.newport.errors import NewportError
@@ -304,7 +304,7 @@ class NewportESP301Axis(object):
     returned by `NewportESP301.axis`.
     """
     # quantities micro inch
-    micro_inch = pq.UnitQuantity('micro-inch', pq.inch / 1e6, symbol='uin')
+    micro_inch = u.UnitQuantity('micro-inch', u.inch / 1e6, symbol='uin')
 
     # Some more work might need to be done here to make
     # the encoder_step and motor_step functional
@@ -312,18 +312,18 @@ class NewportESP301Axis(object):
     # going to do this until I have a physical device
 
     _unit_dict = {
-        0:  pq.count,
-        1:  pq.count,
-        2:  pq.mm,
-        3:  pq.um,
-        4:  pq.inch,
-        5:  pq.mil,
+        0:  u.count,
+        1:  u.count,
+        2:  u.mm,
+        3:  u.um,
+        4:  u.inch,
+        5:  u.mil,
         6:  micro_inch,  # compound unit for micro-inch
-        7:  pq.deg,
-        8:  pq.grad,
-        9:  pq.rad,
-        10:  pq.mrad,
-        11:  pq.urad,
+        7:  u.deg,
+        8:  u.grad,
+        9:  u.rad,
+        10:  u.mrad,
+        11:  u.urad,
     }
 
     def __init__(self, controller, axis_id):
@@ -405,15 +405,15 @@ class NewportESP301Axis(object):
 
         return assume_units(
             float(self._newport_cmd("AC?", target=self.axis_id)),
-            self._units / (pq.s**2)
+            self._units / (u.s**2)
         )
 
     @acceleration.setter
     def acceleration(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / (pq.s**2)).rescale(
-            self._units / (pq.s**2)).magnitude)
+        newval = float(assume_units(newval, self._units / (u.s**2)).rescale(
+            self._units / (u.s**2)).magnitude)
         self._newport_cmd("AC", target=self.axis_id, params=[newval])
 
     @property
@@ -427,15 +427,15 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("AG?", target=self.axis_id)),
-            self._units / (pq.s**2)
+            self._units / (u.s**2)
         )
 
     @deceleration.setter
     def deceleration(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / (pq.s**2)).rescale(
-            self._units / (pq.s**2)).magnitude)
+        newval = float(assume_units(newval, self._units / (u.s**2)).rescale(
+            self._units / (u.s**2)).magnitude)
         self._newport_cmd("AG", target=self.axis_id, params=[newval])
 
     @property
@@ -449,13 +449,13 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("AE?", target=self.axis_id)),
-            self._units / (pq.s**2)
+            self._units / (u.s**2)
         )
 
     @estop_deceleration.setter
     def estop_deceleration(self, decel):
-        decel = float(assume_units(decel, self._units / (pq.s**2)).rescale(
-            self._units / (pq.s**2)).magnitude)
+        decel = float(assume_units(decel, self._units / (u.s**2)).rescale(
+            self._units / (u.s**2)).magnitude)
         self._newport_cmd("AE", target=self.axis_id, params=[decel])
 
     @property
@@ -470,13 +470,13 @@ class NewportESP301Axis(object):
 
         return assume_units(
             float(self._newport_cmd("JK?", target=self.axis_id)),
-            self._units / (pq.s**3)
+            self._units / (u.s**3)
         )
 
     @jerk.setter
     def jerk(self, jerk):
-        jerk = float(assume_units(jerk, self._units / (pq.s**3)).rescale(
-            self._units / (pq.s**3)).magnitude)
+        jerk = float(assume_units(jerk, self._units / (u.s**3)).rescale(
+            self._units / (u.s**3)).magnitude)
         self._newport_cmd("JK", target=self.axis_id, params=[jerk])
 
     @property
@@ -490,13 +490,13 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("VA?", target=self.axis_id)),
-            self._units / pq.s
+            self._units / u.s
         )
 
     @velocity.setter
     def velocity(self, velocity):
-        velocity = float(assume_units(velocity, self._units / (pq.s)).rescale(
-            self._units / pq.s).magnitude)
+        velocity = float(assume_units(velocity, self._units / (u.s)).rescale(
+            self._units / u.s).magnitude)
         self._newport_cmd("VA", target=self.axis_id, params=[velocity])
 
     @property
@@ -510,15 +510,15 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("VU?", target=self.axis_id)),
-            self._units / pq.s
+            self._units / u.s
         )
 
     @max_velocity.setter
     def max_velocity(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / pq.s).rescale(
-            self._units / pq.s).magnitude)
+        newval = float(assume_units(newval, self._units / u.s).rescale(
+            self._units / u.s).magnitude)
         self._newport_cmd("VU", target=self.axis_id, params=[newval])
 
     @property
@@ -532,15 +532,15 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("VB?", target=self.axis_id)),
-            self._units / pq.s
+            self._units / u.s
         )
 
     @max_base_velocity.setter
     def max_base_velocity(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / pq.s).rescale(
-            self._units / pq.s).magnitude)
+        newval = float(assume_units(newval, self._units / u.s).rescale(
+            self._units / u.s).magnitude)
         self._newport_cmd("VB", target=self.axis_id, params=[newval])
 
     @property
@@ -554,7 +554,7 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("JH?", target=self.axis_id)),
-            self._units / pq.s
+            self._units / u.s
         )
 
     @jog_high_velocity.setter
@@ -563,8 +563,8 @@ class NewportESP301Axis(object):
             return
         newval = float(assume_units(
             newval,
-            self._units / pq.s
-        ).rescale(self._units / pq.s).magnitude)
+            self._units / u.s
+        ).rescale(self._units / u.s).magnitude)
         self._newport_cmd("JH", target=self.axis_id, params=[newval])
 
     @property
@@ -578,7 +578,7 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("JW?", target=self.axis_id)),
-            self._units / pq.s
+            self._units / u.s
         )
 
     @jog_low_velocity.setter
@@ -587,8 +587,8 @@ class NewportESP301Axis(object):
             return
         newval = float(assume_units(
             newval,
-            self._units / pq.s
-        ).rescale(self._units / pq.s).magnitude)
+            self._units / u.s
+        ).rescale(self._units / u.s).magnitude)
         self._newport_cmd("JW", target=self.axis_id, params=[newval])
 
     @property
@@ -602,7 +602,7 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("OH?", target=self.axis_id)),
-            self._units / pq.s
+            self._units / u.s
         )
 
     @homing_velocity.setter
@@ -611,8 +611,8 @@ class NewportESP301Axis(object):
             return
         newval = float(assume_units(
             newval,
-            self._units / pq.s
-        ).rescale(self._units / pq.s).magnitude)
+            self._units / u.s
+        ).rescale(self._units / u.s).magnitude)
         self._newport_cmd("OH", target=self.axis_id, params=[newval])
 
     @property
@@ -626,15 +626,15 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("AU?", target=self.axis_id)),
-            self._units / (pq.s**2)
+            self._units / (u.s**2)
         )
 
     @max_acceleration.setter
     def max_acceleration(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / (pq.s**2)).rescale(
-            self._units / (pq.s**2)).magnitude)
+        newval = float(assume_units(newval, self._units / (u.s**2)).rescale(
+            self._units / (u.s**2)).magnitude)
         self._newport_cmd("AU", target=self.axis_id, params=[newval])
 
     @property
@@ -651,8 +651,8 @@ class NewportESP301Axis(object):
 
     @max_deceleration.setter
     def max_deceleration(self, decel):
-        decel = float(assume_units(decel, self._units / (pq.s**2)).rescale(
-            self._units / (pq.s**2)).magnitude)
+        decel = float(assume_units(decel, self._units / (u.s**2)).rescale(
+            self._units / (u.s**2)).magnitude)
         self.max_acceleration = decel
 
     @property
@@ -694,7 +694,7 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("DP?", target=self.axis_id)),
-            self._units / pq.s
+            self._units / u.s
         )
 
     @property
@@ -738,7 +738,7 @@ class NewportESP301Axis(object):
             return
         if isinstance(newval, int):
             self._units = self._get_pq_unit(NewportESP301Units(int(newval)))
-        elif isinstance(newval, pq.Quantity):
+        elif isinstance(newval, u.Quantity):
             self._units = newval
             newval = self._get_unit_num(newval)
         self._set_units(newval)
@@ -863,15 +863,15 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("QI?", target=self.axis_id)),
-            pq.A
+            u.A
         )
 
     @current.setter
     def current(self, newval):
         if newval is None:
             return
-        current = float(assume_units(newval, pq.A).rescale(
-            pq.A).magnitude)
+        current = float(assume_units(newval, u.A).rescale(
+            u.A).magnitude)
         self._newport_cmd("QI", target=self.axis_id, params=[current])
 
     @property
@@ -885,15 +885,15 @@ class NewportESP301Axis(object):
         """
         return assume_units(
             float(self._newport_cmd("QV?", target=self.axis_id)),
-            pq.V
+            u.V
         )
 
     @voltage.setter
     def voltage(self, newval):
         if newval is None:
             return
-        voltage = float(assume_units(newval, pq.V).rescale(
-            pq.V).magnitude)
+        voltage = float(assume_units(newval, u.V).rescale(
+            u.V).magnitude)
         self._newport_cmd("QV", target=self.axis_id, params=[voltage])
 
     @property
@@ -1192,10 +1192,10 @@ class NewportESP301Axis(object):
         #        In programming mode, the "WS" command should be
         #        sent instead, and the two parameters to this method should
         #        be ignored.
-        poll_interval = float(assume_units(poll_interval, pq.s).rescale(
-            pq.s).magnitude)
-        max_wait = float(assume_units(max_wait, pq.s).rescale(
-            pq.s).magnitude)
+        poll_interval = float(assume_units(poll_interval, u.s).rescale(
+            u.s).magnitude)
+        max_wait = float(assume_units(max_wait, u.s).rescale(
+            u.s).magnitude)
         tic = time()
         while True:
             if self.is_motion_done:
@@ -1282,12 +1282,12 @@ class NewportESP301Axis(object):
                                                        'configuration')
         if 'reduce_motor_torque_time' in kwargs and 'reduce_motor_torque_percentage' in kwargs:
             motor_time = kwargs['reduce_motor_torque_time']
-            motor_time = int(assume_units(motor_time, pq.ms).rescale(pq.ms).magnitude)
+            motor_time = int(assume_units(motor_time, u.ms).rescale(u.ms).magnitude)
             if motor_time < 0 or motor_time > 60000:
                 raise ValueError("Time must be between 0 and 60000 ms")
             percentage = kwargs['reduce_motor_torque_percentage']
-            percentage = int(assume_units(percentage, pq.percent).rescale(
-                pq.percent).magnitude)
+            percentage = int(assume_units(percentage, u.percent).rescale(
+                u.percent).magnitude)
             if percentage < 0 or percentage > 100:
                 raise ValueError("Time must be between 0 and 60000 ms")
             self._newport_cmd(

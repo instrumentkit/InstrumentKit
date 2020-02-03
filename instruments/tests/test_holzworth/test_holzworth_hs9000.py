@@ -8,7 +8,7 @@ Unit tests for the Holzworth HS9000
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -119,7 +119,7 @@ def test_channel_temperature():
             sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        assert channel.temperature == 10 * pq.degC
+        assert channel.temperature == 10 * u.degC
 
 
 def test_channel_frequency_getter():
@@ -140,9 +140,9 @@ def test_channel_frequency_getter():
             sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        assert channel.frequency == 1 * pq.GHz
-        assert channel.frequency_min == 100 * pq.MHz
-        assert channel.frequency_max == 10 * pq.GHz
+        assert channel.frequency == 1 * u.GHz
+        assert channel.frequency_min == 100 * u.MHz
+        assert channel.frequency_max == 10 * u.GHz
 
 
 def test_channel_frequency_setter():
@@ -162,7 +162,7 @@ def test_channel_frequency_setter():
             sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        channel.frequency = 1 * pq.GHz
+        channel.frequency = 1 * u.GHz
 
 
 def test_channel_power_getter():
@@ -226,9 +226,9 @@ def test_channel_phase_getter():
             sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        assert channel.phase == 0 * pq.degree
-        assert channel.phase_min == -180 * pq.degree
-        assert channel.phase_max == 180 * pq.degree
+        assert channel.phase == 0 * u.degree
+        assert channel.phase_min == -180 * u.degree
+        assert channel.phase_max == 180 * u.degree
 
 
 def test_channel_phase_setter():
@@ -248,7 +248,7 @@ def test_channel_phase_setter():
             sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        channel.phase = 0 * pq.degree
+        channel.phase = 0 * u.degree
 
 
 def test_channel_output():

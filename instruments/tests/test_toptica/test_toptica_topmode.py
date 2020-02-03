@@ -9,7 +9,7 @@ Module containing tests for the Toptica Topmode
 from __future__ import absolute_import
 from datetime import datetime
 import pytest
-import quantities as pq
+import instruments.units as u
 
 
 import instruments as ik
@@ -74,8 +74,8 @@ def test_wavelength():
             ],
             sep="\r\n"
     ) as tm:
-        assert tm.laser[0].wavelength == 640 * pq.nm
-        assert tm.laser[1].wavelength == 405.3 * pq.nm
+        assert tm.laser[0].wavelength == 640 * u.nm
+        assert tm.laser[1].wavelength == 405.3 * u.nm
 
 
 def test_laser_enable():
@@ -387,7 +387,7 @@ def test_laser_ontime():
             ],
             sep="\r\n"
     ) as tm:
-        assert tm.laser[0].on_time == 10000 * pq.s
+        assert tm.laser[0].on_time == 10000 * u.s
 
 
 def test_laser_charm_status():

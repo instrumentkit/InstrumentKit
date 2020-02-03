@@ -8,7 +8,7 @@ Unit tests for the Phasematrix FSW0020
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -33,14 +33,14 @@ def test_frequency():
             ik.phasematrix.PhaseMatrixFSW0020,
             [
                 "04.",
-                "0C{:012X}.".format(int((10 * pq.GHz).rescale(mHz).magnitude))
+                "0C{:012X}.".format(int((10 * u.GHz).rescale(mHz).magnitude))
             ],
             [
                 "00E8D4A51000"
             ]
     ) as inst:
-        assert inst.frequency == 1 * pq.GHz
-        inst.frequency = 10 * pq.GHz
+        assert inst.frequency == 1 * u.GHz
+        inst.frequency = 10 * u.GHz
 
 
 def test_power():

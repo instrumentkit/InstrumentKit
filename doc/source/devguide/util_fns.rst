@@ -74,7 +74,7 @@ These properties, when implemented in your class, might look like this::
     voltage, voltage_min, voltage_max = bounded_unitful_property(
         voltage = unitful_property(
         "VOLT",
-        pq.volt,
+        u.volt,
         valid_range=(0*quantities.volt, 10*quantities.volt)
         doc="""
         Gets/sets the output voltage.
@@ -129,7 +129,7 @@ the `~instruments.thorlabs.TC200` class::
 
     temperature = unitful_property(
         "tact",
-        units=pq.degC,
+        units=u.degC,
         readonly=True,
         input_decoration=lambda x: x.replace(
             " C", "").replace(" F", "").replace(" K", ""),

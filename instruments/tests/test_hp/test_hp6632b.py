@@ -8,7 +8,7 @@ Unit tests for the HP 6632b power supply
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
@@ -69,8 +69,8 @@ def test_hp6632b_voltage():
                 "10.0"
             ]
     ) as psu:
-        unit_eq(psu.voltage, 10 * pq.volt)
-        psu.voltage = 1.0 * pq.volt
+        unit_eq(psu.voltage, 10 * u.volt)
+        psu.voltage = 1.0 * u.volt
 
 
 def test_hp6632b_voltage_sense():
@@ -82,7 +82,7 @@ def test_hp6632b_voltage_sense():
                 "10.0"
             ]
     ) as psu:
-        unit_eq(psu.voltage_sense, 10 * pq.volt)
+        unit_eq(psu.voltage_sense, 10 * u.volt)
 
 
 def test_hp6632b_overvoltage():
@@ -95,8 +95,8 @@ def test_hp6632b_overvoltage():
                 "10.0"
             ]
     ) as psu:
-        unit_eq(psu.overvoltage, 10 * pq.volt)
-        psu.overvoltage = 1.0 * pq.volt
+        unit_eq(psu.overvoltage, 10 * u.volt)
+        psu.overvoltage = 1.0 * u.volt
 
 
 def test_hp6632b_current():
@@ -109,8 +109,8 @@ def test_hp6632b_current():
                 "10.0"
             ]
     ) as psu:
-        unit_eq(psu.current, 10 * pq.amp)
-        psu.current = 1.0 * pq.amp
+        unit_eq(psu.current, 10 * u.amp)
+        psu.current = 1.0 * u.amp
 
 
 def test_hp6632b_current_sense():
@@ -122,7 +122,7 @@ def test_hp6632b_current_sense():
                 "10.0"
             ]
     ) as psu:
-        unit_eq(psu.current_sense, 10 * pq.amp)
+        unit_eq(psu.current_sense, 10 * u.amp)
 
 
 def test_hp6632b_overcurrent():
@@ -149,8 +149,8 @@ def test_hp6632b_current_sense_range():
                 "0.05"
             ]
     ) as psu:
-        unit_eq(psu.current_sense_range, 0.05 * pq.amp)
-        psu.current_sense_range = 1 * pq.amp
+        unit_eq(psu.current_sense_range, 0.05 * u.amp)
+        psu.current_sense_range = 1 * u.amp
 
 
 def test_hp6632b_output_dfi_source():
@@ -233,8 +233,8 @@ def test_hp6632b_sense_sweep_interval():
                 "1.56e-05"
             ]
     ) as psu:
-        unit_eq(psu.sense_sweep_interval, 1.56e-05 * pq.second)
-        psu.sense_sweep_interval = 1e-05 * pq.second
+        unit_eq(psu.sense_sweep_interval, 1.56e-05 * u.second)
+        psu.sense_sweep_interval = 1e-05 * u.second
 
 
 def test_hp6632b_sense_window():
@@ -261,8 +261,8 @@ def test_hp6632b_output_protection_delay():
                 "8e-02"
             ]
     ) as psu:
-        unit_eq(psu.output_protection_delay, 8e-02 * pq.second)
-        psu.output_protection_delay = 5e-02 * pq.second
+        unit_eq(psu.output_protection_delay, 8e-02 * u.second)
+        psu.output_protection_delay = 5e-02 * u.second
 
 
 def test_hp6632b_voltage_alc_bandwidth():
@@ -287,8 +287,8 @@ def test_hp6632b_voltage_trigger():
                 "1e+0"
             ]
     ) as psu:
-        unit_eq(psu.voltage_trigger, 1 * pq.volt)
-        psu.voltage_trigger = 1 * pq.volt
+        unit_eq(psu.voltage_trigger, 1 * u.volt)
+        psu.voltage_trigger = 1 * u.volt
 
 
 def test_hp6632b_current_trigger():
@@ -301,8 +301,8 @@ def test_hp6632b_current_trigger():
                 "1e-01"
             ]
     ) as psu:
-        unit_eq(psu.current_trigger, 0.1 * pq.amp)
-        psu.current_trigger = 0.1 * pq.amp
+        unit_eq(psu.current_trigger, 0.1 * u.amp)
+        psu.current_trigger = 0.1 * u.amp
 
 
 def test_hp6632b_init_output_trigger():

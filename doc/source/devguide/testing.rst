@@ -63,7 +63,7 @@ a simple test case for :class:`instruments.srs.SRSDG645``::
 	            ],
 	            sep="\n"
 	    ) as ddg:
-	        unit_eq(ddg.output['AB'].level_amplitude, pq.Quantity(3.2, "V"))
+	        unit_eq(ddg.output['AB'].level_amplitude, u.Quantity(3.2, "V"))
 	        ddg.output['AB'].level_amplitude = 4.0
 
 Here, we see that the test has a name beginning with ``test_``, has a simple

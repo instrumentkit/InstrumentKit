@@ -11,7 +11,7 @@ from __future__ import division
 from builtins import range, map
 
 from enum import Enum
-import quantities as pq
+import instruments.units as u
 
 from instruments.generic_scpi import SCPIMultimeter
 from instruments.abstract_instruments import Multimeter
@@ -190,14 +190,14 @@ class Keithley2182(SCPIMultimeter):
         """
         mode = self.channel[0].mode
         if mode == Keithley2182.Mode.voltage_dc:
-            return pq.volt
+            return u.volt
         unit = self.query("UNIT:TEMP?")
         if unit == "C":
-            unit = pq.celsius
+            unit = u.celsius
         elif unit == "K":
-            unit = pq.kelvin
+            unit = u.kelvin
         elif unit == "F":
-            unit = pq.fahrenheit
+            unit = u.fahrenheit
         else:
             raise ValueError("Unknown temperature units.")
         return unit

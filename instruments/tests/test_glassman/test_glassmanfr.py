@@ -9,7 +9,7 @@ Module containing tests for the Glassman FR power supply
 from __future__ import absolute_import
 from builtins import round
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -22,8 +22,8 @@ def set_defaults(inst):
     Sets default values for the voltage and current range of the Glassman FR
     to be used to test the voltage and current property getters/setters.
     """
-    inst.voltage_max = 50.0 * pq.kilovolt
-    inst.current_max = 6.0 * pq.milliamp
+    inst.voltage_max = 50.0 * u.kilovolt
+    inst.current_max = 6.0 * u.milliamp
     inst.polarity = +1
 
 
@@ -52,8 +52,8 @@ def test_voltage():
             "\r"
     ) as inst:
         set_defaults(inst)
-        inst.voltage = 10.0 * pq.kilovolt
-        assert inst.voltage == 10.0 * pq.kilovolt
+        inst.voltage = 10.0 * u.kilovolt
+        assert inst.voltage == 10.0 * u.kilovolt
 
 
 def test_current():
@@ -70,8 +70,8 @@ def test_current():
             "\r"
     ) as inst:
         set_defaults(inst)
-        inst.current = 1.2 * pq.milliamp
-        assert inst.current == 1.2 * pq.milliamp
+        inst.current = 1.2 * u.milliamp
+        assert inst.current == 1.2 * u.milliamp
 
 
 def test_voltage_sense():
@@ -86,7 +86,7 @@ def test_voltage_sense():
             "\r"
     ) as inst:
         set_defaults(inst)
-        assert round(inst.voltage_sense) == 13.0 * pq.kilovolt
+        assert round(inst.voltage_sense) == 13.0 * u.kilovolt
 
 
 def test_current_sense():
@@ -101,7 +101,7 @@ def test_current_sense():
             "\r"
     ) as inst:
         set_defaults(inst)
-        assert inst.current_sense == 2.0 * pq.milliamp
+        assert inst.current_sense == 2.0 * u.milliamp
 
 
 def test_mode():
@@ -231,7 +231,7 @@ def test_set_status():
             "\r"
     ) as inst:
         set_defaults(inst)
-        inst.set_status(voltage=10*pq.kilovolt, current=1.2*pq.milliamp, output=True)
+        inst.set_status(voltage=10*u.kilovolt, current=1.2*u.milliamp, output=True)
         assert inst.output
-        assert inst.voltage == 10 * pq.kilovolt
-        assert inst.current == 1.2 * pq.milliamp
+        assert inst.voltage == 10 * u.kilovolt
+        assert inst.current == 1.2 * u.milliamp

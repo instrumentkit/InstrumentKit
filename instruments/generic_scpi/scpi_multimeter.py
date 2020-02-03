@@ -11,7 +11,7 @@ from __future__ import division
 
 from enum import Enum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import Multimeter
 from instruments.generic_scpi import SCPIInstrument
@@ -178,7 +178,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         Example usages:
 
         >>> dmm.input_range = dmm.InputRange.automatic
-        >>> dmm.input_range = 1 * pq.millivolt
+        >>> dmm.input_range = 1 * u.millivolt
 
         :units: As appropriate for the current mode setting.
         :type: `~quantities.Quantity`, or `~SCPIMultimeter.InputRange`
@@ -318,7 +318,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
     trigger_delay = unitful_property(
         command="TRIG:DEL",
-        units=pq.second,
+        units=u.second,
         doc="""
         Gets/sets the time delay which the multimeter will use following
         receiving a trigger event before starting the measurement.
@@ -345,7 +345,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
     sample_timer = unitful_property(
         command="SAMP:TIM",
-        units=pq.second,
+        units=u.second,
         doc="""
         Gets/sets the sample interval when the sample counter is greater than
         one and when the sample source is set to timer (see
@@ -418,16 +418,16 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 # UNITS #######################################################################
 
 UNITS = {
-    SCPIMultimeter.Mode.capacitance: pq.farad,
-    SCPIMultimeter.Mode.voltage_dc:  pq.volt,
-    SCPIMultimeter.Mode.voltage_ac:  pq.volt,
-    SCPIMultimeter.Mode.diode:       pq.volt,
-    SCPIMultimeter.Mode.current_ac:  pq.amp,
-    SCPIMultimeter.Mode.current_dc:  pq.amp,
-    SCPIMultimeter.Mode.resistance:  pq.ohm,
-    SCPIMultimeter.Mode.fourpt_resistance: pq.ohm,
-    SCPIMultimeter.Mode.frequency:   pq.hertz,
-    SCPIMultimeter.Mode.period:      pq.second,
-    SCPIMultimeter.Mode.temperature: pq.kelvin,
+    SCPIMultimeter.Mode.capacitance: u.farad,
+    SCPIMultimeter.Mode.voltage_dc:  u.volt,
+    SCPIMultimeter.Mode.voltage_ac:  u.volt,
+    SCPIMultimeter.Mode.diode:       u.volt,
+    SCPIMultimeter.Mode.current_ac:  u.amp,
+    SCPIMultimeter.Mode.current_dc:  u.amp,
+    SCPIMultimeter.Mode.resistance:  u.ohm,
+    SCPIMultimeter.Mode.fourpt_resistance: u.ohm,
+    SCPIMultimeter.Mode.frequency:   u.hertz,
+    SCPIMultimeter.Mode.period:      u.second,
+    SCPIMultimeter.Mode.temperature: u.kelvin,
     SCPIMultimeter.Mode.continuity:  1,
 }

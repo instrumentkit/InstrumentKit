@@ -12,7 +12,7 @@ from __future__ import division
 from builtins import range
 from enum import IntEnum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import (enum_property, bool_property, int_property,
@@ -69,7 +69,7 @@ class PicowattAVS47(SCPIInstrument):
                 self._parent.input_source = self._parent.InputSource.actual
             # Next, prep a measurement with the ADC command
             self._parent.sendcmd("ADC")
-            return float(self._parent.query("RES?")) * pq.ohm
+            return float(self._parent.query("RES?")) * u.ohm
 
     # ENUMS #
 

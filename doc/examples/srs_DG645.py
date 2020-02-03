@@ -21,7 +21,7 @@
 # <codecell>
 
 from instruments.srs import SRSDG645
-import quantities as pq
+import instruments.units as u
 
 # <markdowncell>
 
@@ -38,7 +38,7 @@ ddg = SRSDG645.open_gpibusb('/dev/ttyUSB0', 15)
 
 # <codecell>
 
-ddg.channel[ddg.Channels.A].delay = (ddg.Channels.B, pq.Quantity(10, 'us'))
+ddg.channel[ddg.Channels.A].delay = (ddg.Channels.B, u.Quantity(10, 'us'))
 
 # <codecell>
 

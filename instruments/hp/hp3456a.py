@@ -39,7 +39,7 @@ from builtins import range
 
 from enum import Enum, IntEnum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import Multimeter
 from instruments.util_fns import assume_units, bool_property, enum_property
@@ -67,7 +67,7 @@ class HP3456a(Multimeter):
         communication.
         """
         super(HP3456a, self).__init__(filelike)
-        self.timeout = 15 * pq.second
+        self.timeout = 15 * u.second
         self.terminator = "\r"
         self.sendcmd("HO0T4SO1")
         self._null = False
@@ -298,11 +298,11 @@ class HP3456a(Multimeter):
         :rtype: `~quantaties.Quantity.s`
 
         """
-        return self._register_read(HP3456a.Register.delay) * pq.s
+        return self._register_read(HP3456a.Register.delay) * u.s
 
     @delay.setter
     def delay(self, value):
-        delay = assume_units(value, pq.s).rescale(pq.s).magnitude
+        delay = assume_units(value, u.s).rescale(u.s).magnitude
         self._register_write(HP3456a.Register.delay, delay)
 
     @property
@@ -434,13 +434,13 @@ class HP3456a(Multimeter):
                 raise ValueError("Only 'auto' is acceptable when specifying "
                                  "the input range as a string.")
 
-        elif isinstance(value, pq.quantity.Quantity):
-            if value.units == pq.volt:
+        elif isinstance(value, u.quantity.Quantity):
+            if value.units == u.volt:
                 valid = HP3456a.ValidRange.voltage.value
-                value = value.rescale(pq.volt)
-            elif value.units == pq.ohm:
+                value = value.rescale(u.volt)
+            elif value.units == u.ohm:
                 valid = HP3456a.ValidRange.resistance.value
-                value = value.rescale(pq.ohm)
+                value = value.rescale(u.ohm)
             else:
                 raise ValueError("Value {} not quantity.volt or quantity.ohm"
                                  "".format(value))
@@ -619,14 +619,14 @@ class HP3456a(Multimeter):
 
 UNITS = {
     None: 1,
-    HP3456a.Mode.dcv: pq.volt,
-    HP3456a.Mode.acv: pq.volt,
-    HP3456a.Mode.acvdcv: pq.volt,
-    HP3456a.Mode.resistance_2wire: pq.ohm,
-    HP3456a.Mode.resistance_4wire: pq.ohm,
+    HP3456a.Mode.dcv: u.volt,
+    HP3456a.Mode.acv: u.volt,
+    HP3456a.Mode.acvdcv: u.volt,
+    HP3456a.Mode.resistance_2wire: u.ohm,
+    HP3456a.Mode.resistance_4wire: u.ohm,
     HP3456a.Mode.ratio_dcv_dcv: 1,
     HP3456a.Mode.ratio_acv_dcv: 1,
     HP3456a.Mode.ratio_acvdcv_dcv: 1,
-    HP3456a.Mode.oc_resistence_2wire: pq.ohm,
-    HP3456a.Mode.oc_resistence_4wire: pq.ohm,
+    HP3456a.Mode.oc_resistence_2wire: u.ohm,
+    HP3456a.Mode.oc_resistence_4wire: u.ohm,
 }

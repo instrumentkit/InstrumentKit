@@ -8,12 +8,12 @@ Unit tests for the HP 3456a digital voltmeter
 
 from __future__ import absolute_import
 
-import quantities as pq
 import numpy as np
 import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
+import instruments.units as u
 
 # TESTS #######################################################################
 
@@ -182,12 +182,12 @@ def test_hp3456a_fetch():
     ) as dmm:
         v = dmm.fetch(dmm.Mode.resistance_2wire)
         np.testing.assert_array_equal(
-            v, [0.1055, 0.1043, 0.1005, 0.1014] * pq.ohm
+            v, [0.1055, 0.1043, 0.1005, 0.1014] * u.ohm
         )
-        assert v[0].units == pq.ohm
+        assert v[0].units == u.ohm
         v = dmm.fetch()
         np.testing.assert_array_equal(
-            v, [0.1055, 0.1043, 0.1005, 0.1014] * pq.ohm
+            v, [0.1055, 0.1043, 0.1005, 0.1014] * u.ohm
         )
         assert isinstance(v[0], float)
 
@@ -247,7 +247,7 @@ def test_hp3456a_delay():
             sep="\r"
     ) as dmm:
         assert dmm.delay == 0
-        dmm.delay = 1 * pq.sec
+        dmm.delay = 1 * u.sec
 
 
 def test_hp3456a_lower():
@@ -327,8 +327,8 @@ def test_hp3456a_measure():
             sep="\r"
     ) as dmm:
         assert dmm.measure(dmm.Mode.ratio_dcv_dcv) == 0
-        assert dmm.measure(dmm.Mode.resistance_2wire) == +000.1010E+0 * pq.ohm
-        assert dmm.measure(dmm.Mode.dcv) == +000.0002E-3 * pq.volt
+        assert dmm.measure(dmm.Mode.resistance_2wire) == +000.1010E+0 * u.ohm
+        assert dmm.measure(dmm.Mode.dcv) == +000.0002E-3 * u.volt
         assert dmm.measure() == +000.0002E-3
 
 
@@ -344,8 +344,8 @@ def test_hp3456a_input_range():
             ],
             sep="\r"
     ) as dmm:
-        dmm.input_range = 10 ** -1 * pq.volt
-        dmm.input_range = 1e3 * pq.ohm
+        dmm.input_range = 10 ** -1 * u.volt
+        dmm.input_range = 1e3 * u.ohm
 
 
 def test_hp3456a_input_range_invalid_str():
@@ -365,7 +365,7 @@ def test_hp3456a_input_range_invalid_range():
             [],
             sep="\r"
     ) as dmm:
-        dmm.input_range = 1 * pq.ohm
+        dmm.input_range = 1 * u.ohm
 
 
 def test_hp3456a_input_range_bad_type():
@@ -385,7 +385,7 @@ def test_hp3456a_input_range_bad_units():
             [],
             sep="\r"
     ) as dmm:
-        dmm.input_range = 1 * pq.amp
+        dmm.input_range = 1 * u.amp
 
 
 def test_hp3456a_relative():

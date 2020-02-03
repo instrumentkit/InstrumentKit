@@ -15,7 +15,7 @@ import io
 from builtins import str, bytes
 
 import usbtmc
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -74,11 +74,11 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         :type: `~quantities.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
-        return self._filelike.timeout * pq.second
+        return self._filelike.timeout * u.second
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second).rescale(pq.s).magnitude
+        newval = assume_units(newval, u.second).rescale(u.s).magnitude
         self._filelike.timeout = newval
 
     # FILE-LIKE METHODS #

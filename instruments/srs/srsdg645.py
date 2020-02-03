@@ -12,7 +12,7 @@ from builtins import map
 
 from enum import IntEnum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.comm import GPIBCommunicator
@@ -59,11 +59,11 @@ class _SRSDG645Channel(object):
         """
         Gets/sets the delay of this channel.
         Formatted as a two-tuple of the reference and the delay time.
-        For example, ``(SRSDG645.Channels.A, pq.Quantity(10, "ps"))``
+        For example, ``(SRSDG645.Channels.A, u.Quantity(10, "ps"))``
         indicates a delay of 10 picoseconds from delay channel A.
         """
         resp = self._ddg.query("DLAY?{}".format(int(self._chan))).split(",")
-        return SRSDG645.Channels(int(resp[0])), pq.Quantity(float(resp[1]), "s")
+        return SRSDG645.Channels(int(resp[0])), u.Quantity(float(resp[1]), "s")
 
     @delay.setter
     def delay(self, newval):
@@ -83,10 +83,10 @@ class SRSDG645(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> srs = ik.srs.SRSDG645.open_gpibusb('/dev/ttyUSB0', 1)
-    >>> srs.channel["B"].delay = (srs.channel["A"], pq.Quantity(10, 'ns'))
-    >>> srs.output["AB"].level_amplitude = pq.Quantity(4.0, "V")
+    >>> srs.channel["B"].delay = (srs.channel["A"], u.Quantity(10, 'ns'))
+    >>> srs.output["AB"].level_amplitude = u.Quantity(4.0, "V")
 
     .. _user's guide: http://www.thinksrs.com/downloads/PDFs/Manuals/DG645m.pdf
     """
@@ -210,7 +210,7 @@ class SRSDG645(SCPIInstrument):
             :type: `float` or :class:`~quantities.Quantity`
             :units: As specified, or :math:`\\text{V}` by default.
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._parent.query('LAMP? {}'.format(self._idx))),
                 'V'
             )
@@ -228,7 +228,7 @@ class SRSDG645(SCPIInstrument):
             :type: `float` or :class:`~quantities.Quantity`
             :units: As specified, or :math:`\\text{V}` by default.
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._parent.query('LOFF? {}'.format(self._idx))),
                 'V'
             )
@@ -304,12 +304,12 @@ class SRSDG645(SCPIInstrument):
         :type: `~quantities.Quantity` or `float`
         :units: As passed or Hz if not specified.
         """
-        return pq.Quantity(float(self.query("TRAT?")), pq.Hz)
+        return u.Quantity(float(self.query("TRAT?")), u.Hz)
 
     @trigger_rate.setter
     def trigger_rate(self, newval):
-        newval = assume_units(newval, pq.Hz)
-        self.sendcmd("TRAT {}".format(newval.rescale(pq.Hz).magnitude))
+        newval = assume_units(newval, u.Hz)
+        self.sendcmd("TRAT {}".format(newval.rescale(u.Hz).magnitude))
 
     @property
     def trigger_source(self):
@@ -332,8 +332,8 @@ class SRSDG645(SCPIInstrument):
         :type: `~quantities.Quantity` or `float`
         :units: As passed, or s if not specified.
         """
-        return pq.Quantity(float(self.query("HOLD?")), pq.s)
+        return u.Quantity(float(self.query("HOLD?")), u.s)
 
     @holdoff.setter
     def holdoff(self, newval):
-        self.sendcmd("HOLD {}".format(newval.rescale(pq.s).magnitude))
+        self.sendcmd("HOLD {}".format(newval.rescale(u.s).magnitude))

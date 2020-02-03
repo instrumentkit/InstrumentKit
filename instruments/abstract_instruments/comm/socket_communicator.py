@@ -15,7 +15,7 @@ import io
 import socket
 
 from builtins import str, bytes
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -77,11 +77,11 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         :type: `~quantities.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
-        return self._conn.gettimeout() * pq.second
+        return self._conn.gettimeout() * u.second
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
+        newval = assume_units(newval, u.second).rescale(u.second).magnitude
         self._conn.settimeout(newval)
 
     # FILE-LIKE METHODS #

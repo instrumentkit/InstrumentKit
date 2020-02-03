@@ -8,11 +8,11 @@ Unit tests for the SRS 345 function generator
 
 from __future__ import absolute_import
 
-import quantities as pq
 import numpy as np
 
 import instruments as ik
 from instruments.tests import expected_protocol
+import instruments.units as u
 
 # TESTS #######################################################################
 
@@ -30,10 +30,10 @@ def test_amplitude():
             ]
     ) as inst:
         np.testing.assert_array_equal(
-            inst.amplitude, (1.234 * pq.V, inst.VoltageMode.peak_to_peak)
+            inst.amplitude, (1.234 * u.V, inst.VoltageMode.peak_to_peak)
         )
-        inst.amplitude = 0.1 * pq.V
-        inst.amplitude = (0.1 * pq.V, inst.VoltageMode.rms)
+        inst.amplitude = 0.1 * u.V
+        inst.amplitude = (0.1 * u.V, inst.VoltageMode.rms)
 
 
 def test_frequency():
@@ -47,8 +47,8 @@ def test_frequency():
                 "1.234",
             ]
     ) as inst:
-        assert inst.frequency == 1.234 * pq.Hz
-        inst.frequency = 0.1 * pq.Hz
+        assert inst.frequency == 1.234 * u.Hz
+        inst.frequency = 0.1 * u.Hz
 
 
 def test_function():
@@ -77,8 +77,8 @@ def test_offset():
                 "1.234",
             ]
     ) as inst:
-        assert inst.offset == 1.234 * pq.V
-        inst.offset = 0.1 * pq.V
+        assert inst.offset == 1.234 * u.V
+        inst.offset = 0.1 * u.V
 
 
 def test_phase():
@@ -92,5 +92,5 @@ def test_phase():
                 "1.234",
             ]
     ) as inst:
-        assert inst.phase == 1.234 * pq.degree
-        inst.phase = 0.1 * pq.degree
+        assert inst.phase == 1.234 * u.degree
+        inst.phase = 0.1 * u.degree

@@ -9,7 +9,7 @@ Provides support for the Holzworth HS9000
 from __future__ import absolute_import
 from __future__ import division
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments.signal_generator import (
     SignalGenerator,
@@ -127,11 +127,11 @@ class HS9000(SignalGenerator):
             """
             val, units = split_unit_str(self.query("TEMP?"))
             units = "deg{}".format(units)
-            return pq.Quantity(val, units)
+            return u.Quantity(val, units)
 
         frequency, frequency_min, frequency_max = bounded_unitful_property(
             "FREQ",
-            units=pq.GHz,
+            units=u.GHz,
             doc="""
             Gets/sets the frequency of the specified channel. When setting,
             values are bounded between what is returned by `frequency_min`
@@ -169,7 +169,7 @@ class HS9000(SignalGenerator):
         )
         phase, phase_min, phase_max = bounded_unitful_property(
             "PHASE",
-            units=pq.degree,
+            units=u.degree,
             doc="""
             Gets/sets the output phase of the specified channel. When setting,
             values are bounded between what is returned by `phase_min`

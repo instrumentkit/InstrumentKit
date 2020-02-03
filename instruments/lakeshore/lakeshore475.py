@@ -12,7 +12,7 @@ from __future__ import division
 from builtins import range
 from enum import IntEnum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import assume_units, bool_property
@@ -20,15 +20,15 @@ from instruments.util_fns import assume_units, bool_property
 # CONSTANTS ###################################################################
 
 LAKESHORE_FIELD_UNITS = {
-    1: pq.gauss,
-    2: pq.tesla,
-    3: pq.oersted,
-    4: pq.CompoundUnit('A/m')
+    1: u.gauss,
+    2: u.tesla,
+    3: u.oersted,
+    4: u.CompoundUnit('A/m')
 }
 
 LAKESHORE_TEMP_UNITS = {
-    1: pq.celsius,
-    2: pq.kelvin
+    1: u.celsius,
+    2: u.kelvin
 }
 
 LAKESHORE_FIELD_UNITS_INV = dict((v, k) for k, v in
@@ -47,11 +47,11 @@ class Lakeshore475(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> gm = ik.lakeshore.Lakeshore475.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(gm.field)
-    >>> gm.field_units = pq.tesla
-    >>> gm.field_setpoint = 0.05 * pq.tesla
+    >>> gm.field_units = u.tesla
+    >>> gm.field_setpoint = 0.05 * u.tesla
     """
 
     # ENUMS ##
@@ -112,7 +112,7 @@ class Lakeshore475(SCPIInstrument):
 
     @field_units.setter
     def field_units(self, newval):
-        if isinstance(newval, pq.unitquantity.UnitQuantity):
+        if isinstance(newval, u.unitquantity.UnitQuantity):
             if newval in LAKESHORE_FIELD_UNITS_INV:
                 self.sendcmd('UNIT ' + LAKESHORE_FIELD_UNITS_INV[newval])
             else:
@@ -134,7 +134,7 @@ class Lakeshore475(SCPIInstrument):
 
     @temp_units.setter
     def temp_units(self, newval):
-        if isinstance(newval, pq.unitquantity.UnitQuantity):
+        if isinstance(newval, u.unitquantity.UnitQuantity):
             if newval in LAKESHORE_TEMP_UNITS_INV:
                 self.sendcmd('TUNIT ' + LAKESHORE_TEMP_UNITS_INV[newval])
             else:
@@ -158,7 +158,7 @@ class Lakeshore475(SCPIInstrument):
     @field_setpoint.setter
     def field_setpoint(self, newval):
         units = self.field_units
-        newval = float(assume_units(newval, pq.gauss).rescale(units).magnitude)
+        newval = float(assume_units(newval, u.gauss).rescale(units).magnitude)
         self.sendcmd('CSETP {}'.format(newval))
 
     @property
@@ -171,8 +171,8 @@ class Lakeshore475(SCPIInstrument):
         """
         params = self.query('CPARAM?').strip().split(',')
         params = [float(x) for x in params]
-        params[2] = params[2] * self.field_units / pq.minute
-        params[3] = params[3] * pq.volt / pq.minute
+        params[2] = params[2] * self.field_units / u.minute
+        params[3] = params[3] * u.volt / u.minute
         return tuple(params)
 
     @field_control_params.setter
@@ -184,10 +184,10 @@ class Lakeshore475(SCPIInstrument):
         newval[0] = float(newval[0])
         newval[1] = float(newval[1])
 
-        unit = self.field_units / pq.minute
+        unit = self.field_units / u.minute
         newval[2] = float(
             assume_units(newval[2], unit).rescale(unit).magnitude)
-        unit = pq.volt / pq.minute
+        unit = u.volt / u.minute
         newval[3] = float(
             assume_units(newval[3], unit).rescale(unit).magnitude)
 
@@ -243,7 +243,7 @@ class Lakeshore475(SCPIInstrument):
 
     @ramp_rate.setter
     def ramp_rate(self, newval):
-        unit = self.field_units / pq.minute
+        unit = self.field_units / u.minute
         newval = float(assume_units(newval, unit).rescale(unit).magnitude)
         values = list(self.field_control_params)
         values[2] = newval
@@ -262,7 +262,7 @@ class Lakeshore475(SCPIInstrument):
 
     @control_slope_limit.setter
     def control_slope_limit(self, newval):
-        unit = pq.volt / pq.minute
+        unit = u.volt / u.minute
         newval = float(assume_units(newval, unit).rescale(unit).magnitude)
         values = list(self.field_control_params)
         values[3] = newval
