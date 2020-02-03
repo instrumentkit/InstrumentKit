@@ -6,7 +6,6 @@ Module containing tests for the HP E3631A power supply
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import instruments.units as u
 

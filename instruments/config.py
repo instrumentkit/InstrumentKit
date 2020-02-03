@@ -6,8 +6,6 @@ Module containing support for loading instruments from configuration files.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import warnings
 
@@ -169,6 +167,5 @@ def load_instruments(conf_file_name, conf_path="/"):
             warnings.warn("Exception occured loading device with URI "
                           "{}:\n\t{}.".format(value["uri"], ex), RuntimeWarning)
             inst_dict[name] = None
-
 
     return inst_dict

@@ -6,8 +6,6 @@ Provides support for the SRS CTC-100 cryogenic temperature controller.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from contextlib import contextmanager
 from builtins import range
 from enum import Enum

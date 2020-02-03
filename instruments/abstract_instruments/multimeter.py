@@ -6,8 +6,6 @@ Provides an abstract base class for multimeter instruments
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import abc
 

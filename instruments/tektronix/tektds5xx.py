@@ -33,8 +33,6 @@ Based off of tektds224.py written by Steven Casagrande.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from functools import reduce
 
 import time

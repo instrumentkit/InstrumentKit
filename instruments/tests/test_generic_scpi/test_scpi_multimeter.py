@@ -6,7 +6,6 @@ Module containing tests for generic SCPI multimeter instruments
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import instruments.units as u
 

@@ -6,7 +6,6 @@ Module containing tests for the bool property factories
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 

@@ -6,7 +6,6 @@ Unit tests for the Ondax Laser Module
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 
@@ -154,7 +153,6 @@ def test_apc_enable_not_boolean():
                 sep="\r"
         ) as lm:
             lm.apc.enabled = "foobar"
-
 
 
 def test_apc_start():

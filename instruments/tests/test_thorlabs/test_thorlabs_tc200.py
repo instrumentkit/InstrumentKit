@@ -6,7 +6,6 @@ Module containing tests for the Thorlabs TC200
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 from enum import IntEnum
 import pytest

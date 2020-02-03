@@ -6,8 +6,6 @@ Provides support for the Agilent 34410a digital multimeter.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from builtins import map
 
 import instruments.units as u

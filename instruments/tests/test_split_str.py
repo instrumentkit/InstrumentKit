@@ -6,7 +6,6 @@ Module containing tests for the util_fns.split_unit_str utility function
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 

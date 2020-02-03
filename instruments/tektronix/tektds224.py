@@ -6,8 +6,6 @@ Provides support for the Tektronix TDS 224 oscilloscope
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 import time
 
 from builtins import range, map

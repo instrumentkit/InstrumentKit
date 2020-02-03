@@ -6,8 +6,6 @@ Provides support for the Keithley 6514 electrometer
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from builtins import map
 
 from enum import Enum

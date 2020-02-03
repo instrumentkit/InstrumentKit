@@ -6,7 +6,6 @@ Unit tests for the Newport ESP 301 axis controller
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import instruments as ik
 from instruments.tests import expected_protocol

@@ -6,8 +6,6 @@ Provides the support for the Thorlabs APT Controller.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import re
 import struct
@@ -577,7 +575,6 @@ class APTMotorController(ThorLabsAPT):
         def motor_model(self, newval):
             self._set_scale(newval)
             self._motor_model = newval
-
 
         # MOTOR COMMANDS #
 

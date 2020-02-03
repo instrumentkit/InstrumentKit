@@ -6,8 +6,6 @@ Provides an abstract base class for power supply instruments
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import abc
 

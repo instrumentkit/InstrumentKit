@@ -8,8 +8,6 @@ CC1 Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from builtins import range, map
 
 from enum import Enum

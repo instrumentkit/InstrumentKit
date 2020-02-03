@@ -6,7 +6,6 @@ Unit tests for the Yokogawa 6370
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import struct
 

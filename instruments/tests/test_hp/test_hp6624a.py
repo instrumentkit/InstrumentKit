@@ -6,7 +6,6 @@ Unit tests for the HP 6624a power supply
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 

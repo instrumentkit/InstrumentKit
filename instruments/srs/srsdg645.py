@@ -6,8 +6,6 @@ Provides support for the SRS DG645 digital delay generator.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from builtins import map
 
 from enum import IntEnum

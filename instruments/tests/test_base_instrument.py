@@ -6,7 +6,6 @@ Module containing tests for the base Instrument class
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import socket
 import io

@@ -6,8 +6,6 @@ Provides support for the Oxford ITC 503 temperature controller.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from builtins import range
 
 import instruments.units as u

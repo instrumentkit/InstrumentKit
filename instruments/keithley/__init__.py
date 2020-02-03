@@ -4,7 +4,6 @@
 Module containing Keithley instruments
 """
 
-from __future__ import absolute_import
 
 from .keithley195 import Keithley195
 from .keithley485 import Keithley485

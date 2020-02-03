@@ -6,7 +6,6 @@ Unit tests for the Oxford ITC 503 temperature controller
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import instruments.units as u
 

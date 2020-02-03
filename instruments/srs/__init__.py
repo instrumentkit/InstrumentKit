@@ -4,7 +4,6 @@
 Module containing Lakeshore instruments
 """
 
-from __future__ import absolute_import
 
 from .srs345 import SRS345
 from .srs830 import SRS830

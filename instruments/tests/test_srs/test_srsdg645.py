@@ -6,7 +6,6 @@ Module containing tests for the SRS DG645
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import instruments.units as u
 

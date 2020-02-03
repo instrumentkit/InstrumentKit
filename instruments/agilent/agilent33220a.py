@@ -6,8 +6,6 @@ Provides support for the Agilent 33220a function generator.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from builtins import range
 
 from enum import Enum

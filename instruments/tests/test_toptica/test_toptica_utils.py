@@ -6,7 +6,6 @@ Module containing tests for Topical util functions
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 import datetime
 
 import pytest

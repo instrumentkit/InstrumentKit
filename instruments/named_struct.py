@@ -6,8 +6,6 @@ Class for quickly defining C-like structures with named fields.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import struct
 from collections import OrderedDict

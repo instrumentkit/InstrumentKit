@@ -6,7 +6,6 @@ Unit tests for the HP 6632b power supply
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import instruments.units as u
 

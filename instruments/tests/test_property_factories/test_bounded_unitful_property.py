@@ -6,7 +6,6 @@ Module containing tests for the bounded unitful property factories
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 import instruments.units as u

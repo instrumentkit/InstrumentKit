@@ -6,8 +6,6 @@ Provides support for the SRS 345 function generator.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 from enum import IntEnum
 

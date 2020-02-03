@@ -6,8 +6,6 @@ Module containing various utility functions
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import re
 

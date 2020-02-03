@@ -6,7 +6,6 @@ Module containing tests for the Fluke 3000 FC multimeter
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import instruments.units as u
 

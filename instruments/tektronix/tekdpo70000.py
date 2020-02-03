@@ -6,8 +6,6 @@ Provides support for the Tektronix DPO 70000 oscilloscope series
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import abc
 import time

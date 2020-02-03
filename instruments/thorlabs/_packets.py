@@ -6,8 +6,6 @@ Module for working with ThorLabs packets.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import struct
 

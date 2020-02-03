@@ -6,8 +6,6 @@ Provides support for the Lakeshore 475 Gaussmeter.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 from builtins import range
 from enum import IntEnum

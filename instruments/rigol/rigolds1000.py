@@ -6,8 +6,6 @@ Provides support for Rigol DS-1000 series oscilloscopes.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from builtins import range
 
 from enum import Enum

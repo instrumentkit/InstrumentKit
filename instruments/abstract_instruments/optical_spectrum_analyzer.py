@@ -6,8 +6,6 @@ Provides an abstract base class for optical spectrum analyzer instruments
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import abc
 
@@ -76,7 +74,6 @@ class OpticalSpectrumAnalyzer(with_metaclass(abc.ABCMeta, Instrument)):
         """
         raise NotImplementedError
 
-
     @property
     @abc.abstractmethod
     def start_wl(self):
@@ -124,7 +121,6 @@ class OpticalSpectrumAnalyzer(with_metaclass(abc.ABCMeta, Instrument)):
     @abc.abstractmethod
     def bandwidth(self, newval):
         raise NotImplementedError
-
 
     # METHODS #
 

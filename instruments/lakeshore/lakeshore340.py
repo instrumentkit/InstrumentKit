@@ -6,8 +6,6 @@ Provides support for the Lakeshore 340 cryogenic temperature controller.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from builtins import range
 
 import instruments.units as u

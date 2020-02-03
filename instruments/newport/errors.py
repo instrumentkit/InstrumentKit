@@ -6,8 +6,6 @@ Provides common error handling for Newport devices.
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import datetime
 
