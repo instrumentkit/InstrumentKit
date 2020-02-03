@@ -6,8 +6,6 @@ Module containing tests for Agilent 34410a
 
 # IMPORTS ####################################################################
 
-from builtins import bytes
-
 import numpy as np
 
 import instruments as ik

@@ -8,15 +8,13 @@ Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-
-from builtins import range, map
 from enum import IntEnum, Enum
 
-import instruments.units as u
-
 from instruments.abstract_instruments import Instrument
-from instruments.util_fns import convert_temperature
-from instruments.util_fns import enum_property, unitful_property, int_property
+import instruments.units as u
+from instruments.util_fns import (
+    convert_temperature, enum_property, unitful_property, int_property
+)
 
 # CLASSES #####################################################################
 

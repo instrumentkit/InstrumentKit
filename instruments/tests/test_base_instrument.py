@@ -9,8 +9,6 @@ Module containing tests for the base Instrument class
 
 import socket
 import io
-
-from builtins import bytes
 import serial
 from serial.tools.list_ports_common import ListPortInfo
 

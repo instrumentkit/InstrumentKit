@@ -33,14 +33,11 @@ Kit project.
 
 # IMPORTS #####################################################################
 
-from builtins import bytes
 from struct import unpack
-
 from enum import Enum
 
-import instruments.units as u
-
 from instruments.abstract_instruments import Instrument
+import instruments.units as u
 
 # CLASSES #####################################################################
 

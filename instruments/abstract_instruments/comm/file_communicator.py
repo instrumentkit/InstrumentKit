@@ -12,8 +12,6 @@ import io
 import time
 import logging
 
-from builtins import str, bytes
-
 from instruments.abstract_instruments.comm import AbstractCommunicator
 
 logger = logging.getLogger(__name__)

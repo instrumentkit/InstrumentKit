@@ -13,10 +13,8 @@ import logging
 import codecs
 import warnings
 
-from builtins import range
-import instruments.units as u
-
 from instruments.thorlabs import _abstract, _packets, _cmds
+import instruments.units as u
 from instruments.util_fns import assume_units
 
 # LOGGING #####################################################################

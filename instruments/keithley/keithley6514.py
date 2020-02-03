@@ -6,14 +6,11 @@ Provides support for the Keithley 6514 electrometer
 
 # IMPORTS #####################################################################
 
-from builtins import map
-
 from enum import Enum
-
-import instruments.units as u
 
 from instruments.abstract_instruments import Electrometer
 from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import bool_property, enum_property
 
 # CLASSES #####################################################################

@@ -6,8 +6,6 @@ Module containing tests for util_fns.py
 
 # IMPORTS ####################################################################
 
-
-from builtins import range
 from enum import Enum
 
 import pytest

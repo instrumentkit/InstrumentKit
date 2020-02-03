@@ -6,8 +6,6 @@ Provides support for Rigol DS-1000 series oscilloscopes.
 
 # IMPORTS #####################################################################
 
-from builtins import range
-
 from enum import Enum
 
 from instruments.abstract_instruments import (

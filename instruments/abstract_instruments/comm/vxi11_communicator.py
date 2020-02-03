@@ -11,8 +11,6 @@ VXI11 devices.
 import io
 import logging
 
-from builtins import str, bytes
-
 import vxi11
 
 from instruments.abstract_instruments.comm import AbstractCommunicator

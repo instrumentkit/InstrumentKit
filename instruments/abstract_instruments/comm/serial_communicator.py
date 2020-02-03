@@ -9,8 +9,6 @@ connections.
 
 
 import io
-
-from builtins import bytes, str
 import serial
 
 import instruments.units as u

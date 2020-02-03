@@ -6,13 +6,10 @@ Provides support for SCPI compliant instruments
 
 # IMPORTS #####################################################################
 
-
-from builtins import map
-
 from enum import IntEnum
-import instruments.units as u
 
 from instruments.abstract_instruments import Instrument
+import instruments.units as u
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################

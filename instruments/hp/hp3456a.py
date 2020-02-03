@@ -33,13 +33,10 @@ Kit project.
 # IMPORTS #####################################################################
 
 import time
-from builtins import range
-
 from enum import Enum, IntEnum
 
-import instruments.units as u
-
 from instruments.abstract_instruments import Multimeter
+import instruments.units as u
 from instruments.util_fns import assume_units, bool_property, enum_property
 
 # CLASSES #####################################################################

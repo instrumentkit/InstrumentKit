@@ -6,16 +6,13 @@ Provides support for the HP6624a power supply
 
 # IMPORTS #####################################################################
 
-
-from builtins import range
 from enum import Enum
-
-import instruments.units as u
 
 from instruments.abstract_instruments import (
     PowerSupply,
     PowerSupplyChannel
 )
+import instruments.units as u
 from instruments.util_fns import ProxyList, unitful_property, bool_property
 
 # CLASSES #####################################################################

@@ -10,7 +10,6 @@ Provides an abstract base class for function generator instruments
 import abc
 from enum import Enum
 
-from builtins import range
 from future.utils import with_metaclass
 
 from instruments.abstract_instruments import Instrument

@@ -6,13 +6,10 @@ Provides support for the Picowatt AVS 47 resistance bridge
 
 # IMPORTS #####################################################################
 
-
-from builtins import range
 from enum import IntEnum
 
-import instruments.units as u
-
 from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import (enum_property, bool_property, int_property,
                                   ProxyList)
 

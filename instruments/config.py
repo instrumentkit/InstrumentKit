@@ -21,8 +21,6 @@ except ImportError:
     # the import-error check should be re-enabled.
     import ruamel_yaml as yaml  # pylint: disable=import-error
 
-from future.builtins import str
-
 import instruments.units as u
 from instruments.util_fns import setattr_expression, split_unit_str
 

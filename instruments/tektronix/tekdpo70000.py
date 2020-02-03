@@ -6,19 +6,15 @@ Provides support for the Tektronix DPO 70000 oscilloscope series
 
 # IMPORTS #####################################################################
 
-
 import abc
-import time
-
-from builtins import range
 from enum import Enum
-
-import instruments.units as u
+import time
 
 from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
 )
 from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import (
     enum_property, string_property, int_property, unitful_property,
     unitless_property, bool_property, ProxyList

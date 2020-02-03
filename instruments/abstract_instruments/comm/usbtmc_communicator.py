@@ -9,13 +9,12 @@ instruments.
 
 
 import io
-from builtins import str, bytes
 
 import usbtmc
-import instruments.units as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
+import instruments.units as u
 
 # CLASSES #####################################################################
 

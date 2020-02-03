@@ -11,7 +11,6 @@ raw ethernet connections.
 import io
 import socket
 
-from builtins import str, bytes
 import instruments.units as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator

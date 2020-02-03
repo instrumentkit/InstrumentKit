@@ -6,13 +6,11 @@ Provides support for the Agilent 33220a function generator.
 
 # IMPORTS #####################################################################
 
-from builtins import range
-
 from enum import Enum
 
-import instruments.units as u
 
 from instruments.generic_scpi import SCPIFunctionGenerator
+import instruments.units as u
 from instruments.util_fns import (
     enum_property, int_property, bool_property, assume_units
 )

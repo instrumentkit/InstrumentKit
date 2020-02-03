@@ -7,24 +7,14 @@ library.
 
 # IMPORTS #####################################################################
 
-# pylint: disable=wrong-import-position
-
 
 import io
-from builtins import str
 
-import instruments.units as u
+import visa
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
-
-if not getattr(__builtins__, "WindowsError", None):
-    class WindowsError(OSError):
-        pass
-try:
-    import visa
-except (ImportError, WindowsError, OSError):
-    visa = None
+import instruments.units as u
 
 # CLASSES #####################################################################
 

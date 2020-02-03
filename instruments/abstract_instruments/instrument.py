@@ -6,34 +6,19 @@ Provides the base Instrument class for all instruments.
 
 # IMPORTS #####################################################################
 
-# pylint: disable=wrong-import-position
-
 
 import os
 import collections
 import socket
+import urllib.parse as parse
 
-from builtins import map
 from serial import SerialException
 from serial.tools.list_ports import comports
-
-from future.standard_library import install_aliases
 import numpy as np
-
+import visa
 import usb
 import usb.core
 import usb.util
-
-install_aliases()
-import urllib.parse as parse  # pylint: disable=wrong-import-order,import-error
-
-if not getattr(__builtins__, "WindowsError", None):
-    class WindowsError(OSError):
-        pass
-try:
-    import visa
-except (ImportError, WindowsError, OSError):
-    visa = None
 
 from instruments.abstract_instruments.comm import (
     SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
