@@ -12,7 +12,7 @@ from __future__ import division
 from builtins import map
 
 from enum import IntEnum
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units
@@ -151,7 +151,7 @@ class SCPIInstrument(Instrument):
         :units: Hertz
         :type: `~quantities.quantity.Quantity`
         """
-        return pq.Quantity(
+        return u.Quantity(
             float(self.query("SYST:LFR?")),
             "Hz"
         )

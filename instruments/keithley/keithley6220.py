@@ -9,7 +9,7 @@ Provides support for the Keithley 6220 constant current supply
 from __future__ import absolute_import
 from __future__ import division
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import PowerSupply
 from instruments.generic_scpi import SCPIInstrument
@@ -28,10 +28,10 @@ class Keithley6220(SCPIInstrument, PowerSupply):
 
     Example usage:
 
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> import instruments as ik
     >>> ccs = ik.keithley.Keithley6220.open_gpibusb("/dev/ttyUSB0", 10)
-    >>> ccs.current = 10 * pq.milliamp # Sets current to 10mA
+    >>> ccs.current = 10 * u.milliamp # Sets current to 10mA
     >>> ccs.disable() # Turns off the output and sets the current to 0A
     """
 
@@ -68,8 +68,8 @@ class Keithley6220(SCPIInstrument, PowerSupply):
 
     current, current_min, current_max = bounded_unitful_property(
         "SOUR:CURR",
-        pq.amp,
-        valid_range=(-105 * pq.milliamp, +105 * pq.milliamp),
+        u.amp,
+        valid_range=(-105 * u.milliamp, +105 * u.milliamp),
         doc="""
         Gets/sets the output current of the source. Value must be between
         -105mA and +105mA.

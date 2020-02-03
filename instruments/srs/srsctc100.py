@@ -10,14 +10,12 @@ from __future__ import absolute_import
 from __future__ import division
 from contextlib import contextmanager
 from builtins import range
-
 from enum import Enum
 
-import quantities as pq
 import numpy as np
 
-
 from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -43,11 +41,11 @@ class SRSCTC100(SCPIInstrument):
 
     # Note that the SRS CTC-100 uses '\xb0' to represent '°'.
     _UNIT_NAMES = {
-        '\xb0C': pq.celsius,
-        'W':     pq.watt,
-        'V':     pq.volt,
-        '\xea':  pq.ohm,
-        '':      pq.dimensionless
+        '\xb0C': u.celsius,
+        'W':     u.watt,
+        'V':     u.volt,
+        '\xea':  u.ohm,
+        '':      u.dimensionless
     }
 
     # INNER CLASSES ##
@@ -126,7 +124,7 @@ class SRSCTC100(SCPIInstrument):
             # WARNING: Queries all units all the time.
             # TODO: Make an OutputChannel that subclasses this class,
             #       and add a setter for value.
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._get('value')),
                 self.units
             )
@@ -197,7 +195,7 @@ class SRSCTC100(SCPIInstrument):
 
             :type: `~quantities.Quantity`
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._get('average')),
                 self.units
             )
@@ -210,7 +208,7 @@ class SRSCTC100(SCPIInstrument):
 
             :type: `~quantities.Quantity`
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._get('SD')),
                 self.units
             )
@@ -240,7 +238,7 @@ class SRSCTC100(SCPIInstrument):
                     'getLog.xy {}, {}'.format(self._chan_name, which)
                 ).split(',')
             ]
-            return pq.Quantity(point[0], 'ms'), pq.Quantity(point[1], units)
+            return u.Quantity(point[0], 'ms'), u.Quantity(point[1], units)
 
         def get_log(self):
             """
@@ -261,8 +259,8 @@ class SRSCTC100(SCPIInstrument):
 
             # Make an empty quantity that size for the times and for the channel
             # values.
-            ts = pq.Quantity(np.empty((n_points,)), 'ms')
-            temps = pq.Quantity(np.empty((n_points,)), units)
+            ts = u.Quantity(np.empty((n_points,)), 'ms')
+            temps = u.Quantity(np.empty((n_points,)), units)
 
             # Reset the position to the first point, then save it.
             # pylint: disable=protected-access
@@ -309,7 +307,7 @@ class SRSCTC100(SCPIInstrument):
         Returns a dictionary from channel names to channel units, using the
         ``getOutput.units`` command. Unknown units and dimensionless quantities
         are presented the same way by the instrument, and so both are reported
-        using `pq.dimensionless`.
+        using `u.dimensionless`.
 
         :rtype: `dict` with channel names as keys and units as values
         """

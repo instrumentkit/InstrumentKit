@@ -8,7 +8,7 @@ Module containing tests for generic SCPI function generator instruments
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test
@@ -34,13 +34,13 @@ def test_scpi_func_gen_amplitude():
             ],
             repeat=2
     ) as fg:
-        assert fg.amplitude == (1 * pq.V, fg.VoltageMode.peak_to_peak)
-        fg.amplitude = 2 * pq.V
-        fg.amplitude = (1.5 * pq.V, fg.VoltageMode.dBm)
+        assert fg.amplitude == (1 * u.V, fg.VoltageMode.peak_to_peak)
+        fg.amplitude = 2 * u.V
+        fg.amplitude = (1.5 * u.V, fg.VoltageMode.dBm)
 
-        assert fg.channel[0].amplitude == (1 * pq.V, fg.VoltageMode.peak_to_peak)
-        fg.channel[0].amplitude = 2 * pq.V
-        fg.channel[0].amplitude = (1.5 * pq.V, fg.VoltageMode.dBm)
+        assert fg.channel[0].amplitude == (1 * u.V, fg.VoltageMode.peak_to_peak)
+        fg.channel[0].amplitude = 2 * u.V
+        fg.channel[0].amplitude = (1.5 * u.V, fg.VoltageMode.dBm)
 
 
 def test_scpi_func_gen_frequency():
@@ -54,11 +54,11 @@ def test_scpi_func_gen_frequency():
             ],
             repeat=2
     ) as fg:
-        assert fg.frequency == 1234 * pq.Hz
-        fg.frequency = 100.5 * pq.Hz
+        assert fg.frequency == 1234 * u.Hz
+        fg.frequency = 100.5 * u.Hz
 
-        assert fg.channel[0].frequency == 1234 * pq.Hz
-        fg.channel[0].frequency = 100.5 * pq.Hz
+        assert fg.channel[0].frequency == 1234 * u.Hz
+        fg.channel[0].frequency = 100.5 * u.Hz
 
 
 def test_scpi_func_gen_function():
@@ -90,8 +90,8 @@ def test_scpi_func_gen_offset():
             ],
             repeat=2
     ) as fg:
-        assert fg.offset == 12.34 * pq.V
-        fg.offset = 0.4321 * pq.V
+        assert fg.offset == 12.34 * u.V
+        fg.offset = 0.4321 * u.V
 
-        assert fg.channel[0].offset == 12.34 * pq.V
-        fg.channel[0].offset = 0.4321 * pq.V
+        assert fg.channel[0].offset == 12.34 * u.V
+        fg.channel[0].offset = 0.4321 * u.V

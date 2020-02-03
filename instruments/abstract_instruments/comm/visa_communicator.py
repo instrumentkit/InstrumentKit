@@ -16,7 +16,7 @@ from __future__ import unicode_literals
 import io
 from builtins import str
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -95,11 +95,11 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
 
     @property
     def timeout(self):
-        return self._conn.timeout * pq.second
+        return self._conn.timeout * u.second
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
+        newval = assume_units(newval, u.second).rescale(u.second).magnitude
         self._conn.timeout = newval
 
     # FILE-LIKE METHODS #

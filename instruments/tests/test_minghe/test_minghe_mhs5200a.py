@@ -9,7 +9,7 @@ Module containing tests for the MingHe MHS52000a
 from __future__ import absolute_import
 
 import pytest
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -35,10 +35,10 @@ def test_mhs_amplitude():
             ],
             sep="\r\n"
     ) as mhs:
-        assert mhs.channel[0].amplitude[0] == 3.3*pq.V
-        assert mhs.channel[1].amplitude[0] == 5.0*pq.V
-        mhs.channel[0].amplitude = 6.6*pq.V
-        mhs.channel[1].amplitude = 8.0*pq.V
+        assert mhs.channel[0].amplitude[0] == 3.3*u.V
+        assert mhs.channel[1].amplitude[0] == 5.0*u.V
+        mhs.channel[0].amplitude = 6.6*u.V
+        mhs.channel[1].amplitude = 8.0*u.V
 
 
 def test_mhs_amplitude_dbm_notimplemented():
@@ -117,10 +117,10 @@ def test_mhs_frequency():
             ],
             sep="\r\n"
     ) as mhs:
-        assert mhs.channel[0].frequency == 33.0*pq.kHz
-        assert mhs.channel[1].frequency == 500.0*pq.kHz
-        mhs.channel[0].frequency = 6*pq.kHz
-        mhs.channel[1].frequency = 8*pq.kHz
+        assert mhs.channel[0].frequency == 33.0*u.kHz
+        assert mhs.channel[1].frequency == 500.0*u.kHz
+        mhs.channel[0].frequency = 6*u.kHz
+        mhs.channel[1].frequency = 8*u.kHz
 
 
 def test_mhs_offset():

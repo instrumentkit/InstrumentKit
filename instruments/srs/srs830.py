@@ -17,7 +17,7 @@ from builtins import range, map
 from enum import Enum, IntEnum
 
 import numpy as np
-import quantities as pq
+import instruments.units as u
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.comm import (
@@ -45,9 +45,9 @@ class SRS830(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> srs = ik.srs.SRS830.open_gpibusb('/dev/ttyUSB0', 1)
-    >>> srs.frequency = 1000 * pq.hertz # Lock-In frequency
+    >>> srs.frequency = 1000 * u.hertz # Lock-In frequency
     >>> data = srs.take_measurement(1, 10) # 1Hz sample rate, 10 samples total
     """
 
@@ -139,7 +139,7 @@ class SRS830(SCPIInstrument):
 
     frequency = unitful_property(
         "FREQ",
-        pq.hertz,
+        u.hertz,
         valid_range=(0, None),
         doc="""
         Gets/sets the lock-in amplifier reference frequency.
@@ -152,8 +152,8 @@ class SRS830(SCPIInstrument):
 
     phase, phase_min, phase_max = bounded_unitful_property(
         "PHAS",
-        pq.degrees,
-        valid_range=(-360 * pq.degrees, 730 * pq.degrees),
+        u.degrees,
+        valid_range=(-360 * u.degrees, 730 * u.degrees),
         doc="""
         Gets/set the phase of the internal reference signal.
 
@@ -167,8 +167,8 @@ class SRS830(SCPIInstrument):
 
     amplitude, amplitude_min, amplitude_max = bounded_unitful_property(
         "SLVL",
-        pq.volt,
-        valid_range=(0.004 * pq.volt, 5 * pq.volt),
+        u.volt,
+        valid_range=(0.004 * u.volt, 5 * u.volt),
         doc="""
         Gets/set the amplitude of the internal reference signal.
 
@@ -215,7 +215,7 @@ class SRS830(SCPIInstrument):
         value = int(self.query('SRAT?'))
         if value == 14:
             return "trigger"
-        return pq.Quantity(VALID_SAMPLE_RATES[value], pq.Hz)
+        return u.Quantity(VALID_SAMPLE_RATES[value], u.Hz)
 
     @sample_rate.setter
     def sample_rate(self, newval):

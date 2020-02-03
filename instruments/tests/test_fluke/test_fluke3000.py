@@ -8,7 +8,7 @@ Module containing tests for the Fluke 3000 FC multimeter
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -160,5 +160,5 @@ def test_measure():
             ],
             "\r"
     ) as inst:
-        assert inst.measure(inst.Mode.voltage_dc) == 0.509 * pq.volt
-        assert inst.measure(inst.Mode.temperature) == -25.3 * pq.celsius
+        assert inst.measure(inst.Mode.voltage_dc) == 0.509 * u.volt
+        assert inst.measure(inst.Mode.temperature) == -25.3 * u.celsius

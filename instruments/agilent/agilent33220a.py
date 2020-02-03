@@ -12,7 +12,7 @@ from builtins import range
 
 from enum import Enum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.generic_scpi import SCPIFunctionGenerator
 from instruments.util_fns import (
@@ -33,10 +33,10 @@ class Agilent33220a(SCPIFunctionGenerator):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> inst = ik.agilent.Agilent33220a.open_gpibusb('/dev/ttyUSB0', 1)
     >>> inst.function = inst.Function.sinusoid
-    >>> inst.frequency = 1 * pq.kHz
+    >>> inst.frequency = 1 * u.kHz
     >>> inst.output = True
 
     .. _Agilent/Keysight 33220a: http://www.keysight.com/en/pd-127539-pn-33220A
@@ -166,7 +166,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         """
         value = self.query("OUTP:LOAD?")
         try:
-            return int(value) * pq.ohm
+            return int(value) * u.ohm
         except ValueError:
             return self.LoadResistance(value.strip())
 
@@ -175,7 +175,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         if isinstance(newval, self.LoadResistance):
             newval = newval.value
         else:
-            newval = assume_units(newval, pq.ohm).rescale(pq.ohm).magnitude
+            newval = assume_units(newval, u.ohm).rescale(u.ohm).magnitude
             if (newval < 0) or (newval > 10000):
                 raise ValueError(
                     "Load resistance must be between 0 and 10,000")

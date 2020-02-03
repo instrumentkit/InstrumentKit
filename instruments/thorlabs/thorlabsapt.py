@@ -16,7 +16,7 @@ import codecs
 import warnings
 
 from builtins import range
-import quantities as pq
+import instruments.units as u
 
 from instruments.thorlabs import _abstract, _packets, _cmds
 from instruments.util_fns import assume_units
@@ -284,7 +284,7 @@ class APTPiezoDevice(ThorLabsAPT):
 
             # chan, int_maxtrav
             _, int_maxtrav = struct.unpack('<HH', resp.data)
-            return int_maxtrav * pq.Quantity(100, 'nm')
+            return int_maxtrav * u.Quantity(100, 'nm')
 
     @property
     def led_intensity(self):
@@ -464,9 +464,9 @@ class APTMotorController(ThorLabsAPT):
         #: from dimensionful input.
         #:
         #: For more details, see the APT protocol documentation.
-        scale_factors = (pq.Quantity(1, 'dimensionless'), ) * 3
+        scale_factors = (u.Quantity(1, 'dimensionless'), ) * 3
 
-        _motion_timeout = pq.Quantity(10, 'second')
+        _motion_timeout = u.Quantity(10, 'second')
 
         __SCALE_FACTORS_BY_MODEL = {
             # TODO: add other tables here.
@@ -474,20 +474,20 @@ class APTMotorController(ThorLabsAPT):
                 # Note that for these drivers, the scale factors are identical
                 # for position, velcoity and acceleration. This is not true for
                 # all drivers!
-                'DRV001': (pq.Quantity(51200, 'ct/mm'),) * 3,
-                'DRV013': (pq.Quantity(25600, 'ct/mm'),) * 3,
-                'DRV014': (pq.Quantity(25600, 'ct/mm'),) * 3,
-                'DRV113': (pq.Quantity(20480, 'ct/mm'),) * 3,
-                'DRV114': (pq.Quantity(20480, 'ct/mm'),) * 3,
-                'FW103':  (pq.Quantity(25600 / 360, 'ct/deg'),) * 3,
-                'NR360':  (pq.Quantity(25600 / 5.4546, 'ct/deg'),) * 3
+                'DRV001': (u.Quantity(51200, 'ct/mm'),) * 3,
+                'DRV013': (u.Quantity(25600, 'ct/mm'),) * 3,
+                'DRV014': (u.Quantity(25600, 'ct/mm'),) * 3,
+                'DRV113': (u.Quantity(20480, 'ct/mm'),) * 3,
+                'DRV114': (u.Quantity(20480, 'ct/mm'),) * 3,
+                'FW103':  (u.Quantity(25600 / 360, 'ct/deg'),) * 3,
+                'NR360':  (u.Quantity(25600 / 5.4546, 'ct/deg'),) * 3
             },
 
             re.compile('TDC001|KDC101'): {
-                'MTS25-Z8': (1 / pq.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
-                'MTS50-Z8': (1 / pq.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
+                'MTS25-Z8': (1 / u.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
+                'MTS50-Z8': (1 / u.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
                 # TODO: Z8xx and Z6xx models. Need to add regex support to motor models, too.
-                'PRM1-Z8': (pq.Quantity(1919.64, 'ct/deg'), NotImplemented, NotImplemented),
+                'PRM1-Z8': (u.Quantity(1919.64, 'ct/deg'), NotImplemented, NotImplemented),
             }
         }
 
@@ -522,7 +522,7 @@ class APTMotorController(ThorLabsAPT):
 
         @motion_timeout.setter
         def motion_timeout(self, newval):
-            self._motion_timeout = assume_units(newval, pq.second)
+            self._motion_timeout = assume_units(newval, u.second)
 
         # UNIT CONVERSION METHODS #
 
@@ -631,7 +631,7 @@ class APTMotorController(ThorLabsAPT):
                 pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER)
             # chan, pos
             _, pos = struct.unpack('<Hl', response.data)
-            return pq.Quantity(pos, 'counts') / self.scale_factors[0]
+            return u.Quantity(pos, 'counts') / self.scale_factors[0]
 
         @property
         def position_encoder(self):
@@ -653,7 +653,7 @@ class APTMotorController(ThorLabsAPT):
                 pkt, expect=_cmds.ThorLabsCommands.MOT_GET_ENCCOUNTER)
             # chan, pos
             _, pos = struct.unpack('<Hl', response.data)
-            return pq.Quantity(pos, 'counts')
+            return u.Quantity(pos, 'counts')
 
         def go_home(self):
             """
@@ -692,16 +692,16 @@ class APTMotorController(ThorLabsAPT):
             # 1. Treat raw numbers as encoder counts.
             # 2. If units are provided (as a Quantity), check if they're encoder
             #    counts. If they aren't, apply scale factor.
-            if not isinstance(pos, pq.Quantity):
+            if not isinstance(pos, u.Quantity):
                 pos_ec = int(pos)
             else:
-                if pos.units == pq.counts:
+                if pos.units == u.counts:
                     pos_ec = int(pos.magnitude)
                 else:
                     scaled_pos = (pos * self.scale_factors[0])
                     # Force a unit error.
                     try:
-                        pos_ec = int(scaled_pos.rescale(pq.counts).magnitude)
+                        pos_ec = int(scaled_pos.rescale(u.counts).magnitude)
                     except:
                         raise ValueError("Provided units are not compatible "
                                          "with current motor scale factor.")

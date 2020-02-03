@@ -8,7 +8,7 @@ Module containing tests for the HP E3631A power supply
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -78,16 +78,16 @@ def test_voltage():
                 "6.0"   # 6
             ]
     ) as inst:
-        assert inst.voltage_min == 0.0 * pq.volt
-        assert inst.voltage_max == 6.0 * pq.volt
-        inst.voltage = 3.0 * pq.volt
-        assert inst.voltage == 3.0 * pq.volt
+        assert inst.voltage_min == 0.0 * u.volt
+        assert inst.voltage_max == 6.0 * u.volt
+        inst.voltage = 3.0 * u.volt
+        assert inst.voltage == 3.0 * u.volt
         try:
-            inst.voltage = -1.0 * pq.volt
+            inst.voltage = -1.0 * u.volt
         except ValueError:
             pass
         try:
-            inst.voltage = 7.0 * pq.volt
+            inst.voltage = 7.0 * u.volt
         except ValueError:
             pass
 
@@ -118,16 +118,16 @@ def test_current():
                 "5.0"   # 6.2
             ]
     ) as inst:
-        assert inst.current_min == 0.0 * pq.amp
-        assert inst.current_max == 5.0 * pq.amp
-        inst.current = 2.0 * pq.amp
-        assert inst.current == 2.0 * pq.amp
+        assert inst.current_min == 0.0 * u.amp
+        assert inst.current_max == 5.0 * u.amp
+        inst.current = 2.0 * u.amp
+        assert inst.current == 2.0 * u.amp
         try:
-            inst.current = -1.0 * pq.amp
+            inst.current = -1.0 * u.amp
         except ValueError:
             pass
         try:
-            inst.current = 6.0 * pq.amp
+            inst.current = 6.0 * u.amp
         except ValueError:
             pass
 
@@ -143,7 +143,7 @@ def test_voltage_sense():
                 "1.234"  # 1
             ]
     ) as inst:
-        assert inst.voltage_sense == 1.234 * pq.volt
+        assert inst.voltage_sense == 1.234 * u.volt
 
 
 def test_current_sense():
@@ -157,4 +157,4 @@ def test_current_sense():
                 "1.234"  # 1
             ]
     ) as inst:
-        assert inst.current_sense == 1.234 * pq.amp
+        assert inst.current_sense == 1.234 * u.amp

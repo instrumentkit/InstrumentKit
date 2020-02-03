@@ -12,7 +12,7 @@ from __future__ import division
 from builtins import range
 from enum import Enum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import (
     PowerSupply,
@@ -111,7 +111,7 @@ class HP6624a(PowerSupply):
 
         voltage = unitful_property(
             "VSET",
-            pq.volt,
+            u.volt,
             set_fmt="{} {:.1f}",
             output_decoration=float,
             doc="""
@@ -127,7 +127,7 @@ class HP6624a(PowerSupply):
 
         current = unitful_property(
             "ISET",
-            pq.amp,
+            u.amp,
             set_fmt="{} {:.1f}",
             output_decoration=float,
             doc="""
@@ -143,7 +143,7 @@ class HP6624a(PowerSupply):
 
         voltage_sense = unitful_property(
             "VOUT",
-            pq.volt,
+            u.volt,
             readonly=True,
             doc="""
             Gets the actual voltage as measured by the sense wires for the
@@ -156,7 +156,7 @@ class HP6624a(PowerSupply):
 
         current_sense = unitful_property(
             "IOUT",
-            pq.amp,
+            u.amp,
             readonly=True,
             doc="""
             Gets the actual output current as measured by the instrument for
@@ -169,7 +169,7 @@ class HP6624a(PowerSupply):
 
         overvoltage = unitful_property(
             "OVSET",
-            pq.volt,
+            u.volt,
             set_fmt="{} {:.1f}",
             output_decoration=float,
             doc="""

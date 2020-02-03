@@ -8,12 +8,12 @@ Unit tests for the Keithley 2182 nano-voltmeter
 
 from __future__ import absolute_import
 
-import quantities as pq
 import numpy as np
 import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
+import instruments.units as u
 
 # TESTS #######################################################################
 
@@ -51,7 +51,7 @@ def test_channel_measure_voltage():
             ]
     ) as inst:
         channel = inst.channel[0]
-        assert channel.measure() == 1.234 * pq.volt
+        assert channel.measure() == 1.234 * u.volt
 
 
 def test_channel_measure_temperature():
@@ -70,7 +70,7 @@ def test_channel_measure_temperature():
             ]
     ) as inst:
         channel = inst.channel[0]
-        assert channel.measure() == 1.234 * pq.celsius
+        assert channel.measure() == 1.234 * u.celsius
 
 
 def test_channel_measure_unknown_temperature_units():
@@ -128,7 +128,7 @@ def test_units():
         units = str(inst.units.units).split()[1]
         assert units == "K"
 
-        assert inst.units == pq.volt
+        assert inst.units == u.volt
 
 
 def test_fetch():
@@ -144,7 +144,7 @@ def test_fetch():
             ]
     ) as inst:
         np.testing.assert_array_equal(
-            inst.fetch(), [1.234, 1, 5.678] * pq.volt
+            inst.fetch(), [1.234, 1, 5.678] * u.volt
         )
 
 
@@ -162,7 +162,7 @@ def test_measure():
                 "VOLT"
             ]
     ) as inst:
-        assert inst.measure() == 1.234 * pq.volt
+        assert inst.measure() == 1.234 * u.volt
 
 
 def test_measure_invalid_mode():

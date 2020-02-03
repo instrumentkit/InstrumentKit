@@ -5,7 +5,7 @@ Toptica Topmode example
 """
 
 import instruments as ik
-import quantities as pq
+import instruments.units as u
 from platform import system
 if system() == 'Windows':
       tm = ik.toptica.TopMode.open_serial('COM17', 115200)

@@ -9,7 +9,7 @@ Module containing tests for the Thorlabs SC10
 from __future__ import absolute_import
 
 import pytest
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, unit_eq
@@ -173,7 +173,7 @@ def test_sc10_open_time():
             ],
             sep="\r"
     ) as sc:
-        unit_eq(sc.open_time, pq.Quantity(20, "ms"))
+        unit_eq(sc.open_time, u.Quantity(20, "ms"))
         sc.open_time = 10
 
 
@@ -192,7 +192,7 @@ def test_sc10_shut_time():
             ],
             sep="\r"
     ) as sc:
-        unit_eq(sc.shut_time, pq.Quantity(20, "ms"))
+        unit_eq(sc.shut_time, u.Quantity(20, "ms"))
         sc.shut_time = 10.0
 
 

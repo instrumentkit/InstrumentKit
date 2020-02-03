@@ -40,7 +40,7 @@ from struct import unpack
 
 from enum import Enum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import Instrument
 
@@ -192,7 +192,7 @@ class Keithley485(Instrument):
         value = self.get_status()["range"]
         if isinstance(value, str):
             return value
-        return value * pq.amp
+        return value * u.amp
 
     @input_range.setter
     def input_range(self, newval):
@@ -205,7 +205,7 @@ class Keithley485(Instrument):
             else:
                 raise ValueError("Only `auto` is acceptable when specifying "
                                  "the range as a string.")
-        if isinstance(newval, pq.quantity.Quantity):
+        if isinstance(newval, u.quantity.Quantity):
             newval = float(newval)
 
         if isinstance(newval, (float, int)):
@@ -422,7 +422,7 @@ class Keithley485(Instrument):
                 raise ValueError("Instrument not in normal mode: {}".format(status.name))
             if function != b"DC":
                 raise ValueError("Instrument not returning DC function: {}".format(function))
-            current = float(current) * pq.amp if base == b"A" else 10 ** (float(current)) * pq.amp
+            current = float(current) * u.amp if base == b"A" else 10 ** (float(current)) * u.amp
         except:
             raise Exception("Cannot parse measurement: {}".format(measurement))
 

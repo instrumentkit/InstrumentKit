@@ -8,10 +8,9 @@ Module containing tests for the util_fns.split_unit_str utility function
 
 from __future__ import absolute_import
 
-import quantities as pq
-
 import pytest
 
+import instruments.units as u
 from instruments.util_fns import (
     split_unit_str
 )
@@ -85,15 +84,15 @@ def test_split_unit_str_scientific_notation():
     # No signs, no units
     mag, units = split_unit_str("123E1")
     assert mag == 1230
-    assert units == pq.dimensionless
+    assert units == u.dimensionless
     # Negative exponential, no units
     mag, units = split_unit_str("123E-1")
     assert mag == 12.3
-    assert units == pq.dimensionless
+    assert units == u.dimensionless
     # Negative magnitude, no units
     mag, units = split_unit_str("-123E1")
     assert mag == -1230
-    assert units == pq.dimensionless
+    assert units == u.dimensionless
     # No signs, with units
     mag, units = split_unit_str("123E1 foobars")
     assert mag == 1230
@@ -105,7 +104,7 @@ def test_split_unit_str_scientific_notation():
     # Lower case e
     mag, units = split_unit_str("123e1")
     assert mag == 1230
-    assert units == pq.dimensionless
+    assert units == u.dimensionless
 
 
 def test_split_unit_str_empty_string():

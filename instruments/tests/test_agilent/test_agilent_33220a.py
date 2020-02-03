@@ -8,7 +8,7 @@ Module containing tests for generic SCPI function generator instruments
 
 from __future__ import absolute_import
 
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test
@@ -33,9 +33,9 @@ def test_agilent33220a_amplitude():
                 "+1.000000E+00"
             ]
     ) as fg:
-        assert fg.amplitude == (1 * pq.V, fg.VoltageMode.peak_to_peak)
-        fg.amplitude = 2 * pq.V
-        fg.amplitude = (1.5 * pq.V, fg.VoltageMode.dBm)
+        assert fg.amplitude == (1 * u.V, fg.VoltageMode.peak_to_peak)
+        fg.amplitude = 2 * u.V
+        fg.amplitude = (1.5 * u.V, fg.VoltageMode.dBm)
 
 
 def test_agilent33220a_frequency():
@@ -48,8 +48,8 @@ def test_agilent33220a_frequency():
                 "+1.234000E+03"
             ]
     ) as fg:
-        assert fg.frequency == 1234 * pq.Hz
-        fg.frequency = 100.5 * pq.Hz
+        assert fg.frequency == 1234 * u.Hz
+        fg.frequency = 100.5 * u.Hz
 
 
 def test_agilent33220a_function():
@@ -76,8 +76,8 @@ def test_agilent33220a_offset():
                 "+1.234000E+01",
             ]
     ) as fg:
-        assert fg.offset == 12.34 * pq.V
-        fg.offset = 0.4321 * pq.V
+        assert fg.offset == 12.34 * u.V
+        fg.offset = 0.4321 * u.V
 
 
 def test_agilent33220a_duty_cycle():
@@ -163,7 +163,7 @@ def test_agilent33220a_load_resistance():
                 "INF"
             ]
     ) as fg:
-        assert fg.load_resistance == 50 * pq.Ohm
+        assert fg.load_resistance == 50 * u.Ohm
         assert fg.load_resistance == fg.LoadResistance.high_impedance
-        fg.load_resistance = 100 * pq.Ohm
+        fg.load_resistance = 100 * u.Ohm
         fg.load_resistance = fg.LoadResistance.maximum

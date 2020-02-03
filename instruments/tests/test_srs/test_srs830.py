@@ -8,12 +8,12 @@ Unit tests for the SRS 830 lock-in amplifier
 
 from __future__ import absolute_import
 
-import quantities as pq
 import numpy as np
 import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
+import instruments.units as u
 
 # TESTS #######################################################################
 
@@ -44,8 +44,8 @@ def test_frequency():
                 "12.34",
             ]
     ) as inst:
-        assert inst.frequency == 12.34 * pq.Hz
-        inst.frequency = 1 * pq.kHz
+        assert inst.frequency == 12.34 * u.Hz
+        inst.frequency = 1 * u.kHz
 
 
 def test_phase():
@@ -59,8 +59,8 @@ def test_phase():
                 "-45",
             ]
     ) as inst:
-        assert inst.phase == -45 * pq.degrees
-        inst.phase = 10 * pq.degrees
+        assert inst.phase == -45 * u.degrees
+        inst.phase = 10 * u.degrees
 
 
 def test_amplitude():
@@ -74,8 +74,8 @@ def test_amplitude():
                 "0.1",
             ]
     ) as inst:
-        assert inst.amplitude == 0.1 * pq.V
-        inst.amplitude = 1 * pq.V
+        assert inst.amplitude == 0.1 * u.V
+        inst.amplitude = 1 * u.V
 
 
 def test_input_shield_ground():
@@ -122,7 +122,7 @@ def test_sample_rate():  # sends index of VALID_SAMPLE_RATES
                 "14"
             ]
     ) as inst:
-        assert inst.sample_rate == 16 * pq.Hz
+        assert inst.sample_rate == 16 * u.Hz
         assert inst.sample_rate == "trigger"
         inst.sample_rate = 2
         inst.sample_rate = "trigger"

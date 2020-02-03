@@ -16,7 +16,7 @@ import io
 import time
 
 from builtins import chr, str, bytes
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -48,7 +48,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         self._terminator = None
         self.terminator = "\n"
         self._eoi = True
-        self._timeout = 1000 * pq.millisecond
+        self._timeout = 1000 * u.millisecond
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             self._eos = 10
         else:
@@ -109,15 +109,15 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second)
+        newval = assume_units(newval, u.second)
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
-            newval = newval.rescale(pq.second)
+            newval = newval.rescale(u.second)
             self._file.sendcmd('+t:{}'.format(int(newval.magnitude)))
         else:
-            newval = newval.rescale(pq.millisecond)
+            newval = newval.rescale(u.millisecond)
             self._file.sendcmd("++read_tmo_ms {}".format(int(newval.magnitude)))
-        self._file.timeout = newval.rescale(pq.second)
-        self._timeout = newval.rescale(pq.second)
+        self._file.timeout = newval.rescale(u.second)
+        self._timeout = newval.rescale(u.second)
 
     @property
     def terminator(self):

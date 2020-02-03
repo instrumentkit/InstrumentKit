@@ -15,7 +15,7 @@ from hypothesis import (
     strategies as st,
 )
 import numpy as np
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -94,8 +94,8 @@ def test_start_wavelength(value):
                 "6.000000e-06"
             ]
     ) as inst:
-        assert inst.start_wl == 6e-6 * pq.meter
-        inst.start_wl = value * pq.meter
+        assert inst.start_wl == 6e-6 * u.meter
+        inst.start_wl = value * u.meter
 
 
 @given(value=st.floats(min_value=600e-9, max_value=1700e-9))
@@ -111,8 +111,8 @@ def test_end_wavelength(value):
                 "6.000000e-06"
             ]
     ) as inst:
-        assert inst.stop_wl == 6e-6 * pq.meter
-        inst.stop_wl = value * pq.meter
+        assert inst.stop_wl == 6e-6 * u.meter
+        inst.stop_wl = value * u.meter
 
 
 def test_bandwidth():
@@ -127,8 +127,8 @@ def test_bandwidth():
                 "6.000000e-06"
             ]
     ) as inst:
-        assert inst.bandwidth == 6e-6 * pq.meter
-        inst.bandwidth = 1e-6 * pq.meter
+        assert inst.bandwidth == 6e-6 * u.meter
+        inst.bandwidth = 1e-6 * u.meter
 
 
 def test_span():
@@ -143,8 +143,8 @@ def test_span():
                 "6.000000e-06"
             ]
     ) as inst:
-        assert inst.span == 6e-6 * pq.meter
-        inst.span = 1e-6 * pq.meter
+        assert inst.span == 6e-6 * u.meter
+        inst.span = 1e-6 * u.meter
 
 
 def test_center_wl():
@@ -159,8 +159,8 @@ def test_center_wl():
                 "6.000000e-06"
             ]
     ) as inst:
-        assert inst.center_wl == 6e-6 * pq.meter
-        inst.center_wl = 1e-6 * pq.meter
+        assert inst.center_wl == 6e-6 * u.meter
+        inst.center_wl = 1e-6 * u.meter
 
 
 def test_points():

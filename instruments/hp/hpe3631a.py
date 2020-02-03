@@ -37,7 +37,7 @@ from __future__ import absolute_import
 from __future__ import division
 import time
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import (
     PowerSupply,
@@ -164,7 +164,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         :type: `float` or `~quantities.Quantity`
         """
         raw = self.query("SOUR:VOLT?")
-        return pq.Quantity(*split_unit_str(raw, pq.volt)).rescale(pq.volt)
+        return u.Quantity(*split_unit_str(raw, u.volt)).rescale(u.volt)
 
     @voltage.setter
     def voltage(self, newval):
@@ -185,7 +185,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
-        strval = "{:e}".format(assume_units(newval, pq.volt).rescale(pq.volt).item())
+        strval = "{:e}".format(assume_units(newval, u.volt).rescale(u.volt).item())
         self.sendcmd('SOUR:VOLT {}'.format(strval))
 
     @property
@@ -221,14 +221,14 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         :units: :math:`\\text{V}`.
         :type: array of `~quantities.Quantity`
         """
-        value = pq.Quantity(*split_unit_str(self.query("SOUR:VOLT? MAX"), pq.volt))
+        value = u.Quantity(*split_unit_str(self.query("SOUR:VOLT? MAX"), u.volt))
         if value < 0.:
             return value, 0.
         return 0., value
 
     current, current_min, current_max = bounded_unitful_property(
         "SOUR:CURR",
-        pq.amp,
+        u.amp,
         min_fmt_str="{}? MIN",
         max_fmt_str="{}? MAX",
         doc="""
@@ -241,7 +241,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
     voltage_sense = unitful_property(
         "MEAS:VOLT",
-        pq.volt,
+        u.volt,
         readonly=True,
         doc="""
         Gets the actual output voltage as measured by the sense wires.
@@ -253,7 +253,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
     current_sense = unitful_property(
         "MEAS:CURR",
-        pq.amp,
+        u.amp,
         readonly=True,
         doc="""
         Gets the actual output current as measured by the sense wires.

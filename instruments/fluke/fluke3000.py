@@ -40,7 +40,7 @@ from builtins import range
 
 from enum import Enum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import Multimeter
 
@@ -105,7 +105,7 @@ class Fluke3000(Multimeter):
         Initialize the instrument, and set the properties needed for communication.
         """
         super(Fluke3000, self).__init__(filelike)
-        self.timeout = 3 * pq.second
+        self.timeout = 3 * u.second
         self.terminator = "\r"
         self.positions = {}
         self.connect()
@@ -211,7 +211,7 @@ class Fluke3000(Multimeter):
         if not self.positions:
             self.reset()                   # Reset the PC3000 dongle
             timeout = self.timeout         # Store default timeout
-            self.timeout = 30 * pq.second  # PC 3000 can take a while to bind with wireless devices
+            self.timeout = 30 * u.second  # PC 3000 can take a while to bind with wireless devices
             self.query_lines("rfdis", 3)   # Discover available modules and bind them
             self.timeout = timeout         # Restore default timeout
             self.scan()                    # Look for connected devices
@@ -295,7 +295,7 @@ class Fluke3000(Multimeter):
         until a terminator is not found.
         """
         timeout = self.timeout
-        self.timeout = 0.1 * pq.second
+        self.timeout = 0.1 * u.second
         init_time = time.time()
         while time.time() - init_time < 1.:
             try:
@@ -472,14 +472,14 @@ class Fluke3000(Multimeter):
 
 UNITS = {
     None: 1,
-    Fluke3000.Mode.voltage_ac:  pq.volt,
-    Fluke3000.Mode.voltage_dc:  pq.volt,
-    Fluke3000.Mode.current_ac:  pq.amp,
-    Fluke3000.Mode.current_dc:  pq.amp,
-    Fluke3000.Mode.frequency:   pq.hertz,
-    Fluke3000.Mode.temperature: pq.celsius,
-    Fluke3000.Mode.resistance:  pq.ohm,
-    Fluke3000.Mode.capacitance: pq.farad
+    Fluke3000.Mode.voltage_ac:  u.volt,
+    Fluke3000.Mode.voltage_dc:  u.volt,
+    Fluke3000.Mode.current_ac:  u.amp,
+    Fluke3000.Mode.current_dc:  u.amp,
+    Fluke3000.Mode.frequency:   u.hertz,
+    Fluke3000.Mode.temperature: u.celsius,
+    Fluke3000.Mode.resistance:  u.ohm,
+    Fluke3000.Mode.capacitance: u.farad
 }
 
 # METRIC PREFIXES #############################################################

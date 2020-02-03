@@ -10,7 +10,7 @@ from __future__ import absolute_import
 
 from enum import IntEnum
 import pytest
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -142,7 +142,7 @@ def test_tc200_temperature():
             ],
             sep="\r"
     ) as tc:
-        assert tc.temperature == 30.0 * pq.degC
+        assert tc.temperature == 30.0 * u.degC
 
 
 def test_tc200_temperature_set():
@@ -163,8 +163,8 @@ def test_tc200_temperature_set():
             ],
             sep="\r"
     ) as tc:
-        assert tc.temperature_set == 30.0 * pq.degC
-        tc.temperature_set = 40 * pq.degC
+        assert tc.temperature_set == 30.0 * u.degC
+        tc.temperature_set = 40 * u.degC
 
 
 def test_tc200_temperature_range():
@@ -180,7 +180,7 @@ def test_tc200_temperature_range():
             ],
             sep="\r"
     ) as tc:
-        tc.temperature_set = 50 * pq.degC
+        tc.temperature_set = 50 * u.degC
 
 
 def test_tc200_pid():
@@ -381,11 +381,11 @@ def test_tc200_degrees():
     ) as tc:
         assert str(tc.degrees).split(" ")[1] == "K"
         assert str(tc.degrees).split(" ")[1] == "degC"
-        assert tc.degrees == pq.degF
+        assert tc.degrees == u.degF
 
-        tc.degrees = pq.degC
-        tc.degrees = pq.degF
-        tc.degrees = pq.degK
+        tc.degrees = u.degC
+        tc.degrees = u.degF
+        tc.degrees = u.degK
 
 
 def test_tc200_degrees_invalid():
@@ -502,8 +502,8 @@ def test_tc200_max_power():
             ],
             sep="\r"
     ) as tc:
-        assert tc.max_power == 15.0 * pq.W
-        tc.max_power = 12 * pq.W
+        assert tc.max_power == 15.0 * u.W
+        tc.max_power = 12 * u.W
 
 
 def test_tc200_power_min():
@@ -551,8 +551,8 @@ def test_tc200_max_temperature():
             ],
             sep="\r"
     ) as tc:
-        assert tc.max_temperature == 200.0 * pq.degC
-        tc.max_temperature = 180 * pq.degC
+        assert tc.max_temperature == 200.0 * u.degC
+        tc.max_temperature = 180 * u.degC
 
 
 def test_tc200_temp_min():

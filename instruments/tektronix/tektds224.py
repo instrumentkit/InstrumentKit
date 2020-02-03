@@ -14,7 +14,7 @@ from builtins import range, map
 from enum import Enum
 
 import numpy as np
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
@@ -155,7 +155,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
 
     def __init__(self, filelike):
         super(TekTDS224, self).__init__(filelike)
-        self._file.timeout = 3 * pq.second
+        self._file.timeout = 3 * u.second
 
     # ENUMS #
 

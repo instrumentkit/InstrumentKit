@@ -11,7 +11,7 @@ from __future__ import division
 
 from enum import IntEnum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
@@ -28,9 +28,9 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> srs = ik.srs.SRS345.open_gpib('/dev/ttyUSB0', 1)
-    >>> srs.frequency = 1 * pq.MHz
+    >>> srs.frequency = 1 * u.MHz
     >>> print(srs.offset)
     >>> srs.function = srs.Function.triangle
     """
@@ -79,7 +79,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
 
     frequency = unitful_property(
         command="FREQ",
-        units=pq.Hz,
+        units=u.Hz,
         doc="""
         Gets/sets the output frequency.
 
@@ -101,7 +101,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
 
     offset = unitful_property(
         command="OFFS",
-        units=pq.volt,
+        units=u.volt,
         doc="""
         Gets/sets the offset voltage for the output waveform.
 
@@ -112,7 +112,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
 
     phase = unitful_property(
         command="PHSE",
-        units=pq.degree,
+        units=u.degree,
         doc="""
         Gets/sets the phase for the output waveform.
 

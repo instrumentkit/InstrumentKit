@@ -9,7 +9,7 @@ Module containing tests for the Thorlabs LCC25
 from __future__ import absolute_import
 
 import pytest
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, unit_eq
@@ -49,7 +49,7 @@ def test_lcc25_frequency():
             ],
             sep="\r"
     ) as lcc:
-        unit_eq(lcc.frequency, pq.Quantity(20, "Hz"))
+        unit_eq(lcc.frequency, u.Quantity(20, "Hz"))
         lcc.frequency = 10.0
 
 
@@ -210,7 +210,7 @@ def test_lcc25_voltage1():
             ],
             sep="\r"
     ) as lcc:
-        unit_eq(lcc.voltage1, pq.Quantity(20, "V"))
+        unit_eq(lcc.voltage1, u.Quantity(20, "V"))
         lcc.voltage1 = 10.0
 
 
@@ -235,7 +235,7 @@ def test_lcc25_voltage2():
             ],
             sep="\r"
     ) as lcc:
-        unit_eq(lcc.voltage2, pq.Quantity(20, "V"))
+        unit_eq(lcc.voltage2, u.Quantity(20, "V"))
         lcc.voltage2 = 10.0
 
 
@@ -254,7 +254,7 @@ def test_lcc25_minvoltage():
             ],
             sep="\r"
     ) as lcc:
-        unit_eq(lcc.min_voltage, pq.Quantity(20, "V"))
+        unit_eq(lcc.min_voltage, u.Quantity(20, "V"))
         lcc.min_voltage = 10.0
 
 
@@ -273,7 +273,7 @@ def test_lcc25_maxvoltage():
             ],
             sep="\r"
     ) as lcc:
-        unit_eq(lcc.max_voltage, pq.Quantity(20, "V"))
+        unit_eq(lcc.max_voltage, u.Quantity(20, "V"))
         lcc.max_voltage = 10.0
 
 
@@ -292,7 +292,7 @@ def test_lcc25_dwell():
             ],
             sep="\r"
     ) as lcc:
-        unit_eq(lcc.dwell, pq.Quantity(20, "ms"))
+        unit_eq(lcc.dwell, u.Quantity(20, "ms"))
         lcc.dwell = 10
 
 
@@ -326,7 +326,7 @@ def test_lcc25_increment():
             ],
             sep="\r"
     ) as lcc:
-        unit_eq(lcc.increment, pq.Quantity(20, "V"))
+        unit_eq(lcc.increment, u.Quantity(20, "V"))
         lcc.increment = 10.0
 
 

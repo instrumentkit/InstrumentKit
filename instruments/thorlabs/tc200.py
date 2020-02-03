@@ -14,7 +14,7 @@ from __future__ import division
 from builtins import range, map
 from enum import IntEnum, Enum
 
-import quantities as pq
+import instruments.units as u
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import convert_temperature
@@ -151,7 +151,7 @@ class TC200(Instrument):
 
     temperature = unitful_property(
         "tact",
-        units=pq.degC,
+        units=u.degC,
         readonly=True,
         input_decoration=lambda x: x.replace(
             " C", "").replace(" F", "").replace(" K", ""),
@@ -168,10 +168,10 @@ class TC200(Instrument):
 
     max_temperature = unitful_property(
         "tmax",
-        units=pq.degC,
+        units=u.degC,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(20*pq.degC, 205*pq.degC),
+        valid_range=(20*u.degC, 205*u.degC),
         doc="""
         Gets/sets the maximum temperature
 
@@ -195,12 +195,12 @@ class TC200(Instrument):
         """
         response = self.query("tset?").replace(
             " C", "").replace(" F", "").replace(" K", "")
-        return float(response) * pq.degC
+        return float(response) * u.degC
 
     @temperature_set.setter
     def temperature_set(self, newval):
         # the set temperature is always in celsius
-        newval = convert_temperature(newval, pq.degC).magnitude
+        newval = convert_temperature(newval, u.degC).magnitude
         if newval < 20.0 or newval > self.max_temperature:
             raise ValueError("Temperature set is out of range.")
         out_query = "tset={}".format(newval)
@@ -289,19 +289,19 @@ class TC200(Instrument):
         """
         response = self.status
         if (response >> 4) % 2 and (response >> 5) % 2:
-            return pq.degC
+            return u.degC
         elif (response >> 5) % 2:
-            return pq.degK
+            return u.degK
 
-        return pq.degF
+        return u.degF
 
     @degrees.setter
     def degrees(self, newval):
-        if newval is pq.degC:
+        if newval is u.degC:
             self.sendcmd("unit=c")
-        elif newval is pq.degF:
+        elif newval is u.degF:
             self.sendcmd("unit=f")
-        elif newval is pq.degK:
+        elif newval is u.degK:
             self.sendcmd("unit=k")
         else:
             raise TypeError("Invalid temperature type")
@@ -337,10 +337,10 @@ class TC200(Instrument):
 
     max_power = unitful_property(
         "pmax",
-        units=pq.W,
+        units=u.W,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(0.1*pq.W, 18.0*pq.W),
+        valid_range=(0.1*u.W, 18.0*u.W),
         doc="""
         Gets/sets the maximum power
 

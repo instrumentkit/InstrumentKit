@@ -9,11 +9,11 @@ Module containing tests for Agilent 34410a
 from __future__ import absolute_import
 from builtins import bytes
 
-import quantities as pq
 import numpy as np
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
+import instruments.units as u
 
 # TESTS ######################################################################
 
@@ -31,7 +31,7 @@ def test_agilent34410a_read():
                 "+1.86850000E-03"
             ]
     ) as dmm:
-        unit_eq(dmm.read_meter(), +1.86850000E-03 * pq.volt)
+        unit_eq(dmm.read_meter(), +1.86850000E-03 * u.volt)
 
 
 def test_agilent34410a_data_point_count():
@@ -59,7 +59,7 @@ def test_agilent34410a_r():
                 b"#18" + bytes.fromhex("3FF0000000000000")
             ]
     ) as dmm:
-        unit_eq(dmm.r(1), np.array([1]) * pq.volt)
+        unit_eq(dmm.r(1), np.array([1]) * u.volt)
 
 
 def test_agilent34410a_fetch():
@@ -74,8 +74,8 @@ def test_agilent34410a_fetch():
             ]
     ) as dmm:
         data = dmm.fetch()
-        unit_eq(data[0], 4.27150000E-03 * pq.volt)
-        unit_eq(data[1], 5.27150000E-03 * pq.volt)
+        unit_eq(data[0], 4.27150000E-03 * u.volt)
+        unit_eq(data[1], 5.27150000E-03 * u.volt)
 
 
 def test_agilent34410a_read_data():
@@ -91,8 +91,8 @@ def test_agilent34410a_read_data():
             ]
     ) as dmm:
         data = dmm.read_data(2)
-        unit_eq(data[0], 4.27150000E-03 * pq.volt)
-        unit_eq(data[1], 5.27150000E-03 * pq.volt)
+        unit_eq(data[0], 4.27150000E-03 * u.volt)
+        unit_eq(data[1], 5.27150000E-03 * u.volt)
 
 
 def test_agilent34410a_read_data_nvmem():
@@ -107,8 +107,8 @@ def test_agilent34410a_read_data_nvmem():
             ]
     ) as dmm:
         data = dmm.read_data_nvmem()
-        unit_eq(data[0], 4.27150000E-03 * pq.volt)
-        unit_eq(data[1], 5.27150000E-03 * pq.volt)
+        unit_eq(data[0], 4.27150000E-03 * u.volt)
+        unit_eq(data[1], 5.27150000E-03 * u.volt)
 
 
 def test_agilent34410a_read_last_data():
@@ -120,4 +120,4 @@ def test_agilent34410a_read_last_data():
                 "+1.73730000E-03 VDC",
             ]
     ) as dmm:
-        unit_eq(dmm.read_last_data(), 1.73730000E-03 * pq.volt)
+        unit_eq(dmm.read_last_data(), 1.73730000E-03 * u.volt)

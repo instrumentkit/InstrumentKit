@@ -9,7 +9,7 @@ Module containing tests for the abstract function generator class
 from __future__ import absolute_import
 
 import pytest
-import quantities as pq
+import instruments.units as u
 
 import instruments as ik
 
@@ -107,7 +107,7 @@ def test_func_gen_two_channel_passes_thru_call_getter(fg, mocker):
 
 def test_func_gen_one_channel_passes_thru_call_getter(fg, mocker):
     mock_properties = [mocker.PropertyMock(return_value=1) for _ in range(4)]
-    mock_method = mocker.MagicMock(return_value=(1, pq.V))
+    mock_method = mocker.MagicMock(return_value=(1, u.V))
 
     mocker.patch("instruments.abstract_instruments.FunctionGenerator.frequency", new=mock_properties[0])
     mocker.patch("instruments.abstract_instruments.FunctionGenerator.function", new=mock_properties[1])
