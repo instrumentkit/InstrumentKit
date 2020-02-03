@@ -6,7 +6,6 @@ Module containing tests for the Qubitekk CC1
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 import instruments.units as u

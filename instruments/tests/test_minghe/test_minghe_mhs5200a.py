@@ -6,7 +6,6 @@ Module containing tests for the MingHe MHS52000a
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 import instruments.units as u

@@ -6,7 +6,6 @@ Unit tests for the Holzworth HS9000
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import instruments.units as u
 

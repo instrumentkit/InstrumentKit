@@ -6,8 +6,6 @@ Defines a generic Thorlabs instrument to define some common functionality.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import time
 

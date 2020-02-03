@@ -6,7 +6,6 @@ Module containing tests for util_fns.py
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 from builtins import range
 from enum import Enum

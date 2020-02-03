@@ -6,9 +6,6 @@ Provides an abstract base class for file-like communication layer classes
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import codecs

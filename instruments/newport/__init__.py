@@ -4,7 +4,6 @@
 Module containing Newport instruments
 """
 
-from __future__ import absolute_import
 
 from .errors import NewportError
 from .newportesp301 import (

@@ -7,8 +7,6 @@ output channel.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 from instruments.abstract_instruments.signal_generator import SignalGenerator
 from instruments.abstract_instruments.signal_generator.channel import SGChannel

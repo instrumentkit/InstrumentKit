@@ -6,7 +6,6 @@ Unit tests for the SRS 345 function generator
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import numpy as np
 

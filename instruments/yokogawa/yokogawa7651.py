@@ -6,8 +6,6 @@ Provides support for the Yokogawa 7651 power supply.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 from enum import IntEnum
 

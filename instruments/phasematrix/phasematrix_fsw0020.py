@@ -6,8 +6,6 @@ Provides support for the Phase Matrix FSW0020 signal generator.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 from quantities import GHz
 

@@ -6,7 +6,6 @@ Unit tests for the HP 6652a single output power supply
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import instruments as ik
 from instruments.tests import expected_protocol

@@ -10,8 +10,6 @@ likely contains bugs and non-complete behaviour.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from functools import reduce
 from time import time, sleep
 from contextlib import contextmanager

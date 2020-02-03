@@ -6,7 +6,6 @@ Module containing custom exception errors used by various instruments.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 # CLASSES #####################################################################
 

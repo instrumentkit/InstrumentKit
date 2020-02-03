@@ -6,8 +6,6 @@ Provides support for the Keithley 6220 constant current supply
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import instruments.units as u
 

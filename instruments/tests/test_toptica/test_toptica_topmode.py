@@ -6,7 +6,6 @@ Module containing tests for the Toptica Topmode
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 from datetime import datetime
 import pytest
 import instruments.units as u

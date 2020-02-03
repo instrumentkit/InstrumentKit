@@ -6,8 +6,6 @@ Provides support for the HP6624a power supply
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 from builtins import range
 from enum import Enum

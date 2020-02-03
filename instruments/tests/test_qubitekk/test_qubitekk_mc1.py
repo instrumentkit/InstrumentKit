@@ -6,7 +6,6 @@ Module containing tests for the Qubitekk MC1
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 

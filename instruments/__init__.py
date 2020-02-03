@@ -6,7 +6,6 @@ Defines globally-available subpackages and symbols for the instruments package.
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 from . import abstract_instruments
 from .abstract_instruments import Instrument

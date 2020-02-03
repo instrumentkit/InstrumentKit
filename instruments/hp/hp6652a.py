@@ -8,8 +8,6 @@ Originally contributed by Wil Langford (wil.langford+instrumentkit@gmail.com)
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import instruments.units as u
 

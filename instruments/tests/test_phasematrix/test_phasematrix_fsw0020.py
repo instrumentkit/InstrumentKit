@@ -6,7 +6,6 @@ Unit tests for the Phasematrix FSW0020
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import instruments.units as u
 

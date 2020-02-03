@@ -6,8 +6,6 @@ Provides support for SCPI compliant multimeters
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 from enum import Enum
 

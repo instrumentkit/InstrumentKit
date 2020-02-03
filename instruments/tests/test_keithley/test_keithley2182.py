@@ -6,7 +6,6 @@ Unit tests for the Keithley 2182 nano-voltmeter
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import numpy as np
 import pytest

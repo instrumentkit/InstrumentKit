@@ -6,7 +6,6 @@ Module containing tests for the Thorlabs SC10
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 import instruments.units as u

@@ -4,7 +4,6 @@
 Module containing Tektronix instruments
 """
 
-from __future__ import absolute_import
 
 from .tekdpo4104 import (
     TekDPO4104,

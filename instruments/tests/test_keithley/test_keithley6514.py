@@ -6,7 +6,6 @@ Unit tests for the Keithley 6514 electrometer
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 

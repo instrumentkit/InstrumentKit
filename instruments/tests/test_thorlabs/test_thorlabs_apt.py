@@ -8,7 +8,6 @@ Module containing tests for the Thorlabs TC200
 
 # pylint: disable=unused-import
 
-from __future__ import absolute_import
 
 import struct
 

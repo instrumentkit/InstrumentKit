@@ -6,7 +6,6 @@ Unit tests for the socket communication layer
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import socket
 

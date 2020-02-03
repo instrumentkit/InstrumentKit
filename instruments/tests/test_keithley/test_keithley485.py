@@ -6,7 +6,6 @@ Module containing tests for the Keithley 485 picoammeter
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import instruments.units as u
 

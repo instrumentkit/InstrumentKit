@@ -6,7 +6,6 @@ Unit tests for the SRS 830 lock-in amplifier
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
 
 import numpy as np
 import pytest

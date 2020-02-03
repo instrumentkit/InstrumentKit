@@ -6,7 +6,6 @@ Module containing tests for the enum property factories
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 from enum import Enum, IntEnum
 import pytest
