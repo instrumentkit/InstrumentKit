@@ -30,7 +30,6 @@ $ pip install -r requirements.txt
 - NumPy
 - `PySerial`_
 - `quantities`_
-- `future`_
 - `python-vxi11`_
 - `PyUSB`_ (version 1.0a or higher, required for raw USB support)
 - `python-usbtmc`_
@@ -42,7 +41,6 @@ Optional Dependencies
 
 .. _PySerial: http://pyserial.sourceforge.net/
 .. _quantities: http://pythonhosted.org/quantities/
-.. _future: https://pypi.python.org/pypi/future
 .. _ruamel.yaml: http://yaml.readthedocs.io
 .. _PyUSB: http://sourceforge.net/apps/trac/pyusb/
 .. _PyVISA: http://pyvisa.sourceforge.net/
