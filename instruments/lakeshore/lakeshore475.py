@@ -6,13 +6,10 @@ Provides support for the Lakeshore 475 Gaussmeter.
 
 # IMPORTS #####################################################################
 
-
-from builtins import range
 from enum import IntEnum
 
-import instruments.units as u
-
 from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import assume_units, bool_property
 
 # CONSTANTS ###################################################################

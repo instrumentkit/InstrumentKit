@@ -6,11 +6,8 @@ Provides support for the Lakeshore 340 cryogenic temperature controller.
 
 # IMPORTS #####################################################################
 
-from builtins import range
-
-import instruments.units as u
-
 from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -32,7 +29,7 @@ class Lakeshore340(SCPIInstrument):
 
     # INNER CLASSES ##
 
-    class Sensor(object):
+    class Sensor:
 
         """
         Class representing a sensor attached to the Lakeshore 340.

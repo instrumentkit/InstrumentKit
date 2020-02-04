@@ -6,20 +6,17 @@ Provides support for the SRS DG645 digital delay generator.
 
 # IMPORTS #####################################################################
 
-from builtins import map
-
 from enum import IntEnum
 
-import instruments.units as u
-
-from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.comm import GPIBCommunicator
+from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
 
 
-class _SRSDG645Channel(object):
+class _SRSDG645Channel:
 
     """
     Class representing a sensor attached to the SRS DG645.
@@ -169,7 +166,7 @@ class SRSDG645(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Output(object):
+    class Output:
 
         """
         An output from the DDG.

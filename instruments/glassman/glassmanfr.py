@@ -32,17 +32,14 @@ Kit project.
 """
 # IMPORTS #####################################################################
 
-from builtins import bytes, round
 from struct import unpack
-
 from enum import Enum
-
-import instruments.units as u
 
 from instruments.abstract_instruments import (
     PowerSupply,
     PowerSupplyChannel
 )
+import instruments.units as u
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################

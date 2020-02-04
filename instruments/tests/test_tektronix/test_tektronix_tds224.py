@@ -6,8 +6,6 @@ Module containing tests for the Tektronix TDS224
 
 # IMPORTS ####################################################################
 
-from builtins import bytes
-
 import numpy as np
 
 import instruments as ik

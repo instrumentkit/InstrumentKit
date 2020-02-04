@@ -6,15 +6,12 @@ Provides an abstract base class for signal generator output channels
 
 # IMPORTS #####################################################################
 
-
 import abc
-
-from future.utils import with_metaclass
 
 # CLASSES #####################################################################
 
 
-class SGChannel(with_metaclass(abc.ABCMeta, object)):
+class SGChannel(metaclass=abc.ABCMeta):
 
     """
     Python abstract base class representing a single channel for a signal

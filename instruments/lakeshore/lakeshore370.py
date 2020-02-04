@@ -6,11 +6,8 @@ Provides support for the Lakeshore 370 AC resistance bridge.
 
 # IMPORTS #####################################################################
 
-from builtins import range
-
-import instruments.units as u
-
 from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -36,7 +33,7 @@ class Lakeshore370(SCPIInstrument):
 
     # INNER CLASSES ##
 
-    class Channel(object):
+    class Channel:
 
         """
         Class representing a sensor attached to the Lakeshore 370.

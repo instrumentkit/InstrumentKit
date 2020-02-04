@@ -91,7 +91,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Channel(object):
+    class Channel:
         """
         Class representing a power output channel on the HPe3631a.
 

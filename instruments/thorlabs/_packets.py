@@ -29,7 +29,7 @@ hw_info_data = struct.Struct(
 # CLASSES #####################################################################
 
 
-class ThorLabsPacket(object):
+class ThorLabsPacket:
 
     """
     This class is used to wrap data to-/from- the instrument. Because of the

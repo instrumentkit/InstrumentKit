@@ -12,7 +12,6 @@ from enum import Enum
 import io
 import time
 
-from builtins import chr, str, bytes
 import instruments.units as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator

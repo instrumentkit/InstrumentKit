@@ -14,7 +14,7 @@ from io import StringIO
 # pylint: disable=missing-docstring
 
 
-class MockInstrument(object):
+class MockInstrument:
 
     """
     Mock class that admits sendcmd/query but little else such that property

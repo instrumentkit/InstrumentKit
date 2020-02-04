@@ -10,19 +10,17 @@ Provides support for the SRS 830 lock-in amplifier.
 import math
 import time
 import warnings
-
-from builtins import range, map
 from enum import Enum, IntEnum
 
 import numpy as np
-import instruments.units as u
 
-from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.comm import (
     GPIBCommunicator,
     SerialCommunicator,
     LoopbackCommunicator
 )
+from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import (
     bool_property, bounded_unitful_property, enum_property, unitful_property
 )

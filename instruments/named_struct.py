@@ -10,8 +10,6 @@ Class for quickly defining C-like structures with named fields.
 import struct
 from collections import OrderedDict
 
-from future.utils import with_metaclass
-
 # DESIGN NOTES ################################################################
 
 # This class uses the Django-like strategy described at
@@ -224,7 +222,7 @@ class HasFields(type):
         return cls
 
 
-class NamedStruct(with_metaclass(HasFields, object)):
+class NamedStruct(metaclass=HasFields):
     """
     Represents a C-style struct with one or more named fields,
     useful for packing and unpacking serialized data documented

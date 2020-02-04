@@ -6,17 +6,14 @@ Provides an abstract base class for power supply instruments
 
 # IMPORTS #####################################################################
 
-
 import abc
-
-from future.utils import with_metaclass
 
 from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
 
-class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
+class PowerSupplyChannel(metaclass=abc.ABCMeta):
 
     """
     Abstract base class for power supply output channels.
@@ -88,7 +85,7 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
         pass
 
 
-class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
+class PowerSupply(Instrument, metaclass=abc.ABCMeta):
 
     """
     Abstract base class for power supply instruments.

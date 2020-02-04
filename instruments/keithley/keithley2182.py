@@ -6,8 +6,6 @@ Driver for the Keithley 2182 nano-voltmeter
 
 # IMPORTS #####################################################################
 
-from builtins import range, map
-
 from enum import Enum
 import instruments.units as u
 

@@ -6,11 +6,8 @@ Provides support for the Oxford ITC 503 temperature controller.
 
 # IMPORTS #####################################################################
 
-from builtins import range
-
-import instruments.units as u
-
 from instruments.abstract_instruments import Instrument
+import instruments.units as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -36,7 +33,7 @@ class OxfordITC503(Instrument):
 
     # INNER CLASSES #
 
-    class Sensor(object):
+    class Sensor:
 
         """
         Class representing a probe sensor on the Oxford ITC 503.

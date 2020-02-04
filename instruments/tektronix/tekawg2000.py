@@ -6,14 +6,12 @@ Provides support for the Tektronix AWG2000 series arbitrary wave generators.
 
 # IMPORTS #####################################################################
 
-from builtins import range
-
 from enum import Enum
 
 import numpy as np
-import instruments.units as u
 
 from instruments.generic_scpi import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
@@ -28,7 +26,7 @@ class TekAWG2000(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Channel(object):
+    class Channel:
 
         """
         Class representing a physical channel on the Tektronix AWG 2000

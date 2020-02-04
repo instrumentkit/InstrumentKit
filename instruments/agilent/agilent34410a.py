@@ -6,11 +6,8 @@ Provides support for the Agilent 34410a digital multimeter.
 
 # IMPORTS #####################################################################
 
-from builtins import map
-
-import instruments.units as u
-
 from instruments.generic_scpi import SCPIMultimeter
+import instruments.units as u
 
 # CLASSES #####################################################################
 

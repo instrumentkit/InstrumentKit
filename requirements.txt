@@ -2,7 +2,6 @@ numpy
 pyserial
 pyvisa>=1.9
 quantities>=0.12.1
-future>=0.15
 python-vxi11>=0.8
 pyusb
 python-usbtmc

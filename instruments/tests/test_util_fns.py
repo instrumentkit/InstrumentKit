@@ -6,8 +6,6 @@ Module containing tests for util_fns.py
 
 # IMPORTS ####################################################################
 
-
-from builtins import range
 from enum import Enum
 
 import pytest
@@ -25,7 +23,7 @@ from instruments.util_fns import (
 
 
 def test_ProxyList_basics():
-    class ProxyChild(object):
+    class ProxyChild:
 
         def __init__(self, parent, name):
             self._parent = parent
@@ -41,7 +39,7 @@ def test_ProxyList_basics():
 
 
 def test_ProxyList_valid_range_is_enum():
-    class ProxyChild(object):
+    class ProxyChild:
 
         def __init__(self, parent, name):
             self._parent = parent
@@ -60,7 +58,7 @@ def test_ProxyList_valid_range_is_enum():
 
 
 def test_ProxyList_length():
-    class ProxyChild(object):
+    class ProxyChild:
 
         def __init__(self, parent, name):
             self._parent = parent
@@ -74,7 +72,7 @@ def test_ProxyList_length():
 
 
 def test_ProxyList_iterator():
-    class ProxyChild(object):
+    class ProxyChild:
 
         def __init__(self, parent, name):
             self._parent = parent
@@ -92,7 +90,7 @@ def test_ProxyList_iterator():
 
 def test_ProxyList_invalid_idx_enum():
     with pytest.raises(IndexError):
-        class ProxyChild(object):
+        class ProxyChild:
 
             def __init__(self, parent, name):
                 self._parent = parent
@@ -111,7 +109,7 @@ def test_ProxyList_invalid_idx_enum():
 
 def test_ProxyList_invalid_idx():
     with pytest.raises(IndexError):
-        class ProxyChild(object):
+        class ProxyChild:
 
             def __init__(self, parent, name):
                 self._parent = parent
@@ -171,7 +169,7 @@ def test_assume_units_failures():
         assume_units(1, 'm').rescale('s')
 
 def test_setattr_expression_simple():
-    class A(object):
+    class A:
         x = 'x'
         y = 'y'
         z = 'z'
@@ -181,7 +179,7 @@ def test_setattr_expression_simple():
     assert a.x == 'foo'
 
 def test_setattr_expression_index():
-    class A(object):
+    class A:
         x = ['x', 'y', 'z']
 
     a = A()
@@ -189,9 +187,9 @@ def test_setattr_expression_index():
     assert a.x[1] == 'foo'
 
 def test_setattr_expression_nested():
-    class B(object):
+    class B:
         x = 'x'
-    class A(object):
+    class A:
         b = None
         def __init__(self):
             self.b = B()
@@ -201,9 +199,9 @@ def test_setattr_expression_nested():
     assert a.b.x == 'foo'
 
 def test_setattr_expression_both():
-    class B(object):
+    class B:
         x = 'x'
-    class A(object):
+    class A:
         b = None
         def __init__(self):
             self.b = [B()]

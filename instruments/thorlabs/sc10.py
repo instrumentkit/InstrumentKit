@@ -8,16 +8,14 @@ Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-from builtins import range
-
 from enum import IntEnum
-import instruments.units as u
 
 from instruments.abstract_instruments import Instrument
+from instruments.thorlabs.thorlabs_utils import check_cmd
+import instruments.units as u
 from instruments.util_fns import (
     bool_property, enum_property, int_property, unitful_property
 )
-from instruments.thorlabs.thorlabs_utils import check_cmd
 
 # CLASSES #####################################################################
 

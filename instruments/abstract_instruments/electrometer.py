@@ -8,14 +8,13 @@ Provides an abstract base class for electrometer instruments
 
 
 import abc
-from future.utils import with_metaclass
 
 from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
 
-class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
+class Electrometer(Instrument, metaclass=abc.ABCMeta):
 
     """
     Abstract base class for electrometer instruments.

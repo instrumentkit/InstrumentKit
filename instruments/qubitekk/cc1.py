@@ -8,12 +8,10 @@ CC1 Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-from builtins import range, map
-
 from enum import Enum
-import instruments.units as u
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
+import instruments.units as u
 from instruments.util_fns import (
     ProxyList, assume_units, split_unit_str
 )
@@ -88,7 +86,7 @@ class CC1(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Channel(object):
+    class Channel:
 
         """
         Class representing a channel on the Qubitekk CC1.

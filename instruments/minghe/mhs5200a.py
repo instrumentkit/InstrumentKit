@@ -8,12 +8,10 @@ Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-
-from builtins import range
 from enum import Enum
 
-import instruments.units as u
 from instruments.abstract_instruments import FunctionGenerator
+import instruments.units as u
 from instruments.util_fns import ProxyList, assume_units
 
 # CLASSES #####################################################################

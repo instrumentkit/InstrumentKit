@@ -9,14 +9,12 @@ Provides an abstract base class for optical spectrum analyzer instruments
 
 import abc
 
-from future.utils import with_metaclass
-
 from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
 
-class OSAChannel(with_metaclass(abc.ABCMeta, object)):
+class OSAChannel(metaclass=abc.ABCMeta):
 
     """
     Abstract base class for physical channels on an optical spectrum analyzer.
@@ -54,7 +52,7 @@ class OSAChannel(with_metaclass(abc.ABCMeta, object)):
         raise NotImplementedError
 
 
-class OpticalSpectrumAnalyzer(with_metaclass(abc.ABCMeta, Instrument)):
+class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
 
     """
     Abstract base class for optical spectrum analyzer instruments.

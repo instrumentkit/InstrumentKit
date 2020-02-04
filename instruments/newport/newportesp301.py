@@ -10,17 +10,14 @@ likely contains bugs and non-complete behaviour.
 
 # IMPORTS #####################################################################
 
+from contextlib import contextmanager
+from enum import IntEnum
 from functools import reduce
 from time import time, sleep
-from contextlib import contextmanager
-
-from builtins import range, map
-from enum import IntEnum
-
-import instruments.units as u
 
 from instruments.abstract_instruments import Instrument
 from instruments.newport.errors import NewportError
+import instruments.units as u
 from instruments.util_fns import assume_units, ProxyList
 
 # ENUMS #######################################################################
@@ -293,7 +290,7 @@ class NewportESP301(Instrument):
 
 
 # pylint: disable=too-many-public-methods,too-many-instance-attributes
-class NewportESP301Axis(object):
+class NewportESP301Axis:
 
     """
     Encapsulates communication concerning a single axis

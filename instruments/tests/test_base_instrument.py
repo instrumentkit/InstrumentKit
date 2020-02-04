@@ -9,8 +9,6 @@ Module containing tests for the base Instrument class
 
 import socket
 import io
-
-from builtins import bytes
 import serial
 from serial.tools.list_ports_common import ListPortInfo
 
@@ -113,7 +111,7 @@ def test_instrument_open_serial(mock_serial_manager):
     )
 
 
-class fake_serial(object):
+class fake_serial:
     """
     Create a fake serial.Serial() object so that tests can be run without
     accessing a non-existant port.

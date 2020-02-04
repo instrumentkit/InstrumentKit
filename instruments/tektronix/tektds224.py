@@ -8,11 +8,9 @@ Provides support for the Tektronix TDS 224 oscilloscope
 
 import time
 
-from builtins import range, map
 from enum import Enum
 
 import numpy as np
-import instruments.units as u
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
@@ -21,6 +19,7 @@ from instruments.abstract_instruments import (
 )
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList
+import instruments.units as u
 
 
 # CLASSES #####################################################################

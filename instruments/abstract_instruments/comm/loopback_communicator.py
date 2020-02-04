@@ -11,8 +11,6 @@ test connections to explore the InstrumentKit API.
 import io
 import sys
 
-from builtins import input, bytes, str
-
 from instruments.abstract_instruments.comm import AbstractCommunicator
 
 # CLASSES #####################################################################

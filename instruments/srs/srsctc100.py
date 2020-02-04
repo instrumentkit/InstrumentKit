@@ -7,7 +7,6 @@ Provides support for the SRS CTC-100 cryogenic temperature controller.
 # IMPORTS #####################################################################
 
 from contextlib import contextmanager
-from builtins import range
 from enum import Enum
 
 import numpy as np
@@ -57,7 +56,7 @@ class SRSCTC100(SCPIInstrument):
         diode = 'Diode'
         rox = 'ROX'
 
-    class Channel(object):
+    class Channel:
 
         """
         Represents an input or output channel on an SRS CTC-100 cryogenic

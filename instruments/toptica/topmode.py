@@ -8,14 +8,12 @@ Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-
-from builtins import range, map
 from enum import IntEnum
-import instruments.units as u
 
+from instruments.abstract_instruments import Instrument
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
 from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
-from instruments.abstract_instruments import Instrument
+import instruments.units as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -62,7 +60,7 @@ class TopMode(Instrument):
 
     # INNER CLASSES #
 
-    class Laser(object):
+    class Laser:
 
         """
         Class representing a laser on the Toptica Topmode.
