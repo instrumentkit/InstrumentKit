@@ -96,9 +96,10 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         self.voltage_max = 50.0 * pq.kilovolt
         self.current_max = 6.0 * pq.milliamp
         self.polarity = +1
-        self._device_timeout = False
         self._voltage = 0. * pq.volt
         self._current = 0. * pq.amp
+        self._device_timeout = False
+        self.device_timeout = False
 
     # ENUMS ##
 
@@ -166,7 +167,9 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
     @voltage.setter
     def voltage(self, newval):
-        self.set_status(voltage=assume_units(newval, pq.volt))
+        voltage = assume_units(newval, pq.volt)
+        self.set_status(voltage=voltage)
+        self._voltage = voltage
 
     @property
     def current(self):
@@ -180,7 +183,9 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
     @current.setter
     def current(self, newval):
-        self.set_status(current=assume_units(newval, pq.amp))
+        current = assume_units(newval, pq.amp)
+        self.set_status(current=current)
+        self._current = current
 
     @property
     def voltage_sense(self):
