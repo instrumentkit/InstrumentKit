@@ -88,8 +88,8 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
     def __init__(self, filelike):
         super(HPe3631a, self).__init__(filelike)
-        self.sendcmd('SYST:REM')  # Puts the device in remote operation
-        time.sleep(0.1)
+        self._device_timeout = 0.1  # [s], device timeout at each set command
+        self.sendcmd('SYST:REM')    # Puts the device in remote operation
 
     # INNER CLASSES ##
 
@@ -276,3 +276,27 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         :type: `bool`
         """
     )
+
+    # METHODS ##
+
+    def sendcmd(self, cmd):
+        """
+        Overrides the default `setcmd` by adding some dead time after
+        each set, to accomodate the device timeout.
+
+        :param str cmd: The command message to send to the instrument
+        """
+        self._file.sendcmd(cmd)
+        time.sleep(self._device_timeout)
+
+    def query(self, cmd, size=-1):
+        """
+        Overrides the default `query` by directly using the underlying
+        file system setcmd, to bypass the deadtime for queries..
+
+        :param str cmd: The query message to send to the instrument
+        :return: The instrument response to the query
+        :rtype: `str`
+        """
+        self._file.sendcmd(cmd)
+        return self._file.read(size)
