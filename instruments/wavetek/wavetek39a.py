@@ -8,7 +8,7 @@ Rok Zitko, March 2020
 # IMPORTS #####################################################################
 
 
-from enum import IntEnum, Enum
+from enum import Enum
 
 import instruments.units as u
 
@@ -50,6 +50,12 @@ class Wavetek39A(SCPIInstrument, FunctionGenerator):
                            for unit, mnem in _UNIT_MNEMONICS.items())
 
     # FunctionGenerator CONTRACT #
+
+    def _get_amplitude_(self):
+        return (
+            0.0, # amplitude is writeonly (FIXME: trigger exception instead?)
+            self._MNEMONIC_UNITS["VPP"]
+        )
 
     def _set_amplitude_(self, magnitude, units):
         self.sendcmd("AMPUNIT {}".format(self._UNIT_MNEMONICS[units]))
@@ -132,7 +138,7 @@ class Wavetek39A(SCPIInstrument, FunctionGenerator):
         """
         #: automatic
         auto = "AUTO"
-        #: waveform sync (sync marker, for standward waveform raising edge at 0 deg point, 
+        #: waveform sync (sync marker, for standward waveform raising edge at 0 deg point,
         #: for arbitrary waveform coincident with the first point)
         waveform_sync = "WFMSYNC"
         #: position marker for arbitrary waveform, for standard waveforms short pulse at the start of cycle
@@ -149,34 +155,34 @@ class Wavetek39A(SCPIInstrument, FunctionGenerator):
         phase_lock = "PHASLOC"
 
     class TriggerInput(Enum):
-       """
-       Enum containing trigger input settings
-       """
-       internal = "INT"
-       external = "EXT"
-       manual = "MAN"
+        """
+        Enum containing trigger input settings
+        """
+        internal = "INT"
+        external = "EXT"
+        manual = "MAN"
 
     class TriggerInputEdge(Enum):
-       """
-       Enum containing external trigger input edge
-       """
-       positive = "POS"
-       negative = "NEG"
+        """
+        Enum containing external trigger input edge
+        """
+        positive = "POS"
+        negative = "NEG"
 
     class Filter(Enum):
-       """
-       Enum containing the output filter types
-       """
-       #: automatic (most appropriate for the current waveform)
-       auto = "AUTO"
-       #: 10MHz elliptic
-       elliptic10 = "EL10"
-       #: 16MHz elliptic (sine, cosine, haversine, havercosine above 10Mhz)
-       elliptic16 = "EL16"
-       #: 10MHz Bessel (positive and negative ramps, arbitrary and sequence)
-       Bessel = "BESS"
-       #: no output filtering (square wave, pulse, pulse trains)
-       none = "NONE"
+        """
+        Enum containing the output filter types
+        """
+        #: automatic (most appropriate for the current waveform)
+        auto = "AUTO"
+        #: 10MHz elliptic
+        elliptic10 = "EL10"
+        #: 16MHz elliptic (sine, cosine, haversine, havercosine above 10Mhz)
+        elliptic16 = "EL16"
+        #: 10MHz Bessel (positive and negative ramps, arbitrary and sequence)
+        Bessel = "BESS"
+        #: no output filtering (square wave, pulse, pulse trains)
+        none = "NONE"
 
     # PROPERTIES ##
 
@@ -253,8 +259,8 @@ class Wavetek39A(SCPIInstrument, FunctionGenerator):
 
     output = bool_property(
         "OUTPUT",
-        inst_true = "ON",
-        inst_false = "OFF",
+        inst_true="ON",
+        inst_false="OFF",
         writeonly=True,
         doc="""
         Sets the output on and off.
@@ -285,8 +291,8 @@ class Wavetek39A(SCPIInstrument, FunctionGenerator):
 
     syncout = bool_property(
         "SYNCOUT",
-        inst_true = "ON",
-        inst_false = "OFF",
+        inst_true="ON",
+        inst_false="OFF",
         writeonly=True,
         doc="""
         Sets the sync output on and off.
@@ -371,4 +377,3 @@ class Wavetek39A(SCPIInstrument, FunctionGenerator):
         Returns the instrument to local operation
         """
         self.sendcmd("LOCAL")
-
