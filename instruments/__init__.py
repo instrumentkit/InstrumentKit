@@ -29,6 +29,7 @@ from . import srs
 from . import tektronix
 from . import thorlabs
 from . import toptica
+from . import wavetek
 from . import yokogawa
 
 from . import units
