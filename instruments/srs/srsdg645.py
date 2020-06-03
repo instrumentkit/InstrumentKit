@@ -332,3 +332,72 @@ class SRSDG645(SCPIInstrument):
     @holdoff.setter
     def holdoff(self, newval):
         self.sendcmd("HOLD {}".format(newval.rescale(u.s).magnitude))
+
+    @property
+    def enable_burst_mode(self):
+        """
+        Gets/sets whether burst mode is enabled.
+
+        :type: `bool`
+        """
+        return bool(int(self.query("BURM?")))
+
+    @enable_burst_mode.setter
+    def enable_burst_mode(self, newval):
+        self.sendcmd("BURM {}".format(1 if newval else 0))
+
+    @property
+    def enable_burst_t0_first(self):
+        """
+        Gets/sets whether T0 output in burst mode is on first. If
+        enabled, the T0 output is enabled for first delay cycle of the
+        burst only. If disabled, the T0 output is enabled for all delay
+        cycles of the burst.
+
+        :type: `bool`
+        """
+        return bool(int(self.query("BURT?")))
+
+    @enable_burst_t0_first.setter
+    def enable_burst_t0_first(self, newval):
+        self.sendcmd("BURT {}".format(1 if newval else 0))
+
+    @property
+    def burst_count(self):
+        """
+        Gets/sets the burst count. When burst mode is enabled, the
+        DG645 outputs burst count delay cycles per trigger.
+        Valid numbers for burst count are between 1 and 2**32 - 1
+        """
+        return int(self.query("BURC?"))
+
+    @burst_count.setter
+    def burst_count(self, newval):
+        self.sendcmd("BURC {}".format(int(newval)))
+
+    @property
+    def burst_period(self):
+        """
+        Gets/sets the burst period. The burst period sets the time
+        between delay cycles during a burst. The burst period may
+        range from 100 ns to 2000 – 10 ns in 10 ns steps.
+        """
+        return u.Quantity(float(self.query("BURP?")), u.s)
+
+    @burst_period.setter
+    def burst_period(self, newval):
+        self.sendcmd("BURP {}".format(newval.rescale(u.s).magnitude))
+
+    @property
+    def burst_delay(self):
+        """
+        Gets/sets the burst delay. When burst mode is enabled the DG645
+        delays the first burst pulse relative to the trigger by the
+        burst delay. The burst delay may range from 0 ps to < 2000 s
+        with a resolution of 5 ps.
+        """
+        return u.Quantity(float(self.query("BURD?")), u.s)
+
+    @burst_delay.setter
+    def burst_delay(self, newval):
+        self.sendcmd("BURD {}".format(newval.rescale(u.s).magnitude))
