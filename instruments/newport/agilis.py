@@ -406,8 +406,24 @@ class AGUC2(Instrument):
 
         :rtype: `_Axis`
         """
-        self.set_remote_mode()
+        self.enable_remote_mode = True
         return ProxyList(self, _Axis, AGUC2.Axes)
+
+    @property
+    def enable_remote_mode(self):
+        """
+        Gets / sets the status of remote mode.
+        """
+        return self._remote_mode
+
+    @enable_remote_mode.setter
+    def enable_remote_mode(self, newval):
+        if newval and not self._remote_mode:
+            self._remote_mode = True
+            self.ag_sendcmd('MR')
+        elif not newval and self._remote_mode:
+            self._remote_mode = False
+            self.ag_sendcmd('ML')
 
     @property
     def error_previous_command(self):
@@ -448,7 +464,7 @@ class AGUC2(Instrument):
 
         If device has no limit switch, this routine always returns PH0
         """
-        self.set_remote_mode()
+        self.enable_remote_mode = True
         resp = self.ag_query("PH")
         return resp
 
@@ -479,24 +495,6 @@ class AGUC2(Instrument):
         """
         self._remote_mode = False
         self.ag_sendcmd("RS")
-
-    def set_local_mode(self):
-        """
-        Puts the controler into local mode if not already and sets the private
-        self._remote_mode bool to false
-        """
-        if self._remote_mode:
-            self._remote_mode = False
-            self.ag_sendcmd('ML')
-
-    def set_remote_mode(self):
-        """
-        Puts the stage into remote mode if not already and sets the private
-        self._remote_mode bool to true
-        """
-        if not self._remote_mode:
-            self._remote_mode = True
-            self.ag_sendcmd('MR')
 
     # SEND COMMAND AND QUERY ROUTINES AGILIS STYLE #
 

@@ -16,6 +16,26 @@ from instruments.tests import expected_protocol
 # CONTROLLER TESTS #
 
 
+def test_aguc2_enable_remote_mode():
+    """
+    Check enabling of remote mode.
+    """
+    with expected_protocol(
+            ik.newport.AGUC2,
+            [
+                "MR",
+                "ML"
+            ],
+            [
+            ],
+            sep="\r\n"
+    ) as agl:
+        agl.enable_remote_mode = True
+        assert agl.enable_remote_mode is True
+        agl.enable_remote_mode = False
+        assert agl.enable_remote_mode is False
+
+
 def test_aguc2_error_previous_command():
     """
     Check the call error of previous command routine. Note that the test will
@@ -57,15 +77,15 @@ def test_aguc2_limit_status():
     Check the limit status routine.
     """
     with expected_protocol(
-        ik.newport.AGUC2,
-        [
-            "MR",   # initialize remote mode
-            "PH"
-        ],
-        [
-            "PH0"
-        ],
-        sep="\r\n"
+            ik.newport.AGUC2,
+            [
+                "MR",   # initialize remote mode
+                "PH"
+            ],
+            [
+                "PH0"
+            ],
+            sep="\r\n"
     ) as agl:
         assert agl.limit_status == "PH0"
 
@@ -75,12 +95,12 @@ def test_aguc2_sleep_time():
     Check setting, getting the sleep time.
     """
     with expected_protocol(
-        ik.newport.AGUC2,
-        [
-        ],
-        [
-        ],
-        sep="\r\n"
+            ik.newport.AGUC2,
+            [
+            ],
+            [
+            ],
+            sep="\r\n"
     ) as agl:
         agl.sleep_time = 3
         assert agl.sleep_time == 3
@@ -102,47 +122,7 @@ def test_aguc2_reset_controller():
             sep="\r\n"
     ) as agl:
         agl.reset_controller()
-        assert agl._remote_mode is False
-
-
-def test_aguc2_set_local_mode():
-    """
-    Check setting local mode.
-    """
-    with expected_protocol(
-            ik.newport.AGUC2,
-            [
-                "ML"
-            ],
-            [
-            ],
-            sep="\r\n"
-    ) as agl:
-        # set remote mode -> otherwise local mode cannot be set
-        agl._remote_mode = True
-        # test
-        agl.set_local_mode()
-        assert agl._remote_mode is False
-
-
-def test_aguc2_set_remote_mode():
-    """
-    Check setting remote mode.
-    """
-    with expected_protocol(
-            ik.newport.AGUC2,
-            [
-                "MR"
-            ],
-            [
-            ],
-            sep="\r\n"
-    ) as agl:
-        # set local mode -> otherwise remote mode cannot be set
-        agl._remote_mode = False
-        # test
-        agl.set_remote_mode()
-        assert agl._remote_mode is True
+        assert agl.enable_remote_mode is False
 
 
 def test_aguc2_ag_sendcmd():
@@ -178,7 +158,7 @@ def test_aguc2_ag_query():
         assert agl.ag_query("VE") == "AG-UC2 v2.2.1"
 
 
-# AXES TESTS #
+# AXIS TESTS #
 
 
 def test_aguc2_axis_am_i_still():
@@ -204,22 +184,21 @@ def test_aguc2_axis_am_i_still():
             agl.axis["Y"].am_i_still(max_retries=3)
 
 
-
 def test_aguc2_axis_axis_status():
     """
     Check the status of the axis. Note that the test will return
     "Status code not valid." since no instrument is connected.
     """
     with expected_protocol(
-        ik.newport.AGUC2,
-        [
-            "MR",   # initialize remote mode
-            "1 TS",
-            "2 TS"
-        ],
-        [
-        ],
-        sep="\r\n"
+            ik.newport.AGUC2,
+            [
+                "MR",   # initialize remote mode
+                "1 TS",
+                "2 TS"
+            ],
+            [
+            ],
+            sep="\r\n"
     ) as agl:
         assert agl.axis["X"].axis_status == "Status code query failed."
         assert agl.axis["Y"].axis_status == "Status code query failed."
@@ -230,15 +209,15 @@ def test_aguc2_axis_jog():
     Check the jog function.
     """
     with expected_protocol(
-        ik.newport.AGUC2,
-        [
-            "MR",   # initialize remote mode
-            "1 JA 3",
-            "2 JA -4",
-        ],
-        [
-        ],
-        sep="\r\n"
+            ik.newport.AGUC2,
+            [
+                "MR",   # initialize remote mode
+                "1 JA 3",
+                "2 JA -4",
+            ],
+            [
+            ],
+            sep="\r\n"
     ) as agl:
         agl.axis["X"].jog = 3
         agl.axis["Y"].jog = -4
@@ -346,17 +325,17 @@ def test_aguc2_axis_step_delay():
     Check the step delay function.
     """
     with expected_protocol(
-        ik.newport.AGUC2,
-        [
-            "MR",   # initialize remote mode
-            "2 DL?",
-            "1 DL 1000",
-            "1 DL 200"
-        ],
-        [
-            "2DL0"
-        ],
-        sep="\r\n"
+            ik.newport.AGUC2,
+            [
+                "MR",   # initialize remote mode
+                "2 DL?",
+                "1 DL 1000",
+                "1 DL 200"
+            ],
+            [
+                "2DL0"
+            ],
+            sep="\r\n"
     ) as agl:
         assert agl.axis["Y"].step_delay == "2DL0"
         agl.axis["X"].step_delay = 1000
@@ -372,15 +351,15 @@ def test_aguc2_axis_stop():
     Check the stop function.
     """
     with expected_protocol(
-        ik.newport.AGUC2,
-        [
-            "MR",   # initialize remote mode
-            "1 ST",
-            "2 ST"
-        ],
-        [
-        ],
-        sep="\r\n"
+            ik.newport.AGUC2,
+            [
+                "MR",   # initialize remote mode
+                "1 ST",
+                "2 ST"
+            ],
+            [
+            ],
+            sep="\r\n"
     ) as agl:
         agl.axis["X"].stop()
         agl.axis["Y"].stop()
@@ -391,15 +370,15 @@ def test_aguc2_axis_zero_position():
     Check the stop function.
     """
     with expected_protocol(
-        ik.newport.AGUC2,
-        [
-            "MR",   # initialize remote mode
-            "1 ZP",
-            "2 ZP"
-        ],
-        [
-        ],
-        sep="\r\n"
+            ik.newport.AGUC2,
+            [
+                "MR",   # initialize remote mode
+                "1 ZP",
+                "2 ZP"
+            ],
+            [
+            ],
+            sep="\r\n"
     ) as agl:
         agl.axis["X"].zero_position()
         agl.axis["Y"].zero_position()
