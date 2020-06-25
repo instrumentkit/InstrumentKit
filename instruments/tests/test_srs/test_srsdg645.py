@@ -93,7 +93,7 @@ def test_srsdg645_enable_burst_mode():
                 "0"
             ]
     ) as ddg:
-        assert ddg.enable_burst_mode == False
+        assert ddg.enable_burst_mode is False
         ddg.enable_burst_mode = True
 
 
@@ -112,7 +112,7 @@ def test_srsdg645_enable_burst_t0_first():
                 "0"
             ]
     ) as ddg:
-        assert ddg.enable_burst_t0_first == False
+        assert ddg.enable_burst_t0_first is False
         ddg.enable_burst_t0_first = True
 
 
