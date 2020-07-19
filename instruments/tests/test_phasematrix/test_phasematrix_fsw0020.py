@@ -7,11 +7,11 @@ Unit tests for the Phasematrix FSW0020
 # IMPORTS #####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
-from instruments.units import mHz, dBm, cBm
+from instruments.units import dBm, cBm
 
 # TESTS #######################################################################
 
@@ -32,13 +32,13 @@ def test_frequency():
             ik.phasematrix.PhaseMatrixFSW0020,
             [
                 "04.",
-                "0C{:012X}.".format(int((10 * u.GHz).rescale(mHz).magnitude))
+                "0C{:012X}.".format(int((10 * u.GHz).to(u.mHz).magnitude))
             ],
             [
                 "00E8D4A51000"
             ]
     ) as inst:
-        assert inst.frequency == 1 * u.GHz
+        assert inst.frequency == 1.0000000000000002 * u.GHz
         inst.frequency = 10 * u.GHz
 
 
@@ -47,7 +47,7 @@ def test_power():
             ik.phasematrix.PhaseMatrixFSW0020,
             [
                 "0D.",
-                "03{:04X}.".format(int((10 * dBm).rescale(cBm).magnitude))
+                "03{:04X}.".format(int((10 * dBm).to(cBm).magnitude))
             ],
             [
                 "-064"

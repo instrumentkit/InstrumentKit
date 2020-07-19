@@ -14,7 +14,7 @@ import visa
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
-import instruments.units as u
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -86,7 +86,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, u.second).rescale(u.second).magnitude
+        newval = assume_units(newval, u.second).to(u.second).magnitude
         self._conn.timeout = newval
 
     # FILE-LIKE METHODS #

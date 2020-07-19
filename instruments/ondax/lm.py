@@ -11,7 +11,7 @@ Class originally contributed by Catherine Holloway.
 
 from enum import IntEnum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import convert_temperature, assume_units
@@ -252,7 +252,7 @@ class LM(Instrument):
             Example usage:
 
             >>> import instruments as ik
-            >>> import instruments.units as u
+            >>> from instruments.units import ureg as u
             >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
             >>> print(laser.modulation.on_time)
             >>> laser.modulation.on_time = 1 * u.ms
@@ -267,7 +267,7 @@ class LM(Instrument):
 
         @on_time.setter
         def on_time(self, newval):
-            newval = assume_units(newval, u.ms).rescale(u.ms).magnitude
+            newval = assume_units(newval, u.ms).to(u.ms).magnitude
             self._parent.sendcmd("stsont:"+str(newval))
 
         @property
@@ -280,7 +280,7 @@ class LM(Instrument):
             Example usage:
 
             >>> import instruments as ik
-            >>> import instruments.units as u
+            >>> from instruments.units import ureg as u
             >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
             >>> print(laser.modulation.on_time)
             >>> laser.modulation.on_time = 1 * u.ms
@@ -295,7 +295,7 @@ class LM(Instrument):
 
         @off_time.setter
         def off_time(self, newval):
-            newval = assume_units(newval, u.ms).rescale(u.ms).magnitude
+            newval = assume_units(newval, u.ms).to(u.ms).magnitude
             self._parent.sendcmd("stsofft:"+str(newval))
 
         @property
@@ -375,7 +375,7 @@ class LM(Instrument):
             :type: `~quantities.Quantity`
             """
             response = self._parent.query("rstt?")
-            return float(response)*u.degC
+            return u.Quantity(float(response), u.degC)
 
         @property
         def enabled(self):
@@ -436,7 +436,7 @@ class LM(Instrument):
 
     @current.setter
     def current(self, newval):
-        newval = assume_units(newval, u.mA).rescale(u.mA).magnitude
+        newval = assume_units(newval, u.mA).to(u.mA).magnitude
         self.sendcmd("slc:"+str(newval))
 
     @property
@@ -454,7 +454,7 @@ class LM(Instrument):
 
     @maximum_current.setter
     def maximum_current(self, newval):
-        newval = assume_units(newval, u.mA).rescale('mA').magnitude
+        newval = assume_units(newval, u.mA).to('mA').magnitude
         self.sendcmd("smlc:" + str(newval))
 
     @property
@@ -471,7 +471,7 @@ class LM(Instrument):
 
     @power.setter
     def power(self, newval):
-        newval = assume_units(newval, u.mW).rescale(u.mW).magnitude
+        newval = assume_units(newval, u.mW).to(u.mW).magnitude
         self.sendcmd("slp:"+str(newval))
 
     @property
@@ -504,7 +504,7 @@ class LM(Instrument):
         :type: `~quantities.Quantity`
         """
         response = self.query("rtt?")
-        return float(response)*u.degC
+        return u.Quantity(float(response), u.degC)
 
     @temperature.setter
     def temperature(self, newval):

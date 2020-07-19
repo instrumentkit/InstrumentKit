@@ -8,9 +8,10 @@ Module containing tests for util_fns.py
 
 from enum import Enum
 
+import pint
 import pytest
 
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     ProxyList,
     assume_units, convert_temperature,
@@ -126,47 +127,15 @@ def test_assume_units_correct():
     m = u.Quantity(1, 'm')
 
     # Check that unitful quantities are kept unitful.
-    assert assume_units(m, 'mm').rescale('mm').magnitude == 1000
+    assert assume_units(m, 'mm').to('mm').magnitude == 1000
 
     # Check that raw scalars are made unitful.
-    assert assume_units(1, 'm').rescale('mm').magnitude == 1000
-
-
-def test_temperature_conversion():
-    blo = 70.0 * u.degF
-    out = convert_temperature(blo, u.degC)
-    assert out.magnitude == 21.11111111111111
-    out = convert_temperature(blo, u.degK)
-    assert out.magnitude == 294.2055555555555
-    out = convert_temperature(blo, u.degF)
-    assert out.magnitude == 70.0
-
-    blo = 20.0 * u.degC
-    out = convert_temperature(blo, u.degF)
-    assert out.magnitude == 68
-    out = convert_temperature(blo, u.degC)
-    assert out.magnitude == 20.0
-    out = convert_temperature(blo, u.degK)
-    assert out.magnitude == 293.15
-
-    blo = 270 * u.degK
-    out = convert_temperature(blo, u.degC)
-    assert out.magnitude == -3.1499999999999773
-    out = convert_temperature(blo, u.degF)
-    assert out.magnitude == 141.94736842105263
-    out = convert_temperature(blo, u.K)
-    assert out.magnitude == 270
-
-
-def test_temperater_conversion_failure():
-    with pytest.raises(ValueError):
-        blo = 70.0 * u.degF
-        convert_temperature(blo, u.V)
+    assert assume_units(1, 'm').to('mm').magnitude == 1000
 
 
 def test_assume_units_failures():
-    with pytest.raises(ValueError):
-        assume_units(1, 'm').rescale('s')
+    with pytest.raises(pint.errors.DimensionalityError):
+        assume_units(1, 'm').to('s')
 
 def test_setattr_expression_simple():
     class A:

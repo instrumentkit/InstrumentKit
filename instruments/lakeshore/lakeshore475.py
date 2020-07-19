@@ -9,7 +9,7 @@ Provides support for the Lakeshore 475 Gaussmeter.
 from enum import IntEnum
 
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units, bool_property
 
 # CONSTANTS ###################################################################
@@ -18,7 +18,7 @@ LAKESHORE_FIELD_UNITS = {
     1: u.gauss,
     2: u.tesla,
     3: u.oersted,
-    4: u.CompoundUnit('A/m')
+    4: u.amp / u.meter
 }
 
 LAKESHORE_TEMP_UNITS = {
@@ -42,7 +42,7 @@ class Lakeshore475(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> gm = ik.lakeshore.Lakeshore475.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(gm.field)
     >>> gm.field_units = u.tesla
@@ -153,7 +153,7 @@ class Lakeshore475(SCPIInstrument):
     @field_setpoint.setter
     def field_setpoint(self, newval):
         units = self.field_units
-        newval = float(assume_units(newval, u.gauss).rescale(units).magnitude)
+        newval = float(assume_units(newval, u.gauss).to(units).magnitude)
         self.sendcmd('CSETP {}'.format(newval))
 
     @property
@@ -181,10 +181,10 @@ class Lakeshore475(SCPIInstrument):
 
         unit = self.field_units / u.minute
         newval[2] = float(
-            assume_units(newval[2], unit).rescale(unit).magnitude)
+            assume_units(newval[2], unit).to(unit).magnitude)
         unit = u.volt / u.minute
         newval[3] = float(
-            assume_units(newval[3], unit).rescale(unit).magnitude)
+            assume_units(newval[3], unit).to(unit).magnitude)
 
         self.sendcmd('CPARAM {},{},{},{}'.format(
             newval[0],
@@ -239,7 +239,7 @@ class Lakeshore475(SCPIInstrument):
     @ramp_rate.setter
     def ramp_rate(self, newval):
         unit = self.field_units / u.minute
-        newval = float(assume_units(newval, unit).rescale(unit).magnitude)
+        newval = float(assume_units(newval, unit).to(unit).magnitude)
         values = list(self.field_control_params)
         values[2] = newval
         self.field_control_params = tuple(values)
@@ -258,7 +258,7 @@ class Lakeshore475(SCPIInstrument):
     @control_slope_limit.setter
     def control_slope_limit(self, newval):
         unit = u.volt / u.minute
-        newval = float(assume_units(newval, unit).rescale(unit).magnitude)
+        newval = float(assume_units(newval, unit).to(unit).magnitude)
         values = list(self.field_control_params)
         values[3] = newval
         self.field_control_params = tuple(values)

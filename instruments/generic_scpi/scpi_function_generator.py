@@ -7,7 +7,7 @@ Provides support for SCPI compliant function generators
 # IMPORTS #####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
@@ -25,7 +25,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> inst = ik.generic_scpi.SCPIFunctionGenerator.open_tcpip("192.168.1.1")
     >>> inst.frequency = 1 * u.kHz
     """

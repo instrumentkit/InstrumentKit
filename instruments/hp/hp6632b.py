@@ -36,7 +36,7 @@ from enum import Enum, IntEnum
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.hp.hp6652a import HP6652a
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (unitful_property, unitless_property,
                                   bool_property, enum_property, int_property)
 

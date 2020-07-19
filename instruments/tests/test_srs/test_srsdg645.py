@@ -7,7 +7,7 @@ Module containing tests for the SRS DG645
 # IMPORTS ####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
@@ -72,7 +72,7 @@ def test_srsdg645_output_polarity():
 
 
 def test_srsdg645_trigger_source():
-    with expected_protocol(ik.srs.SRSDG645, "DLAY?2\nDLAY 3,2,60.0\n", "0,42\n") as ddg:
+    with expected_protocol(ik.srs.SRSDG645, "DLAY?2\nDLAY 3,2,60\n", "0,42\n") as ddg:
         ref, t = ddg.channel["A"].delay
         assert ref == ddg.Channels.T0
         assert abs((t - u.Quantity(42, "s")).magnitude) < 1e5
@@ -150,7 +150,7 @@ def test_srsdg645_burst_period():
                 "100E-9"
             ]
     ) as ddg:
-        unit_eq(ddg.burst_period, u.Quantity(100, "ns").rescale(u.s))
+        unit_eq(ddg.burst_period, u.Quantity(100, "ns").to(u.sec))
         ddg.burst_period = u.Quantity(13, "s")
 
 

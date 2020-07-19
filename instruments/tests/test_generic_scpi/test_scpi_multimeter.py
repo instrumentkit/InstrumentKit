@@ -7,7 +7,7 @@ Module containing tests for generic SCPI multimeter instruments
 # IMPORTS ####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test, unit_eq
@@ -54,7 +54,7 @@ def test_scpi_multimeter_input_range():
                 "CONF?",  # 3.1
                 "CONF:FRES MIN",  # 3.2
                 "CONF?",  # 4.1
-                "CONF:CURR:DC 1.0"  # 4.2
+                "CONF:CURR:DC 1"  # 4.2
             ], [
                 "CURR:AC +1.000000E+01,+3.000000E-06",  # 1
                 "CURR:AC AUTO,+3.000000E-06",  # 2

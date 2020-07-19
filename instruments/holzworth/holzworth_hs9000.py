@@ -7,7 +7,7 @@ Provides support for the Holzworth HS9000
 # IMPORTS #####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.signal_generator import (
     SignalGenerator,

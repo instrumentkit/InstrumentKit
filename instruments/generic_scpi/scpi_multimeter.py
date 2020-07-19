@@ -9,7 +9,7 @@ Provides support for SCPI compliant multimeters
 
 from enum import Enum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import Multimeter
 from instruments.generic_scpi import SCPIInstrument
@@ -197,7 +197,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         if isinstance(newval, self.InputRange):
             newval = newval.value
         else:
-            newval = assume_units(newval, units).rescale(units).magnitude
+            newval = assume_units(newval, units).to(units).magnitude
         self.sendcmd("CONF:{} {}".format(mode.value, newval))
 
     @property

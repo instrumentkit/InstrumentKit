@@ -21,7 +21,7 @@
 # <codecell>
 
 from instruments.srs import SRSDG645
-import instruments.units as u
+from instruments.units import ureg as u
 
 # <markdowncell>
 

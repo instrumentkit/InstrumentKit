@@ -36,7 +36,7 @@ import time
 from enum import Enum, IntEnum
 
 from instruments.abstract_instruments import Multimeter
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units, bool_property, enum_property
 
 # CLASSES #####################################################################
@@ -297,7 +297,7 @@ class HP3456a(Multimeter):
 
     @delay.setter
     def delay(self, value):
-        delay = assume_units(value, u.s).rescale(u.s).magnitude
+        delay = assume_units(value, u.s).to(u.s).magnitude
         self._register_write(HP3456a.Register.delay, delay)
 
     @property
@@ -429,18 +429,18 @@ class HP3456a(Multimeter):
                 raise ValueError("Only 'auto' is acceptable when specifying "
                                  "the input range as a string.")
 
-        elif isinstance(value, u.quantity.Quantity):
+        elif isinstance(value, u.Quantity):
             if value.units == u.volt:
                 valid = HP3456a.ValidRange.voltage.value
-                value = value.rescale(u.volt)
+                value = value.to(u.volt)
             elif value.units == u.ohm:
                 valid = HP3456a.ValidRange.resistance.value
-                value = value.rescale(u.ohm)
+                value = value.to(u.ohm)
             else:
                 raise ValueError("Value {} not quantity.volt or quantity.ohm"
                                  "".format(value))
 
-            value = float(value)
+            value = float(value.magnitude)
             if value not in valid:
                 raise ValueError("Value {} outside valid ranges "
                                  "{}".format(value, valid))

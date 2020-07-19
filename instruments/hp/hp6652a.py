@@ -9,7 +9,7 @@ Originally contributed by Wil Langford (wil.langford+instrumentkit@gmail.com)
 # IMPORTS #####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import (PowerSupply, PowerSupplyChannel)
 from instruments.util_fns import unitful_property, bool_property

@@ -10,7 +10,7 @@ from enum import IntEnum
 
 from instruments.abstract_instruments.comm import GPIBCommunicator
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
@@ -65,7 +65,7 @@ class _SRSDG645Channel:
         self._ddg.sendcmd("DLAY {},{},{}".format(
             int(self._chan),
             int(newval[0].idx),
-            newval[1].rescale("s").magnitude
+            newval[1].to("s").magnitude
         ))
 
 
@@ -78,7 +78,7 @@ class SRSDG645(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> srs = ik.srs.SRSDG645.open_gpibusb('/dev/ttyUSB0', 1)
     >>> srs.channel["B"].delay = (srs.channel["A"], u.Quantity(10, 'ns'))
     >>> srs.output["AB"].level_amplitude = u.Quantity(4.0, "V")
@@ -304,7 +304,7 @@ class SRSDG645(SCPIInstrument):
     @trigger_rate.setter
     def trigger_rate(self, newval):
         newval = assume_units(newval, u.Hz)
-        self.sendcmd("TRAT {}".format(newval.rescale(u.Hz).magnitude))
+        self.sendcmd("TRAT {}".format(newval.to(u.Hz).magnitude))
 
     @property
     def trigger_source(self):
@@ -331,7 +331,7 @@ class SRSDG645(SCPIInstrument):
 
     @holdoff.setter
     def holdoff(self, newval):
-        self.sendcmd("HOLD {}".format(newval.rescale(u.s).magnitude))
+        self.sendcmd("HOLD {}".format(newval.to(u.s).magnitude))
 
     @property
     def enable_burst_mode(self):
@@ -386,7 +386,7 @@ class SRSDG645(SCPIInstrument):
 
     @burst_period.setter
     def burst_period(self, newval):
-        self.sendcmd("BURP {}".format(newval.rescale(u.s).magnitude))
+        self.sendcmd("BURP {}".format(newval.to(u.sec).magnitude))
 
     @property
     def burst_delay(self):
@@ -400,4 +400,4 @@ class SRSDG645(SCPIInstrument):
 
     @burst_delay.setter
     def burst_delay(self, newval):
-        self.sendcmd("BURD {}".format(newval.rescale(u.s).magnitude))
+        self.sendcmd("BURD {}".format(newval.to(u.s).magnitude))

@@ -9,7 +9,7 @@ Module containing tests for the Qubitekk MC1
 
 import pytest
 
-import instruments.units as u
+from instruments.units import ureg as u
 import instruments as ik
 from instruments.tests import expected_protocol
 
@@ -75,7 +75,7 @@ def test_mc1_direction():
             ],
             sep="\r"
     ) as mc:
-        assert mc.direction == -100
+        assert mc.direction == -100 * u.ms
 
 
 def test_mc1_firmware():
@@ -103,7 +103,7 @@ def test_mc1_inertia():
             ],
             sep="\r"
     ) as mc:
-        assert mc.inertia == 20
+        assert mc.inertia == 20 * u.ms
 
 
 def test_mc1_step():

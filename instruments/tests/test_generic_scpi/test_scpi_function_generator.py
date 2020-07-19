@@ -7,7 +7,7 @@ Module containing tests for generic SCPI function generator instruments
 # IMPORTS ####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test

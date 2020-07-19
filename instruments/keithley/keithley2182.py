@@ -7,7 +7,7 @@ Driver for the Keithley 2182 nano-voltmeter
 # IMPORTS #####################################################################
 
 from enum import Enum
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.generic_scpi import SCPIMultimeter
 from instruments.abstract_instruments import Multimeter
@@ -98,7 +98,7 @@ class Keithley2182(SCPIMultimeter):
             self._parent.sendcmd('SENS:CHAN {}'.format(self._idx))
             value = float(self._parent.query('SENS:DATA:FRES?'))
             unit = self._parent.units
-            return value * unit
+            return u.Quantity(value, unit)
 
     # ENUMS #
 

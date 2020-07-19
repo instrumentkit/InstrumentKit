@@ -11,7 +11,7 @@ CC1 Class originally contributed by Catherine Holloway.
 from enum import Enum
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     ProxyList, assume_units, split_unit_str
 )
@@ -229,7 +229,7 @@ class CC1(SCPIInstrument):
 
     @window.setter
     def window(self, new_val):
-        new_val_mag = int(assume_units(new_val, u.ns).rescale(u.ns).magnitude)
+        new_val_mag = int(assume_units(new_val, u.ns).to(u.ns).magnitude)
         if new_val_mag < 0 or new_val_mag > 7:
             raise ValueError("Window is out of range.")
         # window must be an integer!
@@ -249,7 +249,7 @@ class CC1(SCPIInstrument):
 
     @delay.setter
     def delay(self, new_val):
-        new_val = assume_units(new_val, u.ns).rescale(u.ns)
+        new_val = assume_units(new_val, u.ns).to(u.ns)
         if new_val < 0*u.ns or new_val > 14*u.ns:
             raise ValueError("New delay value is out of bounds.")
         if new_val.magnitude % 2 != 0:
@@ -276,7 +276,7 @@ class CC1(SCPIInstrument):
 
     @dwell_time.setter
     def dwell_time(self, new_val):
-        new_val_mag = assume_units(new_val, u.s).rescale(u.s).magnitude
+        new_val_mag = assume_units(new_val, u.s).to(u.s).magnitude
         if new_val_mag < 0:
             raise ValueError("Dwell time cannot be negative.")
         self.sendcmd(":DWEL {}".format(new_val_mag))

@@ -11,7 +11,7 @@ Class originally contributed by Catherine Holloway.
 from enum import IntEnum, Enum
 
 from instruments.abstract_instruments import Instrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     convert_temperature, enum_property, unitful_property, int_property
 )
@@ -167,7 +167,7 @@ class TC200(Instrument):
         units=u.degC,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(20*u.degC, 205*u.degC),
+        valid_range=(u.Quantity(20, u.degC), u.Quantity(205, u.degC)),
         doc="""
         Gets/sets the maximum temperature
 
@@ -191,15 +191,15 @@ class TC200(Instrument):
         """
         response = self.query("tset?").replace(
             " C", "").replace(" F", "").replace(" K", "")
-        return float(response) * u.degC
+        return u.Quantity(float(response), u.degC)
 
     @temperature_set.setter
     def temperature_set(self, newval):
         # the set temperature is always in celsius
-        newval = convert_temperature(newval, u.degC).magnitude
-        if newval < 20.0 or newval > self.max_temperature:
+        newval = convert_temperature(newval, u.degC)
+        if newval < u.Quantity(20.0, u.degC) or newval > self.max_temperature:
             raise ValueError("Temperature set is out of range.")
-        out_query = "tset={}".format(newval)
+        out_query = "tset={}".format(newval.magnitude)
         self.sendcmd(out_query)
 
     @property
@@ -293,11 +293,11 @@ class TC200(Instrument):
 
     @degrees.setter
     def degrees(self, newval):
-        if newval is u.degC:
+        if newval == u.degC:
             self.sendcmd("unit=c")
-        elif newval is u.degF:
+        elif newval == u.degF:
             self.sendcmd("unit=f")
-        elif newval is u.degK:
+        elif newval == u.degK:
             self.sendcmd("unit=k")
         else:
             raise TypeError("Invalid temperature type")

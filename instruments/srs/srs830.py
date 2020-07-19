@@ -20,7 +20,7 @@ from instruments.abstract_instruments.comm import (
     LoopbackCommunicator
 )
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     bool_property, bounded_unitful_property, enum_property, unitful_property
 )
@@ -41,7 +41,7 @@ class SRS830(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> srs = ik.srs.SRS830.open_gpibusb('/dev/ttyUSB0', 1)
     >>> srs.frequency = 1000 * u.hertz # Lock-In frequency
     >>> data = srs.take_measurement(1, 10) # 1Hz sample rate, 10 samples total

@@ -9,7 +9,7 @@ Provides support for the SRS 345 function generator.
 
 from enum import IntEnum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
@@ -26,7 +26,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> srs = ik.srs.SRS345.open_gpib('/dev/ttyUSB0', 1)
     >>> srs.frequency = 1 * u.MHz
     >>> print(srs.offset)

@@ -9,7 +9,7 @@ Provides support for the Yokogawa 6370 optical spectrum analyzer.
 
 from enum import IntEnum, Enum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import (
     OpticalSpectrumAnalyzer,
@@ -31,7 +31,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> inst = ik.yokogawa.Yokogawa6370.open_visa('TCPIP0:192.168.0.35')
     >>> inst.start_wl = 1030e-9 * u.m
     """

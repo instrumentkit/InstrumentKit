@@ -12,7 +12,11 @@ Module containing custom units used by various instruments.
 from quantities import *
 from quantities.unitquantity import IrreducibleUnit
 
+from pint import _DEFAULT_REGISTRY as ureg
+
 # UNITS #######################################################################
+
+ureg.define("percent = []")
 
 # IRREDUCIBLE UNITS #
 
@@ -36,16 +40,6 @@ dBm = UnitLogPower('decibel-milliwatt', symbol='dBm')
 # easier later on.
 
 # TODO: move custom units out to another module.
-
-mHz = UnitQuantity(
-    'millihertz',
-    milli * Hz,
-    symbol='mHz',
-    doc="""
-    `~quantities.UnitQuantity` representing millihertz, the native unit of the
-    Phase Matrix FSW-0020.
-    """
-)
 
 #: Centibel-milliwatts, the native log-power unit supported by the
 #: Phase Matrix FSW-0020.

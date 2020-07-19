@@ -39,7 +39,7 @@ from instruments.abstract_instruments import (
     PowerSupply,
     PowerSupplyChannel
 )
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
@@ -76,7 +76,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
     `polarity` that are only valid of the FR50R6 in its positive setting.
     If your power supply differs, reset those values by calling:
 
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> psu.voltage_max = 40.0 * u.kilovolt
     >>> psu.current_max = 7.5 * u.milliamp
     >>> psu.polarity = -1
@@ -339,7 +339,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
             # If the voltage is not specified, keep it as is
             voltage = assume_units(voltage, u.volt) if voltage is not None else self.voltage
-            ratio = float(voltage.rescale(u.volt)/self.voltage_max.rescale(u.volt))
+            ratio = float(voltage.to(u.volt)/self.voltage_max.to(u.volt))
             voltage_int = int(round(value_max*ratio))
             self._voltage = self.voltage_max*float(voltage_int)/value_max
             assert 0. * u.volt <= self._voltage <= self.voltage_max
@@ -347,7 +347,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
             # If the current is not specified, keep it as is
             current = assume_units(current, u.amp) if current is not None else self.current
-            ratio = float(current.rescale(u.amp)/self.current_max.rescale(u.amp))
+            ratio = float(current.to(u.amp)/self.current_max.to(u.amp))
             current_int = int(round(value_max*ratio))
             self._current = self.current_max*float(current_int)/value_max
             assert 0. * u.amp <= self._current <= self.current_max

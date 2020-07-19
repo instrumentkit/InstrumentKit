@@ -11,7 +11,7 @@ import time
 import struct
 from enum import Enum, IntEnum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import Multimeter
 
@@ -27,7 +27,7 @@ class Keithley195(Multimeter):
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
     >>> print dmm.measure(dmm.Mode.resistance)
 
@@ -244,7 +244,7 @@ class Keithley195(Multimeter):
         Example usage:
 
         >>> import instruments as ik
-        >>> import instruments.units as u
+        >>> from instruments.units import ureg as u
         >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
         >>> print(dmm.measure(dmm.Mode.resistance))
 

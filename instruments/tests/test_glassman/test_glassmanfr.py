@@ -8,7 +8,7 @@ Module containing tests for the Glassman FR power supply
 
 import instruments as ik
 from instruments.tests import expected_protocol
-import instruments.units as u
+from instruments.units import ureg as u
 
 
 # TESTS ######################################################################

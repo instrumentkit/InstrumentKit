@@ -73,7 +73,7 @@ class ThorLabsInstrument(Instrument):
         t_start = time.time()
 
         if timeout:
-            timeout = assume_units(timeout, second).rescale('second').magnitude
+            timeout = assume_units(timeout, second).to('second').magnitude
 
         while True:
             self._file.write_raw(packet.pack())

@@ -35,7 +35,7 @@ Kit project.
 
 import time
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import (
     PowerSupply,
@@ -162,7 +162,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         :type: `float` or `~quantities.Quantity`
         """
         raw = self.query("SOUR:VOLT?")
-        return u.Quantity(*split_unit_str(raw, u.volt)).rescale(u.volt)
+        return u.Quantity(*split_unit_str(raw, u.volt)).to(u.volt)
 
     @voltage.setter
     def voltage(self, newval):
@@ -183,7 +183,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
-        strval = "{:e}".format(assume_units(newval, u.volt).rescale(u.volt).item())
+        strval = "{:e}".format(assume_units(newval, u.volt).to(u.volt).magnitude)
         self.sendcmd('SOUR:VOLT {}'.format(strval))
 
     @property

@@ -38,7 +38,7 @@ import struct
 
 from enum import IntEnum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import Instrument
 

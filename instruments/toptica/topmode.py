@@ -13,7 +13,7 @@ from enum import IntEnum
 from instruments.abstract_instruments import Instrument
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
 from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -359,7 +359,7 @@ class TopMode(Instrument):
         For example, the following would print the wavelength from laser 1:
 
         >>> import instruments as ik
-        >>> import instruments.units as u
+        >>> from instruments.units import ureg as u
         >>> tm = ik.toptica.TopMode.open_serial('/dev/ttyUSB0', 115200)
         >>> print(tm.laser[0].wavelength)
 

@@ -11,7 +11,7 @@ MC1 Class originally contributed by Catherine Holloway.
 from enum import Enum
 
 from instruments.abstract_instruments import Instrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     int_property, enum_property, unitful_property, assume_units
 )
@@ -56,7 +56,7 @@ class MC1(Instrument):
 
     @increment.setter
     def increment(self, newval):
-        self._increment = assume_units(newval, u.ms).rescale(u.ms)
+        self._increment = assume_units(newval, u.ms).to(u.ms)
 
     @property
     def lower_limit(self):
@@ -70,7 +70,7 @@ class MC1(Instrument):
 
     @lower_limit.setter
     def lower_limit(self, newval):
-        self._lower_limit = assume_units(newval, u.ms).rescale(u.ms)
+        self._lower_limit = assume_units(newval, u.ms).to(u.ms)
 
     @property
     def upper_limit(self):
@@ -84,7 +84,7 @@ class MC1(Instrument):
 
     @upper_limit.setter
     def upper_limit(self, newval):
-        self._upper_limit = assume_units(newval, u.ms).rescale(u.ms)
+        self._upper_limit = assume_units(newval, u.ms).to(u.ms)
 
     direction = unitful_property(
         command="DIRE",
@@ -243,7 +243,7 @@ class MC1(Instrument):
         :type new_position: `~quantities.Quantity`
         """
         if self.lower_limit <= new_position <= self.upper_limit:
-            new_position = assume_units(new_position, u.ms).rescale(u.ms)
+            new_position = assume_units(new_position, u.ms).to(u.ms)
             clock_cycles = new_position/self.step_size
             cmd = ":MOVE "+str(int(clock_cycles))
             self.sendcmd(cmd)

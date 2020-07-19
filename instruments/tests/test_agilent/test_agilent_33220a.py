@@ -7,7 +7,7 @@ Module containing tests for generic SCPI function generator instruments
 # IMPORTS ####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test
@@ -155,14 +155,14 @@ def test_agilent33220a_load_resistance():
             [
                 "OUTP:LOAD?",
                 "OUTP:LOAD?",
-                "OUTP:LOAD 100.0",
+                "OUTP:LOAD 100",
                 "OUTP:LOAD MAX"
             ], [
                 "50",
                 "INF"
             ]
     ) as fg:
-        assert fg.load_resistance == 50 * u.Ohm
+        assert fg.load_resistance == 50 * u.ohm
         assert fg.load_resistance == fg.LoadResistance.high_impedance
-        fg.load_resistance = 100 * u.Ohm
+        fg.load_resistance = 100 * u.ohm
         fg.load_resistance = fg.LoadResistance.maximum

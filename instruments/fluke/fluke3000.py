@@ -37,7 +37,7 @@ import time
 from enum import Enum
 
 from instruments.abstract_instruments import Multimeter
-import instruments.units as u
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -349,7 +349,7 @@ class Fluke3000(Multimeter):
 
         # Return with the appropriate units
         units = UNITS[mode]
-        return value * units
+        return u.Quantity(value, units)
 
     def _get_module(self, mode):
         """Gets the module associated with this measurement mode.
@@ -472,7 +472,7 @@ UNITS = {
     Fluke3000.Mode.current_ac:  u.amp,
     Fluke3000.Mode.current_dc:  u.amp,
     Fluke3000.Mode.frequency:   u.hertz,
-    Fluke3000.Mode.temperature: u.celsius,
+    Fluke3000.Mode.temperature: u.degC,
     Fluke3000.Mode.resistance:  u.ohm,
     Fluke3000.Mode.capacitance: u.farad
 }

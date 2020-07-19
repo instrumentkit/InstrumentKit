@@ -12,7 +12,7 @@ import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
-import instruments.units as u
+from instruments.units import ureg as u
 
 # TESTS #######################################################################
 
@@ -69,7 +69,7 @@ def test_channel_measure_temperature():
             ]
     ) as inst:
         channel = inst.channel[0]
-        assert channel.measure() == 1.234 * u.celsius
+        assert channel.measure() == u.Quantity(1.234, u.degC)
 
 
 def test_channel_measure_unknown_temperature_units():
@@ -118,15 +118,9 @@ def test_units():
                 "VOLT"
             ]
     ) as inst:
-        units = str(inst.units.units).split()[1]
-        assert units == "degC"
-
-        units = str(inst.units.units).split()[1]
-        assert units == "degF"
-
-        units = str(inst.units.units).split()[1]
-        assert units == "K"
-
+        assert inst.units == u.degC
+        assert inst.units == u.degF
+        assert inst.units == u.kelvin
         assert inst.units == u.volt
 
 

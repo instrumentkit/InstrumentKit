@@ -9,7 +9,7 @@ Module containing tests for util_fns.py
 
 from io import StringIO
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments import Instrument
 from instruments.config import (

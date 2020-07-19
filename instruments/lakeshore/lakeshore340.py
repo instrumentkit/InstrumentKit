@@ -7,7 +7,7 @@ Provides support for the Lakeshore 340 cryogenic temperature controller.
 # IMPORTS #####################################################################
 
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -21,7 +21,7 @@ class Lakeshore340(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> inst = ik.lakeshore.Lakeshore340.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(inst.sensor[0].temperature)
     >>> print(inst.sensor[1].temperature)

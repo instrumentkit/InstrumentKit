@@ -10,7 +10,7 @@ from enum import Enum
 
 
 from instruments.generic_scpi import SCPIFunctionGenerator
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     enum_property, int_property, bool_property, assume_units
 )
@@ -29,7 +29,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> inst = ik.agilent.Agilent33220a.open_gpibusb('/dev/ttyUSB0', 1)
     >>> inst.function = inst.Function.sinusoid
     >>> inst.frequency = 1 * u.kHz
@@ -171,7 +171,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         if isinstance(newval, self.LoadResistance):
             newval = newval.value
         else:
-            newval = assume_units(newval, u.ohm).rescale(u.ohm).magnitude
+            newval = assume_units(newval, u.ohm).to(u.ohm).magnitude
             if (newval < 0) or (newval > 10000):
                 raise ValueError(
                     "Load resistance must be between 0 and 10,000")

@@ -7,7 +7,7 @@ Provides support for the Keithley 6220 constant current supply
 # IMPORTS #####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import PowerSupply
 from instruments.generic_scpi import SCPIInstrument
@@ -26,7 +26,7 @@ class Keithley6220(SCPIInstrument, PowerSupply):
 
     Example usage:
 
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> import instruments as ik
     >>> ccs = ik.keithley.Keithley6220.open_gpibusb("/dev/ttyUSB0", 10)
     >>> ccs.current = 10 * u.milliamp # Sets current to 10mA

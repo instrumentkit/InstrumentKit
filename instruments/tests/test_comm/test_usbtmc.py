@@ -13,7 +13,7 @@ from numpy import array
 
 from instruments.abstract_instruments.comm import USBTMCCommunicator
 from instruments.tests import unit_eq
-import instruments.units as u
+from instruments.units import ureg as u
 from .. import mock
 
 # TEST CASES #################################################################

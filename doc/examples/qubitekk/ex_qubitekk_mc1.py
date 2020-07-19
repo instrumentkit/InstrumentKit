@@ -3,7 +3,7 @@
 from time import sleep
 
 from instruments.qubitekk import MC1
-import instruments.units as u
+from instruments.units import ureg as u
 
 
 if __name__ == "__main__":

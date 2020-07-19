@@ -14,7 +14,7 @@ import usbtmc
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
-import instruments.units as u
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -74,7 +74,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, u.second).rescale(u.s).magnitude
+        newval = assume_units(newval, u.second).to(u.s).magnitude
         self._filelike.timeout = newval
 
     # FILE-LIKE METHODS #

@@ -14,7 +14,7 @@ from hypothesis import (
     strategies as st,
 )
 import numpy as np
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol

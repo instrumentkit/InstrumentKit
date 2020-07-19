@@ -10,8 +10,9 @@ Provides support for the Phase Matrix FSW0020 signal generator.
 from quantities import GHz
 
 from instruments.abstract_instruments.signal_generator import SingleChannelSG
+from instruments.units import ureg as u
+from instruments.units import cBm, dBm
 from instruments.util_fns import assume_units
-from instruments.units import dBm, cBm, mHz
 
 # CLASSES #####################################################################
 
@@ -25,7 +26,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
     Example::
 
         >>> import instruments as ik
-        >>> import instruments.units as u
+        >>> from instruments.units import ureg as u
         >>> inst = ik.phasematrix.PhaseMatrixFSW0020.open_serial("/dev/ttyUSB0", baud=115200)
         >>> inst.frequency = 1 * u.GHz
         >>> inst.power = 0 * ik.units.dBm  # Can omit units and will assume dBm
@@ -50,13 +51,13 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         :type: `~quantities.Quantity`
         :units: frequency, assumed to be GHz
         """
-        return (int(self.query('04.'), 16) * mHz).rescale(GHz)
+        return (int(self.query('04.'), 16) * u.mHz).to(u.GHz)
 
     @frequency.setter
     def frequency(self, newval):
         # Rescale the input to millihertz as demanded by the signal
         # generator, then convert to an integer.
-        newval = int(assume_units(newval, GHz).rescale(mHz).magnitude)
+        newval = int(assume_units(newval, u.GHz).to(u.mHz).magnitude)
 
         # Write the integer to the serial port in ASCII-encoded
         # uppercase-hexadecimal format, with padding to 12 nybbles.
@@ -74,7 +75,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         :type: `~quantities.Quantity`
         :units: log-power, assumed to be dBm
         """
-        return (int(self.query('0D.'), 16) * cBm).rescale(dBm)
+        return (int(self.query('0D.'), 16) * cBm).to(dBm)
 
     @power.setter
     def power(self, newval):
@@ -83,7 +84,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
         # The Phase Matrix unit speaks in units of centibel-milliwats,
         # so convert and take the integer part.
-        newval = int(assume_units(newval, dBm).rescale(cBm).magnitude)
+        newval = int(assume_units(newval, dBm).to(cBm).magnitude)
 
         # Command code 0x03, parameter length 2 bytes (4 nybbles)
         self.sendcmd('03{:04X}.'.format(newval))

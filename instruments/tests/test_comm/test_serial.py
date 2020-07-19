@@ -9,7 +9,7 @@ Unit tests for the serial communication layer
 
 import pytest
 import serial
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.comm import SerialCommunicator
 from instruments.tests import unit_eq

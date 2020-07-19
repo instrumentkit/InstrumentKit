@@ -40,7 +40,8 @@ INSTALL_REQUIRES = [
     "python-vxi11>=0.8",
     "python-usbtmc",
     "pyusb",
-    "ruamel.yaml~=0.15.37"
+    "ruamel.yaml~=0.15.37",
+    "pint>=0.14.0"
 ]
 
 

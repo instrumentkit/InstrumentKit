@@ -10,7 +10,7 @@ Unit tests for the socket communication layer
 import socket
 
 import pytest
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.comm import SocketCommunicator
 from instruments.tests import unit_eq

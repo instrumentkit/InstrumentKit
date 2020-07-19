@@ -37,7 +37,7 @@ from struct import unpack
 from enum import Enum
 
 from instruments.abstract_instruments import Instrument
-import instruments.units as u
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -200,7 +200,7 @@ class Keithley485(Instrument):
             else:
                 raise ValueError("Only `auto` is acceptable when specifying "
                                  "the range as a string.")
-        if isinstance(newval, u.quantity.Quantity):
+        if isinstance(newval, u.Quantity):
             newval = float(newval)
 
         if isinstance(newval, (float, int)):

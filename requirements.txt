@@ -6,3 +6,4 @@ python-vxi11>=0.8
 pyusb
 python-usbtmc
 ruamel.yaml~=0.15.37
+pint>=0.14.0

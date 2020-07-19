@@ -7,7 +7,7 @@ Provides support for the Agilent 34410a digital multimeter.
 # IMPORTS #####################################################################
 
 from instruments.generic_scpi import SCPIMultimeter
-import instruments.units as u
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -23,7 +23,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
     Example usage:
 
     >>> import instruments as ik
-    >>> import instruments.units as u
+    >>> from instruments.units import ureg as u
     >>> dmm = ik.agilent.Agilent34410a.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(dmm.measure(dmm.Mode.resistance))
 

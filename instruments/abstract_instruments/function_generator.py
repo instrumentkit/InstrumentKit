@@ -11,7 +11,7 @@ import abc
 from enum import Enum
 
 from instruments.abstract_instruments import Instrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
@@ -173,7 +173,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
             # Try and rescale to dBm... if it succeeds, set the magnitude
             # and units accordingly, otherwise handle as a voltage.
             try:
-                newval_dbm = newval.rescale(u.dBm)
+                newval_dbm = newval.to(u.dBm)
                 mag = float(newval_dbm.magnitude)
                 units = self._parent.VoltageMode.dBm
             except (AttributeError, ValueError):
@@ -185,7 +185,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
                     mag, units = newval
 
                 # Finally, convert the magnitude out to a float.
-                mag = float(assume_units(mag, u.V).rescale(u.V).magnitude)
+                mag = float(assume_units(mag, u.V).to(u.V).magnitude)
 
             self._set_amplitude_(mag, units)
 

@@ -10,7 +10,7 @@ Module containing various utility functions
 import re
 
 from enum import Enum, IntEnum
-import instruments.units as u
+from instruments.units import ureg as u
 
 # CONSTANTS ###################################################################
 
@@ -85,27 +85,7 @@ def convert_temperature(temperature, base):
     # quantities reports equivalence between degC and degK, so a string
     # comparison is needed
     newval = assume_units(temperature, u.degC)
-    if newval.units == u.degF and str(base).split(" ")[1] == 'degC':
-        return_val = ((newval.magnitude - 32.0) * 5.0 / 9.0) * base
-    elif str(newval.units).split(" ")[1] == 'K' and str(base).split(" ")[1] == 'degC':
-        return_val = (newval.magnitude - 273.15) * base
-    elif str(newval.units).split(" ")[1] == 'K' and base == u.degF:
-        return_val = (newval.magnitude / 1.8 - 459 / 57) * base
-    elif str(newval.units).split(" ")[1] == 'degC' and base == u.degF:
-        return_val = (newval.magnitude * 9.0 / 5.0 + 32.0) * base
-    elif newval.units == u.degF and str(base).split(" ")[1] == 'K':
-        return_val = ((newval.magnitude + 459.57) * 5.0 / 9.0) * base
-    elif str(newval.units).split(" ")[1] == 'degC' and str(base).split(" ")[1] == 'K':
-        return_val = (newval.magnitude + 273.15) * base
-    elif str(newval.units).split(" ")[1] == 'degC' and str(base).split(" ")[1] == 'degC':
-        return_val = newval
-    elif newval.units == u.degF and base == u.degF:
-        return_val = newval
-    elif str(newval.units).split(" ")[1] == 'K' and str(base).split(" ")[1] == 'K':
-        return_val = newval
-    else:
-        raise ValueError(f"Unable to convert {str(newval.units)} to {str(base)}")
-    return return_val
+    return newval.to(base)
 
 
 def split_unit_str(s, default_units=u.dimensionless, lookup=None):
@@ -468,7 +448,7 @@ def unitful_property(command, units, set_cmd=None, format_code='{:e}', doc=None,
 
     def _getter(self):
         raw = _in_decor_fcn(self.query("{}?".format(command)))
-        return u.Quantity(*split_unit_str(raw, units)).rescale(units)
+        return u.Quantity(*split_unit_str(raw, units)).to(units)
 
     def _setter(self, newval):
         min_value, max_value = valid_range
@@ -487,7 +467,7 @@ def unitful_property(command, units, set_cmd=None, format_code='{:e}', doc=None,
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
         strval = format_code.format(
-            assume_units(newval, units).rescale(units).item())
+            assume_units(newval, units).to(units).magnitude)
         self.sendcmd(set_fmt.format(
             command if set_cmd is None else set_cmd,
             _out_decor_fcn(strval)
@@ -545,13 +525,13 @@ def bounded_unitful_property(command, units, min_fmt_str="{}:MIN?",
         if valid_range[0] == "query":
             return u.Quantity(*split_unit_str(self.query(min_fmt_str.format(command)), units))
 
-        return assume_units(valid_range[0], units).rescale(units)
+        return assume_units(valid_range[0], units).to(units)
 
     def _max_getter(self):
         if valid_range[1] == "query":
             return u.Quantity(*split_unit_str(self.query(max_fmt_str.format(command)), units))
 
-        return assume_units(valid_range[1], units).rescale(units)
+        return assume_units(valid_range[1], units).to(units)
 
     new_range = (
         None if valid_range[0] is None else _min_getter,

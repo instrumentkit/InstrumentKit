@@ -14,7 +14,7 @@ import codecs
 import warnings
 
 from instruments.thorlabs import _abstract, _packets, _cmds
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units
 
 # LOGGING #####################################################################
@@ -696,7 +696,7 @@ class APTMotorController(ThorLabsAPT):
                     scaled_pos = (pos * self.scale_factors[0])
                     # Force a unit error.
                     try:
-                        pos_ec = int(scaled_pos.rescale(u.counts).magnitude)
+                        pos_ec = int(scaled_pos.to(u.counts).magnitude)
                     except:
                         raise ValueError("Provided units are not compatible "
                                          "with current motor scale factor.")

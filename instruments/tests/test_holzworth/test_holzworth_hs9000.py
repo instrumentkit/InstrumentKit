@@ -7,7 +7,7 @@ Unit tests for the Holzworth HS9000
 # IMPORTS #####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -118,7 +118,7 @@ def test_channel_temperature():
             sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        assert channel.temperature == 10 * u.degC
+        assert channel.temperature == u.Quantity(10, u.degC)
 
 
 def test_channel_frequency_getter():

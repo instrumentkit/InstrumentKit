@@ -12,7 +12,7 @@ from collections import defaultdict, namedtuple
 
 from enum import Enum, IntEnum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import enum_property

@@ -8,7 +8,7 @@ Module containing tests for the Toptica Topmode
 
 from datetime import datetime
 import pytest
-import instruments.units as u
+from instruments.units import ureg as u
 
 
 import instruments as ik

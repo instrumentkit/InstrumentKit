@@ -7,7 +7,7 @@ Provides support for the Lakeshore 370 AC resistance bridge.
 # IMPORTS #####################################################################
 
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
