@@ -350,8 +350,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
         >>> import instruments as ik
         >>> import instruments.units as u
         >>> # call the controller
-        >>> kim = ik.thorlabs.APTPiezoInertiaActuator. \
-            open_serial("/dev/ttyUSB0", baud=115200)
+        >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
         >>> # set first channel to enabled
         >>> ch = kim.channel[0]
         >>> ch.enabled_single = True
@@ -414,8 +413,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 >>> import instruments as ik
                 >>> import instruments.units as u
                 >>> # call the controller
-                >>> kim = ik.thorlabs.APTPiezoInertiaActuator. \
-                    open_serial("/dev/ttyUSB0", baud=115200)
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
                 >>> ch = kim.channel[0]
                 >>> # change the step rate to 2000 /s
@@ -492,8 +490,8 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
         def enabled_single(self):
             """Get / Set single axis enabled.
 
-            Note: Enabling multi channels for KIM101 is defined in the
-            controller class.
+            .. note:: Enabling multi channels for KIM101 is defined in
+            the controller class.
 
             :return: Axis status enabled.
             :rtype: bool
@@ -503,8 +501,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             Example for a KIM101 controller:
                 >>> import instruments as ik
                 >>> # call the controller
-                >>> kim = ik.thorlabs.APTPiezoInertiaActuator. \
-                    open_serial("/dev/ttyUSB0", baud=115200)
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
                 >>> ch = kim.channel[0]
                 >>> # enable channel 0
@@ -601,8 +598,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 >>> import instruments as ik
                 >>> import instruments.units as u
                 >>> # call the controller
-                >>> kim = ik.thorlabs.APTPiezoInertiaActuator. \
-                    open_serial("/dev/ttyUSB0", baud=115200)
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
                 >>> ch = kim.channel[0]
                 >>> # set jog parameters
@@ -718,8 +714,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             Example:
                 >>> import instruments as ik
                 >>> # call the controller
-                >>> kim = ik.thorlabs.APTPiezoInertiaActuator. \
-                    open_serial("/dev/ttyUSB0", baud=115200)
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
                 >>> ch = kim.channel[0]
                 >>> # set position count to zero
@@ -772,8 +767,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             Example:
                 >>> import instruments as ik
                 >>> # call the controller
-                >>> kim = ik.thorlabs.APTPiezoInertiaActuator. \
-                    open_serial("/dev/ttyUSB0", baud=115200)
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
                 >>> ch = kim.channel[0]
                 >>> # move to 314 steps
@@ -804,8 +798,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             Example:
                 >>> import instruments as ik
                 >>> # call the controller
-                >>> kim = ik.thorlabs.APTPiezoInertiaActuator. \
-                    open_serial("/dev/ttyUSB0", baud=115200)
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
                 >>> ch = kim.channel[0]
                 >>> # set jog parameters
@@ -883,8 +876,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
         Example:
             >>> import instruments as ik
-            >>> kim = ik.thorlabs.APTPiezoInertiaActuator. \
-                            open_serial("/dev/ttyUSB0", baud=115200)
+            >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
             >>> # activate the first two channels
             >>> kim.enabled_multi = 1
             >>> # read back
