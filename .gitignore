@@ -12,7 +12,7 @@ doc/_build
 
 ## Venv
 .venv/
-
+.python-version
 
 ## setup.py generated files ##
 MANIFEST
