@@ -208,7 +208,7 @@ class Keithley195(Multimeter):
             else:
                 raise ValueError('Only "auto" is acceptable when specifying '
                                  'the input range as a string.')
-        if isinstance(newval, u.quantity.Quantity):
+        if isinstance(newval, u.Quantity):
             newval = float(newval)
 
         mode = self.mode
