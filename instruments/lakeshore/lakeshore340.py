@@ -53,7 +53,7 @@ class Lakeshore340(SCPIInstrument):
             :type: `~quantities.quantity.Quantity`
             """
             value = self._parent.query('KRDG?{}'.format(self._idx))
-            return u.Quantity(float(value), u.Kelvin)
+            return u.Quantity(float(value), u.kelvin)
 
     # PROPERTIES ##
 
