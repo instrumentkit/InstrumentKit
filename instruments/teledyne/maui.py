@@ -44,7 +44,9 @@ class MAUI(Oscilloscope):
     appropriate send / query commands.
 
     Your scope must be set up to communicate via LXI (VXI11) to be used
-    with pyvisa / pyvisa-py backend.
+    with pyvisa. Make sure that either the pyvisa-py or the NI-VISA
+    backend is installed. Please see the pyvisa documentation for more
+    information.
 
     This class inherits from: `Oscilloscope`
 
