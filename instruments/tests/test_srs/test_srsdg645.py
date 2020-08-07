@@ -6,6 +6,7 @@ Module containing tests for the SRS DG645
 
 # IMPORTS ####################################################################
 
+import pytest
 
 import instruments.units as u
 
@@ -15,6 +16,43 @@ from instruments.tests import expected_protocol, make_name_test, unit_eq
 # TESTS ######################################################################
 
 test_srsdg645_name = make_name_test(ik.srs.SRSDG645)
+
+
+# CHANNELS #
+
+
+def test_srsdg645_channel_init():
+    """
+    _SRSDG645Channel: Ensure correct errors are raised during
+    initialization if not coming from a DG class.
+    """
+    with pytest.raises(TypeError):
+        ik.srs.srsdg645._SRSDG645Channel(42, 0)
+
+
+def test_srsdg645_channel_delay():
+    """
+    SRSDG645: Get / set delay.
+    """
+    with expected_protocol(
+            ik.srs.SRSDG645,
+            [
+                "DLAY?2",
+                "DLAY 3,2,60.0",
+                "DLAY 5,4,10"
+            ],
+            [
+            "0,42"
+            ],
+    ) as ddg:
+        ref, t = ddg.channel["A"].delay
+        assert ref == ddg.Channels.T0
+        assert abs((t - u.Quantity(42, "s")).magnitude) < 1e5
+        ddg.channel["B"].delay = (ddg.channel["A"], u.Quantity(1, "minute"))
+        ddg.channel["D"].delay = (ddg.channel["C"], 10)
+
+
+# DG645 #
 
 
 def test_srsdg645_output_level():
@@ -71,12 +109,115 @@ def test_srsdg645_output_polarity():
         ddg.output["CD"].polarity = ddg.LevelPolarity.negative
 
 
+def test_srsdg645_output_polarity_raise_type_error():
+    """
+    SRSDG645: Polarity setter with wrong input - raise type error.
+    """
+    with expected_protocol(
+            ik.srs.SRSDG645,
+            [
+            ],
+            [
+            ]
+    ) as ddg:
+        with pytest.raises(TypeError):
+            ddg.output["AB"].polarity = 1
+
+
+def test_srsdg645_display():
+    """
+    SRSDG645: Set / get display mode.
+    """
+    with expected_protocol(
+            ik.srs.SRSDG645,
+            [
+                "DISP?",
+                "DISP 0,0"
+            ],
+            [
+                "12,3"
+            ]
+    ) as ddg:
+        assert ddg.display == (ddg.DisplayMode.channel_levels,
+                               ddg.Channels.B)
+        ddg.display = (ddg.DisplayMode.trigger_rate,
+                       ddg.Channels.T0)
+
+
+def test_srsdg645_enable_adv_triggering():
+    """
+    SRSDG645: Set / get if advanced triggering is enabled.
+    """
+    with expected_protocol(
+            ik.srs.SRSDG645,
+            [
+                "ADVT?",
+                "ADVT 1"
+            ],
+            [
+                "0"
+            ]
+    ) as ddg:
+        assert not ddg.enable_adv_triggering
+        ddg.enable_adv_triggering = True
+
+
+def test_srsdg645_trigger_rate():
+    """
+    SRSDG645: Set / get trigger rate.
+    """
+    with expected_protocol(
+            ik.srs.SRSDG645,
+            [
+                "TRAT?",
+                "TRAT 10000",
+                "TRAT 1000"
+            ],
+            [
+                "+1000.000000"
+            ]
+    ) as ddg:
+        assert ddg.trigger_rate == u.Quantity(1000, u.Hz)
+        ddg.trigger_rate = 10000
+        ddg.trigger_rate = u.Quantity(1000, u.Hz)   # unitful send
+
+
 def test_srsdg645_trigger_source():
-    with expected_protocol(ik.srs.SRSDG645, "DLAY?2\nDLAY 3,2,60.0\n", "0,42\n") as ddg:
-        ref, t = ddg.channel["A"].delay
-        assert ref == ddg.Channels.T0
-        assert abs((t - u.Quantity(42, "s")).magnitude) < 1e5
-        ddg.channel["B"].delay = (ddg.channel["A"], u.Quantity(1, "minute"))
+    """
+    SRSDG645: Set / get trigger source.
+    """
+    with expected_protocol(
+            ik.srs.SRSDG645,
+            [
+                "TSRC?",
+                "TSRC 1"
+            ],
+            [
+                "0"
+            ]
+    ) as ddg:
+        assert ddg.trigger_source == ddg.TriggerSource.internal
+        ddg.trigger_source = ddg.TriggerSource.external_rising
+
+
+def test_srsdg645_holdoff():
+    """
+    SRSDG645: Set / get hold off.
+    """
+    with expected_protocol(
+            ik.srs.SRSDG645,
+            [
+                "HOLD?",
+                "HOLD 0",
+                "HOLD 0.01"
+            ],
+            [
+                "+0.001001000000"
+            ]
+    ) as ddg:
+        assert ddg.holdoff == u.Quantity(1001, u.us)
+        ddg.holdoff = 0
+        ddg.holdoff = u.Quantity(10, u.ms)  # unitful hold off
 
 
 def test_srsdg645_enable_burst_mode():
@@ -144,7 +285,8 @@ def test_srsdg645_burst_period():
             ik.srs.SRSDG645,
             [
                 "BURP?",
-                "BURP 13"
+                "BURP 13",
+                "BURP 0.1"
             ],
             [
                 "100E-9"
@@ -152,6 +294,7 @@ def test_srsdg645_burst_period():
     ) as ddg:
         unit_eq(ddg.burst_period, u.Quantity(100, "ns").rescale(u.s))
         ddg.burst_period = u.Quantity(13, "s")
+        ddg.burst_period = 0.1
 
 
 def test_srsdg645_burst_delay():
@@ -163,7 +306,8 @@ def test_srsdg645_burst_delay():
             ik.srs.SRSDG645,
             [
                 "BURD?",
-                "BURD 42"
+                "BURD 42",
+                "BURD 0.1"
             ],
             [
                 "0"
@@ -171,3 +315,4 @@ def test_srsdg645_burst_delay():
     ) as ddg:
         unit_eq(ddg.burst_delay, u.Quantity(0, "s"))
         ddg.burst_delay = u.Quantity(42, "s")
+        ddg.burst_delay = 0.1
