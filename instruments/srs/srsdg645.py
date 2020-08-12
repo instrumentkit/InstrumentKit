@@ -56,12 +56,15 @@ class _SRSDG645Channel:
         Formatted as a two-tuple of the reference and the delay time.
         For example, ``(SRSDG645.Channels.A, u.Quantity(10, "ps"))``
         indicates a delay of 10 picoseconds from delay channel A.
+
+        :units: Assume seconds if no units given.
         """
         resp = self._ddg.query("DLAY?{}".format(int(self._chan))).split(",")
         return SRSDG645.Channels(int(resp[0])), u.Quantity(float(resp[1]), "s")
 
     @delay.setter
     def delay(self, newval):
+        newval = (newval[0], assume_units(newval[1], u.s))
         self._ddg.sendcmd("DLAY {},{},{}".format(
             int(self._chan),
             int(newval[0].idx),
@@ -331,6 +334,7 @@ class SRSDG645(SCPIInstrument):
 
     @holdoff.setter
     def holdoff(self, newval):
+        newval = assume_units(newval, u.s)
         self.sendcmd("HOLD {}".format(newval.rescale(u.s).magnitude))
 
     @property
@@ -381,11 +385,14 @@ class SRSDG645(SCPIInstrument):
         Gets/sets the burst period. The burst period sets the time
         between delay cycles during a burst. The burst period may
         range from 100 ns to 2000 – 10 ns in 10 ns steps.
+
+        :units: Assume seconds if no units given.
         """
         return u.Quantity(float(self.query("BURP?")), u.s)
 
     @burst_period.setter
     def burst_period(self, newval):
+        newval = assume_units(newval, u.s)
         self.sendcmd("BURP {}".format(newval.rescale(u.s).magnitude))
 
     @property
@@ -395,9 +402,12 @@ class SRSDG645(SCPIInstrument):
         delays the first burst pulse relative to the trigger by the
         burst delay. The burst delay may range from 0 ps to < 2000 s
         with a resolution of 5 ps.
+
+        :units: Assume seconds if no units given.
         """
         return u.Quantity(float(self.query("BURD?")), u.s)
 
     @burst_delay.setter
     def burst_delay(self, newval):
+        newval = assume_units(newval, u.s)
         self.sendcmd("BURD {}".format(newval.rescale(u.s).magnitude))
