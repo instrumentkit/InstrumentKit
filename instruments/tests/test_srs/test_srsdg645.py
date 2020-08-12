@@ -15,6 +15,8 @@ from instruments.tests import expected_protocol, make_name_test, unit_eq
 
 # TESTS ######################################################################
 
+# pylint: disable=protected-access
+
 test_srsdg645_name = make_name_test(ik.srs.SRSDG645)
 
 
@@ -30,6 +32,16 @@ def test_srsdg645_channel_init():
         ik.srs.srsdg645._SRSDG645Channel(42, 0)
 
 
+def test_srsdg645_channel_init_channel_value():
+    """
+    _SRSDG645Channel: Ensure the correct channel value is used when
+    passing on a SRSDG645.Channels instance as the `chan` value.
+    """
+    ddg = ik.srs.SRSDG645.open_test()  # test connection
+    chan = ik.srs.srsdg645.SRSDG645.Channels.B  # select a channel manually
+    assert ik.srs.srsdg645._SRSDG645Channel(ddg, chan)._chan == 3
+
+
 def test_srsdg645_channel_delay():
     """
     SRSDG645: Get / set delay.
@@ -42,7 +54,7 @@ def test_srsdg645_channel_delay():
                 "DLAY 5,4,10"
             ],
             [
-            "0,42"
+                "0,42"
             ],
     ) as ddg:
         ref, t = ddg.channel["A"].delay
