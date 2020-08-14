@@ -109,7 +109,7 @@ class Lakeshore475(SCPIInstrument):
     def field_units(self, newval):
         if isinstance(newval, u.unitquantity.UnitQuantity):
             if newval in LAKESHORE_FIELD_UNITS_INV:
-                self.sendcmd('UNIT ' + LAKESHORE_FIELD_UNITS_INV[newval])
+                self.sendcmd(f"UNIT {LAKESHORE_FIELD_UNITS_INV[newval]}")
             else:
                 raise ValueError('Not an acceptable Python quantities object')
         else:
@@ -131,7 +131,7 @@ class Lakeshore475(SCPIInstrument):
     def temp_units(self, newval):
         if isinstance(newval, u.unitquantity.UnitQuantity):
             if newval in LAKESHORE_TEMP_UNITS_INV:
-                self.sendcmd('TUNIT ' + LAKESHORE_TEMP_UNITS_INV[newval])
+                self.sendcmd(f"TUNIT {LAKESHORE_TEMP_UNITS_INV[newval]}")
             else:
                 raise TypeError('Not an acceptable Python quantities object')
         else:
@@ -314,11 +314,11 @@ class Lakeshore475(SCPIInstrument):
                             "`Lakeshore475.Filter` value, got {} "
                             "instead.".format(type(filter_type)))
         if not isinstance(peak_mode, Lakeshore475.PeakMode):
-            raise TypeError("Filter type setting must be a "
+            raise TypeError("Peak measurement type setting must be a "
                             "`Lakeshore475.PeakMode` value, got {} "
                             "instead.".format(type(peak_mode)))
         if not isinstance(peak_disp, Lakeshore475.PeakDisplay):
-            raise TypeError("Filter type setting must be a "
+            raise TypeError("Peak display type setting must be a "
                             "`Lakeshore475.PeakDisplay` value, got {} "
                             "instead.".format(type(peak_disp)))
 
