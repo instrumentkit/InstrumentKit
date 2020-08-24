@@ -49,8 +49,8 @@ def test_channel_coupling():
                 "AC"
             ]
     ) as osc:
-        assert osc.channel[0].coupling == osc.Coupling.ac
-        osc.channel[1].coupling = osc.Coupling.dc
+        assert osc.channel[0].coupling == osc.channel[0].Coupling.ac
+        osc.channel[1].coupling = osc.channel[1].Coupling.dc
 
 
 def test_channel_bw_limit():
