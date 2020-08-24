@@ -194,9 +194,8 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
     #
     # Many of the :KEY: commands are not yet implemented as methods.
 
-    # FIXME: According to the manual, the next should be "ENAB" and "DIS"
-    # instead of "ON" and "OFF"
-    panel_locked = bool_property(":KEY:LOCK", inst_true="ON", inst_false="OFF")
+    panel_locked = bool_property(":KEY:LOCK", inst_true="ENAB",
+                                 inst_false="DIS")
 
     def release_panel(self):
         # TODO: better name?

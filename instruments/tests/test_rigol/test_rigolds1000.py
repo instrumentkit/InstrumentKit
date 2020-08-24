@@ -323,10 +323,10 @@ def test_panel_locked():
             ik.rigol.RigolDS1000Series,
             [
                 ":KEY:LOCK?",
-                ":KEY:LOCK OFF"
+                ":KEY:LOCK DIS"
             ],
             [
-                "ON"
+                "ENAB"
             ]
     ) as osc:
         assert osc.panel_locked
