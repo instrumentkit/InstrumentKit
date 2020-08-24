@@ -109,19 +109,19 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
 
         coupling = enum_property("COUP", lambda: RigolDS1000Series.Coupling)
 
-        bw_limit = bool_property("BWL", "ON", "OFF")
-        display = bool_property("DISP", "ON", "OFF")
-        invert = bool_property("INV", "ON", "OFF")
+        bw_limit = bool_property("BWL", inst_true="ON", inst_false="OFF")
+        display = bool_property("DISP", inst_true="ON", inst_false="OFF")
+        invert = bool_property("INV", inst_true="ON", inst_false="OFF")
 
         # TODO: :CHAN<n>:OFFset
         # TODO: :CHAN<n>:PROBe
         # TODO: :CHAN<n>:SCALe
 
-        filter = bool_property("FILT", "ON", "OFF")
+        filter = bool_property("FILT", inst_true="ON", inst_false="OFF")
 
         # TODO: :CHAN<n>:MEMoryDepth
 
-        vernier = bool_property("VERN", "ON", "OFF")
+        vernier = bool_property("VERN", inst_true="ON", inst_false="OFF")
 
     # PROPERTIES #
 
@@ -193,7 +193,9 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
     #
     # Many of the :KEY: commands are not yet implemented as methods.
 
-    panel_locked = bool_property(":KEY:LOCK", "ON", "OFF")
+    # FIXME: According to the manual, the next should be "ENAB" and "DIS"
+    # instead of "ON" and "OFF"
+    panel_locked = bool_property(":KEY:LOCK", inst_true="ON", inst_false="OFF")
 
     def release_panel(self):
         # TODO: better name?
