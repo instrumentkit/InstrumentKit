@@ -37,14 +37,6 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
         average = "AVER"
         peak_detect = "PEAK"
 
-    class Coupling(Enum):
-        """
-        Enum containing valid coupling modes for the Rigol DS1000
-        """
-        ac = "AC"
-        dc = "DC"
-        ground = "GND"
-
     # INNER CLASSES #
 
     class DataSource(OscilloscopeDataSource):
@@ -79,6 +71,15 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
         .. warning:: This class should NOT be manually created by the user. It
             is designed to be initialized by the `RigolDS1000Series` class.
         """
+
+        class Coupling(Enum):
+            """
+            Enum containing valid coupling modes for the Rigol DS1000
+            """
+            ac = "AC"
+            dc = "DC"
+            ground = "GND"
+
         def __init__(self, parent, idx):
             self._parent = parent
             self._idx = idx + 1  # Rigols are 1-based.
@@ -107,21 +108,21 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
             """
             return self._parent.query(":CHAN{}:{}".format(self._idx, cmd))
 
-        coupling = enum_property("COUP", lambda: RigolDS1000Series.Coupling)
+        coupling = enum_property("COUP", Coupling)
 
-        bw_limit = bool_property("BWL", "ON", "OFF")
-        display = bool_property("DISP", "ON", "OFF")
-        invert = bool_property("INV", "ON", "OFF")
+        bw_limit = bool_property("BWL", inst_true="ON", inst_false="OFF")
+        display = bool_property("DISP", inst_true="ON", inst_false="OFF")
+        invert = bool_property("INV", inst_true="ON", inst_false="OFF")
 
         # TODO: :CHAN<n>:OFFset
         # TODO: :CHAN<n>:PROBe
         # TODO: :CHAN<n>:SCALe
 
-        filter = bool_property("FILT", "ON", "OFF")
+        filter = bool_property("FILT", inst_true="ON", inst_false="OFF")
 
         # TODO: :CHAN<n>:MEMoryDepth
 
-        vernier = bool_property("VERN", "ON", "OFF")
+        vernier = bool_property("VERN", inst_true="ON", inst_false="OFF")
 
     # PROPERTIES #
 
@@ -193,7 +194,8 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
     #
     # Many of the :KEY: commands are not yet implemented as methods.
 
-    panel_locked = bool_property(":KEY:LOCK", "ON", "OFF")
+    panel_locked = bool_property(":KEY:LOCK", inst_true="ENAB",
+                                 inst_false="DIS")
 
     def release_panel(self):
         # TODO: better name?
