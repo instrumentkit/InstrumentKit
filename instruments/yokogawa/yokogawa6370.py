@@ -183,13 +183,13 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         Function to query the active Trace data of the OSA.
         """
-        return self.channel[self.active_trace].data
+        return self.channel[self.active_trace].data()
 
     def wavelength(self):
         """
         Query the wavelength axis of the active trace.
         """
-        return self.channel[self.active_trace].wavelength
+        return self.channel[self.active_trace].wavelength()
 
     def start_sweep(self):
         """
