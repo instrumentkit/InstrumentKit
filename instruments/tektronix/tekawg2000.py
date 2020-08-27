@@ -125,8 +125,8 @@ class TekAWG2000(SCPIInstrument):
 
             :type: `TekAWG2000.Polarity`
             """
-            return TekAWG2000.Polarity[self._tek.query("FG:{}:POL?".format(
-                self._name)).strip()]
+            return TekAWG2000.Polarity(self._tek.query("FG:{}:POL?".format(
+                self._name)).strip())
 
         @polarity.setter
         def polarity(self, newval):
@@ -145,8 +145,8 @@ class TekAWG2000(SCPIInstrument):
 
             :type: `TekAWG2000.Shape`
             """
-            return TekAWG2000.Shape[self._tek.query("FG:{}:SHAP?".format(
-                self._name)).strip().split(',')[0]]
+            return TekAWG2000.Shape(self._tek.query("FG:{}:SHAP?".format(
+                self._name)).strip().split(',')[0])
 
         @shape.setter
         def shape(self, newval):
@@ -243,15 +243,15 @@ class TekAWG2000(SCPIInstrument):
         if not isinstance(waveform, np.ndarray):
             raise TypeError("waveform must be specified as a numpy array")
 
+        if np.max(np.abs(waveform)) > 1:
+            raise ValueError("The max value for an element in waveform is 1.")
+
         self.sendcmd("WFMP:YZERO {}".format(yzero))
         self.sendcmd("WFMP:YMULT {}".format(ymult))
         self.sendcmd("WFMP:XINCR {}".format(xincr))
 
-        if np.max(np.abs(waveform)) > 1:
-            raise ValueError("The max value for an element in waveform is 1.")
-
         waveform *= (2**12 - 1)
-        waveform = waveform.astype("<u2").tostring()
+        waveform = waveform.astype("<u2").tobytes()
         wfm_header_2 = str(len(waveform))
         wfm_header_1 = len(wfm_header_2)
 
