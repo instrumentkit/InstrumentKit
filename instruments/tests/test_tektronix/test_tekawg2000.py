@@ -29,7 +29,11 @@ test_tekawg2000_name = make_name_test(ik.tektronix.TekAWG2000)
 # CHANNEL #
 
 
-@given(channel=st.sampled_from(range(2)))
+channels_to_try = range(2)
+channels_to_try_id = [f"CH{it}" for it in channels_to_try]
+
+
+@pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_id)
 def test_channel_init(channel):
     """Channel initialization."""
     with expected_protocol(
@@ -44,7 +48,7 @@ def test_channel_init(channel):
         assert inst.channel[channel]._old_dsrc is None
 
 
-@given(channel=st.sampled_from(range(2)))
+@pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_id)
 def test_channel_name(channel):
     """Get the name of the channel."""
     with expected_protocol(
@@ -57,8 +61,8 @@ def test_channel_name(channel):
         assert inst.channel[channel].name == f"CH{channel + 1}"
 
 
-@given(channel=st.sampled_from(range(2)),
-       val_read=st.floats(min_value=0.02, max_value=2),
+@pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_id)
+@given(val_read=st.floats(min_value=0.02, max_value=2),
        val_unitless=st.floats(min_value=0.02, max_value=2),
        val_millivolt=st.floats(min_value=0.02, max_value=2000))
 def test_channel_amplitude(channel, val_read, val_unitless, val_millivolt):
@@ -81,8 +85,8 @@ def test_channel_amplitude(channel, val_read, val_unitless, val_millivolt):
         inst.channel[channel].amplitude = val_unitful
 
 
-@given(channel=st.sampled_from(range(2)),
-       val_read=st.floats(min_value=0.02, max_value=2),
+@pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_id)
+@given(val_read=st.floats(min_value=0.02, max_value=2),
        val_unitless=st.floats(min_value=0.02, max_value=2),
        val_millivolt=st.floats(min_value=0.02, max_value=2000))
 def test_channel_offset(channel, val_read, val_unitless, val_millivolt):
@@ -105,8 +109,8 @@ def test_channel_offset(channel, val_read, val_unitless, val_millivolt):
         inst.channel[channel].offset = val_unitful
 
 
-@given(channel=st.sampled_from(range(2)),
-       val_read=st.floats(min_value=1, max_value=200000),
+@pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_id)
+@given(val_read=st.floats(min_value=1, max_value=200000),
        val_unitless=st.floats(min_value=1, max_value=200000),
        val_kilohertz=st.floats(min_value=1, max_value=200))
 def test_channel_frequency(channel, val_read, val_unitless, val_kilohertz):
@@ -129,8 +133,8 @@ def test_channel_frequency(channel, val_read, val_unitless, val_kilohertz):
         inst.channel[channel].frequency = val_unitful
 
 
-@given(channel=st.sampled_from(range(2)),
-       polarity=st.sampled_from(ik.tektronix.TekAWG2000.Polarity))
+@pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_id)
+@given(polarity=st.sampled_from(ik.tektronix.TekAWG2000.Polarity))
 def test_channel_polarity(channel, polarity):
     """Get / set polarity."""
     with expected_protocol(
@@ -147,7 +151,7 @@ def test_channel_polarity(channel, polarity):
         inst.channel[channel].polarity = polarity
 
 
-@given(channel=st.sampled_from(range(2)))
+@pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_id)
 def test_channel_polarity_type_mismatch(channel):
     """Raise a TypeError if a wrong type is selected as the polarity."""
     wrong_type = 42
@@ -165,8 +169,8 @@ def test_channel_polarity_type_mismatch(channel):
                           f"value, got {type(wrong_type)} instead."
 
 
-@given(channel=st.sampled_from(range(2)),
-       shape=st.sampled_from(ik.tektronix.TekAWG2000.Shape))
+@pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_id)
+@given(shape=st.sampled_from(ik.tektronix.TekAWG2000.Shape))
 def test_channel_shape(channel, shape):
     """Get / set shape."""
     with expected_protocol(
@@ -183,8 +187,7 @@ def test_channel_shape(channel, shape):
         inst.channel[channel].shape = shape
 
 
-
-@given(channel=st.sampled_from(range(2)))
+@pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_id)
 def test_channel_shape_type_mismatch(channel):
     """Raise a TypeError if a wrong type is selected as the shape."""
     wrong_type = 42
@@ -200,6 +203,9 @@ def test_channel_shape_type_mismatch(channel):
         exc_msg = exc_info.value.args[0]
         assert exc_msg == f"Shape settings must be a `TekAWG2000.Shape` " \
                           f"value, got {type(wrong_type)} instead."
+
+
+# INSTRUMENT #
 
 
 def test_waveform_name():
