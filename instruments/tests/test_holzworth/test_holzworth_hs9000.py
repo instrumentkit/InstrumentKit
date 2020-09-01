@@ -11,7 +11,6 @@ from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
-from instruments.units import dBm
 from .. import mock
 
 # TEST CLASSES ################################################################
@@ -182,9 +181,9 @@ def test_channel_power_getter():
             sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        assert channel.power == 0 * dBm
-        assert channel.power_min == -100 * dBm
-        assert channel.power_max == 20 * dBm
+        assert channel.power == u.Quantity(0, u.dBm)
+        assert channel.power_min == u.Quantity(-100, u.dBm)
+        assert channel.power_max == u.Quantity(20, u.dBm)
 
 
 def test_channel_power_setter():
@@ -204,7 +203,7 @@ def test_channel_power_setter():
             sep="\n"
     ) as hs:
         channel = hs.channel[0]
-        channel.power = 0 * dBm
+        channel.power = u.Quantity(0, u.dBm)
 
 
 def test_channel_phase_getter():

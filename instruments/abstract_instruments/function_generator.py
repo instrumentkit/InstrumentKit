@@ -10,6 +10,8 @@ Provides an abstract base class for function generator instruments
 import abc
 from enum import Enum
 
+from pint.errors import DimensionalityError
+
 from instruments.abstract_instruments import Instrument
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units, ProxyList
@@ -176,7 +178,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
                 newval_dbm = newval.to(u.dBm)
                 mag = float(newval_dbm.magnitude)
                 units = self._parent.VoltageMode.dBm
-            except (AttributeError, ValueError):
+            except (AttributeError, ValueError, DimensionalityError):
                 # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
                 if not isinstance(newval, tuple):
                     mag = newval

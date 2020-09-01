@@ -48,7 +48,7 @@ def test_mhs_amplitude_dbm_notimplemented():
             sep="\r\n"
     ) as mhs:
         with pytest.raises(NotImplementedError):
-            mhs.channel[0].amplitude = 6.6*ik.units.dBm
+            mhs.channel[0].amplitude = u.Quantity(6.6, u.dBm)
 
 
 def test_mhs_duty_cycle():

@@ -16,7 +16,6 @@ from instruments.abstract_instruments.signal_generator import (
 from instruments.util_fns import (
     ProxyList, split_unit_str, bounded_unitful_property, bool_property
 )
-from instruments.units import dBm
 
 # CLASSES #####################################################################
 
@@ -148,7 +147,7 @@ class HS9000(SignalGenerator):
         )
         power, power_min, power_max = bounded_unitful_property(
             "PWR",
-            units=dBm,
+            units=u.dBm,
             doc="""
             Gets/sets the output power of the specified channel. When setting,
             values are bounded between what is returned by `power_min`

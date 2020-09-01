@@ -11,7 +11,6 @@ from quantities import GHz
 
 from instruments.abstract_instruments.signal_generator import SingleChannelSG
 from instruments.units import ureg as u
-from instruments.units import cBm, dBm
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
@@ -75,7 +74,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         :type: `~quantities.Quantity`
         :units: log-power, assumed to be dBm
         """
-        return (int(self.query('0D.'), 16) * cBm).to(dBm)
+        return u.Quantity((int(self.query('0D.'), 16) * 10), u.dBm)
 
     @power.setter
     def power(self, newval):
@@ -84,7 +83,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
         # The Phase Matrix unit speaks in units of centibel-milliwats,
         # so convert and take the integer part.
-        newval = int(assume_units(newval, dBm).to(cBm).magnitude)
+        newval = int(assume_units(newval, u.dBm).magnitude) // 10
 
         # Command code 0x03, parameter length 2 bytes (4 nybbles)
         self.sendcmd('03{:04X}.'.format(newval))

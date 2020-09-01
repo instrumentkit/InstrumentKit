@@ -11,7 +11,6 @@ from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
-from instruments.units import dBm, cBm
 
 # TESTS #######################################################################
 
@@ -47,14 +46,14 @@ def test_power():
             ik.phasematrix.PhaseMatrixFSW0020,
             [
                 "0D.",
-                "03{:04X}.".format(int((10 * dBm).to(cBm).magnitude))
+                "03{:04X}.".format(int(u.Quantity(1, u.dBm).magnitude))
             ],
             [
-                "-064"
+                "-001"
             ]
     ) as inst:
-        assert inst.power == -10 * dBm
-        inst.power = 10 * dBm
+        assert inst.power == u.Quantity(-10, u.dBm)
+        inst.power = u.Quantity(10, u.dBm)
 
 
 def test_blanking():
