@@ -217,7 +217,7 @@ def test_channel_init(channel):
 
 
 @pytest.mark.parametrize("channel", channels_to_try, ids=channels_to_try_ids)
-@given(coupling=st.sampled_from(ik.tektronix.TekDPO4104.Coupling))
+@pytest.mark.parametrize("coupling", ik.tektronix.TekDPO4104.Coupling)
 def test_channel_coupling(channel, coupling):
     """Initialize a channel."""
     with expected_protocol(
