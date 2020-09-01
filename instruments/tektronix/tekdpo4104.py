@@ -34,7 +34,7 @@ def _parent_property(prop_name, doc=""):
     def setter(self, newval):
         with self:
             # pylint: disable=protected-access
-            setattr(self._tek, prop_name, doc)
+            setattr(self._tek, prop_name, newval)
 
     return property(getter, setter, doc=doc)
 
@@ -111,8 +111,7 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
                 sleep(0.02)  # Work around issue with 2.48 firmware.
                 raw = self._tek.query("CURVE?")
                 raw = raw.split(",")  # Break up comma delimited string
-                raw = map(float, raw)  # Convert each list element to int
-                raw = np.array(raw)  # Convert into numpy array
+                raw = np.array(raw, dtype=np.float)  # Convert to numpy array
             else:
                 # Set encoding to signed, big-endian
                 self._tek.sendcmd("DAT:ENC RIB")
@@ -121,6 +120,8 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
                 self._tek.sendcmd("CURVE?")
                 # Read in the binary block, data width of 2 bytes.
                 raw = self._tek.binblockread(data_width)
+                # Read the new line character that is sent
+                self._tek._file.read_raw(1)  # pylint: disable=protected-access
 
             yoffs = self._tek.y_offset  # Retrieve Y offset
             ymult = self._tek.query("WFMP:YMU?")  # Retrieve Y multiplier
