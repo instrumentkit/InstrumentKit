@@ -14,7 +14,7 @@ import pytest
 from instruments.units import ureg as u
 from instruments.util_fns import (
     ProxyList,
-    assume_units, convert_temperature,
+    assume_units,
     setattr_expression
 )
 

@@ -7,7 +7,6 @@ Unit tests for the HP 3456a digital voltmeter
 # IMPORTS #####################################################################
 
 
-import numpy as np
 import pytest
 
 import instruments as ik

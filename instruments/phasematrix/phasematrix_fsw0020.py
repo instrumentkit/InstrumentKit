@@ -7,8 +7,6 @@ Provides support for the Phase Matrix FSW0020 signal generator.
 # IMPORTS #####################################################################
 
 
-from quantities import GHz
-
 from instruments.abstract_instruments.signal_generator import SingleChannelSG
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units
