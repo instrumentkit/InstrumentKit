@@ -9,7 +9,7 @@ Defines a generic Thorlabs instrument to define some common functionality.
 
 import time
 
-from quantities import second
+from instruments.units import ureg as u
 
 from instruments.thorlabs import _packets
 from instruments.abstract_instruments.instrument import Instrument
@@ -73,7 +73,7 @@ class ThorLabsInstrument(Instrument):
         t_start = time.time()
 
         if timeout:
-            timeout = assume_units(timeout, second).to('second').magnitude
+            timeout = assume_units(timeout, u.second).to('second').magnitude
 
         while True:
             self._file.write_raw(packet.pack())

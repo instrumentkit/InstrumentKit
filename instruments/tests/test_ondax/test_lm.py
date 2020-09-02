@@ -9,8 +9,6 @@ Unit tests for the Ondax Laser Module
 
 import pytest
 
-import quantities
-
 from instruments import ondax
 from instruments.tests import expected_protocol
 from instruments.units import ureg as u
