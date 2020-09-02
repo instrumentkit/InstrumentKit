@@ -10,7 +10,7 @@ Data Types
 Numeric Data
 ------------
 
-When appropriate, use :class:`quantities.Quantity` objects to track units.
+When appropriate, use :class:`pint.Quantity` objects to track units.
 If this is not possible or appropriate, use a bare `float` for scalars
 and `np.ndarray` for array-valued data.
 

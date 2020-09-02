@@ -205,7 +205,7 @@ class SRSDG645(SCPIInstrument):
             """
             Amplitude (in voltage) of the output level for this output.
 
-            :type: `float` or :class:`~quantities.Quantity`
+            :type: `float` or :class:`~pint.Quantity`
             :units: As specified, or :math:`\\text{V}` by default.
             """
             return u.Quantity(
@@ -223,7 +223,7 @@ class SRSDG645(SCPIInstrument):
             """
             Amplitude offset (in voltage) of the output level for this output.
 
-            :type: `float` or :class:`~quantities.Quantity`
+            :type: `float` or :class:`~pint.Quantity`
             :units: As specified, or :math:`\\text{V}` by default.
             """
             return u.Quantity(
@@ -299,7 +299,7 @@ class SRSDG645(SCPIInstrument):
         """
         Gets/sets the rate of the internal trigger.
 
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         :units: As passed or Hz if not specified.
         """
         return u.Quantity(float(self.query("TRAT?")), u.Hz)
@@ -327,7 +327,7 @@ class SRSDG645(SCPIInstrument):
         """
         Gets/sets the trigger holdoff time.
 
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         :units: As passed, or s if not specified.
         """
         return u.Quantity(float(self.query("HOLD?")), u.s)

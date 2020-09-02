@@ -23,7 +23,7 @@ _IDX_REGEX = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*)\[(-?[0-9]*)\]')
 def assume_units(value, units):
     """
     If units are not provided for ``value`` (that is, if it is a raw
-    `float`), then returns a `~quantities.Quantity` with magnitude
+    `float`), then returns a `~pint.Quantity` with magnitude
     given by ``value`` and units given by ``units``.
 
     :param value: A value that may or may not be unitful.
@@ -75,12 +75,12 @@ def convert_temperature(temperature, base):
     ``degK``.
 
     :param temperature: A quantity with units of Kelvin, Celsius, or Fahrenheit
-    :type temperature: `quantities.Quantity`
+    :type temperature: `pint.Quantity`
     :param base: A temperature unit to convert to
     :type base: `unitquantity.UnitTemperature`
 
     :return: The converted temperature
-    :rtype: `quantities.Quantity`
+    :rtype: `pint.Quantity`
     """
     # quantities reports equivalence between degC and degK, so a string
     # comparison is needed

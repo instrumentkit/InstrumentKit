@@ -54,7 +54,7 @@ class OxfordITC503(Instrument):
             Read the temperature of the attached probe to the specified channel.
 
             :units: Kelvin
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             value = float(self._parent.query('R{}'.format(self._idx))[1:])
             return u.Quantity(value, u.kelvin)

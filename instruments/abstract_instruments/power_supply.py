@@ -46,7 +46,7 @@ class PowerSupplyChannel(metaclass=abc.ABCMeta):
         Gets/sets the output voltage for the power supply channel. This is an
         abstract method.
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
 
     @voltage.setter
@@ -61,7 +61,7 @@ class PowerSupplyChannel(metaclass=abc.ABCMeta):
         Gets/sets the output current for the power supply channel. This is an
         abstract method.
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
 
     @current.setter
@@ -116,7 +116,7 @@ class PowerSupply(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the output voltage for all channel on the power supply.
         This is an abstract method.
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
 
     @voltage.setter
@@ -131,7 +131,7 @@ class PowerSupply(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the output current for all channel on the power supply.
         This is an abstract method.
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
 
     @current.setter

@@ -73,7 +73,7 @@ class Keithley6220(SCPIInstrument, PowerSupply):
         -105mA and +105mA.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 

@@ -182,7 +182,7 @@ class Keithley485(Instrument):
         Gets/sets the range (R) of the Keithley 485 input terminals. The valid
         ranges are one of ``{auto|2e-9|2e-8|2e-7|2e-6|2e-5|2e-4|2e-3}``
 
-        :type: `~quantities.quantity.Quantity` or `str`
+        :type: `~pint.Quantity` or `str`
         """
         value = self.get_status()["range"]
         if isinstance(value, str):
@@ -393,7 +393,7 @@ class Keithley485(Instrument):
         """
         Perform a current measurement with the Keithley 485.
 
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         return self._parse_measurement(self.query("X"))
 
@@ -406,7 +406,7 @@ class Keithley485(Instrument):
         :param measurement: String to be unpacked and parsed
         :type: `str`
 
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         (status, function, base, current) = \
             unpack("@1c2s1c10s", bytes(measurement, "utf-8"))

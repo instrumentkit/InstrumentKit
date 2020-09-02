@@ -179,7 +179,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         >>> dmm.input_range = 1 * u.millivolt
 
         :units: As appropriate for the current mode setting.
-        :type: `~quantities.Quantity`, or `~SCPIMultimeter.InputRange`
+        :type: `~pint.Quantity`, or `~SCPIMultimeter.InputRange`
         """
         value = self.query('CONF?')
         mode = self.Mode(self._mode_parse(value))
@@ -322,7 +322,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         receiving a trigger event before starting the measurement.
 
         :units: As specified, or assumed to be of units seconds otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 
@@ -354,7 +354,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         `~SCPIMultimeter.trigger_delay` property.
 
         :units: As specified, or assumed to be of units seconds otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 

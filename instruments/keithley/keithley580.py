@@ -260,7 +260,7 @@ class Keithley580(Instrument):
         Gets/sets the range of the Keithley 580 input terminals. The valid
         ranges are one of ``{AUTO|2e-1|2|20|200|2000|2e4|2e5}``
 
-        :type: `~quantities.quantity.Quantity` or `str`
+        :type: `~pint.Quantity` or `str`
         """
         value = float(self.parse_status_word(self.get_status_word())['range'])
         return value * u.ohm
@@ -413,7 +413,7 @@ class Keithley580(Instrument):
         The usual mode parameter is ignored for the Keithley 580 as the only
         valid mode is resistance.
 
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         self.trigger()
         return self.parse_measurement(self.query(''))['resistance']

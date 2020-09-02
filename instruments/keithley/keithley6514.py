@@ -175,7 +175,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
         """
         Gets/sets the upper limit of the current range.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         # pylint: disable=no-member
         mode = self.mode

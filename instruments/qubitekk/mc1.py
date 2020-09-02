@@ -50,7 +50,7 @@ class MC1(Instrument):
         Gets/sets the stepping increment value of the motor controller
 
         :units: As specified, or assumed to be of units milliseconds
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self._increment
 
@@ -64,7 +64,7 @@ class MC1(Instrument):
         Gets/sets the stepping lower limit value of the motor controller
 
         :units: As specified, or assumed to be of units milliseconds
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self._lower_limit
 
@@ -78,7 +78,7 @@ class MC1(Instrument):
         Gets/sets the stepping upper limit value of the motor controller
 
         :units: As specified, or assumed to be of units milliseconds
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self._upper_limit
 
@@ -92,7 +92,7 @@ class MC1(Instrument):
         Get the internal direction variable, which is a function of how far
         the motor needs to go.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """,
         units=u.ms,
@@ -105,7 +105,7 @@ class MC1(Instrument):
         Gets/Sets the amount of force required to overcome static inertia. Must
          be between 0 and 100 milliseconds.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """,
         format_code='{:.0f}',
@@ -122,7 +122,7 @@ class MC1(Instrument):
          the positive direction minus the number of milliseconds that voltage
          has been applied to the motor in the negative direction.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """
         response = int(self.query("POSI?"))*self.step_size
@@ -133,7 +133,7 @@ class MC1(Instrument):
         doc="""
         Get the estimated motor position, in millimeters.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: millimeters
         """,
         units=u.mm,
@@ -159,7 +159,7 @@ class MC1(Instrument):
         Gets/Sets the number of milliseconds per step. Must be between 1
         and 100 milliseconds.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """,
         format_code='{:.0f}',
@@ -204,7 +204,7 @@ class MC1(Instrument):
         Get the motor's timeout value, which indicates the number of
         milliseconds before the motor can start moving again.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """
         response = int(self.query("TIME?"))
@@ -240,7 +240,7 @@ class MC1(Instrument):
         the number of motor steps. It varies between motors.
 
         :param new_position: the location
-        :type new_position: `~quantities.Quantity`
+        :type new_position: `~pint.Quantity`
         """
         if self.lower_limit <= new_position <= self.upper_limit:
             new_position = assume_units(new_position, u.ms).to(u.ms)

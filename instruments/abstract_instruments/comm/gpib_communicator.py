@@ -98,7 +98,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         Gets/sets the timeeout of both the GPIB bus and the connection
         channel between the PC and the GPIB adapter.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified, or assumed to be of units ``seconds``
         """
         return self._timeout

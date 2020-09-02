@@ -159,7 +159,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets/sets the output voltage of the source.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
         raw = self.query("SOUR:VOLT?")
         return u.Quantity(*split_unit_str(raw, u.volt)).to(u.volt)
@@ -170,7 +170,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets/sets the output voltage of the source.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
         min_value, max_value = self.voltage_range
         if newval < min_value:
@@ -192,7 +192,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets the minimum voltage for the current channel.
 
         :units: :math:`\\text{V}`.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.voltage_range[0]
 
@@ -202,7 +202,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets the maximum voltage for the current channel.
 
         :units: :math:`\\text{V}`.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.voltage_range[1]
 
@@ -217,7 +217,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         order the values as MAX can be negative.
 
         :units: :math:`\\text{V}`.
-        :type: array of `~quantities.Quantity`
+        :type: array of `~pint.Quantity`
         """
         value = u.Quantity(*split_unit_str(self.query("SOUR:VOLT? MAX"), u.volt))
         if value < 0.:
@@ -233,7 +233,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets/sets the output current of the source.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -245,7 +245,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets the actual output voltage as measured by the sense wires.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 
@@ -257,7 +257,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets the actual output current as measured by the sense wires.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 

@@ -82,7 +82,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         Gets/sets the output frequency.
 
         :units: As specified, or assumed to be :math:`\\text{Hz}` otherwise.
-        :type: `float` or `~quantities.quantity.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -104,7 +104,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         Gets/sets the offset voltage for the output waveform.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.quantity.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -116,6 +116,6 @@ class SRS345(SCPIInstrument, FunctionGenerator):
 
         :units: As specified, or assumed to be degrees (:math:`{}^{\\circ}`)
             otherwise.
-        :type: `float` or `~quantities.quantity.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )

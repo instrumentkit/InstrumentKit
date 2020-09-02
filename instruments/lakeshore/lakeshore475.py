@@ -91,7 +91,7 @@ class Lakeshore475(SCPIInstrument):
         """
         Read field from connected probe.
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
         return float(self.query('RDGFIELD?')) * self.field_units
 
@@ -144,9 +144,9 @@ class Lakeshore475(SCPIInstrument):
         """
         Gets/sets the final setpoint of the field control ramp.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units Gauss.
-        :type: `~quantities.quantity.Quantity` with units Gauss
+        :type: `~pint.Quantity` with units Gauss
         """
         value = self.query('CSETP?').strip()
         units = self.field_units
@@ -170,7 +170,7 @@ class Lakeshore475(SCPIInstrument):
         Gets/sets the parameters associated with the field control ramp.
         These are (in this order) the P, I, ramp rate, and control slope limit.
 
-        :type: `tuple` of 2 `float` and 2 `~quantities.quantity.Quantity`
+        :type: `tuple` of 2 `float` and 2 `~pint.Quantity`
         """
         params = self.query('CPARAM?').strip().split(',')
         params = [float(x) for x in params]
@@ -236,9 +236,9 @@ class Lakeshore475(SCPIInstrument):
         """
         Gets/sets the ramp rate value for the field control ramp.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current field units / minute.
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.field_control_params[2]
 
@@ -255,9 +255,9 @@ class Lakeshore475(SCPIInstrument):
         """
         Gets/sets the I value for the field control ramp.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units volt / minute.
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.field_control_params[3]
 

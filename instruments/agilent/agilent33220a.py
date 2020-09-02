@@ -156,9 +156,9 @@ class Agilent33220a(SCPIFunctionGenerator):
         function allows the instrument to compensate of the voltage divider
         and accurately report the voltage across the attached load.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units :math:`\\Omega` (ohm).
-        :type: `~quantities.quantity.Quantity` or `Agilent33220a.LoadResistance`
+        :type: `~pint.Quantity` or `Agilent33220a.LoadResistance`
         """
         value = self.query("OUTP:LOAD?")
         try:

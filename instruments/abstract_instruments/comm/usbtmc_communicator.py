@@ -67,7 +67,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         """
         Gets/sets the communication timeout of the usbtmc comm channel.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
         return self._filelike.timeout * u.second

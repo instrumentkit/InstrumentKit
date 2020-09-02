@@ -89,7 +89,7 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
         """
         Gets/sets the communication timeout of the vxi11 comm channel.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
         return self._inst.timeout

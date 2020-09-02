@@ -394,9 +394,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis acceleration
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport unit
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
 
         return assume_units(
@@ -417,9 +417,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis deceleration
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s^2}`
-        :type: `~quantities.Quantity` or float
+        :type: `~pint.Quantity` or float
         """
         return assume_units(
             float(self._newport_cmd("AG?", target=self.axis_id)),
@@ -439,9 +439,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis estop deceleration
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s^2}`
-        :type: `~quantities.Quantity` or float
+        :type: `~pint.Quantity` or float
         """
         return assume_units(
             float(self._newport_cmd("AE?", target=self.axis_id)),
@@ -459,9 +459,9 @@ class NewportESP301Axis:
         """
         Gets/sets the jerk rate for the controller
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport unit
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
 
         return assume_units(
@@ -480,9 +480,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis velocity
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("VA?", target=self.axis_id)),
@@ -500,9 +500,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis maximum velocity
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("VU?", target=self.axis_id)),
@@ -522,9 +522,9 @@ class NewportESP301Axis:
         """
         Gets/sets the maximum base velocity for stepper motors
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("VB?", target=self.axis_id)),
@@ -544,9 +544,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis jog high velocity
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("JH?", target=self.axis_id)),
@@ -568,9 +568,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis jog low velocity
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("JW?", target=self.axis_id)),
@@ -592,9 +592,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis homing velocity
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("OH?", target=self.axis_id)),
@@ -616,9 +616,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis max acceleration
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s^2}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("AU?", target=self.axis_id)),
@@ -639,9 +639,9 @@ class NewportESP301Axis:
         Gets/sets the axis max decceleration.
         Max deaceleration is always the same as acceleration.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\frac{unit}{s^2}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return self.max_acceleration
 
@@ -656,9 +656,9 @@ class NewportESP301Axis:
         """
         Gets real position on axis in units
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport unit
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("TP?", target=self.axis_id)),
@@ -670,9 +670,9 @@ class NewportESP301Axis:
         """
         Gets desired position on axis in units
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport unit
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("DP?", target=self.axis_id)),
@@ -684,9 +684,9 @@ class NewportESP301Axis:
         """
         Gets the axis desired velocity in unit/s
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport unit/s
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("DP?", target=self.axis_id)),
@@ -699,9 +699,9 @@ class NewportESP301Axis:
         Gets/sets the axis home position.
         Default should be 0 as that sets current position as home
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport unit
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("DH?", target=self.axis_id)),
@@ -721,7 +721,7 @@ class NewportESP301Axis:
         """
         Get the units that all commands are in reference to.
 
-        :type: `~quantities.Quantity` with units corresponding to
+        :type: `~pint.Quantity` with units corresponding to
             units of axis connected  or int which corresponds to Newport
             unit number
         """
@@ -746,7 +746,7 @@ class NewportESP301Axis:
         per step. Encoder functionality must be enabled.
 
         :units: The number of units per encoder step
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
 
         return assume_units(
@@ -769,7 +769,7 @@ class NewportESP301Axis:
         units per step. Encoder functionality must be enabled.
 
         :units: The number of units per encoder step
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
 
         return assume_units(
@@ -793,7 +793,7 @@ class NewportESP301Axis:
         Gets/sets the axis left travel limit
 
         :units: The limit in units
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("SL?", target=self.axis_id)),
@@ -812,7 +812,7 @@ class NewportESP301Axis:
         Gets/sets the axis right travel limit
 
         :units: units
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("SR?", target=self.axis_id)),
@@ -831,7 +831,7 @@ class NewportESP301Axis:
         Gets/sets the axis error threshold
 
         :units: units
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("FE?", target=self.axis_id)),
@@ -853,9 +853,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis current (amps)
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\text{A}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("QI?", target=self.axis_id)),
@@ -875,9 +875,9 @@ class NewportESP301Axis:
         """
         Gets/sets the axis voltage
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of current newport :math:`\\text{V}`
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         """
         return assume_units(
             float(self._newport_cmd("QV?", target=self.axis_id)),
@@ -1102,7 +1102,7 @@ class NewportESP301Axis:
     def move(self, position, absolute=True, wait=False, block=False):
         """
         :param position: Position to set move to along this axis.
-        :type position: `float` or :class:`~quantities.Quantity`
+        :type position: `float` or :class:`~pint.Quantity`
         :param bool absolute: If `True`, the position ``pos`` is
             interpreted as relative to the zero-point of the encoder.
             If `False`, ``pos`` is interpreted as relative to the current
@@ -1165,7 +1165,7 @@ class NewportESP301Axis:
 
         :param position: Position to wait for on axis
 
-        :type position: float or :class:`~quantities.Quantity`
+        :type position: float or :class:`~pint.Quantity`
         """
         position = float(assume_units(position, self._units).to(
             self._units).magnitude)
@@ -1326,7 +1326,7 @@ class NewportESP301Axis:
             'trajectory'
             'hardware_limit_configuration'
 
-        :rtype: dict of `quantities.Quantity`, float and int
+        :rtype: dict of `pint.Quantity`, float and int
         """
 
         config = dict()
@@ -1394,9 +1394,9 @@ class NewportESP301Axis:
     def _get_unit_num(self, quantity):
         """
         Gets the integer label used by the Newport ESP 301 corresponding to a
-        given `~quantities.Quantity`.
+        given `~pint.Quantity`.
 
-        :param quantities.Quantity quantity: Units to return a label for.
+        :param pint.Quantity quantity: Units to return a label for.
 
         :return int:
         """

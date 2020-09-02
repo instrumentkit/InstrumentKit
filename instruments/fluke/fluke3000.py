@@ -307,7 +307,7 @@ class Fluke3000(Multimeter):
         :type mode: `Fluke3000.Mode`
 
         :return: A measurement from the multimeter.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
 
         """
         # Check that the mode is supported

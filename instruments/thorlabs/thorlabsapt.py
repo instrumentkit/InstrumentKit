@@ -271,7 +271,7 @@ class APTPiezoDevice(ThorLabsAPT):
             """
             Gets the maximum travel for the specified piezo channel.
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             :units: Nanometers
             """
             pkt = _packets.ThorLabsPacket(
@@ -1159,7 +1159,7 @@ class APTMotorController(ThorLabsAPT):
             Gets/sets the motor channel motion timeout.
 
             :units: Seconds
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             return self._motion_timeout
 
@@ -1259,7 +1259,7 @@ class APTMotorController(ThorLabsAPT):
             """
             Gets the current position of the specified motor channel
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.MOT_REQ_POSCOUNTER,
@@ -1282,7 +1282,7 @@ class APTMotorController(ThorLabsAPT):
             """
             Gets the position of the encoder of the specified motor channel
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             :units: Encoder ``counts``
             """
             pkt = _packets.ThorLabsPacket(
@@ -1326,7 +1326,7 @@ class APTMotorController(ThorLabsAPT):
 
             :param pos: The position to move to. Provided value will be
                 converted to encoder counts.
-            :type pos: `~quantities.Quantity`
+            :type pos: `~pint.Quantity`
             :units pos: As specified, or assumed to of units encoder counts
 
             :param bool absolute: Specify if the position is a relative or

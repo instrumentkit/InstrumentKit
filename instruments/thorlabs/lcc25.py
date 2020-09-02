@@ -70,9 +70,9 @@ class LCC25(Instrument):
         Gets/sets the frequency at which the LCC oscillates between the
         two voltages.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Hertz.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -141,9 +141,9 @@ class LCC25(Instrument):
         doc="""
         Gets/sets the voltage value for output 1.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or
+        :units: As specified (if a `~pint.Quantity`) or
             assumed to be of units Volts.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -156,9 +156,9 @@ class LCC25(Instrument):
         doc="""
         Gets/sets the voltage value for output 2.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or
+        :units: As specified (if a `~pint.Quantity`) or
             assumed to be of units Volts.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -171,9 +171,9 @@ class LCC25(Instrument):
         doc="""
         Gets/sets the minimum voltage value for the test mode.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Volts.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -187,9 +187,9 @@ class LCC25(Instrument):
         Gets/sets the maximum voltage value for the test mode. If the maximum
         voltage is less than the minimum voltage, nothing happens.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Volts.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -202,9 +202,9 @@ class LCC25(Instrument):
         doc="""
         Gets/sets the dwell time for voltages for the test mode.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units milliseconds.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -217,9 +217,9 @@ class LCC25(Instrument):
         doc="""
         Gets/sets the voltage increment for voltages for the test mode.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Volts.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 

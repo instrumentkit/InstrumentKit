@@ -188,7 +188,7 @@ class Keithley195(Multimeter):
         All modes will also accept the string ``auto`` which will set the 195
         into auto ranging mode.
 
-        :rtype: `~quantities.quantity.Quantity` or `str`
+        :rtype: `~pint.Quantity` or `str`
         """
         index = self.parse_status_word(self.get_status_word())['range']
         if index == 0:
@@ -253,7 +253,7 @@ class Keithley195(Multimeter):
         :type mode: `Keithley195.Mode`
 
         :return: A measurement from the multimeter.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         if mode is not None:
             current_mode = self.mode

@@ -102,7 +102,7 @@ class TopMode(Instrument):
 
             :return: The wavelength of the specified laser
             :units: Nanometers (nm)
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             return float(self.parent.reference(self.name + ":wavelength")) * u.nm
 
@@ -156,7 +156,7 @@ class TopMode(Instrument):
 
             :return: The 'on time' value for the specified laser
             :units: Seconds (s)
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             return float(self.parent.reference(self.name + ":ontime")) * u.s
 

@@ -29,7 +29,7 @@ class SGChannel(metaclass=abc.ABCMeta):
         """
         Gets/sets the output frequency of the signal generator channel
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
 
     @frequency.setter
@@ -43,7 +43,7 @@ class SGChannel(metaclass=abc.ABCMeta):
         """
         Gets/sets the output power of the signal generator channel
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
 
     @power.setter
@@ -57,7 +57,7 @@ class SGChannel(metaclass=abc.ABCMeta):
         """
         Gets/sets the output phase of the signal generator channel
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
 
     @phase.setter

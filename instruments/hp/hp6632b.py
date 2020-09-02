@@ -262,7 +262,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -275,7 +275,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -304,7 +304,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         range increases the low current measurement sensitivity and accuracy.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.quantity.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -381,7 +381,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         seconds, the interval will be rounded to the nearest 15.6 us increment.
 
         :units: As specified, or assumed to be :math:`\\text{s}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -405,7 +405,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         current protection, but not overvoltage protection.
 
         :units: As specified, or assumed to be :math:`\\text{s}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 

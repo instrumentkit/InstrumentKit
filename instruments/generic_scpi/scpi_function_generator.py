@@ -79,7 +79,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
         Gets/sets the output frequency.
 
         :units: As specified, or assumed to be :math:`\\text{Hz}` otherwise.
-        :type: `float` or `~quantities.quantity.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -101,9 +101,9 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
 
         Set value should be within correct bounds of instrument.
 
-        :units: As specified  (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified  (if a `~pint.Quantity`) or assumed
             to be of units volts.
-        :type: `~quantities.quantity.Quantity` with units volts.
+        :type: `~pint.Quantity` with units volts.
         """
     )
 

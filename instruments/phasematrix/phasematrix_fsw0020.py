@@ -45,7 +45,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         If units are not specified, the frequency is assumed
         to be in gigahertz (GHz).
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: frequency, assumed to be GHz
         """
         return (int(self.query('04.'), 16) * u.mHz).to(u.GHz)
@@ -69,7 +69,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         If units are not specified, the power is assumed to be in
         decibel-milliwatts (dBm).
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: log-power, assumed to be dBm
         """
         return u.Quantity((int(self.query('0D.'), 16) * 10), u.dBm)

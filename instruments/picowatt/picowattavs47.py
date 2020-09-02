@@ -55,7 +55,7 @@ class PicowattAVS47(SCPIInstrument):
             reading is up to date by first sending the "ADC" command.
 
             :units: :math:`\\Omega` (ohms)
-            :rtype: `~quantities.Quantity`
+            :rtype: `~pint.Quantity`
             """
             # First make sure the mux is on the correct channel
             if self._parent.mux_channel != self._idx:

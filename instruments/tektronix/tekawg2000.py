@@ -60,9 +60,9 @@ class TekAWG2000(SCPIInstrument):
             """
             Gets/sets the amplitude of the specified channel.
 
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            :units: As specified (if a `~pint.Quantity`) or assumed to be
                 of units Volts.
-            :type: `~quantities.Quantity` with units Volts peak-to-peak.
+            :type: `~pint.Quantity` with units Volts peak-to-peak.
             """
             return u.Quantity(
                 float(self._tek.query("FG:{}:AMPL?".format(self._name)).strip()),
@@ -81,9 +81,9 @@ class TekAWG2000(SCPIInstrument):
             """
             Gets/sets the offset of the specified channel.
 
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            :units: As specified (if a `~pint.Quantity`) or assumed to be
                 of units Volts.
-            :type: `~quantities.Quantity` with units Volts.
+            :type: `~pint.Quantity` with units Volts.
             """
             return u.Quantity(
                 float(self._tek.query("FG:{}:OFFS?".format(self._name)).strip()),
@@ -103,9 +103,9 @@ class TekAWG2000(SCPIInstrument):
             Gets/sets the frequency of the specified channel when using the built-in
             function generator.
 
-            ::units: As specified (if a `~quantities.Quantity`) or assumed to be
+            ::units: As specified (if a `~pint.Quantity`) or assumed to be
                 of units Hertz.
-            :type: `~quantities.Quantity` with units Hertz.
+            :type: `~pint.Quantity` with units Hertz.
             """
             return u.Quantity(
                 float(self._tek.query("FG:FREQ?").strip()),

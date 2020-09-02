@@ -229,7 +229,7 @@ class PM100USB(SCPIInstrument):
             of ``-1`` reads until a termination character is found.
 
         :units: As specified by :attr:`~PM100USB.measurement_configuration`.
-        :rtype: :class:`~quantities.Quantity`
+        :rtype: :class:`~pint.Quantity`
         """
         # Get the current configuration to find out the units we need to
         # attach.

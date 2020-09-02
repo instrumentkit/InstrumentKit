@@ -155,7 +155,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Gets/sets the output voltage setting.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
         return self.polarity*self._voltage
 
@@ -169,7 +169,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Gets/sets the output current setting.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
         return self.polarity*self._current
 
@@ -183,7 +183,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Gets the output voltage as measured by the sense wires.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.get_status()["voltage"]
 
@@ -193,7 +193,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Gets/sets the output current as measured by the sense wires.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.get_status()["current"]
 
@@ -408,7 +408,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :param word: Byte string to be parsed
         :type: `bytes`
 
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         value = int(word.decode('utf-8'), 16)
         value_max = int(0x3ff)
@@ -422,7 +422,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :param word: Byte string to be parsed
         :type: `bytes`
 
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         value = int(word.decode("utf-8"), 16)
         value_max = int(0x3ff)

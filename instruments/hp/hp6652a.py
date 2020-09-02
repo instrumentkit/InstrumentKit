@@ -69,7 +69,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -82,7 +82,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -94,7 +94,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         Gets the actual output voltage as measured by the sense wires.
 
         :units: :math:`\\text{V}` (volts)
-        :rtype: `~quantities.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -106,7 +106,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         Gets the actual output current as measured by the sense wires.
 
         :units: :math:`\\text{A}` (amps)
-        :rtype: `~quantities.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -119,7 +119,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 

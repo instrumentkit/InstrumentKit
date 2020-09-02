@@ -90,7 +90,7 @@ class Keithley2182(SCPIMultimeter):
             :param mode: Mode that the measurement will be performed in
             :type mode: Keithley2182.Mode
             :return: The value of the measurement
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
             if mode is not None:
                 # self.mode = mode
@@ -212,7 +212,7 @@ class Keithley2182(SCPIMultimeter):
         recommended to transfer a large number of data points using GPIB.
 
         :return: Measurement readings from the instrument output buffer.
-        :rtype: `list` of `~quantities.quantity.Quantity` elements
+        :rtype: `list` of `~pint.Quantity` elements
         """
         return list(map(float, self.query("FETC?").split(","))) * self.units
 
@@ -225,7 +225,7 @@ class Keithley2182(SCPIMultimeter):
         :type: `Keithley2182.Mode`
 
         :return: Returns a single shot measurement of the specified mode.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         :units: Volts, Celsius, Kelvin, or Fahrenheit
         """
         if mode is None:

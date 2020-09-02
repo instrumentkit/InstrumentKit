@@ -50,7 +50,7 @@ class Lakeshore340(SCPIInstrument):
             Gets the temperature of the specified sensor.
 
             :units: Kelvin
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             value = self._parent.query('KRDG?{}'.format(self._idx))
             return u.Quantity(float(value), u.kelvin)

@@ -54,7 +54,7 @@ class Lakeshore370(SCPIInstrument):
             Gets the resistance of the specified sensor.
 
             :units: Ohm
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
             value = self._parent.query('RDGR? {}'.format(self._idx))
             return u.Quantity(float(value), u.ohm)

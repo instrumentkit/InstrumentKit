@@ -416,7 +416,7 @@ class HP3456a(Multimeter):
         `~quantities.volt`. The range value sent to the instrument depends on
         the unit set on the input range value. `auto` selects auto ranging.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         raise NotImplementedError
 
@@ -508,7 +508,7 @@ class HP3456a(Multimeter):
         :type mode: `HP3456a.Mode`
 
         :return: A series of measurements from the multimeter.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         if mode is not None:
             units = UNITS[mode]
@@ -542,7 +542,7 @@ class HP3456a(Multimeter):
         :type mode: `HP3456a.Mode`
 
         :return: A measurement from the multimeter.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
 
         """
         if mode is not None:

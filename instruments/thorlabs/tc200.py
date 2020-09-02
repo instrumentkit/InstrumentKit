@@ -154,11 +154,11 @@ class TC200(Instrument):
         doc="""
         Gets the actual temperature of the sensor
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units degrees C.
-        :type: `~quantities.quantity.Quantity` or `int`
+        :type: `~pint.Quantity` or `int`
         :return: the temperature (in degrees C)
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -174,7 +174,7 @@ class TC200(Instrument):
         :return: the maximum temperature (in deg C)
         :units: As specified or assumed to be degree Celsius. Returns with
             units degC.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -183,11 +183,11 @@ class TC200(Instrument):
         """
         Gets/sets the actual temperature of the sensor
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units degrees C.
-        :type: `~quantities.quantity.Quantity` or `int`
+        :type: `~pint.Quantity` or `int`
         :return: the temperature (in degrees C)
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         response = self.query("tset?").replace(
             " C", "").replace(" F", "").replace(" K", "")
@@ -342,6 +342,6 @@ class TC200(Instrument):
 
         :return: The maximum power
         :units: Watts (linear units)
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
     )

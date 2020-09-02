@@ -120,7 +120,7 @@ class HS9000(SignalGenerator):
             Gets the current temperature of the specified channel.
 
             :units: As specified by the instrument.
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
             val, units = split_unit_str(self.query("TEMP?"))
             units = "deg{}".format(units)
@@ -141,7 +141,7 @@ class HS9000(SignalGenerator):
             >>> print(hs.channel[0].frequency_min)
             >>> print(hs.channel[0].frequency_max)
 
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             :units: As specified or assumed to be of units GHz
             """
         )
@@ -160,7 +160,7 @@ class HS9000(SignalGenerator):
             >>> print(hs.channel[0].power_min)
             >>> print(hs.channel[0].power_max)
 
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             :units: `instruments.units.dBm`
             """
         )
@@ -179,7 +179,7 @@ class HS9000(SignalGenerator):
             >>> print(hs.channel[0].phase_min)
             >>> print(hs.channel[0].phase_max)
 
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             :units: As specified or assumed to be of units degrees
             """
         )

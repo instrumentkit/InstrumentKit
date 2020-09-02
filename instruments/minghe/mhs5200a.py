@@ -112,9 +112,9 @@ class MHS5200(FunctionGenerator):
             """
             Gets/Sets the frequency of this channel.
 
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units hertz.
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             query = ":r{0}f".format(self._chan)
             response = self._mhs.query(query)
@@ -153,9 +153,9 @@ class MHS5200(FunctionGenerator):
             """
             Gets/Sets the phase of this channel.
 
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            :units: As specified (if a `~pint.Quantity`) or assumed to be
             of degrees.
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             # need to convert
             query = ":r{0}p".format(self._chan)

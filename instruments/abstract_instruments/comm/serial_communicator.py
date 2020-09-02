@@ -80,7 +80,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
         """
         Gets/sets the communication timeout of the serial comm channel.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
         return self._conn.timeout * u.second

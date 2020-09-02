@@ -140,9 +140,9 @@ class SRS830(SCPIInstrument):
         doc="""
         Gets/sets the lock-in amplifier reference frequency.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units Hertz.
-        :type: `~quantities.Quantity` with units Hertz.
+        :type: `~pint.Quantity` with units Hertz.
         """
     )
 
@@ -155,9 +155,9 @@ class SRS830(SCPIInstrument):
 
         Set value should be -360deg <= newval < +730deg.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units degrees.
-        :type: `~quantities.Quantity` with units degrees.
+        :type: `~pint.Quantity` with units degrees.
         """
     )
 
@@ -170,9 +170,9 @@ class SRS830(SCPIInstrument):
 
         Set value should be 0.004 <= newval <= 5.000
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units volts. Value should be specified as peak-to-peak.
-        :type: `~quantities.Quantity` with units volts peak-to-peak.
+        :type: `~pint.Quantity` with units volts peak-to-peak.
         """
     )
 
@@ -206,7 +206,7 @@ class SRS830(SCPIInstrument):
         Acceptable set values are :math:`2^n` where :math:`n \in \{-4...+9\}` or
         the string `trigger`.
 
-        :type: `~quantities.Quantity` with units Hertz.
+        :type: `~pint.Quantity` with units Hertz.
         """
         value = int(self.query('SRAT?'))
         if value == 14:
@@ -317,7 +317,7 @@ class SRS830(SCPIInstrument):
         :param sample_rate: The desired sampling
             rate. Acceptable set values are :math:`2^n` where
             :math:`n \in \{-4...+9\}` in units Hertz or the string `trigger`.
-        :type sample_rate: `~quantities.Quantity` or `str`
+        :type sample_rate: `~pint.Quantity` or `str`
 
         :param `SRS830.BufferMode` buffer_mode: This sets the behaviour of the
             instrument when the data storage buffer is full. Setting to

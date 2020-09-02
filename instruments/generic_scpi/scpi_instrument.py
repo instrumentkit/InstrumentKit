@@ -144,7 +144,7 @@ class SCPIInstrument(Instrument):
 
         :return: The power line frequency
         :units: Hertz
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
         return u.Quantity(
             float(self.query("SYST:LFR?")),

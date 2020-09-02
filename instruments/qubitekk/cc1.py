@@ -221,9 +221,9 @@ class CC1(SCPIInstrument):
         """
         Gets/sets the length of the coincidence window between the two signals.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units nanoseconds.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return u.Quantity(*split_unit_str(self.query("WIND?"), "ns"))
 
@@ -262,9 +262,9 @@ class CC1(SCPIInstrument):
         Gets/sets the length of time before a clear signal is sent to the
         counters.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units seconds.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         # the older versions of the firmware erroneously report the units of the
         # dwell time as being seconds rather than ms

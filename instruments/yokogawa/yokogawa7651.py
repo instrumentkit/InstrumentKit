@@ -82,9 +82,9 @@ class Yokogawa7651(PowerSupply, Instrument):
 
             Querying the voltage is not supported by this instrument.
 
-            :units: As specified (if a `~quantities.quantity.Quantity`) or
+            :units: As specified (if a `~pint.Quantity`) or
                 assumed to be of units Volts.
-            :type: `~quantities.quantity.Quantity` with units Volt
+            :type: `~pint.Quantity` with units Volt
             """
             raise NotImplementedError('This instrument does not support '
                                       'querying the output voltage setting.')
@@ -104,9 +104,9 @@ class Yokogawa7651(PowerSupply, Instrument):
 
             Querying the current is not supported by this instrument.
 
-            :units: As specified (if a `~quantities.quantity.Quantity`) or
+            :units: As specified (if a `~pint.Quantity`) or
                 assumed to be of units Amps.
-            :type: `~quantities.quantity.Quantity` with units Amp
+            :type: `~pint.Quantity` with units Amp
             """
             raise NotImplementedError('This instrument does not support '
                                       'querying the output current setting.')
@@ -175,9 +175,9 @@ class Yokogawa7651(PowerSupply, Instrument):
 
         Querying the voltage is not supported by this instrument.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Volts.
-        :type: `~quantities.quantity.Quantity` with units Volt
+        :type: `~pint.Quantity` with units Volt
         """
         raise NotImplementedError('This instrument does not support querying '
                                   'the output voltage setting.')
@@ -193,9 +193,9 @@ class Yokogawa7651(PowerSupply, Instrument):
 
         Querying the current is not supported by this instrument.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Amps.
-        :type: `~quantities.quantity.Quantity` with units Amp
+        :type: `~pint.Quantity` with units Amp
         """
         raise NotImplementedError('This instrument does not support querying '
                                   'the output current setting.')

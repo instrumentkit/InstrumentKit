@@ -70,7 +70,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         """
         Gets/sets the connection timeout of the socket comm channel.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
         return self._conn.gettimeout() * u.second
