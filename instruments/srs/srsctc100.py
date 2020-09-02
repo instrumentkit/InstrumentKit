@@ -134,7 +134,7 @@ class SRSCTC100(SCPIInstrument):
             Units can be one of ``celsius``, ``watt``, ``volt``, ``ohm``, or
             ``dimensionless``.
 
-            :type: `~quantities.UnitQuantity`
+            :type: `~pint.Unit`
             """
             # FIXME: does not respect "chan.d/dt" property.
             return self._ctc.channel_units()[self._chan_name]
@@ -222,7 +222,7 @@ class SRSCTC100(SCPIInstrument):
             :param units: Units to attach to the returned data point. If left
                 with the value of `None` then the instrument will be queried
                 for the current units setting.
-            :type units: `~quantities.UnitQuantity`
+            :type units: `~pint.Unit`
             :return: The log data point with units
             :rtype: `~pint.Quantity`
             """

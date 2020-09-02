@@ -169,7 +169,7 @@ class LM(Instrument):
 
             :return: the target laser power
             :units: mW
-            :type: `~quantities.Quantities`
+            :type: `~pint.Quantity`
             """
             response = self._parent.query("rslp?")
             return float(response)*u.mW

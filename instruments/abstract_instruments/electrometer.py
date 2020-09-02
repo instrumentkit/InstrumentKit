@@ -47,7 +47,7 @@ class Electrometer(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the measurement mode for the electrometer. This is an
         abstract method.
 
-        :type: `~quantities.UnitQuantity`
+        :type: `~pint.Unit`
         """
 
     @property

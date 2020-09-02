@@ -102,7 +102,7 @@ class Lakeshore475(SCPIInstrument):
 
         Acceptable units are Gauss, Tesla, Oersted, and Amp/meter.
 
-        :type: `~quantities.unitquantity.UnitQuantity`
+        :type: `~pint.Unit`
         """
         value = int(self.query('UNIT?'))
         return LAKESHORE_FIELD_UNITS[value]
@@ -124,7 +124,7 @@ class Lakeshore475(SCPIInstrument):
 
         Acceptable units are celcius and kelvin.
 
-        :type: `~quantities.unitquantity.UnitQuantity`
+        :type: `~pint.Unit`
         """
         value = int(self.query('TUNIT?'))
         return LAKESHORE_TEMP_UNITS[value]

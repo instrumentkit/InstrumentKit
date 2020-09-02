@@ -182,7 +182,7 @@ class Keithley2182(SCPIMultimeter):
         """
         Gets the current measurement units of the instrument.
 
-        :rtype: `~quantities.unitquantity.UnitQuantity`
+        :rtype: `~pint.Unit`
         """
         mode = self.channel[0].mode
         if mode == Keithley2182.Mode.voltage_dc:

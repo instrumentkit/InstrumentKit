@@ -412,8 +412,8 @@ class HP3456a(Multimeter):
     def input_range(self):
         """Set the input range to be used.
 
-        The `HP3456a` has separate ranges for `~quantities.ohm` and for
-        `~quantities.volt`. The range value sent to the instrument depends on
+        The `HP3456a` has separate ranges for `ohm` and for
+        `volt`. The range value sent to the instrument depends on
         the unit set on the input range value. `auto` selects auto ranging.
 
         :type: `~pint.Quantity`

@@ -281,7 +281,7 @@ class TC200(Instrument):
         Gets/sets the units of the temperature measurement.
 
         :return: The temperature units (degC/F/K) the TC200 is measuring in
-        :type: `~quantities.unitquantity.UnitTemperature`
+        :type: `~pint.Unit`
         """
         response = self.status
         if (response >> 4) % 2 and (response >> 5) % 2:
