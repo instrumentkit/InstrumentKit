@@ -10,7 +10,7 @@ Unit tests for the Yokogawa 7651 power supply
 import pytest
 
 import instruments as ik
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.tests import expected_protocol
 
 
@@ -90,7 +90,7 @@ def test_channel_voltage():
                 f"SA{value_unitless};",
                 "E;",  # trigger
                 "F1;\nE;",  # set voltage mode
-                f"SA{value_unitful.rescale(u.volt).magnitude};",
+                f"SA{value_unitful.to(u.volt).magnitude};",
                 "E;"  # trigger
             ],
             [
@@ -122,7 +122,7 @@ def test_channel_current():
                 f"SA{value_unitless};",
                 "E;",  # trigger
                 "F5;\nE;",  # set voltage mode
-                f"SA{value_unitful.rescale(u.A).magnitude};",
+                f"SA{value_unitful.to(u.A).magnitude};",
                 "E;"  # trigger
             ],
             [
@@ -182,7 +182,7 @@ def test_voltage():
                 f"SA{value_unitless};",
                 "E;",  # trigger
                 "F1;\nE;",  # set voltage mode
-                f"SA{value_unitful.rescale(u.volt).magnitude};",
+                f"SA{value_unitful.to(u.volt).magnitude};",
                 "E;"  # trigger
             ],
             [
@@ -214,7 +214,7 @@ def test_current():
                 f"SA{value_unitless};",
                 "E;",  # trigger
                 "F5;\nE;",  # set current mode
-                f"SA{value_unitful.rescale(u.A).magnitude};",
+                f"SA{value_unitful.to(u.A).magnitude};",
                 "E;"  # trigger
             ],
             [

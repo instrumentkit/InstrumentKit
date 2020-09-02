@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 import instruments as ik
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.tests import expected_protocol
 
 # TESTS ######################################################################
@@ -588,8 +588,8 @@ def test_maui_math_op_rescale(init):
             ],
             sep="\n"
     ) as osc:
-        osc.math[0].operator.rescale(2)
-        osc.math[0].operator.rescale(2, multiplier=10.3, adder=1.3)
+        osc.math[0].operator.to(2)
+        osc.math[0].operator.to(2, multiplier=10.3, adder=1.3)
 
 
 def test_maui_math_op_sinx(init):

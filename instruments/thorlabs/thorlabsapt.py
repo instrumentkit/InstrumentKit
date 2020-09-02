@@ -348,7 +348,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
     Example for a KIM101 controller:
         >>> import instruments as ik
-        >>> import instruments.units as u
+        >>> from instruments.units import ureg as u
         >>> # call the controller
         >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
         >>> # set first channel to enabled
@@ -411,7 +411,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
             Example:
                 >>> import instruments as ik
-                >>> import instruments.units as u
+                >>> from instruments.units import ureg as u
                 >>> # call the controller
                 >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
@@ -455,9 +455,9 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                                  "length 3.")
 
             # ensure units
-            volt = int(assume_units(params[0], u.V).rescale(u.V).magnitude)
-            rate = int(assume_units(params[1], 1/u.s).rescale(1/u.s).magnitude)
-            accl = int(assume_units(params[2], 1/u.s**2).rescale(
+            volt = int(assume_units(params[0], u.V).to(u.V).magnitude)
+            rate = int(assume_units(params[1], 1/u.s).to(1/u.s).magnitude)
+            accl = int(assume_units(params[2], 1/u.s**2).to(
                 1/u.s**2
             ).magnitude)
 
@@ -596,7 +596,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
             Example for a KIM101 controller:
                 >>> import instruments as ik
-                >>> import instruments.units as u
+                >>> from instruments.units import ureg as u
                 >>> # call the controller
                 >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
@@ -664,8 +664,8 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             mode = int(params[0])
             steps_fwd = int(params[1])
             steps_bkw = int(params[2])
-            rate = int(assume_units(params[3], 1/u.s).rescale(1/u.s).magnitude)
-            accl = int(assume_units(params[4], 1/u.s**2).rescale(
+            rate = int(assume_units(params[3], 1/u.s).to(1/u.s).magnitude)
+            accl = int(assume_units(params[4], 1/u.s**2).to(
                 1/u.s**2
             ).magnitude)
 
@@ -1061,7 +1061,7 @@ class APTMotorController(ThorLabsAPT):
 
     Example:
         >>> import instruments as ik
-        >>> import instruments.units as u
+        >>> from instruments.units import ureg as u
 
         >>> # load the controller, a KDC101 cube
         >>> kdc = ik.thorlabs.APTMotorController.open_serial("/dev/ttyUSB0", baud=115200)
@@ -1335,7 +1335,7 @@ class APTMotorController(ThorLabsAPT):
 
             Example:
                 >>> import instruments as ik
-                >>> import instruments.units as u
+                >>> from instruments.units import ureg as u
 
                 >>> # load the controller, a KDC101 cube
                 >>> kdc = ik.thorlabs.APTMotorController.open_serial("/dev/ttyUSB0", baud=115200)
