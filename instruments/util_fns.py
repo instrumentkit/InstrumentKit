@@ -70,20 +70,16 @@ def setattr_expression(target, name_expr, value):
 
 def convert_temperature(temperature, base):
     """
-    Convert the temperature to the specified base. This is needed because
-    the package `quantities` does not differentiate between ``degC`` and
-    ``degK``.
+    Obsolete with the transition to Pint from Quantities.
 
     :param temperature: A quantity with units of Kelvin, Celsius, or Fahrenheit
     :type temperature: `pint.Quantity`
     :param base: A temperature unit to convert to
-    :type base: `unitquantity.UnitTemperature`
+    :type base: `pint.Quantity`
 
     :return: The converted temperature
     :rtype: `pint.Quantity`
     """
-    # quantities reports equivalence between degC and degK, so a string
-    # comparison is needed
     newval = assume_units(temperature, u.degC)
     return newval.to(base)
 

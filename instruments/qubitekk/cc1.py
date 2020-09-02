@@ -242,7 +242,7 @@ class CC1(SCPIInstrument):
 
         When setting, ``N`` may be ``0, 2, 4, 6, 8, 10, 12, or 14ns``.
 
-        :rtype: quantities.ns
+        :rtype: `~pint.Quantity`
         :return: the delay value
         """
         return u.Quantity(*split_unit_str(self.query("DELA?"), "ns"))
