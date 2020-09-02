@@ -1117,20 +1117,20 @@ class APTMotorController(ThorLabsAPT):
                 # Note that for these drivers, the scale factors are identical
                 # for position, velcoity and acceleration. This is not true for
                 # all drivers!
-                'DRV001': (u.Quantity(51200, 'ct/mm'),) * 3,
-                'DRV013': (u.Quantity(25600, 'ct/mm'),) * 3,
-                'DRV014': (u.Quantity(25600, 'ct/mm'),) * 3,
-                'DRV113': (u.Quantity(20480, 'ct/mm'),) * 3,
-                'DRV114': (u.Quantity(20480, 'ct/mm'),) * 3,
-                'FW103':  (u.Quantity(25600 / 360, 'ct/deg'),) * 3,
-                'NR360':  (u.Quantity(25600 / 5.4546, 'ct/deg'),) * 3
+                'DRV001': (u.Quantity(51200, 'count/mm'),) * 3,
+                'DRV013': (u.Quantity(25600, 'count/mm'),) * 3,
+                'DRV014': (u.Quantity(25600, 'count/mm'),) * 3,
+                'DRV113': (u.Quantity(20480, 'count/mm'),) * 3,
+                'DRV114': (u.Quantity(20480, 'count/mm'),) * 3,
+                'FW103':  (u.Quantity(25600 / 360, 'count/deg'),) * 3,
+                'NR360':  (u.Quantity(25600 / 5.4546, 'count/deg'),) * 3
             },
 
             re.compile('TDC001|KDC101'): {
-                'MTS25-Z8': (1 / u.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
-                'MTS50-Z8': (1 / u.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
+                'MTS25-Z8': (1 / u.Quantity(34304, 'mm/count'), NotImplemented, NotImplemented),
+                'MTS50-Z8': (1 / u.Quantity(34304, 'mm/count'), NotImplemented, NotImplemented),
                 # TODO: Z8xx and Z6xx models. Need to add regex support to motor models, too.
-                'PRM1-Z8': (u.Quantity(1919.64, 'ct/deg'), NotImplemented, NotImplemented),
+                'PRM1-Z8': (u.Quantity(1919.64, 'count/deg'), NotImplemented, NotImplemented),
             }
         }
 
