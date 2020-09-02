@@ -8,6 +8,8 @@ Provides support for the Lakeshore 475 Gaussmeter.
 
 from enum import IntEnum
 
+import pint
+
 from instruments.generic_scpi import SCPIInstrument
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units, bool_property
@@ -107,7 +109,7 @@ class Lakeshore475(SCPIInstrument):
 
     @field_units.setter
     def field_units(self, newval):
-        if isinstance(newval, u.unitquantity.UnitQuantity):
+        if isinstance(newval, pint.Unit):
             if newval in LAKESHORE_FIELD_UNITS_INV:
                 self.sendcmd(f"UNIT {LAKESHORE_FIELD_UNITS_INV[newval]}")
             else:
@@ -129,7 +131,7 @@ class Lakeshore475(SCPIInstrument):
 
     @temp_units.setter
     def temp_units(self, newval):
-        if isinstance(newval, u.unitquantity.UnitQuantity):
+        if isinstance(newval, pint.Unit):
             if newval in LAKESHORE_TEMP_UNITS_INV:
                 self.sendcmd(f"TUNIT {LAKESHORE_TEMP_UNITS_INV[newval]}")
             else:
@@ -152,9 +154,15 @@ class Lakeshore475(SCPIInstrument):
 
     @field_setpoint.setter
     def field_setpoint(self, newval):
-        units = self.field_units
-        newval = float(assume_units(newval, u.gauss).to(units).magnitude)
-        self.sendcmd('CSETP {}'.format(newval))
+        expected_units = self.field_units
+        newval = assume_units(newval, u.gauss)
+
+        if newval.units != expected_units:
+            raise ValueError(f"Field setpoint must be specified in the same units "
+                             f"that the field units are currently set to. Attempts units of "
+                             f"{newval.units}, currently expecting {expected_units}.")
+
+        self.sendcmd('CSETP {}'.format(newval.magnitude))
 
     @property
     def field_control_params(self):
@@ -175,23 +183,21 @@ class Lakeshore475(SCPIInstrument):
         if not isinstance(newval, tuple):
             raise TypeError('Field control parameters must be specified as '
                             ' a tuple')
-        newval = list(newval)
-        newval[0] = float(newval[0])
-        newval[1] = float(newval[1])
+        p, i, ramp_rate, control_slope_lim = newval
 
-        unit = self.field_units / u.minute
-        newval[2] = float(
-            assume_units(newval[2], unit).to(unit).magnitude)
+        expected_units = self.field_units / u.minute
+
+        ramp_rate = assume_units(ramp_rate, expected_units)
+        if ramp_rate.units != expected_units:
+            raise ValueError(f"Field control params ramp rate must be specified in the same units "
+                             f"that the field units are currently set to, per minute. Attempts units of "
+                             f"{ramp_rate.units}, currently expecting {expected_units}.")
+        ramp_rate = float(ramp_rate.magnitude)
+
         unit = u.volt / u.minute
-        newval[3] = float(
-            assume_units(newval[3], unit).to(unit).magnitude)
+        control_slope_lim = float(assume_units(control_slope_lim, unit).to(unit).magnitude)
 
-        self.sendcmd('CPARAM {},{},{},{}'.format(
-            newval[0],
-            newval[1],
-            newval[2],
-            newval[3],
-        ))
+        self.sendcmd(f"CPARAM {p},{i},{ramp_rate},{control_slope_lim}")
 
     @property
     def p_value(self):

@@ -7,7 +7,7 @@ Module containing tests for the Lakeshore 340
 # IMPORTS ####################################################################
 
 import instruments as ik
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.tests import expected_protocol
 
 # TESTS ######################################################################

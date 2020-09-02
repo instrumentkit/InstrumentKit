@@ -9,7 +9,7 @@ Module containing tests for the Lakeshore 475 Gaussmeter
 import pytest
 
 import instruments as ik
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.tests import expected_protocol
 
 # TESTS ######################################################################
@@ -150,18 +150,19 @@ def test_lakeshore475_field_setpoint():
                 "CSETP?",
                 "UNIT?",
                 "UNIT?",
-                "CSETP 10000.0",  # send 1 tesla
+                "CSETP 1.0",  # send 1 tesla
                 "UNIT?",
                 "CSETP 23.0"  # send 23 unitless (equals gauss)
             ],
             [
                 "10.",
                 "1",
-                "1",
+                "2",
                 "1"
             ],
     ) as lsh:
         assert lsh.field_setpoint == u.Quantity(10, u.gauss)
+
         lsh.field_setpoint = u.Quantity(1., u.tesla)
         lsh.field_setpoint = 23.
 
@@ -200,12 +201,9 @@ def test_lakeshore475_field_set_control_params():
                 "UNIT?",
                 "CPARAM 5.0,50.0,120.0,60.0",
                 "UNIT?",
-                "CPARAM 5.0,50.0,120.0,180.0",
-                "UNIT?",
                 "CPARAM 5.0,50.0,120.0,60.0"
             ],
             [
-                "2",  # teslas
                 "2",  # teslas
                 "2"  # teslas
             ],
@@ -216,13 +214,6 @@ def test_lakeshore475_field_set_control_params():
             50.0,
             u.Quantity(120.0, u.tesla / u.min),
             u.Quantity(60.0, u.volt / u.min)
-        )
-        # different units are used
-        lsh.field_control_params = (
-            5.0,
-            50.0,
-            u.Quantity(20000.0, u.gauss / u.s),
-            u.Quantity(3000.0, u.mV / u.s)
         )
         # no units are used
         lsh.field_control_params = (
