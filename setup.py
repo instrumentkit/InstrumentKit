@@ -36,7 +36,6 @@ INSTALL_REQUIRES = [
     "numpy",
     "pyserial>=3.3",
     "pyvisa>=1.9",
-    "quantities>=0.12.1",
     "python-vxi11>=0.8",
     "python-usbtmc",
     "pyusb",
