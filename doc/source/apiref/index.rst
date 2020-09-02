@@ -30,7 +30,8 @@ Contents:
     qubitekk
     rigol
     srs
-    tektronix  
+    tektronix
+    teledyne
     thorlabs
     toptica
     yokogawa

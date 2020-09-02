@@ -24,6 +24,8 @@ logger.addHandler(logging.NullHandler())
 
 # CLASSES #####################################################################
 
+# pylint: disable=too-many-lines
+
 
 class ThorLabsAPT(_abstract.ThorLabsInstrument):
 
@@ -52,7 +54,17 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             Gets/sets the enabled status for the specified APT channel
 
             :type: `bool`
+
+            :raises TypeError: If controller is not supported
             """
+            if self._apt.model_number[0:3] == 'KIM':
+                raise TypeError("For KIM controllers, use the "
+                                "`enabled_single` function to enable "
+                                "one axis. For KIM101 controllers, "
+                                "multiple axes can be enabled using "
+                                "the `enabled_multi` function from the "
+                                "controller level.")
+
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.MOD_REQ_CHANENABLESTATE,
                 param1=self._idx_chan,
@@ -298,7 +310,15 @@ class APTPiezoDevice(ThorLabsAPT):
             data=None
         )
         resp = self.querypacket(pkt)
-        return float(struct.unpack('<H', resp.data)[0]) / 255
+
+        # Not all APT piezo devices support querying the LED intenstiy
+        # distance, e.g., TIM, KIM. Those that do not simply ignore the
+        # PZ_REQ_TPZ_DISPSETTINGS packet, so that the response is empty.
+        # Setting will be ignored as well.
+        if resp is None:
+            return NotImplemented
+        else:
+            return float(struct.unpack('<H', resp.data)[0]) / 255
 
     @led_intensity.setter
     def led_intensity(self, intensity):
@@ -314,6 +334,612 @@ class APTPiezoDevice(ThorLabsAPT):
         self.sendpacket(pkt)
 
     _channel_type = PiezoDeviceChannel
+
+
+class APTPiezoInertiaActuator(APTPiezoDevice):
+
+    """Represent a Thorlabs APT piezo inertia actuator.
+
+    Currently only the KIM piezo inertia actuator is implemented.
+    Some routines will work with the TIM actuator as well. Routines
+    that are specific for the KIM101 controller will raise a TypeError
+    if not implemented for this controller. Unfortunately, handling all
+    these controller specific functions is fairly messy, but necessary.
+
+    Example for a KIM101 controller:
+        >>> import instruments as ik
+        >>> import instruments.units as u
+        >>> # call the controller
+        >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
+        >>> # set first channel to enabled
+        >>> ch = kim.channel[0]
+        >>> ch.enabled_single = True
+        >>> # define and set drive parameters
+        >>> max_volts = u.Quantity(110, u.V)
+        >>> step_rate = u.Quantity(1000, 1/u.s)
+        >>> acceleration = u.Quantity(10000, 1/u.s**2)
+        >>> ch.drive_op_parameters = [max_volts, step_rate, acceleration]
+        >>> # aboslute move to 1000 steps
+        >>> ch.move_abs(1000)
+    """
+
+    class PiezoChannel(APTPiezoDevice.PiezoDeviceChannel):
+        """
+        Class representing a single piezo channel within a piezo stage
+        on the Thorlabs APT controller.
+        """
+
+        # PROPERTIES #
+
+        @property
+        def drive_op_parameters(self):
+            """Get / Set various drive parameters for move motion.
+
+            Defines the speed and acceleration of moves initiated in
+            the following ways:
+            - by clicking in the position display
+            - via the top panel controls when ‘Go To Position’ mode is
+            selected (in the Set_TIM_JogParameters (09) or
+            Set_KCubeMMIParams (15) sub‐messages).
+            - via software using the MoveVelocity, MoveAbsoluteStepsEx
+            or MoveRelativeStepsEx methods.
+
+            :setter: The setter must be be given as a list of 3
+                entries. The three entries are:
+                -  Maximum Voltage:
+                The maximum piezo drive voltage, in the range 85V
+                to 125V. Unitful, if no unit given, V are assumed.
+                - Step Rate:
+                The piezo motor moves by ramping up the drive
+                voltage to the value set in the MaxVoltage parameter
+                and then dropping quickly to zero, then repeating.
+                One cycle is termed a step. This parameter specifies
+                the velocity to move when a command is initiated.
+                The step rate is specified in steps/sec, in the range 1
+                to 2,000. Unitful, if no unit given, 1 / sec assumed.
+                - Step Acceleration:
+                This parameter specifies the acceleration up to the
+                step rate, in the range 1 to 100,000 cycles/sec/sec.
+                Unitful, if no unit given, 1/sec**2 assumed.
+
+            :return: List with the drive parameters, unitful.
+
+            :raises TypeError: The setter was not a list or tuple.
+            :raises ValueError: The setter was not given a tuple with
+                three values.
+            :raises ValueError: One of the parameters was out of range.
+
+            Example:
+                >>> import instruments as ik
+                >>> import instruments.units as u
+                >>> # call the controller
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # grab channel 0
+                >>> ch = kim.channel[0]
+                >>> # change the step rate to 2000 /s
+                >>> drive_params = ch.drive_op_parameters
+                >>> drive_params[1] = 2000
+                >>> ch.drive_op_parameters = drive_params
+            """
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_REQ_PARAMS,
+                param1=0x07,
+                param2=self._idx_chan,
+                dest=self._apt.destination,
+                source=0x01,
+                data=None
+            )
+
+            resp = self._apt.querypacket(
+                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
+                expect_data_len=14)
+
+            # unpack
+            ret_val = struct.unpack('<HHHll', resp.data)
+            ret_val = [ret_val[2], ret_val[3], ret_val[4]]
+
+            # set units and formats
+            ret_val = [
+                u.Quantity(int(ret_val[0]), u.V),
+                u.Quantity(int(ret_val[1]), 1/u.s),
+                u.Quantity(int(ret_val[2]), 1/u.s**2)
+            ]
+            return ret_val
+
+        @drive_op_parameters.setter
+        def drive_op_parameters(self, params):
+            if not isinstance(params, tuple) and not isinstance(params, list):
+                raise TypeError("Parameters must be given as list or tuple.")
+            if len(params) != 3:
+                raise ValueError("Parameters must be a list or tuple with "
+                                 "length 3.")
+
+            # ensure units
+            volt = int(assume_units(params[0], u.V).rescale(u.V).magnitude)
+            rate = int(assume_units(params[1], 1/u.s).rescale(1/u.s).magnitude)
+            accl = int(assume_units(params[2], 1/u.s**2).rescale(
+                1/u.s**2
+            ).magnitude)
+
+            # check parameters
+            if volt < 85 or volt > 125:
+                raise ValueError("The voltage ({} V) is out of range. It must "
+                                 "be between 85 V and 125 V.".format(volt))
+            if rate < 1 or rate > 2000:
+                raise ValueError("The step rate ({} /s) is out of range. It "
+                                 "must be between 1 /s and 2,000 /s."
+                                 .format(rate))
+
+            if accl < 1 or accl > 100000:
+                raise ValueError("The acceleration ({} /s/s) is out of range. "
+                                 "It must be between 1 /s/s and 100,000 /s/s."
+                                 .format(accl))
+
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_SET_PARAMS,
+                param1=None,
+                param2=None,
+                dest=self._apt.destination,
+                source=0x01,
+                data=struct.pack('<HHHll', 0x07, self._idx_chan, volt, rate,
+                                 accl)
+            )
+            self._apt.sendpacket(pkt)
+
+        @property
+        def enabled_single(self):
+            """Get / Set single axis enabled.
+
+            .. note:: Enabling multi channels for KIM101 is defined in
+            the controller class.
+
+            :return: Axis status enabled.
+            :rtype: bool
+
+            :raises TypeError: Invalid controller for this command.
+
+            Example for a KIM101 controller:
+                >>> import instruments as ik
+                >>> # call the controller
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # grab channel 0
+                >>> ch = kim.channel[0]
+                >>> # enable channel 0
+                >>> ch.enabled_single = True
+            """
+            if self._apt.model_number[0:3] != 'KIM':
+                raise("This command is only valid with KIM001 and "
+                      "KIM101 controllers. Your controller is a {}."
+                      .format(self._apt.model_number))
+
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_REQ_PARAMS,
+                param1=0x2B,
+                param2=self._idx_chan,
+                dest=self._apt.destination,
+                source=0x01,
+                data=None
+            )
+
+            resp = self._apt.querypacket(
+                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
+                expect_data_len=4)
+
+            ret_val = struct.unpack('<HH', resp.data)[1] == \
+                      self._idx_chan
+
+            return ret_val
+
+        @enabled_single.setter
+        def enabled_single(self, newval):
+            if self._apt.model_number[0:3] != 'KIM':
+                raise TypeError("This command is only valid with "
+                                "KIM001 and KIM101 controllers. Your "
+                                "controller is a {}."
+                                .format(self._apt.model_number))
+
+            param = self._idx_chan if newval else 0x00
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_SET_PARAMS,
+                param1=None,
+                param2=None,
+                dest=self._apt.destination,
+                source=0x01,
+                data=struct.pack('<HH', 0x2B, param)
+            )
+            self._apt.sendpacket(pkt)
+
+        @property
+        def jog_parameters(self):
+            """Get / Set the jog parameters.
+
+            Define the speed and acceleration of moves initiated in the
+            following ways:
+            - By clicking the jog buttons on the GUI panel
+            - By moving the joystick on the unit when ‘Jog Mode’ is
+            selected.
+            - via software using the MoveJog method.
+
+            It differs from the normal motor jog message in that there
+            are two jog step sizes, one for forward and one for reverse.
+            The reason for this is that due to the inherent nature of
+            the PIA actuators going further in one direction as
+            compared with another this will allow the user to
+            potentially make adjustments to get fore and aft movement
+            the same or similar.
+
+            :setter: The setter must be be given as a list of 5
+                entries. The three entries are:
+                - Jog Mode (1 for continuus, i.e., until stop command
+                is issued, or 2 jog by the number of steps defined)
+                - Jog Step Size Forward: Range 1 - 2000
+                - Jog Step Size Backward: Range 1 - 2000
+                The piezo motor moves by ramping up the drive
+                voltage to the value set in the MaxVoltage parameter
+                and then dropping quickly to zero, then repeating.
+                One cycle is termed a step. This parameter specifies
+                the velocity to move when a command is initiated.
+                The step rate is specified in steps/sec, in the range 1
+                to 2,000. Unitful, if no unit given, 1 / sec assumed.
+                - Jog Step Acceleration:
+                This parameter specifies the acceleration up to the
+                step rate, in the range 1 to 100,000 cycles/sec/sec.
+                Unitful, if no unit given, 1/sec**2 assumed.
+
+            :return: List with the jog parameters.
+
+            :raises TypeError: The setter was not a list or tuple.
+            :raises ValueError: The setter was not given a tuple with
+                three values.
+            :raises ValueError: One of the parameters was out of range.
+            :raises TypeError: Invalid controller for this command.
+
+            Example for a KIM101 controller:
+                >>> import instruments as ik
+                >>> import instruments.units as u
+                >>> # call the controller
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # grab channel 0
+                >>> ch = kim.channel[0]
+                >>> # set jog parameters
+                >>> mode = 2  # only move by set step size
+                >>> step = 100  # step size
+                >>> rate = u.Quantity(1000, 1/u.s)  # step rate
+                >>> # if no quantity given, SI units assumed
+                >>> accl = 10000
+                >>> ch.jog_parameters = [mode, step, step, rate, accl]
+                >>> ch.jog_parameters
+                [2, 100, 100, array(1000) * 1/s, array(10000) * 1/s**2]
+            """
+            if self._apt.model_number[0:3] != 'KIM':
+                raise TypeError("This command is only valid with "
+                                "KIM001 and KIM101 controllers. Your "
+                                "controller is a {}."
+                                .format(self._apt.model_number))
+
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_REQ_PARAMS,
+                param1=0x2D,
+                param2=self._idx_chan,
+                dest=self._apt.destination,
+                source=0x01,
+                data=None
+            )
+
+            resp = self._apt.querypacket(
+                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
+                expect_data_len=22)
+
+            # unpack response
+            ret_val = struct.unpack('<HHHllll', resp.data)
+            ret_val = [ret_val[2], ret_val[3], ret_val[4], ret_val[5],
+                       ret_val[6]]
+
+            # assign the appropriate units, forms
+            ret_val = [
+                int(ret_val[0]),
+                int(ret_val[1]),
+                int(ret_val[2]),
+                u.Quantity(int(ret_val[3]), 1/u.s),
+                u.Quantity(int(ret_val[4]), 1 / u.s**2)
+            ]
+
+            return ret_val
+
+        @jog_parameters.setter
+        def jog_parameters(self, params):
+            if self._apt.model_number[0:3] != 'KIM':
+                raise TypeError("This command is only valid with "
+                                "KIM001 and KIM101 controllers. Your "
+                                "controller is a {}."
+                                .format(self._apt.model_number))
+
+            if not isinstance(params, tuple) and not isinstance(params, list):
+                raise TypeError("Parameters must be given as list or tuple.")
+            if len(params) != 5:
+                raise ValueError("Parameters must be a list or tuple with "
+                                 "length 5.")
+
+            # ensure units
+            mode = int(params[0])
+            steps_fwd = int(params[1])
+            steps_bkw = int(params[2])
+            rate = int(assume_units(params[3], 1/u.s).rescale(1/u.s).magnitude)
+            accl = int(assume_units(params[4], 1/u.s**2).rescale(
+                1/u.s**2
+            ).magnitude)
+
+            # check parameters
+            if mode != 1 and mode != 2:
+                raise ValueError("The mode ({}) must be either set to 1 "
+                                 "(continuus) or 2 (steps).".format(mode))
+            if steps_fwd < 1 or steps_fwd > 2000:
+                raise ValueError("The steps forward ({}) are out of range. It "
+                                 "must be between 1 and 2,000."
+                                 .format(steps_fwd))
+            if steps_bkw < 1 or steps_bkw > 2000:
+                raise ValueError("The steps backward ({}) are out of range. "
+                                 "It must be between 1 and 2,000."
+                                 .format(steps_bkw))
+            if rate < 1 or rate > 2000:
+                raise ValueError("The step rate ({} /s) is out of range. It "
+                                 "must be between 1 /s and 2,000 /s."
+                                 .format(rate))
+            if accl < 1 or accl > 100000:
+                raise ValueError("The acceleration ({} /s/s) is out of range. "
+                                 "It must be between 1 /s/s and 100,000 /s/s."
+                                 .format(accl))
+
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_SET_PARAMS,
+                param1=None,
+                param2=None,
+                dest=self._apt.destination,
+                source=0x01,
+                data=struct.pack('<HHHllll', 0x2D, self._idx_chan, mode,
+                                 steps_fwd, steps_bkw, rate, accl)
+            )
+            self._apt.sendpacket(pkt)
+
+        @property
+        def position_count(self):
+            """Get/Set the position count of a given channel.
+
+            :setter pos: Position (steps) of axis.
+            :type pos: int
+
+            :return: Position (steps) of axis.
+            :rtype: int
+
+            Example:
+                >>> import instruments as ik
+                >>> # call the controller
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # grab channel 0
+                >>> ch = kim.channel[0]
+                >>> # set position count to zero
+                >>> ch.position_count = 0
+                >>> ch.position_count
+                0
+            """
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_REQ_PARAMS,
+                param1=0x05,
+                param2=self._idx_chan,
+                dest=self._apt.destination,
+                source=0x01,
+                data=None
+            )
+
+            resp = self._apt.querypacket(
+                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
+                expect_data_len=12)
+
+            ret_val = int(struct.unpack('<HHll', resp.data)[2])
+
+            return ret_val
+
+        @position_count.setter
+        def position_count(self, pos):
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_SET_PARAMS,
+                param1=None,
+                param2=None,
+                dest=self._apt.destination,
+                source=0x01,
+                data=struct.pack('<HHll', 0x05, self._idx_chan, pos, 0x00)
+            )
+            self._apt.sendpacket(pkt)
+
+        # METHODS #
+
+        def move_abs(self, pos):
+            """
+            Moves the axis to a position specified as the number of
+            steps away from the zero position.
+
+            To set the moving parameters, use the setter for
+            `drive_op_parameters`.
+
+            :param pos: Position to move to, in steps.
+            :type pos: int
+
+            Example:
+                >>> import instruments as ik
+                >>> # call the controller
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # grab channel 0
+                >>> ch = kim.channel[0]
+                >>> # move to 314 steps
+                >>> ch.move_abs(314)
+            """
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_MOVE_ABSOLUTE,
+                param1=None,
+                param2=None,
+                dest=self._apt.destination,
+                source=0x01,
+                data=struct.pack('<Hl', self._idx_chan, pos)
+
+            )
+            self._apt.sendpacket(pkt)
+
+        def move_jog(self, direction='fwd'):
+            """
+            Jogs the axis in forward or backward direction by the number
+            of steps that are stored in the controller.
+
+            To set the moving parameters, use the setter for
+            `jog_parameters`.
+
+            :param str direction: Direction of jog. 'fwd' for forward,
+                'rev' for backward. 'fwd' if invalid argument given
+
+            Example:
+                >>> import instruments as ik
+                >>> # call the controller
+                >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # grab channel 0
+                >>> ch = kim.channel[0]
+                >>> # set jog parameters
+                >>> params = ch.jog_parameters
+                >>> params[0] = 2  # move by number of steps
+                >>> params[1] = 100  # step size forward
+                >>> params[2] = 200  # step size reverse
+                >>> ch.jog_parameters = params  # set parameters
+                >>> # jog forward (default)
+                >>> ch.move_jog()
+                >>> # jog reverse
+                >>> ch.move_jog('rev')
+            """
+            if direction == 'rev':
+                param2 = 0x02
+            else:
+                param2 = 0x01
+
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_MOVE_JOG,
+                param1=self._idx_chan,
+                param2=param2,
+                dest=self._apt.destination,
+                source=0x01,
+                data=None
+            )
+            self._apt.sendpacket(pkt)
+
+        def move_jog_stop(self):
+            """Stops the current motor movement.
+
+            Stop a jog command. The regular motor move stop command does
+            not work for jogging. This command somehow does...
+
+            .. note:: This information is quite empirical. It would
+                only be really needed if jogging parameters are set to
+                continuous. The safer method is to set the step range.
+            """
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.PZMOT_MOVE_JOG,
+                param1=self._idx_chan,
+                param2=0x00,
+                dest=self._apt.destination,
+                source=0x01,
+                data=None
+            )
+
+            self._apt.sendpacket(pkt)
+
+    _channel_type = PiezoChannel
+
+    # PROPERTIES #
+
+    @property
+    def enabled_multi(self):
+        """Enable / Query mulitple channel mode.
+
+        For KIM101 controller, where multiple axes can be selected
+        simultaneously (i. e., for a mirror mount).
+
+        :setter mode: Channel pair to be activated.
+            0:  All channels deactivated
+            1:  First channel pair activated (channel 0 & 1)
+            2:  Second channel pair activated (channel 2 & 3)
+        :type mode: int
+
+        :return: The selected mode:
+            0 - multi-channel selection disabled
+            1 - Channel 0 & 1 enabled
+            2 - Channel 2 & 3 enabled
+        :rtype: int
+
+        :raises ValueError: No valid channel pair selected
+        :raises TypeError: Invalid controller for this command.
+
+        Example:
+            >>> import instruments as ik
+            >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
+            >>> # activate the first two channels
+            >>> kim.enabled_multi = 1
+            >>> # read back
+            >>> kim.enabled_multi
+            1
+        """
+        if self.model_number != 'KIM101':
+            raise TypeError("This command is only valid with "
+                            "a KIM101 controller. Your "
+                            "controller is a {}."
+                            .format(self.model_number))
+
+        pkt = _packets.ThorLabsPacket(
+            message_id=_cmds.ThorLabsCommands.PZMOT_REQ_PARAMS,
+            param1=0x2B,
+            param2=0x00,
+            dest=self.destination,
+            source=0x01,
+            data=None
+        )
+
+        resp = self.querypacket(pkt,
+                                expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
+                                expect_data_len=4)
+
+        ret_val = int(struct.unpack('<HH', resp.data)[1])
+
+        if ret_val == 5:
+            return 1
+        elif ret_val == 6:
+            return 2
+        else:
+            return 0
+
+    @enabled_multi.setter
+    def enabled_multi(self, mode):
+        if self.model_number != 'KIM101':
+            raise TypeError("This command is only valid with "
+                            "a KIM101 controller. Your "
+                            "controller is a {}."
+                            .format(self.model_number))
+
+        if mode == 0:
+            param = 0x00
+        elif mode == 1:
+            param = 0x05
+        elif mode == 2:
+            param = 0x06
+        else:
+            raise ValueError("Please select a valid mode: 0 - all "
+                             "disabled, 1 - Channel 1 & 2 enabled, "
+                             "2 - Channel 3 & 4 enabled.")
+
+        pkt = _packets.ThorLabsPacket(
+            message_id=_cmds.ThorLabsCommands.PZMOT_SET_PARAMS,
+            param1=None,
+            param2=None,
+            dest=self.destination,
+            source=0x01,
+            data=struct.pack('<HH', 0x2B, param)
+        )
+
+        self.sendpacket(pkt)
 
 
 class APTPiezoStage(APTPiezoDevice):
@@ -428,7 +1054,28 @@ class APTStrainGaugeReader(APTPiezoDevice):
 class APTMotorController(ThorLabsAPT):
 
     """
-    Class representing a Thorlabs APT motor controller
+    Class representing a Thorlabs APT motor controller.
+
+    .. note:: A motor model must be selected in order to use unitful
+        distances.
+
+    Example:
+        >>> import instruments as ik
+        >>> import instruments.units as u
+
+        >>> # load the controller, a KDC101 cube
+        >>> kdc = ik.thorlabs.APTMotorController.open_serial("/dev/ttyUSB0", baud=115200)
+        >>> # assign a channel to `ch`
+        >>> ch = kdc.channel[0]
+        >>> # select the stage that is connected to the controller
+        >>> ch.motor_model = 'PRM1-Z8'  # a rotation stage
+
+        >>> # home the stage
+        >>> ch.go_home()
+        >>> # move to 52 degrees absolute position
+        >>> ch.move(u.Quantity(52, u.deg))
+        >>> # move 10 degrees back from current position
+        >>> ch.move(u.Quantity(-10, u.deg), absolute=False)
     """
 
     class MotorChannel(ThorLabsAPT.APTChannel):
@@ -623,7 +1270,9 @@ class APTMotorController(ThorLabsAPT):
                 data=None
             )
             response = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER)
+                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER,
+                expect_data_len=6
+            )
             # chan, pos
             _, pos = struct.unpack('<Hl', response.data)
             return u.Quantity(pos, 'counts') / self.scale_factors[0]
@@ -645,7 +1294,8 @@ class APTMotorController(ThorLabsAPT):
                 data=None
             )
             response = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_ENCCOUNTER)
+                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_ENCCOUNTER,
+                expect_data_len=6)
             # chan, pos
             _, pos = struct.unpack('<Hl', response.data)
             return u.Quantity(pos, 'counts')
@@ -682,6 +1332,23 @@ class APTMotorController(ThorLabsAPT):
             :param bool absolute: Specify if the position is a relative or
                 absolute position. ``True`` means absolute, while ``False``
                 is for a relative move.
+
+            Example:
+                >>> import instruments as ik
+                >>> import instruments.units as u
+
+                >>> # load the controller, a KDC101 cube
+                >>> kdc = ik.thorlabs.APTMotorController.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # assign a channel to `ch`
+                >>> ch = kdc.channel[0]
+                >>> # select the stage that is connected to the controller
+                >>> ch.motor_model = 'PRM1-Z8'  # a rotation stage
+
+                >>> # move to 32 degrees absolute position
+                >>> ch.move(u.Quantity(32, u.deg))
+
+                >>> # move 10 degrees forward from current position
+                >>> ch.move(u.Quantity(10, u.deg), absolute=False)
             """
             # Handle units as follows:
             # 1. Treat raw numbers as encoder counts.

@@ -223,6 +223,67 @@ def test_active_trace():
         assert inst.active_trace == inst.Traces.G
 
 
+# METHODS #
+
+
+@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False),
+                       min_size=1))
+def test_data_active_trace(values):
+    """Get data from active trace - method."""
+    values_packed = b"".join(struct.pack("<d", value) for value in values)
+    values_len = str(len(values_packed)).encode()
+    values_len_of_len = str(len(values_len)).encode()
+    channel = "TRA"  # active trace
+    with expected_protocol(
+            ik.yokogawa.Yokogawa6370,
+            [
+                ":FORMat:DATA REAL,64",
+                ":TRAC:Y? {}".format(channel),
+                ":TRAC:ACTIVE?",
+                ":TRAC:Y? {}".format(channel)
+            ],
+            [
+                b"#" + values_len_of_len + values_len + values_packed,
+                channel,
+                b"#" + values_len_of_len + values_len + values_packed
+            ]
+    ) as inst:
+        # data by channel
+        data_call_by_trace = inst.channel[channel].data()
+        # call active trace data
+        data_active_trace = inst.data()
+        assert (data_call_by_trace == data_active_trace).all()
+
+
+@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False),
+                       min_size=1))
+def test_wavelength_active_trace(values):
+    """Get wavelength from active trace - method."""
+    values_packed = b"".join(struct.pack("<d", value) for value in values)
+    values_len = str(len(values_packed)).encode()
+    values_len_of_len = str(len(values_len)).encode()
+    channel = "TRA"  # active trace
+    with expected_protocol(
+            ik.yokogawa.Yokogawa6370,
+            [
+                ":FORMat:DATA REAL,64",
+                ":TRAC:X? {}".format(channel),
+                ":TRAC:ACTIVE?",
+                ":TRAC:X? {}".format(channel)
+            ],
+            [
+                b"#" + values_len_of_len + values_len + values_packed,
+                channel,
+                b"#" + values_len_of_len + values_len + values_packed
+            ]
+    ) as inst:
+        # data by channel
+        data_call_by_trace = inst.channel[channel].wavelength()
+        # call active trace data
+        data_active_trace = inst.wavelength()
+        assert (data_call_by_trace == data_active_trace).all()
+
+
 def test_start_sweep():
     with expected_protocol(
             ik.yokogawa.Yokogawa6370,

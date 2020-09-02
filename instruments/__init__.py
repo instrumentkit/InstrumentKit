@@ -27,6 +27,7 @@ from . import qubitekk
 from . import rigol
 from . import srs
 from . import tektronix
+from . import teledyne
 from . import thorlabs
 from . import toptica
 from . import yokogawa
