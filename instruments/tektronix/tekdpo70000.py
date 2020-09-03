@@ -372,7 +372,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             inst_false="OFF"
         )
 
-        spectral_mag = unitful_property(
+        spectral_mag = enum_property(
             "SPEC:MAG",
             Mag,
             doc="""
@@ -380,9 +380,9 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             """
         )
 
-        spectral_phase = unitful_property(
+        spectral_phase = enum_property(
             "SPEC:PHASE",
-            Mag,
+            Phase,
             doc="""
             Whether the spectral phase is degrees, radians, or group delay.
             """
