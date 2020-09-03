@@ -799,8 +799,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
         # Some Tek scopes require this after the DAT:SOU command, or else
         # they will stop responding.
-        if not self._testing:
-            time.sleep(0.02)
+        time.sleep(0.02)
 
     horiz_acq_duration = unitful_property(
         'HOR:ACQDURATION',

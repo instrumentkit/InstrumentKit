@@ -6,9 +6,8 @@ Tests for the Tektronix DPO 70000 oscilloscope.
 
 # IMPORTS #####################################################################
 
-
 import struct
-import timeit
+import time
 
 from hypothesis import (
     given,
@@ -1509,9 +1508,13 @@ valid_math_range = [it for it in range(4)]
 
 
 @pytest.mark.parametrize("no", valid_math_range)
-def test_data_source_math(no):
+def test_data_source_math(no, mocker):
     """Get / set math as data source."""
     math_name = f"MATH{no + 1}"
+
+    # patch call to time.sleep with mock
+    mock_time = mocker.patch.object(time, 'sleep', return_value=None)
+
     with expected_protocol(
             ik.tektronix.TekDPO70000,
             [
@@ -1525,6 +1528,9 @@ def test_data_source_math(no):
         math = inst.math[no]
         inst.data_source = math
         assert inst.data_source == math
+
+        # assert that time.sleep has been called
+        mock_time.assert_called()
 
 
 def test_data_source_ref_not_implemented_error():
@@ -1578,28 +1584,6 @@ def test_data_source_invalid_type():
         exc_msg = exc_info.value.args[0]
         assert exc_msg == f"{type(invalid_data_source)} is not a valid data " \
                           f"source."
-
-
-def test_data_source_delay():
-    """When not in testing environment, ensure minimum time to set."""
-    channel_no = 0
-    channel_name = f"CH{channel_no + 1}"
-    repeats = 20
-    with expected_protocol(
-            ik.tektronix.TekDPO70000,
-            [
-                f"DAT:SOU {channel_name}\n"*repeats
-            ],
-            [
-            ],
-            sep=""  # separator added manually to ensure repeats
-    ) as inst:
-        inst._testing = False
-        delta_t = timeit.timeit('inst.data_source = inst.channel[channel_no]',
-                                number=repeats,
-                                globals={"inst": inst,
-                                         "channel_no": channel_no})
-        assert delta_t > 0.02
 
 
 @given(value=st.floats(min_value=0, max_value=1000))
