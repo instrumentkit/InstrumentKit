@@ -77,10 +77,6 @@ def test_data_source_name(channel):
         assert inst.channel[channel].name == f"CH{channel+1}"
 
 
-@pytest.mark.skip(reason="Proper binary data result in an issue when reading "
-                         "the next variable because the "
-                         "loopback_communicator does not flush the input "
-                         "properly!")
 @pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(values=st.lists(st.integers(min_value=-2147483648,
                                    max_value=2147483647), min_size=1))
@@ -140,78 +136,8 @@ def test_data_source_read_waveform(channel, values):
 
 
 @pytest.mark.parametrize("channel", [it for it in range(4)])
-@given(values=st.lists(st.integers(min_value=0, max_value=127), min_size=1))
-def test_data_source_read_waveform_ugly(channel, values):
-    """Read waveform from data source, binary format only!
-
-    FIXME: This is the ugly version of the test, see below.
-    """
-    # select one set to test for:
-    binary_format = ik.tektronix.TekDPO70000.BinaryFormat.int  # go w/ values
-    byte_order = ik.tektronix.TekDPO70000.ByteOrder.big_endian
-    n_bytes = 4
-    # get the dtype
-    dtype_set = ik.tektronix.TekDPO70000._dtype(binary_format, byte_order,
-                                                n_bytes)
-
-    # pack the values
-    # FIXME: values are very limited due to work around with unicode decoding
-    values_packed = b"".join(struct.pack(dtype_set[:-1],
-                                         value) for value in values)
-    values_len = str(len(values_packed))
-    values_len_of_len = str(len(values_len))
-    values = np.array(values)
-    # scale the values
-    scale = 1.
-    position = 0.
-    offset = 0.
-    scaled_values = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
-                             values.astype(float) / (2**15) - position
-                             ) + offset
-
-    # run through the instrument
-    with expected_protocol(
-            ik.tektronix.TekDPO70000,
-            [
-                "DAT:SOU?",  # query data source
-                "DAT:ENC FAS",  # fastest encoding
-                "WFMO:BYT_N?",  # get n_bytes
-                "WFMO:BN_F?",  # outgoing binary format
-                "WFMO:BYT_O?",  # outgoing byte order
-                "CURV?",  # query data
-                f"CH{channel + 1}:SCALE?",  # scale raw data
-                f"CH{channel + 1}:POS?",
-                f"CH{channel + 1}:OFFS?"
-
-            ],
-            [
-                f"CH{channel+1}",
-                f"{n_bytes}",
-                f"{binary_format.value}",
-                f"{byte_order.value}",
-                # fixme: this is ugly! `loopback_communicator` just passes
-                # the `flush_input` call, thus need to connect to next variable
-                # without a separator
-                f"#{values_len_of_len + values_len + values_packed.decode()}"
-                f"{scale}",
-                f"{position}",
-                f"{offset}"
-            ]
-    ) as inst:
-        # query waveform
-        scaled_raw = inst.channel[channel].read_waveform()
-        np.testing.assert_equal(scaled_raw, scaled_values)
-
-
-@pytest.mark.parametrize("channel", [it for it in range(4)])
-def test_data_source_read_waveform_ugly_old_data_source(channel):
-    """Read waveform from data source, binary format only!
-
-    An old data source is defined here to test those cases.
-    FIXME: This test is analog to the one above. Needs fixing once the
-    '\n' character is properly flushed in the loopback_communicator or
-    the TekDPO7000 class is fixed.
-    """
+def test_data_source_read_waveform_with_old_data_source(channel):
+    """Read waveform from data, old data source present!"""
     # select one set to test for:
     binary_format = ik.tektronix.TekDPO70000.BinaryFormat.int  # go w/ values
     byte_order = ik.tektronix.TekDPO70000.ByteOrder.big_endian
@@ -222,11 +148,10 @@ def test_data_source_read_waveform_ugly_old_data_source(channel):
 
     # pack the values
     values = np.arange(10)
-    # fixme: values are very limited due to work around with unicode decoding
     values_packed = b"".join(struct.pack(dtype_set[:-1],
                                          value) for value in values)
-    values_len = str(len(values_packed))
-    values_len_of_len = str(len(values_len))
+    values_len = str(len(values_packed)).encode()
+    values_len_of_len = str(len(values_len)).encode()
     # scale the values
     scale = 1.
     position = 0.
@@ -242,8 +167,8 @@ def test_data_source_read_waveform_ugly_old_data_source(channel):
     with expected_protocol(
             ik.tektronix.TekDPO70000,
             [
-                "DAT:SOU?",  # query data source of parent
-                f"DAT:SOU CH{channel+1}",  # set current data source
+                "DAT:SOU?",  # query data source
+                f"DAT:SOU CH{channel + 1}",  # set current data source
                 "DAT:ENC FAS",  # fastest encoding
                 "WFMO:BYT_N?",  # get n_bytes
                 "WFMO:BN_F?",  # outgoing binary format
@@ -259,17 +184,12 @@ def test_data_source_read_waveform_ugly_old_data_source(channel):
                 f"{n_bytes}",
                 f"{binary_format.value}",
                 f"{byte_order.value}",
-                # fixme: this is ugly! `loopback_communicator` just passes
-                # the `flush_input` call, thus need to connect to next variable
-                # without a separator
-                f"#{values_len_of_len + values_len + values_packed.decode()}"
+                b"#" + values_len_of_len + values_len + values_packed,
                 f"{scale}",
                 f"{position}",
                 f"{offset}"
             ]
     ) as inst:
-        # set old data source
-        # inst.data_source = inst.math[0]
         # query waveform
         scaled_raw = inst.channel[channel].read_waveform()
         np.testing.assert_equal(scaled_raw, scaled_values)

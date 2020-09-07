@@ -190,12 +190,8 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
                 )
                 self._parent.sendcmd("CURV?")
                 raw = self._parent.binblockread(n_bytes, fmt=dtype)
-                # Clear the queue by trying to read.
-                # FIXME: this is a hack-y way of doing so.
-                if hasattr(self._parent._file, 'flush_input'):
-                    self._parent._file.flush_input()
-                else:
-                    self._parent._file.read()
+                # Clear the queue by reading the end of line character
+                self._parent._file.read_raw(1)
 
                 return self._scale_raw_data(raw)
 
