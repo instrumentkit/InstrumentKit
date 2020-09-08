@@ -295,8 +295,8 @@ def test_get_log_point(channel):
     unit = ik.srs.SRSCTC100._UNIT_NAMES[ch_name_unit_dict[channel]]
     values = (13, 42)
     which = "first"
-    values_out = u.Quantity(float(values[0]), u.ms), \
-                 u.Quantity(float(values[1]), unit)
+    values_out = (u.Quantity(float(values[0]), u.ms),
+                  u.Quantity(float(values[1]), unit))
     with expected_protocol(
             ik.srs.SRSCTC100,
             [
@@ -313,8 +313,8 @@ def test_get_log_point(channel):
             ]
     ) as inst:
         with inst._error_checking_disabled():
-            assert inst.channel[channel].get_log_point(which=which) == \
-                   values_out
+            assert (inst.channel[channel].get_log_point(which=which) ==
+                    values_out)
 
 
 def test_get_log_point_with_unit():
@@ -323,8 +323,8 @@ def test_get_log_point_with_unit():
     unit = ik.srs.SRSCTC100._UNIT_NAMES[ch_units[0]]
     values = (13, 42)
     which = "first"
-    values_out = u.Quantity(float(values[0]), u.ms), \
-                 u.Quantity(float(values[1]), unit)
+    values_out = (u.Quantity(float(values[0]), u.ms),
+                  u.Quantity(float(values[1]), unit))
     with expected_protocol(
             ik.srs.SRSCTC100,
             [
@@ -337,9 +337,9 @@ def test_get_log_point_with_unit():
             ]
     ) as inst:
         with inst._error_checking_disabled():
-            assert inst.channel[channel].get_log_point(which=which,
-                                                       units=unit) == \
-                   values_out
+            assert (inst.channel[channel].get_log_point(which=which,
+                                                        units=unit) ==
+                    values_out)
 
 
 @pytest.mark.parametrize("channel", ch_names)
