@@ -190,12 +190,8 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
                 )
                 self._parent.sendcmd("CURV?")
                 raw = self._parent.binblockread(n_bytes, fmt=dtype)
-                # Clear the queue by trying to read.
-                # FIXME: this is a hack-y way of doing so.
-                if hasattr(self._parent._file, 'flush_input'):
-                    self._parent._file.flush_input()
-                else:
-                    self._parent._file.read()
+                # Clear the queue by reading the end of line character
+                self._parent._file.read_raw(1)
 
                 return self._scale_raw_data(raw)
 
@@ -372,7 +368,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             inst_false="OFF"
         )
 
-        spectral_mag = unitful_property(
+        spectral_mag = enum_property(
             "SPEC:MAG",
             Mag,
             doc="""
@@ -380,9 +376,9 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             """
         )
 
-        spectral_phase = unitful_property(
+        spectral_phase = enum_property(
             "SPEC:PHASE",
-            Mag,
+            Phase,
             doc="""
             Whether the spectral phase is degrees, radians, or group delay.
             """
@@ -799,8 +795,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
         # Some Tek scopes require this after the DAT:SOU command, or else
         # they will stop responding.
-        if not self._testing:
-            time.sleep(0.02)
+        time.sleep(0.02)
 
     horiz_acq_duration = unitful_property(
         'HOR:ACQDURATION',
