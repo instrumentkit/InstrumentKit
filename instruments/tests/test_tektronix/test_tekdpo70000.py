@@ -64,9 +64,10 @@ def test_dtype(binary_format, byte_order, n_bytes):
 
 # DATA SOURCE - TESTED WITH CHANNELS #
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
-def test_data_source_name(channel):
+
+def test_data_source_name():
     """Query the name of a data source."""
+    channel = 0
     with expected_protocol(
             ik.tektronix.TekDPO70000,
             [
@@ -135,9 +136,9 @@ def test_data_source_read_waveform(channel, values):
         np.testing.assert_equal(scaled_raw, scaled_values)
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
-def test_data_source_read_waveform_with_old_data_source(channel):
+def test_data_source_read_waveform_with_old_data_source():
     """Read waveform from data, old data source present!"""
+    channel = 0  # multiple channels already tested above
     # select one set to test for:
     binary_format = ik.tektronix.TekDPO70000.BinaryFormat.int  # go w/ values
     byte_order = ik.tektronix.TekDPO70000.ByteOrder.big_endian
@@ -244,11 +245,11 @@ def test_math_query(math):
         assert inst.math[math].query(cmd) == answ
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.text(alphabet=st.characters(blacklist_characters="\n",
                                             blacklist_categories=('Cs',))))
-def test_math_define(math, value):
+def test_math_define(value):
     """Get / set a string operation from the Math mode."""
+    math = 0
     cmd = "DEF"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -264,10 +265,10 @@ def test_math_define(math, value):
         assert inst.math[math].define == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @pytest.mark.parametrize("value", ik.tektronix.TekDPO70000.Math.FilterMode)
-def test_math_filter_mode(math, value):
+def test_math_filter_mode(value):
     """Get / set filter mode."""
+    math = 0
     cmd = "FILT:MOD"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -283,10 +284,10 @@ def test_math_filter_mode(math, value):
         assert inst.math[math].filter_mode == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(min_value=0))
-def test_math_filter_risetime(math, value):
+def test_math_filter_risetime(value):
     """Get / set filter risetime."""
+    math = 0
     cmd = "FILT:RIS"
     value_unitful = u.Quantity(value, u.s)
     with expected_protocol(
@@ -305,11 +306,11 @@ def test_math_filter_risetime(math, value):
         assert inst.math[math].filter_risetime == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.text(alphabet=st.characters(blacklist_characters="\n",
                                             blacklist_categories=('Cs',))))
-def test_math_label(math, value):
+def test_math_label(value):
     """Get / set a label for the math channel."""
+    math = 0
     cmd = "LAB:NAM"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -325,11 +326,11 @@ def test_math_label(math, value):
         assert inst.math[math].label == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(min_value=-ik.tektronix.TekDPO70000.HOR_DIVS,
                        max_value=ik.tektronix.TekDPO70000.HOR_DIVS))
-def test_math_label_xpos(math, value):
+def test_math_label_xpos(value):
     """Get / set x position for label."""
+    math = 0
     cmd = "LAB:XPOS"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -345,11 +346,11 @@ def test_math_label_xpos(math, value):
         assert inst.math[math].label_xpos == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(min_value=-ik.tektronix.TekDPO70000.VERT_DIVS,
                        max_value=ik.tektronix.TekDPO70000.VERT_DIVS))
-def test_math_label_ypos(math, value):
+def test_math_label_ypos(value):
     """Get / set y position for label."""
+    math = 0
     cmd = "LAB:YPOS"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -365,10 +366,10 @@ def test_math_label_ypos(math, value):
         assert inst.math[math].label_ypos == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.integers(min_value=0))
-def test_math_num_avg(math, value):
+def test_math_num_avg(value):
     """Get / set number of averages."""
+    math = 0
     cmd = "NUMAV"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -384,10 +385,10 @@ def test_math_num_avg(math, value):
         assert inst.math[math].num_avg == pytest.approx(value)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(min_value=0))
-def test_math_spectral_center(math, value):
+def test_math_spectral_center(value):
     """Get / set spectral center."""
+    math = 0
     cmd = "SPEC:CENTER"
     value_unitful = u.Quantity(value, u.Hz)
     with expected_protocol(
@@ -406,10 +407,10 @@ def test_math_spectral_center(math, value):
         assert inst.math[math].spectral_center == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(allow_nan=False))
-def test_math_spectral_gatepos(math, value):
+def test_math_spectral_gatepos(value):
     """Get / set gate position."""
+    math = 0
     cmd = "SPEC:GATEPOS"
     value_unitful = u.Quantity(value, u.s)
     with expected_protocol(
@@ -428,10 +429,10 @@ def test_math_spectral_gatepos(math, value):
         assert inst.math[math].spectral_gatepos == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(allow_nan=False))
-def test_math_spectral_gatewidth(math, value):
+def test_math_spectral_gatewidth(value):
     """Get / set gate width."""
+    math = 0
     cmd = "SPEC:GATEWIDTH"
     value_unitful = u.Quantity(value, u.s)
     with expected_protocol(
@@ -450,10 +451,10 @@ def test_math_spectral_gatewidth(math, value):
         assert inst.math[math].spectral_gatewidth == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @pytest.mark.parametrize("value", [True, False])
-def test_math_spectral_lock(math, value):
+def test_math_spectral_lock(value):
     """Get / set spectral lock."""
+    math = 0
     cmd = "SPEC:LOCK"
     value_io = "ON" if value else "OFF"
     with expected_protocol(
@@ -470,10 +471,10 @@ def test_math_spectral_lock(math, value):
         assert inst.math[math].spectral_lock == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @pytest.mark.parametrize("value", ik.tektronix.TekDPO70000.Math.Mag)
-def test_math_spectral_mag(math, value):
+def test_math_spectral_mag(value):
     """Get / set spectral magnitude scaling."""
+    math = 0
     cmd = "SPEC:MAG"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -489,10 +490,10 @@ def test_math_spectral_mag(math, value):
         assert inst.math[math].spectral_mag == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @pytest.mark.parametrize("value", ik.tektronix.TekDPO70000.Math.Phase)
-def test_math_spectral_phase(math, value):
+def test_math_spectral_phase(value):
     """Get / set spectral phase unit."""
+    math = 0
     cmd = "SPEC:PHASE"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -508,10 +509,10 @@ def test_math_spectral_phase(math, value):
         assert inst.math[math].spectral_phase == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(allow_nan=False))
-def test_math_spectral_reflevel(math, value):
+def test_math_spectral_reflevel(value):
     """Get / set spectral reference level."""
+    math = 0
     cmd = "SPEC:REFL"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -527,10 +528,10 @@ def test_math_spectral_reflevel(math, value):
         assert inst.math[math].spectral_reflevel == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(allow_nan=False))
-def test_math_spectral_reflevel_offset(math, value):
+def test_math_spectral_reflevel_offset(value):
     """Get / set spectral reference level offset."""
+    math = 0
     cmd = "SPEC:REFLEVELO"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -546,10 +547,10 @@ def test_math_spectral_reflevel_offset(math, value):
         assert inst.math[math].spectral_reflevel_offset == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(min_value=0))
-def test_math_spectral_resolution_bandwidth(math, value):
+def test_math_spectral_resolution_bandwidth(value):
     """Get / set spectral resolution bandwidth."""
+    math = 0
     cmd = "SPEC:RESB"
     value_unitful = u.Quantity(value, u.Hz)
     with expected_protocol(
@@ -569,10 +570,10 @@ def test_math_spectral_resolution_bandwidth(math, value):
                pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(min_value=0))
-def test_math_spectral_span(math, value):
+def test_math_spectral_span(value):
     """Get / set frequency span of output data vector."""
+    math = 0
     cmd = "SPEC:SPAN"
     value_unitful = u.Quantity(value, u.Hz)
     with expected_protocol(
@@ -591,10 +592,10 @@ def test_math_spectral_span(math, value):
         assert inst.math[math].spectral_span == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(allow_nan=False))
-def test_math_spectral_suppress(math, value):
+def test_math_spectral_suppress(value):
     """Get / set spectral suppression value."""
+    math = 0
     cmd = "SPEC:SUPP"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -610,10 +611,10 @@ def test_math_spectral_suppress(math, value):
         assert inst.math[math].spectral_suppress == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @pytest.mark.parametrize("value", [True, False])
-def test_math_spectral_unwrap(math, value):
+def test_math_spectral_unwrap(value):
     """Get / set phase wrapping."""
+    math = 0
     cmd = "SPEC:UNWR"
     value_io = "ON" if value else "OFF"
     with expected_protocol(
@@ -630,10 +631,10 @@ def test_math_spectral_unwrap(math, value):
         assert inst.math[math].spectral_unwrap == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @pytest.mark.parametrize("value", ik.tektronix.TekDPO70000.Math.SpectralWindow)
-def test_math_spectral_window(math, value):
+def test_math_spectral_window(value):
     """Get / set spectral window."""
+    math = 0
     cmd = "SPEC:WIN"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -649,10 +650,10 @@ def test_math_spectral_window(math, value):
         assert inst.math[math].spectral_window == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(min_value=0))
-def test_math_threshold(math, value):
+def test_math_threshold(value):
     """Get / set threshold of math channel."""
+    math = 0
     cmd = "THRESH"
     value_unitful = u.Quantity(value, u.V)
     with expected_protocol(
@@ -671,11 +672,11 @@ def test_math_threshold(math, value):
         assert inst.math[math].threshhold == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.text(alphabet=st.characters(blacklist_characters="\n",
                                             blacklist_categories=('Cs',))))
-def test_math_units(math, value):
+def test_math_units(value):
     """Get / set a label for the units."""
+    math = 0
     cmd = "UNITS"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -691,10 +692,10 @@ def test_math_units(math, value):
         assert inst.math[math].unit_string == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @pytest.mark.parametrize("value", [True, False])
-def test_math_autoscale(math, value):
+def test_math_autoscale(value):
     """Get / set if autoscale is enabled."""
+    math = 0
     cmd = "VERT:AUTOSC"
     value_io = "ON" if value else "OFF"
     with expected_protocol(
@@ -711,11 +712,11 @@ def test_math_autoscale(math, value):
         assert inst.math[math].autoscale == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(min_value=-ik.tektronix.TekDPO70000.VERT_DIVS / 2,
                        max_value=ik.tektronix.TekDPO70000.VERT_DIVS / 2))
-def test_math_position(math, value):
+def test_math_position(value):
     """Get / set spectral vertical position from center."""
+    math = 0
     cmd = "VERT:POS"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -731,10 +732,10 @@ def test_math_position(math, value):
         assert inst.math[math].position == value
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.floats(min_value=0))
-def test_math_scale(math, value):
+def test_math_scale(value):
     """Get / set scale in volts per division."""
+    math = 0
     cmd = "VERT:SCALE"
     value_unitful = u.Quantity(value, u.V)
     with expected_protocol(
@@ -753,11 +754,11 @@ def test_math_scale(math, value):
         assert inst.math[math].scale == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
 @given(value=st.lists(st.floats(min_value=-2147483648, max_value=2147483647),
                       min_size=1))
-def test_math_scale_raw_data(math, value):
+def test_math_scale_raw_data(value):
     """Return scaled raw data according to current settings."""
+    math = 0
     scale = 1.
     position = -2.3
     value = np.array(value)
@@ -827,10 +828,10 @@ def test_channel_query(channel):
         assert inst.channel[channel].query(cmd) == answ
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @pytest.mark.parametrize("value", ik.tektronix.TekDPO70000.Channel.Coupling)
-def test_channel_coupling(channel, value):
+def test_channel_coupling(value):
     """Get / set channel coupling."""
+    channel = 0
     cmd = "COUP"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -846,13 +847,13 @@ def test_channel_coupling(channel, value):
         assert inst.channel[channel].coupling == value
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(value=st.floats(min_value=0, max_value=30e9))
-def test_channel_bandwidth(channel, value):
+def test_channel_bandwidth(value):
     """Get / set bandwidth of a channel.
 
     Test unitful and unitless setting.
     """
+    channel = 0
     cmd = "BAN"
     value_unitful = u.Quantity(value, u.Hz)
     with expected_protocol(
@@ -871,13 +872,13 @@ def test_channel_bandwidth(channel, value):
         assert inst.channel[channel].bandwidth == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(value=st.floats(min_value=-25e-9, max_value=25e-9))
-def test_channel_deskew(channel, value):
+def test_channel_deskew(value):
     """Get / set deskew time.
 
     Test unitful and unitless setting.
     """
+    channel = 0
     cmd = "DESK"
     value_unitful = u.Quantity(value, u.s)
     with expected_protocol(
@@ -896,14 +897,14 @@ def test_channel_deskew(channel, value):
         assert inst.channel[channel].deskew == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @pytest.mark.parametrize("value", [50, 1000000])
-def test_channel_termination(channel, value):
+def test_channel_termination(value):
     """Get / set termination of channel.
 
     Valid values are 50 Ohm or 1 MOhm. Try setting unitful and
     unitless.
     """
+    channel = 0
     cmd = "TERM"
     value_unitful = u.Quantity(value, u.Ohm)
     with expected_protocol(
@@ -923,11 +924,11 @@ def test_channel_termination(channel, value):
                pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(value=st.text(alphabet=st.characters(blacklist_characters="\n",
                                             blacklist_categories=('Cs',))))
-def test_channel_label(channel, value):
+def test_channel_label(value):
     """Get / set human readable label for channel."""
+    channel = 0
     cmd = "LAB:NAM"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -943,11 +944,11 @@ def test_channel_label(channel, value):
         assert inst.channel[channel].label == value
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(value=st.floats(min_value=-ik.tektronix.TekDPO70000.HOR_DIVS,
                        max_value=ik.tektronix.TekDPO70000.HOR_DIVS))
-def test_channel_label_xpos(channel, value):
+def test_channel_label_xpos(value):
     """Get / set x position for label."""
+    channel = 0
     cmd = "LAB:XPOS"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -963,11 +964,11 @@ def test_channel_label_xpos(channel, value):
         assert inst.channel[channel].label_xpos == value
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(value=st.floats(min_value=-ik.tektronix.TekDPO70000.VERT_DIVS,
                        max_value=ik.tektronix.TekDPO70000.VERT_DIVS))
-def test_channel_label_ypos(channel, value):
+def test_channel_label_ypos(value):
     """Get / set y position for label."""
+    channel = 0
     cmd = "LAB:YPOS"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -983,10 +984,10 @@ def test_channel_label_ypos(channel, value):
         assert inst.channel[channel].label_ypos == value
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(value=st.floats(allow_nan=False))
-def test_channel_offset(channel, value):
+def test_channel_offset(value):
     """Get / set offset, unitful in V and unitless."""
+    channel = 0
     cmd = "OFFS"
     value_unitful = u.Quantity(value, u.V)
     with expected_protocol(
@@ -1005,11 +1006,11 @@ def test_channel_offset(channel, value):
         assert inst.channel[channel].offset == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(value=st.floats(min_value=-ik.tektronix.TekDPO70000.VERT_DIVS,
                        max_value=ik.tektronix.TekDPO70000.VERT_DIVS))
-def test_channel_position(channel, value):
+def test_channel_position(value):
     """Get / set vertical position."""
+    channel = 0
     cmd = "POS"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
@@ -1025,10 +1026,10 @@ def test_channel_position(channel, value):
         assert inst.channel[channel].position == value
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(value=st.floats(min_value=0))
-def test_channel_scale(channel, value):
+def test_channel_scale(value):
     """Get / set scale."""
+    channel = 0
     cmd = "SCALE"
     value_unitful = u.Quantity(value, u.V)
     with expected_protocol(
@@ -1047,11 +1048,11 @@ def test_channel_scale(channel, value):
         assert inst.channel[channel].scale == pytest.approx(value_unitful)
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
 @given(value=st.lists(st.floats(min_value=-2147483648, max_value=2147483647),
                       min_size=1))
-def test_channel_scale_raw_data(channel, value):
+def test_channel_scale_raw_data(value):
     """Return scaled raw data according to current settings."""
+    channel = 0
     scale = u.Quantity(1., u.V)
     position = -1.
     offset = u.Quantity(0., u.V)
