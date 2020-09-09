@@ -93,7 +93,7 @@ class PM100USB(SCPIInstrument):
             # We want flags to be a named tuple over bools.
             # pylint: disable=protected-access
             self._flags = parent._SensorFlags(**{
-                e.name: bool(e & self._flags)
+                e.name: bool(e & int(self._flags))
                 for e in PM100USB.SensorFlags  # pylint: disable=not-an-iterable
             })
 
