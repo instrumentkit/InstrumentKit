@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# keithley6517b.py: Driver for the Keithley 6517b Electrometer
+# keithley6485.py: Driver for the Keithley 6485 picoammeter
 #
 # © 2019 Francois Drielsma (francois.drielsma@gmail.com).
 #
@@ -22,7 +22,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 """
-Provides support for the Keithley 6517b electrometer.
+Driver for the Keithley 6485 picoammeter.
 
 Originally contributed and copyright held by Francois Drielsma
 (francois.drielsma@gmail.com).
@@ -40,57 +40,47 @@ from enum import Enum
 
 import quantities as pq
 
-from instruments.abstract_instruments import Electrometer
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import bool_property, enum_property
 
 # CLASSES #####################################################################
 
 
-class Keithley6517b(SCPIInstrument, Electrometer):
+class Keithley6485(SCPIInstrument):
 
     """
-    The `Keithley 6517b` is an electrometer capable of doing sensitive current,
+    The `Keithley 6485` is an electrometer capable of doing sensitive current,
     charge, voltage and resistance measurements.
+
+    WARNING: Must set the terminator to `LF` on the define for this to work.
 
     Example usage:
 
     >>> import instruments as ik
     >>> import quantities as pq
-    >>> dmm = ik.keithley.Keithley6517b.open_serial('/dev/ttyUSB0', baud=115200)
-    >>> dmm.measure(dmm.Mode.current)
-    array(0.123) * pq.amp
+    >>> dmm = ik.keithley.Keithley6485.open_serial('/dev/ttyUSB0', baud=9600)
+    >>> dmm.measure()
+    array(0.000123) * pq.amp
     """
 
     def __init__(self, filelike):
         """
-        Auto configs the instrument in to the current readout mode
-        (sets the trigger and communication types rights)
+        Resets device to be read.
         """
-        super(Keithley6517b, self).__init__(filelike)
-        self.auto_config(self.mode)
+        super(Keithley6485, self).__init__(filelike)
 
     # ENUMS ##
 
-    class Mode(Enum):
-        """
-        Enum containing valid measurement modes for the Keithley 6517b
-        """
-        voltage_dc = 'VOLT:DC'
-        current_dc = 'CURR:DC'
-        resistance = 'RES'
-        charge = 'CHAR'
-
     class TriggerMode(Enum):
         """
-        Enum containing valid trigger modes for the Keithley 6517b
+        Enum containing valid trigger modes for the Keithley 6485
         """
         immediate = 'IMM'
         tlink = 'TLINK'
 
     class ArmSource(Enum):
         """
-        Enum containing valid trigger arming sources for the Keithley 6517b
+        Enum containing valid trigger arming sources for the Keithley 6485
         """
         immediate = 'IMM'
         timer = 'TIM'
@@ -101,34 +91,13 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         nstest = 'NST'
         manual = 'MAN'
 
-    class ValidRange(Enum):
-        """
-        Enum containing valid measurement ranges for the Keithley 6517b
-        """
-        voltage_dc = (2, 20, 200)
-        current_dc = (20e-12, 200e-12, 2e-9, 20e-9,
-                      200e-9, 2e-6, 20e-6, 200e-6, 2e-3, 20e-3)
-        resistance = (2e6, 20e6, 200e6, 2e9, 20e9, 200e9, 2e12, 20e12, 200e12)
-        charge = (2e-9, 20e-9, 200e-9, 2e-6)
-
     # PROPERTIES ##
-
-    mode = enum_property(
-        'FUNCTION',
-        Mode,
-        input_decoration=lambda val: val[1:-1],
-        # output_decoration=lambda val: '"{}"'.format(val),
-        set_fmt='{} "{}"',
-        doc="""
-        Gets/sets the measurement mode of the Keithley 6517b.
-        """
-    )
 
     trigger_mode = enum_property(
         'TRIGGER:SOURCE',
         TriggerMode,
         doc="""
-        Gets/sets the trigger mode of the Keithley 6517b.
+        Gets/sets the trigger mode of the Keithley 6485.
         """
     )
 
@@ -136,7 +105,7 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         'ARM:SOURCE',
         ArmSource,
         doc="""
-        Gets/sets the arm source of the Keithley 6517b.
+        Gets/sets the arm source of the Keithley 6485.
         """
     )
 
@@ -145,7 +114,7 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         inst_true='ON',
         inst_false='OFF',
         doc="""
-        Gets/sets the zero checking status of the Keithley 6517b.
+        Gets/sets the zero checking status of the Keithley 6485.
         """
     )
 
@@ -154,13 +123,13 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         inst_true='ON',
         inst_false='OFF',
         doc="""
-        Gets/sets the zero correcting status of the Keithley 6517b.
+        Gets/sets the zero correcting status of the Keithley 6485.
         """
     )
 
     @property
     def unit(self):
-        return UNITS[self.mode]
+        return pq.amp
 
     @property
     def auto_range(self):
@@ -170,14 +139,13 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         :type: `bool`
         """
         # pylint: disable=no-member
-        out = self.query('{}:RANGE:AUTO?'.format(self.mode.value))
+        out = self.query('{CURR:RANGE:AUTO?')
         return out == '1'
 
     @auto_range.setter
     def auto_range(self, newval):
         # pylint: disable=no-member
-        self.sendcmd('{}:RANGE:AUTO {}'.format(
-            self.mode.value, '1' if newval else '0'))
+        self.sendcmd('CUUR:RANGE:AUTO {}'.format('1' if newval else '0'))
 
     @property
     def input_range(self):
@@ -187,36 +155,19 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         :type: `~quantities.Quantity`
         """
         # pylint: disable=no-member
-        mode = self.mode
-        out = self.query('{}:RANGE:UPPER?'.format(mode.value))
-        return float(out) * UNITS[mode]
+        out = self.query('CUUR:RANGE:UPPER?')
+        return float(out) * pq.amp
 
     @input_range.setter
     def input_range(self, newval):
         # pylint: disable=no-member
-        mode = self.mode
-        val = newval.rescale(UNITS[mode]).item()
-        if val not in self._valid_range(mode).value:
+        val = newval.rescale(pq.amp).item()
+        if val not in self._valid_range().value:
             raise ValueError(
                 'Unexpected range limit for currently selected mode.')
         self.sendcmd('{}:RANGE:UPPER {:e}'.format(mode.value, val))
 
     # METHODS ##
-
-    def auto_config(self, mode):
-        """
-        This command causes the device to do the following:
-            - Switch to the specified mode
-            - Reset all related controls to default values
-            - Set trigger and arm to the 'immediate' setting
-            - Set arm and trigger counts to 1
-            - Set trigger delays to 0
-            - Place unit in idle state
-            - Disable all math calculations
-            - Disable buffer operation
-            - Enable autozero
-        """
-        self.sendcmd('CONF:{}'.format(mode.value))
 
     def fetch(self):
         """
@@ -235,43 +186,20 @@ class Keithley6517b(SCPIInstrument, Electrometer):
 
     def measure(self, mode=None):
         """
-        Trigger and acquire readings using the requested mode.
+        Trigger and acquire readings.
         Returns the measurement reading only.
         """
-        # Check the current mode, change if necessary
-        if mode is not None:
-            if mode != self.mode:
-                self.auto_config(mode)
-
         return self.read_measurements()[0]
 
     # PRIVATE METHODS ##
 
-    def _valid_range(self, mode):
-        if mode == self.Mode.voltage_dc:
-            return self.ValidRange.voltage_dc
-        if mode == self.Mode.current_dc:
-            return self.ValidRange.current_dc
-        if mode == self.Mode.resistance:
-            return self.ValidRange.resistance
-        if mode == self.Mode.charge:
-            return self.ValidRange.charge
-
-        raise ValueError('Invalid mode.')
+    def _valid_range(self):
+        return (2e-9, 20e-9, 200e-9, 2e-6, 20e-6, 200e-6, 2e-3, 20e-3)
 
     def _parse_measurement(self, ascii):
         # Split the string in three comma-separated parts (value, time, number of triggers)
         vals = ascii.split(',')
-        reading = float(vals[0].split('N')[0]) * self.unit
-        timestamp = float(vals[1].split('s')[0]) * pq.second
-        trigger_count = int(vals[2][:-5].split('R')[0])
+        reading = float(vals[0][:-1]) * self.unit
+        timestamp = float(vals[1]) * pq.second
+        trigger_count = int(float(vals[2]))
         return reading, timestamp, trigger_count
-
-# UNITS #######################################################################
-
-UNITS = {
-    Keithley6517b.Mode.voltage_dc:  pq.volt,
-    Keithley6517b.Mode.current_dc:  pq.amp,
-    Keithley6517b.Mode.resistance:  pq.ohm,
-    Keithley6517b.Mode.charge:      pq.coulomb
-}
