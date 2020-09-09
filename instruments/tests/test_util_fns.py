@@ -12,11 +12,16 @@ import pytest
 
 import instruments.units as u
 from instruments.util_fns import (
+    assume_units,
+    bool_property,
+    convert_temperature,
+    enum_property,
+    int_property,
     ProxyList,
-    assume_units, convert_temperature,
     setattr_expression,
-    bool_property, enum_property, unitless_property, int_property,
-    unitful_property, string_property
+    string_property,
+    unitful_property,
+    unitless_property
 )
 
 
