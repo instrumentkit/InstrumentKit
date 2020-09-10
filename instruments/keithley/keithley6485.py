@@ -65,9 +65,11 @@ class Keithley6485(SCPIInstrument):
 
     def __init__(self, filelike):
         """
-        Resets device to be read.
+        Resets device to be read, disables zero check.
         """
         super(Keithley6485, self).__init__(filelike)
+        self.reset()
+        self.zero_check = False
 
     # ENUMS ##
 
