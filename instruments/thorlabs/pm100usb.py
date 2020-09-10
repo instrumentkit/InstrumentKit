@@ -83,7 +83,7 @@ class PM100USB(SCPIInstrument):
             self._parent = parent
 
             # Pull details about the sensor from SYST:SENSOR:IDN?
-            sensor_idn = parent.sendcmd("SYST:SENSOR:IDN?")
+            sensor_idn = parent.query("SYST:SENSOR:IDN?")
             (
                 self._name, self._serial_number, self._calibration_message,
                 self._sensor_type, self._sensor_subtype, self._flags
@@ -93,7 +93,7 @@ class PM100USB(SCPIInstrument):
             # We want flags to be a named tuple over bools.
             # pylint: disable=protected-access
             self._flags = parent._SensorFlags(**{
-                e.name: bool(e & self._flags)
+                e.name: bool(e & int(self._flags))
                 for e in PM100USB.SensorFlags  # pylint: disable=not-an-iterable
             })
 
