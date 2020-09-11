@@ -235,7 +235,8 @@ class SRSCTC100(SCPIInstrument):
                     'getLog.xy {}, {}'.format(self._chan_name, which)
                 ).split(',')
             ]
-            return u.Quantity(point[0], 'ms'), u.Quantity(point[1], units)
+            return u.Quantity(float(point[0]), 'ms'), \
+                   u.Quantity(float(point[1]), units)
 
         def get_log(self):
             """
