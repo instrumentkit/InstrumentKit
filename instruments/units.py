@@ -14,3 +14,4 @@ from pint import _DEFAULT_REGISTRY as ureg
 # UNITS #######################################################################
 
 ureg.define("percent = []")
+ureg.define("centibelmilliwatt = 1e-3 watt; logbase: 10; logfactor: 100 = cBm")

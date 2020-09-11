@@ -46,10 +46,10 @@ def test_power():
             ik.phasematrix.PhaseMatrixFSW0020,
             [
                 "0D.",
-                "03{:04X}.".format(int(u.Quantity(1, u.dBm).magnitude))
+                "03{:04X}.".format(int(u.Quantity(10, u.dBm).to(u.cBm).magnitude))
             ],
             [
-                "-001"
+                "-064"
             ]
     ) as inst:
         assert inst.power == u.Quantity(-10, u.dBm)

@@ -72,7 +72,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         :type: `~pint.Quantity`
         :units: log-power, assumed to be dBm
         """
-        return u.Quantity((int(self.query('0D.'), 16) * 10), u.dBm)
+        return u.Quantity((int(self.query('0D.'), 16)), u.cBm).to(u.dBm)
 
     @power.setter
     def power(self, newval):
@@ -81,7 +81,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
         # The Phase Matrix unit speaks in units of centibel-milliwats,
         # so convert and take the integer part.
-        newval = int(assume_units(newval, u.dBm).magnitude) // 10
+        newval = int(assume_units(newval, u.dBm).to(u.cBm).magnitude)
 
         # Command code 0x03, parameter length 2 bytes (4 nybbles)
         self.sendcmd('03{:04X}.'.format(newval))
