@@ -13,10 +13,9 @@ from hypothesis import (
 import pytest
 import numpy as np
 
-import instruments.units as u
-
 import instruments as ik
 from instruments.tests import expected_protocol
+from instruments.units import ureg as u
 
 # TESTS ######################################################################
 
@@ -406,8 +405,8 @@ def test_channel_get_log(channel):
         ch = inst.channel[channel]
         ts_read, temps_read = ch.get_log()
         # assert the data is correct
-        np.testing.assert_equal(ts, ts_read)
-        np.testing.assert_equal(temps, temps_read)
+        np.testing.assert_array_equal(ts, ts_read)
+        np.testing.assert_array_equal(temps, temps_read)
 
 
 # INSTRUMENT #
