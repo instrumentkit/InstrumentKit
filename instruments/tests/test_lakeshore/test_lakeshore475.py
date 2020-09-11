@@ -167,6 +167,25 @@ def test_lakeshore475_field_setpoint():
         lsh.field_setpoint = 23.
 
 
+def test_lakeshore475_field_setpoint_wrong_units():
+    """
+    Setting the field setpoint with the wrong units
+    """
+    with expected_protocol(
+            ik.lakeshore.Lakeshore475,
+            [
+                "UNIT?",
+            ],
+            [
+                "1"
+            ],
+    ) as lsh:
+        with pytest.raises(ValueError) as exc_info:
+            lsh.field_setpoint = u.Quantity(1., u.tesla)
+        exc_msg = exc_info.value.args[0]
+        assert "Field setpoint must be specified in the same units" in exc_msg
+
+
 def test_lakeshore475_field_get_control_params():
     """
     Get field control parameters.
@@ -230,16 +249,38 @@ def test_lakeshore475_field_set_control_params_not_a_tuple():
     """
     with expected_protocol(
             ik.lakeshore.Lakeshore475,
-            [
-            ],
-            [
-            ],
+            [],
+            [],
     ) as lsh:
         with pytest.raises(TypeError) as exc_info:
             lsh.field_control_params = 42
         exc_msg = exc_info.value.args[0]
         assert exc_msg == "Field control parameters must be specified as " \
                           " a tuple"
+
+
+def test_lakeshore475_field_set_control_params_wrong_units():
+    """
+    Set field control parameters with the wrong units
+    """
+    with expected_protocol(
+            ik.lakeshore.Lakeshore475,
+            [
+                "UNIT?",
+            ],
+            [
+                "1",  # gauss
+            ],
+    ) as lsh:
+        with pytest.raises(ValueError)  as exc_info:
+            lsh.field_control_params = (
+                5.0,
+                50.0,
+                u.Quantity(120.0, u.tesla / u.min),
+                u.Quantity(60.0, u.volt / u.min)
+            )
+        exc_msg = exc_info.value.args[0]
+        assert "Field control params ramp rate must be specified in the same units" in exc_msg
 
 
 def test_lakeshore475_p_value():
