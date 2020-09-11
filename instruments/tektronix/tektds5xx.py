@@ -586,13 +586,12 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         self.sendcmd('HARDC:PORT GPI;HARDC:LAY PORT;:HARDC:FORM BMP')
         self.sendcmd('HARDC START')
         time.sleep(1)
-        header = self.query("", size=54)
-        header = header.encode("utf-8")
+        header = self._file.read_raw(size=54)
         # Get BMP Length  in kilobytes from DIB header, because file header is
         # bad
         length = reduce(
             operator.mul, struct.unpack('<iihh', header[18:30])) / 8
         length = int(length) + 8  # Add 8 bytes for our monochrome colour table
-        data = header + self.query("", size=length).encode("utf-8")
+        data = header + self._file.read_raw(size=length)
         self._file.flush_input()  # Flush input buffer
         return data

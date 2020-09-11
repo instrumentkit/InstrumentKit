@@ -821,30 +821,31 @@ def test_display_clock_value_error():
         assert err_msg == f"Expected bool but got {type(wrong_type)} instead"
 
 
-def test_get_hardcopy(mocker):
-    """Transfer image (?) data in binary from the instrument.
+@given(data=st.binary(min_size=1, max_size=2147483647))
+def test_get_hardcopy(mocker, data):
+    """Transfer data in binary from the instrument.
 
     Data is at least 1 byte long, then we need to add 8 for the
-    color table apparently.
+    color table.
     Fake the header of the data such that in byte 18:30 are 4 factorial
     packed as '<iihh' that multiplied together result in the length of
-    the total data.
-    Take some random data, then stick a header to it.
-    Unchecked entries in header are filled with zeros.
+    the total data. Limit maximum size of binary such that we don't have
+    to factor the length and such that it simply fits into 4 bytes
+    unsigned.
+    Take some random data, then stick a header to it. Unchecked entries
+    in header are filled with zeros.
     Mocking out sleep to do nothing.
     """
     # mock out time
     mocker.patch.object(time, 'sleep', return_value=None)
 
     # make data
-    data = bytes("1349703492734019837", "utf-8")  # some data
     length_data = (len(data) - 8) * 8  # subtract header and color table
-    # make a fake header, fill with zeros, but length of data
-    # must be at position 18:30 in factorial notation
+    # make a fake header
     header = struct.pack('<ddhiihhddd', 0, 0, 0, length_data, 1, 1, 1, 0, 0,
                          0)
-    # compile data to compare
-    data_expected = header + data.decode().encode()
+    # stick header and data together
+    data_expected = header + data
 
     with expected_protocol(
             ik.tektronix.TekTDS5xx,
