@@ -32,15 +32,6 @@ from instruments.tests import expected_protocol, make_name_test
 test_tektds5xx_name = make_name_test(ik.tektronix.TekTDS5xx)
 
 
-# SETUP #
-
-
-# string names for all channel, math, and ref data sources
-all_channels = [f"CH{it+1}" for it in range(4)]
-all_maths = [f"MATH{it+1}" for it in range(3)]
-all_refs = [f"REF{it+1}" for it in range(4)]
-
-
 # MEASUREMENT #
 
 
