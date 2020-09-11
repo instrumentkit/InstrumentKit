@@ -242,10 +242,10 @@ class MC1(Instrument):
         :param new_position: the location
         :type new_position: `~pint.Quantity`
         """
+        new_position = assume_units(new_position, u.ms).to(u.ms)
         if self.lower_limit <= new_position <= self.upper_limit:
-            new_position = assume_units(new_position, u.ms).to(u.ms)
             clock_cycles = new_position/self.step_size
-            cmd = ":MOVE "+str(int(clock_cycles))
+            cmd = f":MOVE {int(clock_cycles)}"
             self.sendcmd(cmd)
         else:
             raise ValueError("Location out of range")

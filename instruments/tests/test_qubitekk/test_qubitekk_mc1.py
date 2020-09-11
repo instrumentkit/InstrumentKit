@@ -17,6 +17,36 @@ from instruments.tests import expected_protocol
 # TESTS ######################################################################
 
 
+def test_mc1_increment():
+    with expected_protocol(
+            ik.qubitekk.MC1,
+            [], [], sep="\r"
+    ) as mc:
+        assert mc.increment == 1 * u.ms
+        mc.increment = 3 * u.ms
+        assert mc.increment == 3 * u.ms
+
+
+def test_mc1_lower_limit():
+    with expected_protocol(
+            ik.qubitekk.MC1,
+            [], [], sep="\r"
+    ) as mc:
+        assert mc.lower_limit == -300 * u.ms
+        mc.lower_limit = -400 * u.ms
+        assert mc.lower_limit == -400 * u.ms
+
+
+def test_mc1_upper_limit():
+    with expected_protocol(
+            ik.qubitekk.MC1,
+            [], [], sep="\r"
+    ) as mc:
+        assert mc.upper_limit == 300 * u.ms
+        mc.upper_limit = 400 * u.ms
+        assert mc.upper_limit == 400 * u.ms
+
+
 def test_mc1_setting():
     with expected_protocol(
             ik.qubitekk.MC1,
@@ -90,6 +120,20 @@ def test_mc1_firmware():
             sep="\r"
     ) as mc:
         assert mc.firmware == (1, 0, 1)
+
+
+def test_mc1_firmware_no_patch_info():
+    with expected_protocol(
+            ik.qubitekk.MC1,
+            [
+                "FIRM?"
+            ],
+            [
+                "1.0"
+            ],
+            sep="\r"
+    ) as mc:
+        assert mc.firmware == (1, 0, 0)
 
 
 def test_mc1_inertia():
@@ -201,10 +245,10 @@ def test_mc1_move():
 
 
 def test_mc1_move_value_error():
-    with pytest.raises(ValueError), expected_protocol(
+    with pytest.raises(ValueError) as exc_info, expected_protocol(
             ik.qubitekk.MC1,
-            [":MOVE -1000"],
-            [""],
-            sep="\r"
+            [], [], sep="\r"
     ) as mc:
         mc.move(-1000)
+    exc_msg = exc_info.value.args[0]
+    assert exc_msg == "Location out of range"
