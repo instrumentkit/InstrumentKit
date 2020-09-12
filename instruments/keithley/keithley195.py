@@ -259,8 +259,7 @@ class Keithley195(Multimeter):
             current_mode = self.mode
             if mode != current_mode:
                 self.mode = mode
-                if not self._testing:
-                    time.sleep(2)  # Gives the instrument a moment to settle
+                time.sleep(2)  # Gives the instrument a moment to settle
         else:
             mode = self.mode
         value = self.query('')
@@ -301,18 +300,19 @@ class Keithley195(Multimeter):
 
         (trigger, function, input_range, eoi, buf, rate, srqmode, relative,
          delay, multiplex, selftest, data_fmt, data_ctrl, filter_mode,
-         terminator) = struct.unpack('@4c2s3c2s5c2s', statusword[4:])
+         terminator) = struct.unpack('@4c2s3c2s5c2s', bytes(statusword[4:],
+                                                            "utf-8"))
 
         return {'trigger': Keithley195.TriggerMode(int(trigger)),
                 'mode': Keithley195.Mode(int(function)),
                 'range': int(input_range),
-                'eoi': (eoi == '1'),
+                'eoi': (eoi == b'1'),
                 'buffer': buf,
                 'rate': rate,
                 'srqmode': srqmode,
-                'relative': (relative == '1'),
+                'relative': (relative == b'1'),
                 'delay': delay,
-                'multiplex': (multiplex == '1'),
+                'multiplex': (multiplex == b'1'),
                 'selftest': selftest,
                 'dataformat': data_fmt,
                 'datacontrol': data_ctrl,
