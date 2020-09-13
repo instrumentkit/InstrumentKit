@@ -108,11 +108,8 @@ class Keithley580(Instrument):
         value = self.parse_status_word(self.get_status_word())['polarity']
         if value == '+':
             return Keithley580.Polarity.positive
-        elif value == '-':
-            return Keithley580.Polarity.negative
         else:
-            raise ValueError('Not a valid polarity returned from '
-                             'instrument, got {}'.format(value))
+            return Keithley580.Polarity.negative
 
     @polarity.setter
     def polarity(self, newval):
@@ -248,7 +245,7 @@ class Keithley580(Instrument):
     def trigger_mode(self, newval):
         if isinstance(newval, str):
             newval = Keithley580.TriggerMode[newval]
-        if newval not in Keithley580.TriggerMode:
+        if not isinstance(newval, Keithley580.TriggerMode):
             raise TypeError('Drive must be specified as a '
                             'Keithley580.TriggerMode, got {} '
                             'instead.'.format(newval))
@@ -262,8 +259,11 @@ class Keithley580(Instrument):
 
         :type: `~quantities.quantity.Quantity` or `str`
         """
-        value = float(self.parse_status_word(self.get_status_word())['range'])
-        return value * u.ohm
+        value = self.parse_status_word(self.get_status_word())['range']
+        if isinstance(value, str):  # if range is 'auto'
+            return value
+        else:
+            return float(value) * u.ohm
 
     @input_range.setter
     def input_range(self, newval):
@@ -324,7 +324,7 @@ class Keithley580(Instrument):
         not currently implemented.
         """
         # self.write('L0X')
-        raise NotImplementedError('setCalibrationConstants not implemented')
+        raise NotImplementedError('storeCalibrationConstants not implemented')
 
     def get_status_word(self):
         """
@@ -342,7 +342,7 @@ class Keithley580(Instrument):
             time.sleep(1)
             statusword = self.query('')
 
-        if statusword is None:
+        if tries == 0:
             raise IOError('could not retrieve status word')
 
         return statusword[:-1]
@@ -367,22 +367,22 @@ class Keithley580(Instrument):
 
         (drive, polarity, drycircuit, operate, rng,
          relative, eoi, trigger, sqrondata, sqronerror,
-         linefreq) = struct.unpack('@8c2s2s2', statusword[3:])
+         linefreq) = struct.unpack('@8c2s2sc', bytes(statusword[3:], "utf8"))
 
-        valid = {'drive': {'0': 'pulsed',
-                           '1': 'dc'},
-                 'polarity': {'0': '+',
-                              '1': '-'},
-                 'range': {'0': 'auto',
-                           '1': 0.2,
-                           '2': 2,
-                           '3': 20,
-                           '4': 2e2,
-                           '5': 2e3,
-                           '6': 2e4,
-                           '7': 2e5},
-                 'linefreq': {'0': '60Hz',
-                              '1': '50Hz'}}
+        valid = {'drive': {b'0': 'pulsed',
+                           b'1': 'dc'},
+                 'polarity': {b'0': '+',
+                              b'1': '-'},
+                 'range': {b'0': 'auto',
+                           b'1': 0.2,
+                           b'2': 2,
+                           b'3': 20,
+                           b'4': 2e2,
+                           b'5': 2e3,
+                           b'6': 2e4,
+                           b'7': 2e5},
+                 'linefreq': {b'0': '60Hz',
+                              b'1': '50Hz'}}
 
         try:
             drive = valid['drive'][drive]
@@ -395,12 +395,12 @@ class Keithley580(Instrument):
 
         return {'drive': drive,
                 'polarity': polarity,
-                'drycircuit': (drycircuit == '1'),
-                'operate': (operate == '1'),
+                'drycircuit': (drycircuit == b'1'),
+                'operate': (operate == b'1'),
                 'range': rng,
-                'relative': (relative == '1'),
+                'relative': (relative == b'1'),
                 'eoi': eoi,
-                'trigger': (trigger == '1'),
+                'trigger': (trigger == b'1'),
                 'sqrondata': sqrondata,
                 'sqronerror': sqronerror,
                 'linefreq': linefreq,
@@ -432,18 +432,18 @@ class Keithley580(Instrument):
         :rtype: `dict`
         """
         (status, polarity, drycircuit, drive, resistance) = \
-            struct.unpack('@4c11s', measurement)
+            struct.unpack('@4c11s', bytes(measurement, "utf-8"))
 
-        valid = {'status': {'S': 'standby',
-                            'N': 'normal',
-                            'O': 'overflow',
-                            'Z': 'relative'},
-                 'polarity': {'+': '+',
-                              '-': '-'},
-                 'drycircuit': {'N': False,
-                                'D': True},
-                 'drive': {'P': 'pulsed',
-                           'D': 'dc'}}
+        valid = {'status': {b'S': 'standby',
+                            b'N': 'normal',
+                            b'O': 'overflow',
+                            b'Z': 'relative'},
+                 'polarity': {b'+': '+',
+                              b'-': '-'},
+                 'drycircuit': {b'N': False,
+                                b'D': True},
+                 'drive': {b'P': 'pulsed',
+                           b'D': 'dc'}}
         try:
             status = valid['status'][status]
             polarity = valid['polarity'][polarity]
