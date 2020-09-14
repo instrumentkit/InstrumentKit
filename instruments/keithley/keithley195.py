@@ -276,7 +276,8 @@ class Keithley195(Multimeter):
         :return: String containing setting information of the instrument
         :rtype: `str`
         """
-        return self.query('U0DX')
+        self.sendcmd('U0DX')
+        return self._file.read_raw()
 
     @staticmethod
     def parse_status_word(statusword):  # pylint: disable=too-many-locals
@@ -294,14 +295,13 @@ class Keithley195(Multimeter):
         :return: A parsed version of the status word as a Python dictionary
         :rtype: `dict`
         """
-        if statusword[:3] != '195':
+        if statusword[:3] != b'195':
             raise ValueError('Status word starts with wrong prefix, expected '
                              '195, got {}'.format(statusword))
 
         (trigger, function, input_range, eoi, buf, rate, srqmode, relative,
          delay, multiplex, selftest, data_fmt, data_ctrl, filter_mode,
-         terminator) = struct.unpack('@4c2s3c2s5c2s', bytes(statusword[4:],
-                                                            "utf-8"))
+         terminator) = struct.unpack('@4c2s3c2s5c2s', statusword[4:])
 
         return {'trigger': Keithley195.TriggerMode(int(trigger)),
                 'mode': Keithley195.Mode(int(function)),
