@@ -336,11 +336,12 @@ class Keithley580(Instrument):
         """
         tries = 5
         statusword = ''
-        while statusword[:3] != '580' and tries != 0:
+        while statusword[:3] != b'580' and tries != 0:
             tries -= 1
             self.sendcmd('U0X')
             time.sleep(1)
-            statusword = self.query('')
+            self.sendcmd('')
+            statusword = self._file.read_raw()
 
         if tries == 0:
             raise IOError('could not retrieve status word')
@@ -361,13 +362,13 @@ class Keithley580(Instrument):
 
         :rtype: `dict`
         """
-        if statusword[:3] != '580':
+        if statusword[:3] != b'580':
             raise ValueError('Status word starts with wrong '
                              'prefix: {}'.format(statusword))
 
         (drive, polarity, drycircuit, operate, rng,
          relative, eoi, trigger, sqrondata, sqronerror,
-         linefreq) = struct.unpack('@8c2s2sc', bytes(statusword[3:], "utf8"))
+         linefreq) = struct.unpack('@8c2s2sc', statusword[3:])
 
         valid = {'drive': {b'0': 'pulsed',
                            b'1': 'dc'},
@@ -416,7 +417,8 @@ class Keithley580(Instrument):
         :rtype: `~quantities.quantity.Quantity`
         """
         self.trigger()
-        return self.parse_measurement(self.query(''))['resistance']
+        self.sendcmd('')
+        return self.parse_measurement(self._file.read_raw()[:-1])['resistance']
 
     @staticmethod
     def parse_measurement(measurement):
@@ -432,7 +434,7 @@ class Keithley580(Instrument):
         :rtype: `dict`
         """
         (status, polarity, drycircuit, drive, resistance) = \
-            struct.unpack('@4c11s', bytes(measurement, "utf-8"))
+            struct.unpack('@4c11s', measurement)
 
         valid = {'status': {b'S': 'standby',
                             b'N': 'normal',

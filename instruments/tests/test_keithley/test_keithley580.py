@@ -54,11 +54,10 @@ def create_statusword():
         eoi = b"0"
         sqrondata = b"0"
         sqronerror = b"0"
-        terminator = b"0"  # sent, but not read by the routine!
 
-        status_word = struct.pack('@8c2s2s2c', drive, polarity, drycircuit,
+        status_word = struct.pack('@8c2s2sc', drive, polarity, drycircuit,
                                   operate, rng, relative, eoi, trigger,
-                                  sqrondata, sqronerror, linefreq, terminator)
+                                  sqrondata, sqronerror, linefreq)
 
         return b"580" + status_word
 
@@ -610,7 +609,7 @@ def test_get_status_word(init, create_statusword, mock_time):
             ],
             sep="\n"
     ) as inst:
-        assert inst.get_status_word() == status_word.decode()[:-1]
+        assert inst.get_status_word() == status_word
         mock_time.assert_called_with(1)
 
 
@@ -660,7 +659,7 @@ def test_parse_status_word(init, create_statusword, line_frequency):
     """
     status_word = create_statusword(
         linefreq=bytes(line_frequency[0], "utf-8")
-    ).decode("utf-8")[:-1]
+    )
     # create the dictionary to compare to
     expected_dict = {
         "drive": "dc",
@@ -694,7 +693,7 @@ def test_parse_status_word(init, create_statusword, line_frequency):
        polarity=st.integers(min_value=2, max_value=9),
        rng=st.integers(min_value=8, max_value=9),
        linefreq=st.integers(min_value=2, max_value=9))
-def test_parse_status_word_invalid_vales(init, create_statusword, drive,
+def test_parse_status_word_invalid_values(init, create_statusword, drive,
                                          polarity, rng, linefreq):
     """Raise RuntimeError if status word contains invalid values."""
     status_word = create_statusword(
@@ -702,7 +701,7 @@ def test_parse_status_word_invalid_vales(init, create_statusword, drive,
         polarity=bytes(str(polarity), "utf-8"),
         rng=bytes(str(rng), "utf-8"),
         linefreq=bytes(str(linefreq), "utf-8")
-    ).decode()[:-1]
+    )
     with expected_protocol(
             ik.keithley.Keithley580,
             [
@@ -721,7 +720,7 @@ def test_parse_status_word_invalid_vales(init, create_statusword, drive,
 
 def test_parse_status_word_invalid_prefix(init):
     """Raise ValueError if status word has invalid prefix."""
-    invalid_status_word = "314 424242"
+    invalid_status_word = b"314 424242"
     with expected_protocol(
             ik.keithley.Keithley580,
             [
@@ -760,7 +759,9 @@ def test_measure(init, create_measurement, resistance):
             ],
             sep="\n"
     ) as inst:
-        assert inst.measure() == pytest.approx(resistance * u.ohm)
+        read_value = inst.measure()
+        assert read_value.magnitude == pytest.approx(resistance)
+        assert read_value.units == u.ohm
 
 
 @pytest.mark.parametrize("status", (b"S", b"N", b"O", b"Z"))
@@ -777,7 +778,7 @@ def test_parse_measurement(init, create_measurement, status, polarity,
         drycircuit=drycircuit,
         drive=drive,
         resistance=resistance
-    ).decode()
+    )
 
     # valid states
     valid = {'status': {b'S': 'standby',
@@ -815,7 +816,7 @@ def test_parse_measurement(init, create_measurement, status, polarity,
 
 def test_parse_measurement_invalid(init, create_measurement):
     """Raise an exception if the status contains invalid character."""
-    measurement = create_measurement(status=bytes("V", "utf-8"),).decode()
+    measurement = create_measurement(status=bytes("V", "utf-8"))
 
     with expected_protocol(
             ik.keithley.Keithley580,
