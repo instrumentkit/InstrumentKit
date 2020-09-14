@@ -368,7 +368,7 @@ class Keithley580(Instrument):
 
         (drive, polarity, drycircuit, operate, rng,
          relative, eoi, trigger, sqrondata, sqronerror,
-         linefreq) = struct.unpack('@8c2s2sc', statusword[3:])
+         linefreq) = struct.unpack('@8c2s2sc', statusword[3:16])
 
         valid = {'drive': {b'0': 'pulsed',
                            b'1': 'dc'},

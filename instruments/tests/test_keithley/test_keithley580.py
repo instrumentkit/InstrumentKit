@@ -54,10 +54,11 @@ def create_statusword():
         eoi = b"0"
         sqrondata = b"0"
         sqronerror = b"0"
+        terminator = b"0"
 
-        status_word = struct.pack('@8c2s2sc', drive, polarity, drycircuit,
+        status_word = struct.pack('@8c2s2s2c', drive, polarity, drycircuit,
                                   operate, rng, relative, eoi, trigger,
-                                  sqrondata, sqronerror, linefreq)
+                                  sqrondata, sqronerror, linefreq, terminator)
 
         return b"580" + status_word
 
@@ -694,7 +695,7 @@ def test_parse_status_word(init, create_statusword, line_frequency):
        rng=st.integers(min_value=8, max_value=9),
        linefreq=st.integers(min_value=2, max_value=9))
 def test_parse_status_word_invalid_values(init, create_statusword, drive,
-                                         polarity, rng, linefreq):
+                                          polarity, rng, linefreq):
     """Raise RuntimeError if status word contains invalid values."""
     status_word = create_statusword(
         drive=bytes(str(drive), "utf-8"),
