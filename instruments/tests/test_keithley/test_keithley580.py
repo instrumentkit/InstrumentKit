@@ -41,7 +41,8 @@ def create_statusword():
     """Create a function that can create a status word.
 
     Variables used in tests can be set manually, but useful default
-    values are set as well.
+    values are set as well. Note: The terminator is not created, since
+    it is already sent by `expected_protocol`.
 
     :return: Method to make a status word.
     :rtype: `method`
@@ -54,11 +55,10 @@ def create_statusword():
         eoi = b"0"
         sqrondata = b"0"
         sqronerror = b"0"
-        terminator = b"0"
 
-        status_word = struct.pack('@8c2s2s2c', drive, polarity, drycircuit,
+        status_word = struct.pack('@8c2s2sc', drive, polarity, drycircuit,
                                   operate, rng, relative, eoi, trigger,
-                                  sqrondata, sqronerror, linefreq, terminator)
+                                  sqrondata, sqronerror, linefreq)
 
         return b"580" + status_word
 
