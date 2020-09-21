@@ -162,7 +162,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         }
 
         if data == '9.91000000E+37':
-            return int(data)
+            return float(data)
         else:
             data = data.split(" ")
             data[0] = float(data[0])
