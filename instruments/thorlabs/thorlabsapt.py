@@ -218,7 +218,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
         # If we add more channels, append them to the list,
         # If we remove channels, remove them from the end of the list.
         if nch > self._n_channels:
-            self._channel = self._channel + \
+            self._channel = list(self._channel) + \
                 list(self._channel_type(self, chan_idx)
                      for chan_idx in range(self._n_channels, nch))
         elif nch < self._n_channels:
@@ -282,7 +282,9 @@ class APTPiezoDevice(ThorLabsAPT):
                 source=0x01,
                 data=None
             )
-            resp = self._apt.querypacket(pkt)
+            resp = self._apt.querypacket(
+                pkt, expect_data_len=4
+            )
 
             # Not all APT piezo devices support querying the maximum travel
             # distance. Those that do not simply ignore the PZ_REQ_MAXTRAVEL
@@ -309,7 +311,9 @@ class APTPiezoDevice(ThorLabsAPT):
             source=0x01,
             data=None
         )
-        resp = self.querypacket(pkt)
+        resp = self.querypacket(
+            pkt, expect_data_len=2
+        )
 
         # Not all APT piezo devices support querying the LED intenstiy
         # distance, e.g., TIM, KIM. Those that do not simply ignore the
@@ -963,7 +967,7 @@ class APTPiezoStage(APTPiezoDevice):
 
             `True` means that the position control is closed, `False` otherwise
 
-            :tyep: `bool`
+            :type: `bool`
             """
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.PZ_REQ_POSCONTROLMODE,
@@ -1012,7 +1016,9 @@ class APTPiezoStage(APTPiezoDevice):
                 data=None
             )
             resp = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.PZ_GET_OUTPUTPOS)
+                pkt, expect=_cmds.ThorLabsCommands.PZ_GET_OUTPUTPOS,
+                expect_data_len=4
+            )
             # chan, pos
             _, pos = struct.unpack('<HH', resp.data)
             return pos
@@ -1242,7 +1248,10 @@ class APTMotorController(ThorLabsAPT):
             )
             # The documentation claims there are 14 data bytes, but it seems
             # there are sometimes some extra random ones...
-            resp_data = self._apt.querypacket(pkt).data[:14]
+            resp_data = self._apt.querypacket(
+                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER,
+                expect_data_len=14
+            ).data[:14]
             # ch_ident, position, enc_count, status_bits
             _, _, _, status_bits = struct.unpack(
                 '<HLLL', resp_data)
