@@ -11,9 +11,8 @@ import time
 import struct
 from enum import Enum, IntEnum
 
-from instruments.units import ureg as u
-
 from instruments.abstract_instruments import Multimeter
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -209,7 +208,7 @@ class Keithley195(Multimeter):
                 raise ValueError('Only "auto" is acceptable when specifying '
                                  'the input range as a string.')
         if isinstance(newval, u.Quantity):
-            newval = float(newval)
+            newval = float(newval.magnitude)
 
         mode = self.mode
         valid = Keithley195.ValidRange[mode.name].value

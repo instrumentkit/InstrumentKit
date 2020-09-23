@@ -277,7 +277,7 @@ class Keithley580(Instrument):
                 raise ValueError('Only "auto" is acceptable when specifying '
                                  'the input range as a string.')
         if isinstance(newval, u.Quantity):
-            newval = float(newval)
+            newval = float(newval.magnitude)
 
         if isinstance(newval, (float, int)):
             if newval in valid:
