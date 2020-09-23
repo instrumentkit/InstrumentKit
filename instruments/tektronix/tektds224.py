@@ -72,8 +72,7 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
                 # Set the data encoding format to ASCII
                 raw = self._tek.query("CURVE?")
                 raw = raw.split(',')  # Break up comma delimited string
-                raw = map(float, raw)  # Convert each list element to int
-                raw = np.array(raw)  # Convert into numpy array
+                raw = np.array(raw, dtype=np.float)  # Convert to ndarray
             else:
                 self._tek.sendcmd("DAT:ENC RIB")
                 # Set encoding to signed, big-endian
@@ -227,8 +226,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
             elif hasattr(newval, "name"):  # Is a datasource with a name.
                 newval = newval.name
         self.sendcmd(f"DAT:SOU {newval}")
-        if not self._testing:
-            time.sleep(0.01)  # Let the instrument catch up.
+        time.sleep(0.01)  # Let the instrument catch up.
 
     @property
     def data_width(self):
