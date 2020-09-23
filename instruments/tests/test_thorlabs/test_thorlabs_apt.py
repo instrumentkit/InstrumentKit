@@ -6,11 +6,13 @@ Module containing tests for the Thorlabs TC200
 
 # IMPORTS ####################################################################
 
-# pylint: disable=unused-import
+# pylint: disable=unused-import,too-many-lines
 
 
 import struct
+import warnings
 
+from hypothesis import given, strategies as st
 import pytest
 import instruments.units as u
 
@@ -24,7 +26,14 @@ from instruments.tests import expected_protocol
 # pylint: disable=protected-access,unused-argument
 
 
-def test_apt_hw_info():
+hw_types_setup = (
+    (45, "Multi-channel controller motherboard"),
+    (44, "Brushless DC controller"),
+    (3, "Unknown type: 3"))
+
+
+@pytest.mark.parametrize("hw_type", hw_types_setup)
+def test_apt_hw_info(hw_type):
     with expected_protocol(
             ik.thorlabs.ThorLabsAPT,
             [
@@ -47,7 +56,7 @@ def test_apt_hw_info():
                         # Model number
                         "ABC-123".encode('ascii'),
                         # HW type
-                        3,
+                        hw_type[0],
                         # FW version,
                         0xa1, 0xa2, 0xa3,
                         # Notes
@@ -66,7 +75,7 @@ def test_apt_hw_info():
         # Check internal representations.
         # NB: we shouldn't do this in some sense, but these fields
         #     act as an API to the APT subclasses.
-        assert apt._hw_type == "Unknown type: 3"
+        assert apt._hw_type == hw_type[1]
         assert apt._fw_version == "a1.a2.a3"
         assert apt._notes == "abcdefg"
         assert apt._hw_version == 42
@@ -79,6 +88,34 @@ def test_apt_hw_info():
             "ThorLabs APT Instrument model ABC-123, "
             "serial 01020304 (HW version 42, FW version a1.a2.a3)"
         )
+
+
+def test_apt_hw_info_io_error(mocker):
+    inst_class = ik.thorlabs.ThorLabsAPT
+
+    # mock querying a packet and raise an IOError
+    io_error_mock = mocker.Mock()
+    io_error_mock.side_effect = IOError
+    mocker.patch.object(inst_class, 'querypacket', io_error_mock)
+
+    with expected_protocol(
+            inst_class,
+            [
+            ],
+            [
+            ],
+            sep=""
+    ) as apt:
+        # IOError was raised, assert that defaults are still present
+        assert apt._serial_number is None
+        assert apt._model_number is None
+        assert apt._hw_type is None
+        assert apt._fw_version is None
+        assert apt._notes == ""
+        assert apt._hw_version is None
+        assert apt._mod_state is None
+        assert apt._n_channels == 0
+        assert apt._channel == ()
 
 
 # FIXTURES FOR APT TEST SUITE #
@@ -190,6 +227,78 @@ def init_tim101():
             43,
             # Number of channels
             4
+        )
+    ).pack()
+    return stdin, stdout
+
+
+@pytest.fixture
+def init_ksg101():
+    """Return the send, receive value to initialize a KSG101 unit."""
+    stdin = ThorLabsPacket(
+        message_id=ThorLabsCommands.HW_REQ_INFO,
+        param1=0x00, param2=0x00,
+        dest=0x50,
+        source=0x01,
+        data=None
+    ).pack()
+    stdout = ThorLabsPacket(
+        message_id=ThorLabsCommands.HW_GET_INFO,
+        dest=0x01,
+        source=0x50,
+        data=hw_info_data.pack(
+            # Serial number
+            b'\x01\x02\x03\x04',
+            # Model number
+            "KSG101".encode('ascii'),
+            # HW type
+            3,
+            # FW version,
+            0xa1, 0xa2, 0xa3,
+            # Notes
+            "abcdefg".encode('ascii'),
+            # HW version
+            42,
+            # Mod state
+            43,
+            # Number of channels
+            1
+        )
+    ).pack()
+    return stdin, stdout
+
+
+@pytest.fixture
+def init_kpz001():
+    """Return the send, receive value to initialize a KPZ001 unit."""
+    stdin = ThorLabsPacket(
+        message_id=ThorLabsCommands.HW_REQ_INFO,
+        param1=0x00, param2=0x00,
+        dest=0x50,
+        source=0x01,
+        data=None
+    ).pack()
+    stdout = ThorLabsPacket(
+        message_id=ThorLabsCommands.HW_GET_INFO,
+        dest=0x01,
+        source=0x50,
+        data=hw_info_data.pack(
+            # Serial number
+            b'\x01\x02\x03\x04',
+            # Model number
+            "KPZ101".encode('ascii'),
+            # HW type
+            3,
+            # FW version,
+            0xa1, 0xa2, 0xa3,
+            # Notes
+            "abcdefg".encode('ascii'),
+            # HW version
+            42,
+            # Mod state
+            43,
+            # Number of channels
+            1
         )
     ).pack()
     return stdin, stdout
@@ -677,6 +786,215 @@ def test_apt_pia_enabled_type_error(init_kim101):
             assert apt.channel[0].enabled
 
 
+# APT PIEZO STAGE (APT_PS) #
+
+
+def test_apt_ps_max_travel_no_response(init_kpz001):
+    with expected_protocol(
+            ik.thorlabs.APTPiezoStage,
+            [
+                init_kpz001[0],
+                ThorLabsPacket(  # read state
+                    message_id=ThorLabsCommands.PZ_REQ_MAXTRAVEL,
+                    param1=0x01, param2=0x00,
+                    dest=0x50,
+                    source=0x01,
+                    data=None
+                ).pack()
+            ],
+            [
+                init_kpz001[1]
+            ],
+            sep=""
+    ) as apt:
+        assert apt.channel[0].max_travel == NotImplemented
+
+
+def test_apt_ps_led_intensity(init_kpz001):
+    """Get / set LED intensity between zero and 1."""
+    led_intensity = 0.73
+    with expected_protocol(
+            ik.thorlabs.APTPiezoStage,
+            [
+                init_kpz001[0],
+                ThorLabsPacket(  # set state
+                    message_id=ThorLabsCommands.PZ_SET_TPZ_DISPSETTINGS,
+                    param1=None, param2=None,
+                    dest=0x50,
+                    source=0x01,
+                    data=struct.pack('<H', int(round(255 * led_intensity)))
+                ).pack(),
+                ThorLabsPacket(  # read state
+                    message_id=ThorLabsCommands.PZ_REQ_TPZ_DISPSETTINGS,
+                    param1=0x01, param2=0x00,
+                    dest=0x50,
+                    source=0x01,
+                    data=None
+                ).pack()
+            ],
+            [
+                init_kpz001[1],
+                ThorLabsPacket(  # get state
+                    message_id=ThorLabsCommands.PZ_GET_TPZ_DISPSETTINGS,
+                    param1=None, param2=None,
+                    dest=0x50,
+                    source=0x01,
+                    data=struct.pack('<H', int(round(255 * led_intensity)))
+                ).pack()
+            ],
+            sep=""
+    ) as apt:
+        apt.led_intensity = led_intensity
+        assert apt.led_intensity == pytest.approx(led_intensity, 1.0 / 255)
+
+
+def test_apt_ps_led_intensity_no_response(init_kpz001):
+    """No response when setting the display."""
+    with expected_protocol(
+            ik.thorlabs.APTPiezoStage,
+            [
+                init_kpz001[0],
+                ThorLabsPacket(  # read state
+                    message_id=ThorLabsCommands.PZ_REQ_TPZ_DISPSETTINGS,
+                    param1=0x01, param2=0x00,
+                    dest=0x50,
+                    source=0x01,
+                    data=None
+                ).pack()
+            ],
+            [
+                init_kpz001[1]
+            ],
+            sep=""
+    ) as apt:
+        assert apt.led_intensity == NotImplemented
+
+
+@pytest.mark.parametrize("value", (0x01, 0x02, 0x03, 0x04))
+def test_apt_ps_position_control_closed(init_kpz001, value):
+    """Get the status if the position control is closed or not."""
+    with expected_protocol(
+            ik.thorlabs.APTPiezoStage,
+            [
+                init_kpz001[0],
+                ThorLabsPacket(
+                    message_id=ThorLabsCommands.PZ_REQ_POSCONTROLMODE,
+                    param1=0x01, param2=0x00,
+                    dest=0x50,
+                    source=0x01,
+                    data=None
+                ).pack()
+            ],
+            [
+                init_kpz001[1],
+                ThorLabsPacket(
+                    message_id=ThorLabsCommands.PZ_GET_POSCONTROLMODE,
+                    param1=0x01, param2=value,
+                    dest=0x50,
+                    source=0x01,
+                    data=None
+                ).pack()
+            ],
+            sep=""
+    ) as apt:
+        assert apt.channel[0].position_control_closed == bool(value - 1 & 1)
+
+
+@pytest.mark.parametrize("closed", (True, False))
+@pytest.mark.parametrize("smooth", (True, False))
+def test_apt_ps_change_position_control_mode(init_kpz001, closed, smooth):
+    """Set the position control mode."""
+    mode = 1 + (int(closed) | int(smooth) << 1)
+    with expected_protocol(
+            ik.thorlabs.APTPiezoStage,
+            [
+                init_kpz001[0],
+                ThorLabsPacket(
+                    message_id=ThorLabsCommands.PZ_SET_POSCONTROLMODE,
+                    param1=0x01, param2=mode,
+                    dest=0x50,
+                    source=0x01,
+                    data=None
+                ).pack()
+            ],
+            [
+                init_kpz001[1]
+            ],
+            sep=""
+    ) as apt:
+        apt.channel[0].change_position_control_mode(closed, smooth=smooth)
+
+
+@given(position=st.integers(min_value=0, max_value=32767))
+def test_apt_ps_output_position(init_kpz001, position):
+    """Get / set output position for piezo channel."""
+    with expected_protocol(
+            ik.thorlabs.APTPiezoStage,
+            [
+                init_kpz001[0],
+                ThorLabsPacket(
+                    message_id=ThorLabsCommands.PZ_SET_OUTPUTPOS,
+                    param1=None, param2=None,
+                    dest=0x50,
+                    source=0x01,
+                    data=struct.pack('<HH', 0x01, position)
+                ).pack(),
+                ThorLabsPacket(
+                    message_id=ThorLabsCommands.PZ_REQ_OUTPUTPOS,
+                    param1=0x01, param2=0x00,
+                    dest=0x50,
+                    source=0x01,
+                    data=None
+                ).pack()
+            ],
+            [
+                init_kpz001[1],
+                ThorLabsPacket(
+                    message_id=ThorLabsCommands.PZ_GET_OUTPUTPOS,
+                    param1=None, param2=None,
+                    dest=0x50,
+                    source=0x01,
+                    data=struct.pack('<HH', 0x01, position)
+                ).pack()
+            ],
+            sep=""
+    ) as apt:
+        apt.channel[0].output_position = position
+        assert apt.channel[0].output_position == position
+
+
+# APT STRAIN GAUGE READER (APT SGR) #
+
+
+def test_apt_sgr_max_travel(init_ksg101):
+    value = 10000
+    with expected_protocol(
+            ik.thorlabs.APTPiezoStage,
+            [
+                init_ksg101[0],
+                ThorLabsPacket(  # read state
+                    message_id=ThorLabsCommands.PZ_REQ_MAXTRAVEL,
+                    param1=0x01, param2=0x00,
+                    dest=0x50,
+                    source=0x01,
+                    data=None
+                ).pack()
+            ],
+            [
+                init_ksg101[1],
+                ThorLabsPacket(
+                    message_id=ThorLabsCommands.PZ_GET_MAXTRAVEL,
+                    param1=None, param2=None,
+                    dest=0x50,
+                    source=0x01,
+                    data=struct.pack('<HH', 0x01, value)
+                ).pack()
+            ],
+            sep=""
+    ) as apt:
+        assert apt.channel[0].max_travel == value * u.Quantity(100, 'nm')
+
+
 # APT MOTOR CONTROLLER (APT_MC) #
 
 
@@ -733,6 +1051,30 @@ def test_apt_mc_enabled(init_kdc101):
         apt.channel[0].enabled = True
 
 
+def test_apt_mc_set_scale(init_kdc101, mocker):
+    """Set the scale using the depreciated set scale routine.
+
+    Assert that a warning was raised.
+    """
+    mock_warning = mocker.patch.object(warnings, 'warn')
+    with expected_protocol(
+            ik.thorlabs.APTMotorController,
+            [
+                init_kdc101[0]
+            ],
+            [
+                init_kdc101[1]
+            ],
+            sep=""
+    ) as apt:
+        apt.channel[0].set_scale('PRM1-Z8')
+        mock_warning.assert_called_with(
+            "The set_scale method has been deprecated in favor "
+            "of the motor_model property.",
+            DeprecationWarning
+        )
+
+
 def test_apt_mc_motor_model(init_kdc101):
     """Set / Get the motor model."""
     with expected_protocol(
@@ -747,6 +1089,75 @@ def test_apt_mc_motor_model(init_kdc101):
     ) as apt:
         apt.channel[0].motor_model = 'PRM1-Z8'
         assert apt.channel[0].motor_model == 'PRM1-Z8'
+
+
+def test_apt_mc_motor_model_invalid_model(init_kdc101):
+    """Try setting an invalid motor model."""
+    with expected_protocol(
+            ik.thorlabs.APTMotorController,
+            [
+                init_kdc101[0]
+            ],
+            [
+                init_kdc101[1]
+            ],
+            sep=""
+    ) as apt:
+        apt.scale_factors = 42  # set to some value
+        apt.channel[0].motor_model = 'INVALID'
+        assert apt.scale_factors == 42  # assert it hasn't changed
+
+
+apt_mc_channel_status_bit_mask = {
+    'CW_HARD_LIM': 0x00000001,
+    'CCW_HARD_LIM': 0x00000002,
+    'CW_SOFT_LIM': 0x00000004,
+    'CCW_SOFT_LIM': 0x00000008,
+    'CW_MOVE_IN_MOTION': 0x00000010,
+    'CCW_MOVE_IN_MOTION': 0x00000020,
+    'CW_JOG_IN_MOTION': 0x00000040,
+    'CCW_JOG_IN_MOTION': 0x00000080,
+    'MOTOR_CONNECTED': 0x00000100,
+    'HOMING_IN_MOTION': 0x00000200,
+    'HOMING_COMPLETE': 0x00000400,
+    'INTERLOCK_STATE': 0x00001000
+}
+
+
+@pytest.mark.parametrize("status_bits",
+                         apt_mc_channel_status_bit_mask.values())
+def test_apt_mc_status_bits(init_kdc101, status_bits):
+    """Get status bits."""
+    status_dict_expected = dict(
+        (key, (status_bits & bit_mask > 0))
+        for key, bit_mask in apt_mc_channel_status_bit_mask.items()
+    )
+
+    with expected_protocol(
+            ik.thorlabs.APTMotorController,
+            [
+                init_kdc101[0],
+                ThorLabsPacket(  # read position
+                    message_id=ThorLabsCommands.MOT_REQ_STATUSUPDATE,
+                    param1=0x01, param2=0x00,
+                    dest=0x50,
+                    source=0x01,
+                    data=None
+                ).pack()
+            ],
+            [
+                init_kdc101[1],
+                ThorLabsPacket(
+                    message_id=ThorLabsCommands.MOT_GET_POSCOUNTER,
+                    param1=None, param2=None,
+                    dest=0x50,
+                    source=0x01,
+                    data=struct.pack('<HLLL', 0x01, 0x01, 0x01, status_bits)
+                ).pack()
+            ],
+            sep=""
+    ) as apt:
+        assert apt.channel[0].status_bits == status_dict_expected
 
 
 def test_apt_mc_position(init_kdc101):
@@ -928,8 +1339,9 @@ def test_apt_mc_identify(init_kdc101):
         apt.identify()
 
 
-def test_apt_mc_n_channels(init_kdc101):
-    """Identify the controller by blinking its LEDs."""
+@pytest.mark.parametrize("n_ch", (0, 1, 2))
+def test_apt_mc_n_channels(init_kdc101, n_ch):
+    """Get / Set the number of channels."""
     with expected_protocol(
             ik.thorlabs.APTMotorController,
             [
@@ -940,4 +1352,6 @@ def test_apt_mc_n_channels(init_kdc101):
             ],
             sep=""
     ) as apt:
-        assert apt.n_channels == 1
+        # print(type(apt._channel))
+        apt.n_channels = n_ch
+        assert apt.n_channels == n_ch
