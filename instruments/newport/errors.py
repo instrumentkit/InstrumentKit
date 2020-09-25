@@ -103,8 +103,7 @@ class NewportError(IOError):
         if timestamp is None:
             self._timestamp = datetime.datetime.now() - NewportError.start_time
         else:
-            self._timestamp = datetime.timedelta(
-                seconds=(timestamp * 400E-6))
+            self._timestamp = datetime.datetime.now() - timestamp
 
         if errcode is not None:
             # Break the error code into an axis number
