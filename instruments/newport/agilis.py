@@ -29,7 +29,7 @@ Routines not implemented at all:
 
 # IMPORTS #####################################################################
 
-from time import sleep
+import time
 
 from enum import IntEnum
 
@@ -97,12 +97,13 @@ class _Axis:
          3 — Positive direction, 1700 steps/s at max. step amplitude.
          4 — Positive direction, 666 steps/s at defined step amplitude.
 
-        If the jog mode is queried it is returend as a string.
+        :return: Jog motion set
+        :rtype: `int`
         """
         resp = self._cont.ag_query("{} JA?".format(
             int(self._ax)
         ))
-        return resp
+        return int(resp.split("JA")[1])
 
     @jog.setter
     def jog(self, mode):
@@ -133,12 +134,13 @@ class _Axis:
         different positions even though a TP command may return the same
         result.
 
-        Returns xTPnn where x is the axis queried and nn are the steps.
+        :return: Number of steps
+        :rtype: int
         """
         resp = self._cont.ag_query("{} TP".format(
             int(self._ax)
         ))
-        return resp
+        return int(resp.split("TP")[1])
 
     @property
     def move_relative(self):
@@ -152,7 +154,7 @@ class _Axis:
         resp = self._cont.ag_query("{} PR?".format(
             int(self._ax)
         ))
-        return resp
+        return int(resp.split("PR")[1])
 
     @move_relative.setter
     def move_relative(self, steps):
@@ -184,7 +186,7 @@ class _Axis:
         resp = self._cont.ag_query("{} MA?".format(
             int(self._ax)
         ))
-        return resp
+        return int(resp.split("MA")[1])
 
     @move_to_limit.setter
     def move_to_limit(self, mode):
@@ -210,9 +212,10 @@ class _Axis:
         provide a tuple or list of two values (one positive, one negative),
         which will set both values.
         Valid values are between -50 and 50, except for 0.
-        If queried, returns a tuple of first the negative, then the positive
-        step amplitude response in the format xSUnn where x is the axis and
-        nn the step amplitude
+
+        :return: Tuple of first negative, then positive step amplitude
+            response.
+        :rtype: (`int`, `int`)
         """
         resp_neg = self._cont.ag_query("{} SU-?".format(
             int(self._ax)
@@ -220,7 +223,7 @@ class _Axis:
         resp_pos = self._cont.ag_query("{} SU+?".format(
             int(self._ax)
         ))
-        return resp_neg, resp_pos
+        return int(resp_neg.split("SU")[1]), int(resp_pos.split("SU")[1])
 
     @step_amplitude.setter
     def step_amplitude(self, nns):
@@ -251,14 +254,14 @@ class _Axis:
         delay of 2 seconds between pulses. By default, after reset, the value
         is 0.
         Setter: value must be integer between 0 and 200000 included
-        If queried, command returns the currently set step delay as a string
-        in the format xDLnn where x is the axis number and nn the step delay
-        value.
+
+        :return: Step delay
+        :rtype: `int`
         """
         resp = self._cont.ag_query("{} DL?".format(
             int(self._ax)
         ))
-        return resp
+        return int(resp.split("DL")[1])
 
     @step_delay.setter
     def step_delay(self, nn):
@@ -503,7 +506,7 @@ class AGUC2(Instrument):
         Sends the command, then sleeps
         """
         self.sendcmd(cmd)
-        sleep(self._sleep_time)
+        time.sleep(self._sleep_time)
 
     def ag_query(self, cmd, size=-1):
         """
@@ -518,7 +521,7 @@ class AGUC2(Instrument):
             resp = "Query timed out."
 
         # sleep
-        sleep(self._sleep_time)
+        time.sleep(self._sleep_time)
 
         return resp
 
