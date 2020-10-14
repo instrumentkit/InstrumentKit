@@ -193,7 +193,7 @@ class Fluke3000(Multimeter):
 
         :rtype: `str`
         """
-        return AttributeError('The `Fluke3000` FC is an autoranging only multimeter')
+        raise AttributeError('The `Fluke3000` FC is an autoranging only multimeter')
 
     # METHODS #
 
@@ -216,7 +216,7 @@ class Fluke3000(Multimeter):
 
     def scan(self):
         """
-        Search for available modules and reformatturns a dictionary
+        Search for available modules and reformat. Returns a dictionary
         of the modules found and their port ID.
         """
         # Loop over possible channels, store device locations
