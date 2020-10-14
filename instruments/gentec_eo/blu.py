@@ -185,12 +185,13 @@ class Blu(Instrument):
         _timeout = self.timeout
         self.timeout = u.Quantity(1, u.s)
 
-        # get the response
-        resp = self._no_ack_query("*DVS").split('\r\n')
-
-        # set back terminator and 3 second timeout
-        self.terminator = _terminator
-        self.timeout = _timeout
+        try:
+            # get the response
+            resp = self._no_ack_query("*DVS").split('\r\n')
+        finally:
+            # set back terminator and 3 second timeout
+            self.terminator = _terminator
+            self.timeout = _timeout
 
         # prepare return
         retlist = []  # init return list of enums
@@ -601,8 +602,10 @@ class Blu(Instrument):
     def _no_ack_query(self, cmd, size=-1):
         """Query a value and don't expect an ACK message."""
         self._ack_message = None
-        value = self.query(cmd, size=size)
-        self._ack_message = "ACK"
+        try:
+            value = self.query(cmd, size=size)
+        finally:
+            self._ack_message = "ACK"
         return value
 
     def _value_query(self, cmd, tp=str):

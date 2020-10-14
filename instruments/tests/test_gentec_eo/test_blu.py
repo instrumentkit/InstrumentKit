@@ -112,6 +112,31 @@ def test_blu_available_scales():
         assert blu.available_scales == ret_scale
 
 
+def test_blu_available_scales_error():
+    """Ensure that temporary variables are reset if read errors.
+
+    Return a `bogus` value, which is not an available scale, and ensure
+    that the temporary variables are reset afterwards. This specific
+    case raises a ValueError.
+    """
+    with expected_protocol(
+            ik.gentec_eo.Blu,
+            [
+                "*DVS"
+            ],
+            [
+                "bogus"
+            ],
+            sep="",
+    ) as blu:
+        _terminator = blu.terminator
+        _timeout = blu.timeout
+        with pytest.raises(ValueError):
+            _ = blu.available_scales
+        assert blu.terminator == _terminator
+        assert blu.timeout == _timeout
+
+
 def test_blu_battery_state():
     """Get the battery state of the instrument in percent."""
     with expected_protocol(
@@ -547,6 +572,29 @@ def test_blu_scale_up():
             sep="\r\n",
     ) as blu:
         blu.scale_up()
+
+
+def test_no_ack_query_error(mocker):
+    """Ensure temporary variables reset if `_no_ack_query` errors.
+
+    Mocking query here in order to raise an error on query.
+    """
+    with expected_protocol(
+            ik.gentec_eo.Blu,
+            [
+            ],
+            [
+            ],
+            sep="\r\n",
+    ) as blu:
+        # mock query w/ IOError
+        io_error_mock = mocker.Mock()
+        io_error_mock.side_effect = IOError
+        mocker.patch.object(blu, 'query', io_error_mock)
+        # do the query
+        with pytest.raises(IOError):
+            _ = blu._no_ack_query("QUERY")
+        assert blu._ack_message == "ACK"
 
 
 # NON-Blu ROUTINES #
