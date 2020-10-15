@@ -6,6 +6,8 @@ Defines globally-available subpackages and symbols for the instruments package.
 
 # IMPORTS ####################################################################
 
+__all__ = ["units"]
+
 
 from . import abstract_instruments
 from .abstract_instruments import Instrument
@@ -33,7 +35,8 @@ from . import thorlabs
 from . import toptica
 from . import yokogawa
 
-from . import units
+from .units import ureg as units
+
 from .config import load_instruments
 
 # VERSION METADATA ###########################################################
