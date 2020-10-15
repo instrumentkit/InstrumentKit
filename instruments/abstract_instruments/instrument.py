@@ -15,7 +15,7 @@ import urllib.parse as parse
 from serial import SerialException
 from serial.tools.list_ports import comports
 import numpy as np
-import visa
+import pyvisa
 import usb
 import usb.core
 import usb.util
@@ -581,16 +581,16 @@ class Instrument:
 
         .. _PyVISA: http://pyvisa.sourceforge.net/
         """
-        if visa is None:
+        if pyvisa is None:
             raise ImportError("PyVISA is required for loading VISA "
                               "instruments.")
-        version = list(map(int, visa.__version__.split(".")))
+        version = list(map(int, pyvisa.__version__.split(".")))
         while len(version) < 3:
             version += [0]
         if version[0] >= 1 and version[1] >= 6:
-            ins = visa.ResourceManager().open_resource(resource_name)
+            ins = pyvisa.ResourceManager().open_resource(resource_name)
         else:
-            ins = visa.instrument(resource_name)  #pylint: disable=no-member
+            ins = pyvisa.instrument(resource_name)  #pylint: disable=no-member
         return cls(VisaCommunicator(ins))
 
     @classmethod
