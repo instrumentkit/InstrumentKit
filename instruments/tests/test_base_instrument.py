@@ -272,14 +272,14 @@ def test_instrument_open_gpibusb(mock_serial_manager, mock_gpib_comm):
     )
 
 
-@mock.patch("instruments.abstract_instruments.instrument.visa", new=None)
+@mock.patch("instruments.abstract_instruments.instrument.pyvisa", new=None)
 def test_instrument_open_visa_import_error():
     with pytest.raises(ImportError):
         _ = ik.Instrument.open_visa("abc123")
 
 
 @mock.patch("instruments.abstract_instruments.instrument.VisaCommunicator")
-@mock.patch("instruments.abstract_instruments.instrument.visa")
+@mock.patch("instruments.abstract_instruments.instrument.pyvisa")
 def test_instrument_open_visa_new_version(mock_visa, mock_visa_comm):
     mock_visa_comm.return_value.__class__ = VisaCommunicator
     mock_visa.__version__ = "1.8"
@@ -294,7 +294,7 @@ def test_instrument_open_visa_new_version(mock_visa, mock_visa_comm):
 
 
 @mock.patch("instruments.abstract_instruments.instrument.VisaCommunicator")
-@mock.patch("instruments.abstract_instruments.instrument.visa")
+@mock.patch("instruments.abstract_instruments.instrument.pyvisa")
 def test_instrument_open_visa_old_version(mock_visa, mock_visa_comm):
     mock_visa_comm.return_value.__class__ = VisaCommunicator
     mock_visa.__version__ = "1.5"
