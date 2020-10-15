@@ -7,7 +7,7 @@ from enum import Enum
 from time import sleep
 
 from instruments.abstract_instruments import Instrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
@@ -462,14 +462,13 @@ class Blu(Instrument):
     def user_offset(self, newval):
         # if unitful, try to rescale and grab magnitude
         if isinstance(newval, u.Quantity):
-            try:
-                newval = newval.rescale(u.W).magnitude
-            except ValueError:  # so it's not in W
-                try:
-                    newval = newval.rescale(u.J).magnitude
-                except ValueError:  # invalid unit
-                    raise ValueError("Value must be given in watts, "
-                                     "joules, or unitless.")
+            if newval.is_compatible_with(u.W):
+                newval = newval.to(u.W).magnitude
+            elif newval.is_compatible_with(u.J):
+                newval = newval.to(u.J).magnitude
+            else:
+                raise ValueError("Value must be given in watts, "
+                                 "joules, or unitless.")
         sendval = _format_eight(newval)  # sendval: 8 characters long
         self.sendcmd("*OFF{}".format(sendval))
 
@@ -502,7 +501,7 @@ class Blu(Instrument):
 
         Example:
             >>> import instruments as ik
-            >>> import instruments.units as u
+            >>> from instruments.units import ureg as u
             >>> inst = ik.gentec_eo.Blu.open_serial('/dev/ttyACM0')
             >>> inst.wavelength = u.Quantity(527, u.nm)
             >>> inst.wavelength
@@ -512,7 +511,7 @@ class Blu(Instrument):
 
     @wavelength.setter
     def wavelength(self, newval):
-        val = assume_units(newval, u.nm).rescale(u.nm).magnitude.round(0)
+        val = round(assume_units(newval, u.nm).to(u.nm).magnitude)
         if val >= 1000000 or val < 0:  # can only send 5 digits
             val = 0  # out of bound anyway
         val = str(int(val)).zfill(5)
