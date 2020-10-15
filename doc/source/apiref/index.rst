@@ -15,6 +15,7 @@ Contents:
     generic_scpi
     agilent
     fluke
+    gentec-eo
     glassman
     holzworth
     hp
