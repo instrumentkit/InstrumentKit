@@ -51,8 +51,6 @@ class ThorLabsPacket:
         if not has_data and (data is not None):
             raise ValueError("A ThorLabs packet can either have parameters "
                              "or data, but not both.")
-        if param1 is None and param2 is None and data is None:
-            raise ValueError("You must specify either data or parameters.")
 
         self._message_id = message_id
         self._param1 = param1
@@ -66,12 +64,17 @@ class ThorLabsPacket:
         return """
 ThorLabs APT packet:
     Message ID      0x{0._message_id:x}
-    Parameter 1     0x{0._param1:x}
-    Parameter 2     0x{0._param2:x}
+    Parameter 1     {1}
+    Parameter 2     {2}
     Destination     0x{0._dest:x}
     Source          0x{0._source:x}
-    Data            {1}
-""".format(self, "{:x}".format(self._data) if self._has_data else "None")
+    Data            {3}
+""".format(
+    self,
+    "0x{:x}".format(self._param1) if not self._has_data else "None",
+    "0x{:x}".format(self._param2) if not self._has_data else "None",
+    "{}".format(self._data) if self._has_data else "None"
+)
 
     @property
     def message_id(self):
@@ -97,7 +100,7 @@ ThorLabs APT packet:
 
     @parameters.setter
     def parameters(self, newval):
-        self._message_id = newval
+        self._param1, self._param2 = newval
 
     @property
     def destination(self):

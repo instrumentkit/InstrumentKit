@@ -72,7 +72,7 @@ class ThorLabsInstrument(Instrument):
         """
         t_start = time.time()
 
-        if timeout:
+        if timeout is not None:
             timeout = assume_units(timeout, u.second).to('second').magnitude
 
         while True:

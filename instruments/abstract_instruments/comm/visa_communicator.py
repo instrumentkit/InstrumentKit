@@ -10,7 +10,7 @@ library.
 
 import io
 
-import visa
+import pyvisa
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -29,13 +29,13 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, conn):
         super(VisaCommunicator, self).__init__(self)
 
-        if visa is None:
+        if pyvisa is None:
             raise ImportError("PyVISA required for accessing VISA instruments.")
 
-        version = int(visa.__version__.replace(".", "").ljust(3, "0"))
+        version = int(pyvisa.__version__.replace(".", "").ljust(3, "0"))
         # pylint: disable=no-member
-        if (version < 160 and isinstance(conn, visa.Instrument)) or \
-                (version >= 160 and isinstance(conn, visa.Resource)):
+        if (version < 160 and isinstance(conn, pyvisa.Instrument)) or \
+                (version >= 160 and isinstance(conn, pyvisa.Resource)):
             self._conn = conn
             self._terminator = "\n"
         else:
