@@ -40,7 +40,7 @@ INSTALL_REQUIRES = [
     "python-usbtmc",
     "pyusb",
     "ruamel.yaml~=0.15.37",
-    "pint>=0.14.0"
+    "pint>=0.16.1"
 ]
 
 
