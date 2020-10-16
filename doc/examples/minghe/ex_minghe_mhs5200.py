@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from instruments.minghe import MHS5200
-from instruments.units import ureg as u
+import instruments.units as u
 
 mhs = MHS5200.open_serial(vid=6790, pid=29987, baud=57600)
 print(mhs.serial_number)

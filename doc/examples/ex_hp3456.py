@@ -4,7 +4,7 @@
 import logging
 import time
 import instruments as ik
-from instruments.units import ureg as u
+import instruments.units as u
 
 dmm = ik.hp.HP3456a.open_gpibusb('/dev/ttyUSB0', 22)
 logging.basicConfig(level=logging.DEBUG)
