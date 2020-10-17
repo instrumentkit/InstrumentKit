@@ -8,8 +8,6 @@ Provides support for the Lakeshore 475 Gaussmeter.
 
 from enum import IntEnum
 
-import pint
-
 from instruments.generic_scpi import SCPIInstrument
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units, bool_property
@@ -109,7 +107,7 @@ class Lakeshore475(SCPIInstrument):
 
     @field_units.setter
     def field_units(self, newval):
-        if isinstance(newval, pint.Unit):
+        if isinstance(newval, u.Unit):
             if newval in LAKESHORE_FIELD_UNITS_INV:
                 self.sendcmd(f"UNIT {LAKESHORE_FIELD_UNITS_INV[newval]}")
             else:
@@ -131,7 +129,7 @@ class Lakeshore475(SCPIInstrument):
 
     @temp_units.setter
     def temp_units(self, newval):
-        if isinstance(newval, pint.Unit):
+        if isinstance(newval, u.Unit):
             if newval in LAKESHORE_TEMP_UNITS_INV:
                 self.sendcmd(f"TUNIT {LAKESHORE_TEMP_UNITS_INV[newval]}")
             else:
