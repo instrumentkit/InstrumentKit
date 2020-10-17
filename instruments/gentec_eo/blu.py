@@ -501,7 +501,7 @@ class Blu(Instrument):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.gentec_eo.Blu.open_serial('/dev/ttyACM0')
             >>> inst.wavelength = u.Quantity(527, u.nm)
             >>> inst.wavelength

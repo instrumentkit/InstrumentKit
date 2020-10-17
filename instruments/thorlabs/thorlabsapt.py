@@ -352,7 +352,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
     Example for a KIM101 controller:
         >>> import instruments as ik
-        >>> from instruments.units import ureg as u
+        >>> import instruments.units as u
         >>> # call the controller
         >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
         >>> # set first channel to enabled
@@ -415,7 +415,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
             Example:
                 >>> import instruments as ik
-                >>> from instruments.units import ureg as u
+                >>> import instruments.units as u
                 >>> # call the controller
                 >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
@@ -600,7 +600,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
             Example for a KIM101 controller:
                 >>> import instruments as ik
-                >>> from instruments.units import ureg as u
+                >>> import instruments.units as u
                 >>> # call the controller
                 >>> kim = ik.thorlabs.APTPiezoInertiaActuator.open_serial("/dev/ttyUSB0", baud=115200)
                 >>> # grab channel 0
@@ -1067,7 +1067,7 @@ class APTMotorController(ThorLabsAPT):
 
     Example:
         >>> import instruments as ik
-        >>> from instruments.units import ureg as u
+        >>> import instruments.units as u
 
         >>> # load the controller, a KDC101 cube
         >>> kdc = ik.thorlabs.APTMotorController.open_serial("/dev/ttyUSB0", baud=115200)
@@ -1344,7 +1344,7 @@ class APTMotorController(ThorLabsAPT):
 
             Example:
                 >>> import instruments as ik
-                >>> from instruments.units import ureg as u
+                >>> import instruments.units as u
 
                 >>> # load the controller, a KDC101 cube
                 >>> kdc = ik.thorlabs.APTMotorController.open_serial("/dev/ttyUSB0", baud=115200)

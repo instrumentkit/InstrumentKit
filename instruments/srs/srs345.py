@@ -26,7 +26,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> srs = ik.srs.SRS345.open_gpib('/dev/ttyUSB0', 1)
     >>> srs.frequency = 1 * u.MHz
     >>> print(srs.offset)

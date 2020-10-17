@@ -52,7 +52,7 @@ class MAUI(Oscilloscope):
 
     Example usage (more examples below):
         >>> import instruments as ik
-        >>> from instruments.units import ureg as u
+        >>> import instruments.units as u
         >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
         >>> # start the trigger in automatic mode
         >>> inst.run()
@@ -237,7 +237,7 @@ class MAUI(Oscilloscope):
 
             Example usage:
                 >>> import instruments as ik
-                >>> from instruments.units import ureg as u
+                >>> import instruments.units as u
                 >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
                 >>> channel = inst.channel[0]  # set up channel
                 >>> xdat, ydat = channel.read_waveform()  # read waveform
@@ -359,7 +359,7 @@ class MAUI(Oscilloscope):
 
             Example:
                 >>> import instruments as ik
-                >>> from instruments.units import ureg as u
+                >>> import instruments.units as u
                 >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
                 >>> channel = inst.channel[0]  # set up channel
                 >>> channel.offset = u.Quantity(-1, u.V)
@@ -380,7 +380,7 @@ class MAUI(Oscilloscope):
 
             Example:
                 >>> import instruments as ik
-                >>> from instruments.units import ureg as u
+                >>> import instruments.units as u
                 >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
                 >>> channel = inst.channel[0]  # set up channel
                 >>> channel.scale = u.Quantity(20, u.mV)
@@ -867,7 +867,7 @@ class MAUI(Oscilloscope):
 
             Example:
                 >>> import instruments as ik
-                >>> from instruments.units import ureg as u
+                >>> import instruments.units as u
                 >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
                 >>> channel = inst.channel[0]  # set up channel
                 >>> # set up the first math function
@@ -946,7 +946,7 @@ class MAUI(Oscilloscope):
                 
                 Example:
                     >>> import instruments as ik
-                    >>> from instruments.units import ureg as u
+                    >>> import instruments.units as u
                     >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
                     >>> msr1 = inst.measurement[0]  # set up first measurement
                     >>> msr1.measurement_state = msr1.State.both  # set to `both`
@@ -1007,7 +1007,7 @@ class MAUI(Oscilloscope):
 
             Example:
                 >>> import instruments as ik
-                >>> from instruments.units import ureg as u
+                >>> import instruments.units as u
                 >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
                 >>> msr1 = inst.measurement[0]  # set up first measurement
                 >>> # setup to measure the 10 - 90% rise time on first channel
@@ -1063,7 +1063,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> channel = inst.channel[0]  # get first channel
         """
@@ -1077,7 +1077,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> math = inst.math[0]  # get first math function
         """
@@ -1091,7 +1091,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> msr = inst.measurement[0]  # get first measurement parameter
         """
@@ -1112,7 +1112,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.number_channel = 2  # for a oscilloscope with 2 channels
             >>> inst.number_channel
@@ -1134,7 +1134,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.number_functions = 4  # for a oscilloscope with 4 math functions
             >>> inst.number_functions
@@ -1154,7 +1154,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.number_measurements = 4  # for a oscilloscope with 4 measurements
             >>> inst.number_measurements
@@ -1178,7 +1178,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.self_test()
         """
@@ -1197,7 +1197,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.show_id()
         """
@@ -1213,7 +1213,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.show_options()
         """
@@ -1227,7 +1227,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.time_div = u.Quantity(200, u.ns)
         """
@@ -1251,7 +1251,7 @@ class MAUI(Oscilloscope):
             
             Example:
                 >>> import instruments as ik
-                >>> from instruments.units import ureg as u
+                >>> import instruments.units as u
                 >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
                 >>> inst.trigger_state = inst.TriggerState.normal
             """
@@ -1265,7 +1265,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.trigger_delay = u.Quantity(60, u.ns)
 
@@ -1300,7 +1300,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.trigger_source = inst.TriggerSource.ext  # external trigger
         """
@@ -1330,7 +1330,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.trigger_type = inst.TriggerType.edge  # trigger on edge
         """
@@ -1351,7 +1351,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.clear_sweeps()
         """
@@ -1362,7 +1362,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.force_trigger()
         """
@@ -1373,7 +1373,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.run()
         """
@@ -1384,7 +1384,7 @@ class MAUI(Oscilloscope):
 
         Example:
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.stop()
         """

@@ -359,7 +359,7 @@ class TopMode(Instrument):
         For example, the following would print the wavelength from laser 1:
 
         >>> import instruments as ik
-        >>> from instruments.units import ureg as u
+        >>> import instruments.units as u
         >>> tm = ik.toptica.TopMode.open_serial('/dev/ttyUSB0', 115200)
         >>> print(tm.laser[0].wavelength)
 

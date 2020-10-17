@@ -25,7 +25,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> dmm = ik.keithley.Keithley6514.open_gpibusb('/dev/ttyUSB0', 12)
     """
 

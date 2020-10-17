@@ -23,7 +23,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> dmm = ik.agilent.Agilent34410a.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(dmm.measure(dmm.Mode.resistance))
 

@@ -44,7 +44,7 @@ class Lakeshore475(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> gm = ik.lakeshore.Lakeshore475.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(gm.field)
     >>> gm.field_units = u.tesla

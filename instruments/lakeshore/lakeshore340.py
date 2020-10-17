@@ -21,7 +21,7 @@ class Lakeshore340(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> inst = ik.lakeshore.Lakeshore340.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(inst.sensor[0].temperature)
     >>> print(inst.sensor[1].temperature)

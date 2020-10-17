@@ -81,7 +81,7 @@ class SRSDG645(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> srs = ik.srs.SRSDG645.open_gpibusb('/dev/ttyUSB0', 1)
     >>> srs.channel["B"].delay = (srs.channel["A"], u.Quantity(10, 'ns'))
     >>> srs.output["AB"].level_amplitude = u.Quantity(4.0, "V")

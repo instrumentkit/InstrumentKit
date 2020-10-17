@@ -41,7 +41,7 @@ class SRS830(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> srs = ik.srs.SRS830.open_gpibusb('/dev/ttyUSB0', 1)
     >>> srs.frequency = 1000 * u.hertz # Lock-In frequency
     >>> data = srs.take_measurement(1, 10) # 1Hz sample rate, 10 samples total

@@ -26,7 +26,7 @@ class Keithley6220(SCPIInstrument, PowerSupply):
 
     Example usage:
 
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> import instruments as ik
     >>> ccs = ik.keithley.Keithley6220.open_gpibusb("/dev/ttyUSB0", 10)
     >>> ccs.current = 10 * u.milliamp # Sets current to 10mA

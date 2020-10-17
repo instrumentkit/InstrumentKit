@@ -76,7 +76,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
     `polarity` that are only valid of the FR50R6 in its positive setting.
     If your power supply differs, reset those values by calling:
 
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> psu.voltage_max = 40.0 * u.kilovolt
     >>> psu.current_max = 7.5 * u.milliamp
     >>> psu.polarity = -1

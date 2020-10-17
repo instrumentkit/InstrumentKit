@@ -29,7 +29,7 @@ class Yokogawa7651(PowerSupply, Instrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> inst = ik.yokogawa.Yokogawa7651.open_gpibusb("/dev/ttyUSB0", 1)
     >>> inst.voltage = 10 * u.V
     """

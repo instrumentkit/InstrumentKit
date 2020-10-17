@@ -252,7 +252,7 @@ class LM(Instrument):
             Example usage:
 
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
             >>> print(laser.modulation.on_time)
             >>> laser.modulation.on_time = 1 * u.ms
@@ -280,7 +280,7 @@ class LM(Instrument):
             Example usage:
 
             >>> import instruments as ik
-            >>> from instruments.units import ureg as u
+            >>> import instruments.units as u
             >>> laser = ik.ondax.LM.open_serial('/dev/ttyUSB0', baud=1234)
             >>> print(laser.modulation.on_time)
             >>> laser.modulation.on_time = 1 * u.ms

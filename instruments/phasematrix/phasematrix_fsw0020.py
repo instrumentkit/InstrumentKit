@@ -23,7 +23,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
     Example::
 
         >>> import instruments as ik
-        >>> from instruments.units import ureg as u
+        >>> import instruments.units as u
         >>> inst = ik.phasematrix.PhaseMatrixFSW0020.open_serial("/dev/ttyUSB0", baud=115200)
         >>> inst.frequency = 1 * u.GHz
         >>> inst.power = 0 * ik.units.dBm  # Can omit units and will assume dBm

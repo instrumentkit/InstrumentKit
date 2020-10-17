@@ -29,7 +29,7 @@ class Agilent33220a(SCPIFunctionGenerator):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> inst = ik.agilent.Agilent33220a.open_gpibusb('/dev/ttyUSB0', 1)
     >>> inst.function = inst.Function.sinusoid
     >>> inst.frequency = 1 * u.kHz

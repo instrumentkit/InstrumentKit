@@ -25,7 +25,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> inst = ik.generic_scpi.SCPIFunctionGenerator.open_tcpip("192.168.1.1")
     >>> inst.frequency = 1 * u.kHz
     """

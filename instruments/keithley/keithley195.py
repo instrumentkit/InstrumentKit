@@ -26,7 +26,7 @@ class Keithley195(Multimeter):
     Example usage:
 
     >>> import instruments as ik
-    >>> from instruments.units import ureg as u
+    >>> import instruments.units as u
     >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
     >>> print dmm.measure(dmm.Mode.resistance)
 
@@ -243,7 +243,7 @@ class Keithley195(Multimeter):
         Example usage:
 
         >>> import instruments as ik
-        >>> from instruments.units import ureg as u
+        >>> import instruments.units as u
         >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
         >>> print(dmm.measure(dmm.Mode.resistance))
 
