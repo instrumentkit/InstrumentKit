@@ -42,6 +42,13 @@ INSTALL_REQUIRES = [
     "ruamel.yaml~=0.15.37",
     "pint>=0.16.1"
 ]
+TEST_REQUIRES = [
+    'pytest >= 6.1.1',
+    'hypothesis'
+]
+EXTRA_REQUIRES = {
+    "numpy": ["numpy"]
+}
 
 
 # HELPER FUNCTONS ############################################################
@@ -87,10 +94,8 @@ setup(
     author_email=find_meta("email"),
     packages=PACKAGES,
     install_requires=INSTALL_REQUIRES,
-    tests_require=[
-        'pytest >= 2.9.1',
-        'hypothesis'
-    ],
+    tests_require=TEST_REQUIRES,
+    extras_require=EXTRA_REQUIRES,
     description=find_meta("description"),
     long_description=long_description,
     long_description_content_type="text/x-rst",
