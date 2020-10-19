@@ -9,7 +9,7 @@ Module containing tests for the util_fns.split_unit_str utility function
 
 import pytest
 
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     split_unit_str
 )

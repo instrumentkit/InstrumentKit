@@ -8,7 +8,7 @@ Module containing tests for the unitless property factory
 
 
 import pytest
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.util_fns import unitless_property
 from . import MockInstrument

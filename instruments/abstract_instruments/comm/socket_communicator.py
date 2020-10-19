@@ -11,7 +11,7 @@ raw ethernet connections.
 import io
 import socket
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -70,14 +70,14 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         """
         Gets/sets the connection timeout of the socket comm channel.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
         return self._conn.gettimeout() * u.second
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, u.second).rescale(u.second).magnitude
+        newval = assume_units(newval, u.second).to(u.second).magnitude
         self._conn.settimeout(newval)
 
     # FILE-LIKE METHODS #

@@ -11,7 +11,7 @@ from enum import Enum
 import numpy as np
 
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
@@ -60,9 +60,9 @@ class TekAWG2000(SCPIInstrument):
             """
             Gets/sets the amplitude of the specified channel.
 
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            :units: As specified (if a `~pint.Quantity`) or assumed to be
                 of units Volts.
-            :type: `~quantities.Quantity` with units Volts peak-to-peak.
+            :type: `~pint.Quantity` with units Volts peak-to-peak.
             """
             return u.Quantity(
                 float(self._tek.query("FG:{}:AMPL?".format(self._name)).strip()),
@@ -73,7 +73,7 @@ class TekAWG2000(SCPIInstrument):
         def amplitude(self, newval):
             self._tek.sendcmd("FG:{}:AMPL {}".format(
                 self._name,
-                assume_units(newval, u.V).rescale(u.V).magnitude
+                assume_units(newval, u.V).to(u.V).magnitude
             ))
 
         @property
@@ -81,9 +81,9 @@ class TekAWG2000(SCPIInstrument):
             """
             Gets/sets the offset of the specified channel.
 
-            :units: As specified (if a `~quantities.Quantity`) or assumed to be
+            :units: As specified (if a `~pint.Quantity`) or assumed to be
                 of units Volts.
-            :type: `~quantities.Quantity` with units Volts.
+            :type: `~pint.Quantity` with units Volts.
             """
             return u.Quantity(
                 float(self._tek.query("FG:{}:OFFS?".format(self._name)).strip()),
@@ -94,7 +94,7 @@ class TekAWG2000(SCPIInstrument):
         def offset(self, newval):
             self._tek.sendcmd("FG:{}:OFFS {}".format(
                 self._name,
-                assume_units(newval, u.V).rescale(u.V).magnitude
+                assume_units(newval, u.V).to(u.V).magnitude
             ))
 
         @property
@@ -103,9 +103,9 @@ class TekAWG2000(SCPIInstrument):
             Gets/sets the frequency of the specified channel when using the built-in
             function generator.
 
-            ::units: As specified (if a `~quantities.Quantity`) or assumed to be
+            ::units: As specified (if a `~pint.Quantity`) or assumed to be
                 of units Hertz.
-            :type: `~quantities.Quantity` with units Hertz.
+            :type: `~pint.Quantity` with units Hertz.
             """
             return u.Quantity(
                 float(self._tek.query("FG:FREQ?").strip()),
@@ -115,7 +115,7 @@ class TekAWG2000(SCPIInstrument):
         @frequency.setter
         def frequency(self, newval):
             self._tek.sendcmd("FG:FREQ {}HZ".format(
-                assume_units(newval, u.Hz).rescale(u.Hz).magnitude
+                assume_units(newval, u.Hz).to(u.Hz).magnitude
             ))
 
         @property

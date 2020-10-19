@@ -39,7 +39,7 @@ from instruments.abstract_instruments import (
     PowerSupply,
     PowerSupplyChannel
 )
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
@@ -155,7 +155,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Gets/sets the output voltage setting.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
         return self.polarity*self._voltage
 
@@ -169,7 +169,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Gets/sets the output current setting.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
         return self.polarity*self._current
 
@@ -183,7 +183,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Gets the output voltage as measured by the sense wires.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.get_status()["voltage"]
 
@@ -193,7 +193,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         Gets/sets the output current as measured by the sense wires.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.get_status()["current"]
 
@@ -339,7 +339,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
             # If the voltage is not specified, keep it as is
             voltage = assume_units(voltage, u.volt) if voltage is not None else self.voltage
-            ratio = float(voltage.rescale(u.volt)/self.voltage_max.rescale(u.volt))
+            ratio = float(voltage.to(u.volt)/self.voltage_max.to(u.volt))
             voltage_int = int(round(value_max*ratio))
             self._voltage = self.voltage_max*float(voltage_int)/value_max
             assert 0. * u.volt <= self._voltage <= self.voltage_max
@@ -347,7 +347,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
             # If the current is not specified, keep it as is
             current = assume_units(current, u.amp) if current is not None else self.current
-            ratio = float(current.rescale(u.amp)/self.current_max.rescale(u.amp))
+            ratio = float(current.to(u.amp)/self.current_max.to(u.amp))
             current_int = int(round(value_max*ratio))
             self._current = self.current_max*float(current_int)/value_max
             assert 0. * u.amp <= self._current <= self.current_max
@@ -408,7 +408,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :param word: Byte string to be parsed
         :type: `bytes`
 
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         value = int(word.decode('utf-8'), 16)
         value_max = int(0x3ff)
@@ -422,7 +422,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :param word: Byte string to be parsed
         :type: `bytes`
 
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         value = int(word.decode("utf-8"), 16)
         value_max = int(0x3ff)

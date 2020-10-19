@@ -248,7 +248,7 @@ intersphinx_mapping = {
     'http://docs.python.org/': None,
     'numpy': ('http://docs.scipy.org/doc/numpy', None),
     'serial': ('http://pyserial.sourceforge.net/', None),
-    'quantities': ('http://pythonhosted.org/quantities/', None),
+    'pint': ('https://pint.readthedocs.io/en/stable/', None),
 }
 
 autodoc_member_order = 'groupwise'

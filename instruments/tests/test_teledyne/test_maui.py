@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 import instruments as ik
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.tests import expected_protocol
 
 # TESTS ######################################################################

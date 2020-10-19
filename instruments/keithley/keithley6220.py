@@ -7,7 +7,7 @@ Provides support for the Keithley 6220 constant current supply
 # IMPORTS #####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import PowerSupply
 from instruments.generic_scpi import SCPIInstrument
@@ -73,7 +73,7 @@ class Keithley6220(SCPIInstrument, PowerSupply):
         -105mA and +105mA.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 

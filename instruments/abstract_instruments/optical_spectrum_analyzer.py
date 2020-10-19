@@ -79,7 +79,7 @@ class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the the start wavelength of the OSA. This is
         an abstract property.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         raise NotImplementedError
 
@@ -95,7 +95,7 @@ class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the the stop wavelength of the OSA. This is
         an abstract property.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         raise NotImplementedError
 
@@ -111,7 +111,7 @@ class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the the bandwidth of the OSA. This is
         an abstract property.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         raise NotImplementedError
 

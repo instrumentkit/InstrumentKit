@@ -19,7 +19,7 @@ from instruments.abstract_instruments import (
 )
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList
-import instruments.units as u
+from instruments.units import ureg as u
 
 
 # CLASSES #####################################################################

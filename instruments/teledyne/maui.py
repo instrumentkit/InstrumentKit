@@ -21,7 +21,7 @@ import numpy as np
 from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
 )
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     assume_units, enum_property, bool_property, ProxyList
 )
@@ -370,7 +370,7 @@ class MAUI(Oscilloscope):
 
         @offset.setter
         def offset(self, newval):
-            newval = assume_units(newval, 'V').rescale(u.V).magnitude
+            newval = assume_units(newval, 'V').to(u.V).magnitude
             self.sendcmd('OFST {}'.format(newval))
 
         @property
@@ -391,7 +391,7 @@ class MAUI(Oscilloscope):
 
         @scale.setter
         def scale(self, newval):
-            newval = assume_units(newval, 'V').rescale(u.V).magnitude
+            newval = assume_units(newval, 'V').to(u.V).magnitude
             self.sendcmd('VDIV {}'.format(newval))
 
         # METHODS #
@@ -527,11 +527,11 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                vscale = assume_units(vscale, u.V/u.s).rescale(
+                vscale = assume_units(vscale, u.V/u.s).to(
                     u.V/u.s
                 ).magnitude
 
-                voffset = assume_units(voffset, u.V/u.s).rescale(
+                voffset = assume_units(voffset, u.V/u.s).to(
                     u.V/u.s
                 ).magnitude
 
@@ -673,11 +673,11 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                vscale = assume_units(vscale, u.Wb).rescale(
+                vscale = assume_units(vscale, u.Wb).to(
                     u.Wb
                 ).magnitude
 
-                voffset = assume_units(voffset, u.Wb).rescale(
+                voffset = assume_units(voffset, u.Wb).to(
                     u.Wb
                 ).magnitude
 
@@ -754,7 +754,7 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                adder = assume_units(adder, u.V).rescale(
+                adder = assume_units(adder, u.V).to(
                     u.V
                 ).magnitude
 
@@ -819,11 +819,11 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                vscale = assume_units(vscale, u.V).rescale(
+                vscale = assume_units(vscale, u.V).to(
                     u.V
                 ).magnitude
 
-                center = assume_units(center, u.V).rescale(
+                center = assume_units(center, u.V).to(
                     u.V
                 ).magnitude
 
@@ -1237,7 +1237,7 @@ class MAUI(Oscilloscope):
 
     @time_div.setter
     def time_div(self, newval):
-        newval = assume_units(newval, 's').rescale(u.s).magnitude
+        newval = assume_units(newval, 's').to(u.s).magnitude
         self.sendcmd('TDIV {}'.format(newval))
 
     # TRIGGER PROPERTIES
@@ -1276,7 +1276,7 @@ class MAUI(Oscilloscope):
 
     @trigger_delay.setter
     def trigger_delay(self, newval):
-        newval = assume_units(newval, 's').rescale(u.s).magnitude
+        newval = assume_units(newval, 's').to(u.s).magnitude
         self.sendcmd('TRDL {}'.format(newval))
 
     @property

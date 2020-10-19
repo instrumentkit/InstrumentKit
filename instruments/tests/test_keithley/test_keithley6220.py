@@ -7,7 +7,7 @@ Unit tests for the Keithley 6220 constant current supply
 # IMPORTS #####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol

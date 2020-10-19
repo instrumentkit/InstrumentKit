@@ -15,7 +15,7 @@
 
 # <markdowncell>
 
-# We start by importing the `srs` package from within the main `instruments` package, along with the `quantities` package
+# We start by importing the `srs` package from within the main `instruments` package, along with the `instruments.units` package
 # that is used to track physical quantities.
 
 # <codecell>

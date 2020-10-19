@@ -9,7 +9,7 @@ Provides support for SCPI compliant instruments
 from enum import IntEnum
 
 from instruments.abstract_instruments import Instrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
@@ -144,7 +144,7 @@ class SCPIInstrument(Instrument):
 
         :return: The power line frequency
         :units: Hertz
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
         return u.Quantity(
             float(self.query("SYST:LFR?")),
@@ -154,7 +154,7 @@ class SCPIInstrument(Instrument):
     @line_frequency.setter
     def line_frequency(self, newval):
         self.sendcmd("SYST:LFR {}".format(
-            assume_units(newval, "Hz").rescale("Hz").magnitude
+            assume_units(newval, "Hz").to("Hz").magnitude
         ))
 
     # ERROR QUEUE HANDLING ##

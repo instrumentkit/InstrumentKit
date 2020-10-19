@@ -9,7 +9,7 @@ Module containing tests for the Thorlabs TC200
 
 from enum import IntEnum
 import pytest
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -141,7 +141,7 @@ def test_tc200_temperature():
             ],
             sep="\r"
     ) as tc:
-        assert tc.temperature == 30.0 * u.degC
+        assert tc.temperature == u.Quantity(30.0, u.degC)
 
 
 def test_tc200_temperature_set():
@@ -150,20 +150,20 @@ def test_tc200_temperature_set():
             [
                 "tset?",
                 "tmax?",
-                "tset=40.0"
+                "tset=40"
             ],
             [
                 "tset?",
                 "30 C",
                 "> tmax?",
                 "250",
-                "> tset=40.0",
+                "> tset=40",
                 "> "
             ],
             sep="\r"
     ) as tc:
-        assert tc.temperature_set == 30.0 * u.degC
-        tc.temperature_set = 40 * u.degC
+        assert tc.temperature_set == u.Quantity(30.0, u.degC)
+        tc.temperature_set = u.Quantity(40, u.degC)
 
 
 def test_tc200_temperature_range():
@@ -179,7 +179,7 @@ def test_tc200_temperature_range():
             ],
             sep="\r"
     ) as tc:
-        tc.temperature_set = 50 * u.degC
+        tc.temperature_set = u.Quantity(50, u.degC)
 
 
 def test_tc200_pid():
@@ -378,8 +378,8 @@ def test_tc200_degrees():
             ],
             sep="\r"
     ) as tc:
-        assert str(tc.degrees).split(" ")[1] == "K"
-        assert str(tc.degrees).split(" ")[1] == "degC"
+        assert tc.degrees == u.degK
+        assert tc.degrees == u.degC
         assert tc.degrees == u.degF
 
         tc.degrees = u.degC
@@ -550,8 +550,8 @@ def test_tc200_max_temperature():
             ],
             sep="\r"
     ) as tc:
-        assert tc.max_temperature == 200.0 * u.degC
-        tc.max_temperature = 180 * u.degC
+        assert tc.max_temperature == u.Quantity(200.0, u.degC)
+        tc.max_temperature = u.Quantity(180, u.degC)
 
 
 def test_tc200_temp_min():

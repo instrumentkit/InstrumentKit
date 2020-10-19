@@ -12,7 +12,7 @@ from enum import Enum
 import io
 import time
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -98,7 +98,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         Gets/sets the timeeout of both the GPIB bus and the connection
         channel between the PC and the GPIB adapter.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified, or assumed to be of units ``seconds``
         """
         return self._timeout
@@ -107,13 +107,13 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
     def timeout(self, newval):
         newval = assume_units(newval, u.second)
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
-            newval = newval.rescale(u.second)
+            newval = newval.to(u.second)
             self._file.sendcmd('+t:{}'.format(int(newval.magnitude)))
         else:
-            newval = newval.rescale(u.millisecond)
+            newval = newval.to(u.millisecond)
             self._file.sendcmd("++read_tmo_ms {}".format(int(newval.magnitude)))
-        self._file.timeout = newval.rescale(u.second)
-        self._timeout = newval.rescale(u.second)
+        self._file.timeout = newval.to(u.second)
+        self._timeout = newval.to(u.second)
 
     @property
     def terminator(self):

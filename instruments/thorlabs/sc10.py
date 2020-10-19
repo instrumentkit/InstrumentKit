@@ -12,7 +12,7 @@ from enum import IntEnum
 
 from instruments.abstract_instruments import Instrument
 from instruments.thorlabs.thorlabs_utils import check_cmd
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     bool_property, enum_property, int_property, unitful_property
 )
@@ -136,9 +136,9 @@ class SC10(Instrument):
         doc="""
         Gets/sets the amount of time that the shutter is open, in ms
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units milliseconds.
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 
@@ -151,9 +151,9 @@ class SC10(Instrument):
         doc="""
         Gets/sets the amount of time that the shutter is closed, in ms
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units milliseconds.
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 

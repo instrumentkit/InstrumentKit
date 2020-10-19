@@ -7,7 +7,7 @@ Provides support for the Lakeshore 340 cryogenic temperature controller.
 # IMPORTS #####################################################################
 
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -50,10 +50,10 @@ class Lakeshore340(SCPIInstrument):
             Gets the temperature of the specified sensor.
 
             :units: Kelvin
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             value = self._parent.query('KRDG?{}'.format(self._idx))
-            return u.Quantity(float(value), u.Kelvin)
+            return u.Quantity(float(value), u.kelvin)
 
     # PROPERTIES ##
 

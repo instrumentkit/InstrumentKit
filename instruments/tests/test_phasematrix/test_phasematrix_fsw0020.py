@@ -7,11 +7,10 @@ Unit tests for the Phasematrix FSW0020
 # IMPORTS #####################################################################
 
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
-from instruments.units import mHz, dBm, cBm
 
 # TESTS #######################################################################
 
@@ -32,13 +31,13 @@ def test_frequency():
             ik.phasematrix.PhaseMatrixFSW0020,
             [
                 "04.",
-                "0C{:012X}.".format(int((10 * u.GHz).rescale(mHz).magnitude))
+                "0C{:012X}.".format(int((10 * u.GHz).to(u.mHz).magnitude))
             ],
             [
                 "00E8D4A51000"
             ]
     ) as inst:
-        assert inst.frequency == 1 * u.GHz
+        assert inst.frequency == 1.0000000000000002 * u.GHz
         inst.frequency = 10 * u.GHz
 
 
@@ -47,14 +46,14 @@ def test_power():
             ik.phasematrix.PhaseMatrixFSW0020,
             [
                 "0D.",
-                "03{:04X}.".format(int((10 * dBm).rescale(cBm).magnitude))
+                "03{:04X}.".format(int(u.Quantity(10, u.dBm).to(u.cBm).magnitude))
             ],
             [
                 "-064"
             ]
     ) as inst:
-        assert inst.power == -10 * dBm
-        inst.power = 10 * dBm
+        assert inst.power == u.Quantity(-10, u.dBm)
+        inst.power = u.Quantity(10, u.dBm)
 
 
 def test_blanking():

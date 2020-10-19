@@ -8,9 +8,10 @@ Module containing tests for the unitful property factories
 
 
 import pytest
-import instruments.units as u
+import pint
 
 from instruments.util_fns import unitful_property
+from instruments.units import ureg as u
 from . import MockInstrument
 
 # TEST CASES #################################################################
@@ -62,7 +63,7 @@ def test_unitful_property_no_units_on_set():
 
 
 def test_unitful_property_wrong_units():
-    with pytest.raises(ValueError):
+    with pytest.raises(pint.errors.DimensionalityError):
         class UnitfulMock(MockInstrument):
             unitful_property = unitful_property('MOCK', u.hertz)
 

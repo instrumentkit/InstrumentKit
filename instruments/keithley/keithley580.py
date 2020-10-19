@@ -38,7 +38,7 @@ import struct
 
 from enum import IntEnum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import Instrument
 
@@ -257,7 +257,7 @@ class Keithley580(Instrument):
         Gets/sets the range of the Keithley 580 input terminals. The valid
         ranges are one of ``{AUTO|2e-1|2|20|200|2000|2e4|2e5}``
 
-        :type: `~quantities.quantity.Quantity` or `str`
+        :type: `~pint.Quantity` or `str`
         """
         value = self.parse_status_word(self.get_status_word())['range']
         if isinstance(value, str):  # if range is 'auto'
@@ -276,8 +276,8 @@ class Keithley580(Instrument):
             else:
                 raise ValueError('Only "auto" is acceptable when specifying '
                                  'the input range as a string.')
-        if isinstance(newval, u.quantity.Quantity):
-            newval = float(newval)
+        if isinstance(newval, u.Quantity):
+            newval = float(newval.magnitude)
 
         if isinstance(newval, (float, int)):
             if newval in valid:
@@ -414,7 +414,7 @@ class Keithley580(Instrument):
         The usual mode parameter is ignored for the Keithley 580 as the only
         valid mode is resistance.
 
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         self.trigger()
         self.sendcmd('')

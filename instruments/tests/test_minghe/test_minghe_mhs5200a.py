@@ -8,7 +8,7 @@ Module containing tests for the MingHe MHS52000a
 
 
 import pytest
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -48,7 +48,7 @@ def test_mhs_amplitude_dbm_notimplemented():
             sep="\r\n"
     ) as mhs:
         with pytest.raises(NotImplementedError):
-            mhs.channel[0].amplitude = 6.6*ik.units.dBm
+            mhs.channel[0].amplitude = u.Quantity(6.6, u.dBm)
 
 
 def test_mhs_duty_cycle():
@@ -164,8 +164,8 @@ def test_mhs_phase():
             ],
             sep="\r\n"
     ) as mhs:
-        assert mhs.channel[0].phase == 120
-        assert mhs.channel[1].phase == 0
+        assert mhs.channel[0].phase == 120 * u.degree
+        assert mhs.channel[1].phase == 0 * u.degree
         mhs.channel[0].phase = 60
         mhs.channel[1].phase = 180
 

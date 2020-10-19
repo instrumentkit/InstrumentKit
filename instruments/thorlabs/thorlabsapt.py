@@ -14,7 +14,7 @@ import codecs
 import warnings
 
 from instruments.thorlabs import _abstract, _packets, _cmds
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units
 
 # LOGGING #####################################################################
@@ -271,7 +271,7 @@ class APTPiezoDevice(ThorLabsAPT):
             """
             Gets the maximum travel for the specified piezo channel.
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             :units: Nanometers
             """
             pkt = _packets.ThorLabsPacket(
@@ -459,9 +459,9 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                                  "length 3.")
 
             # ensure units
-            volt = int(assume_units(params[0], u.V).rescale(u.V).magnitude)
-            rate = int(assume_units(params[1], 1/u.s).rescale(1/u.s).magnitude)
-            accl = int(assume_units(params[2], 1/u.s**2).rescale(
+            volt = int(assume_units(params[0], u.V).to(u.V).magnitude)
+            rate = int(assume_units(params[1], 1/u.s).to(1/u.s).magnitude)
+            accl = int(assume_units(params[2], 1/u.s**2).to(
                 1/u.s**2
             ).magnitude)
 
@@ -668,8 +668,8 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             mode = int(params[0])
             steps_fwd = int(params[1])
             steps_bkw = int(params[2])
-            rate = int(assume_units(params[3], 1/u.s).rescale(1/u.s).magnitude)
-            accl = int(assume_units(params[4], 1/u.s**2).rescale(
+            rate = int(assume_units(params[3], 1/u.s).to(1/u.s).magnitude)
+            accl = int(assume_units(params[4], 1/u.s**2).to(
                 1/u.s**2
             ).magnitude)
 
@@ -1123,20 +1123,20 @@ class APTMotorController(ThorLabsAPT):
                 # Note that for these drivers, the scale factors are identical
                 # for position, velcoity and acceleration. This is not true for
                 # all drivers!
-                'DRV001': (u.Quantity(51200, 'ct/mm'),) * 3,
-                'DRV013': (u.Quantity(25600, 'ct/mm'),) * 3,
-                'DRV014': (u.Quantity(25600, 'ct/mm'),) * 3,
-                'DRV113': (u.Quantity(20480, 'ct/mm'),) * 3,
-                'DRV114': (u.Quantity(20480, 'ct/mm'),) * 3,
-                'FW103':  (u.Quantity(25600 / 360, 'ct/deg'),) * 3,
-                'NR360':  (u.Quantity(25600 / 5.4546, 'ct/deg'),) * 3
+                'DRV001': (u.Quantity(51200, 'count/mm'),) * 3,
+                'DRV013': (u.Quantity(25600, 'count/mm'),) * 3,
+                'DRV014': (u.Quantity(25600, 'count/mm'),) * 3,
+                'DRV113': (u.Quantity(20480, 'count/mm'),) * 3,
+                'DRV114': (u.Quantity(20480, 'count/mm'),) * 3,
+                'FW103':  (u.Quantity(25600 / 360, 'count/deg'),) * 3,
+                'NR360':  (u.Quantity(25600 / 5.4546, 'count/deg'),) * 3
             },
 
             re.compile('TDC001|KDC101'): {
-                'MTS25-Z8': (1 / u.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
-                'MTS50-Z8': (1 / u.Quantity(34304, 'mm/ct'), NotImplemented, NotImplemented),
+                'MTS25-Z8': (1 / u.Quantity(34304, 'mm/count'), NotImplemented, NotImplemented),
+                'MTS50-Z8': (1 / u.Quantity(34304, 'mm/count'), NotImplemented, NotImplemented),
                 # TODO: Z8xx and Z6xx models. Need to add regex support to motor models, too.
-                'PRM1-Z8': (u.Quantity(1919.64, 'ct/deg'), NotImplemented, NotImplemented),
+                'PRM1-Z8': (u.Quantity(1919.64, 'count/deg'), NotImplemented, NotImplemented),
             }
         }
 
@@ -1165,7 +1165,7 @@ class APTMotorController(ThorLabsAPT):
             Gets/sets the motor channel motion timeout.
 
             :units: Seconds
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             return self._motion_timeout
 
@@ -1268,7 +1268,7 @@ class APTMotorController(ThorLabsAPT):
             """
             Gets the current position of the specified motor channel
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.MOT_REQ_POSCOUNTER,
@@ -1291,7 +1291,7 @@ class APTMotorController(ThorLabsAPT):
             """
             Gets the position of the encoder of the specified motor channel
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             :units: Encoder ``counts``
             """
             pkt = _packets.ThorLabsPacket(
@@ -1335,7 +1335,7 @@ class APTMotorController(ThorLabsAPT):
 
             :param pos: The position to move to. Provided value will be
                 converted to encoder counts.
-            :type pos: `~quantities.Quantity`
+            :type pos: `~pint.Quantity`
             :units pos: As specified, or assumed to of units encoder counts
 
             :param bool absolute: Specify if the position is a relative or
@@ -1372,7 +1372,7 @@ class APTMotorController(ThorLabsAPT):
                     scaled_pos = (pos * self.scale_factors[0])
                     # Force a unit error.
                     try:
-                        pos_ec = int(scaled_pos.rescale(u.counts).magnitude)
+                        pos_ec = int(scaled_pos.to(u.counts).magnitude)
                     except:
                         raise ValueError("Provided units are not compatible "
                                          "with current motor scale factor.")

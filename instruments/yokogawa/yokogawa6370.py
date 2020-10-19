@@ -9,7 +9,7 @@ Provides support for the Yokogawa 6370 optical spectrum analyzer.
 
 from enum import IntEnum, Enum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import (
     OpticalSpectrumAnalyzer,

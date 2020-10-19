@@ -29,11 +29,4 @@ Units
 -----
 
 Units are identified to the Phase Matrix FSW-0020 using the
-`~quantities.Quantity` class implemented by the `quantities` package. To support
-the FSW-0020, we provide several additional unit quantities, listed here.
-
-.. autodata:: mHz
-
-.. autodata:: dBm
-
-.. autodata:: cBm
+`~pint.Quantity` class implemented by the `pint` package.

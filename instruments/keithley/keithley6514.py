@@ -10,7 +10,7 @@ from enum import Enum
 
 from instruments.abstract_instruments import Electrometer
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import bool_property, enum_property
 
 # CLASSES #####################################################################
@@ -175,7 +175,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
         """
         Gets/sets the upper limit of the current range.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         # pylint: disable=no-member
         mode = self.mode
@@ -186,7 +186,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
     def input_range(self, newval):
         # pylint: disable=no-member
         mode = self.mode
-        val = newval.rescale(self._MODE_UNITS[mode]).item()
+        val = newval.to(self._MODE_UNITS[mode]).magnitude
         if val not in self._valid_range(mode).value:
             raise ValueError(
                 'Unexpected range limit for currently selected mode.')

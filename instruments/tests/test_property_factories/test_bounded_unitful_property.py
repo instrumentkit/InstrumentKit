@@ -8,7 +8,7 @@ Module containing tests for the bounded unitful property factories
 
 
 import pytest
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.util_fns import bounded_unitful_property
 from . import MockInstrument

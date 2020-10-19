@@ -7,7 +7,7 @@ Driver for the Keithley 2182 nano-voltmeter
 # IMPORTS #####################################################################
 
 from enum import Enum
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.generic_scpi import SCPIMultimeter
 from instruments.abstract_instruments import Multimeter
@@ -90,7 +90,7 @@ class Keithley2182(SCPIMultimeter):
             :param mode: Mode that the measurement will be performed in
             :type mode: Keithley2182.Mode
             :return: The value of the measurement
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
             if mode is not None:
                 # self.mode = mode
@@ -98,7 +98,7 @@ class Keithley2182(SCPIMultimeter):
             self._parent.sendcmd('SENS:CHAN {}'.format(self._idx))
             value = float(self._parent.query('SENS:DATA:FRES?'))
             unit = self._parent.units
-            return value * unit
+            return u.Quantity(value, unit)
 
     # ENUMS #
 
@@ -182,7 +182,7 @@ class Keithley2182(SCPIMultimeter):
         """
         Gets the current measurement units of the instrument.
 
-        :rtype: `~quantities.unitquantity.UnitQuantity`
+        :rtype: `~pint.Unit`
         """
         mode = self.channel[0].mode
         if mode == Keithley2182.Mode.voltage_dc:
@@ -212,7 +212,7 @@ class Keithley2182(SCPIMultimeter):
         recommended to transfer a large number of data points using GPIB.
 
         :return: Measurement readings from the instrument output buffer.
-        :rtype: `list` of `~quantities.quantity.Quantity` elements
+        :rtype: `list` of `~pint.Quantity` elements
         """
         return list(map(float, self.query("FETC?").split(","))) * self.units
 
@@ -225,7 +225,7 @@ class Keithley2182(SCPIMultimeter):
         :type: `Keithley2182.Mode`
 
         :return: Returns a single shot measurement of the specified mode.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         :units: Volts, Celsius, Kelvin, or Fahrenheit
         """
         if mode is None:

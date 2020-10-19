@@ -10,7 +10,7 @@ from enum import Enum
 
 
 from instruments.generic_scpi import SCPIFunctionGenerator
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import (
     enum_property, int_property, bool_property, assume_units
 )
@@ -156,9 +156,9 @@ class Agilent33220a(SCPIFunctionGenerator):
         function allows the instrument to compensate of the voltage divider
         and accurately report the voltage across the attached load.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units :math:`\\Omega` (ohm).
-        :type: `~quantities.quantity.Quantity` or `Agilent33220a.LoadResistance`
+        :type: `~pint.Quantity` or `Agilent33220a.LoadResistance`
         """
         value = self.query("OUTP:LOAD?")
         try:
@@ -171,7 +171,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         if isinstance(newval, self.LoadResistance):
             newval = newval.value
         else:
-            newval = assume_units(newval, u.ohm).rescale(u.ohm).magnitude
+            newval = assume_units(newval, u.ohm).to(u.ohm).magnitude
             if (newval < 0) or (newval > 10000):
                 raise ValueError(
                     "Load resistance must be between 0 and 10,000")

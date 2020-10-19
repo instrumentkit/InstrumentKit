@@ -14,6 +14,8 @@ import contextlib
 from io import BytesIO
 from unittest import mock
 
+import pytest
+
 # FUNCTIONS ##################################################################
 
 
@@ -96,16 +98,13 @@ Got:
     #     """Only read {} bytes out of {}""".format(current, end)
 
 
-def unit_eq(a, b, msg=None, thresh=1e-5):
+def unit_eq(a, b):
     """
     Asserts that two unitful quantites ``a`` and ``b``
     are equal up to a small numerical threshold.
     """
-    assert abs((a - b).magnitude) <= thresh, "{} - {} = {}.{}".format(
-        a, b, a - b,
-        "\n" + msg if msg is not None else ""
-    )
-    assert a.units == b.units, "{} and {} have different units".format(a, b)
+    assert a.magnitude == pytest.approx(b.magnitude)
+    assert a.units == b.units, f"{a} and {b} have different units"
 
 
 def make_name_test(ins_class, name_cmd="*IDN?"):

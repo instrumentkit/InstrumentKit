@@ -7,7 +7,7 @@ Provides support for the Agilent 34410a digital multimeter.
 # IMPORTS #####################################################################
 
 from instruments.generic_scpi import SCPIMultimeter
-import instruments.units as u
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -78,7 +78,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
 
         :param int count: Number of samples to take.
 
-        :rtype: `~quantities.quantity.Quantity` with `numpy.array`
+        :rtype: `~pint.Quantity` with `numpy.array`
         """
         mode = self.mode
         units = UNITS[mode]
@@ -107,7 +107,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         recommended to transfer a large number of
         data points using this method.
 
-        :rtype: `list` of `~quantities.quantity.Quantity` elements
+        :rtype: `list` of `~pint.Quantity` elements
         """
         units = UNITS[self.mode]
         return list(map(float, self.query('FETC?').split(','))) * units
@@ -123,7 +123,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
             output buffer. If set to -1, all points in memory will be
             transfered.
 
-        :rtype: `list` of `~quantities.quantity.Quantity` elements
+        :rtype: `list` of `~pint.Quantity` elements
         """
         if not isinstance(sample_count, int):
             raise TypeError('Parameter "sample_count" must be an integer.')
@@ -139,7 +139,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         """
         Returns all readings in non-volatile memory (NVMEM).
 
-        :rtype: `list` of `~quantities.quantity.Quantity` elements
+        :rtype: `list` of `~pint.Quantity` elements
         """
         units = UNITS[self.mode]
         data = list(map(float, self.query('DATA:DATA? NVMEM').split(',')))
@@ -153,7 +153,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         returned.
 
         :units: As specified by the data returned by the instrument.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         data = self.query('DATA:LAST?')
         unit_map = {
@@ -179,7 +179,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         This is similar to calling `~Agilent34410a.init` and then immediately
         following `~Agilent34410a.fetch`.
 
-        :rtype: `~quantities.Quantity`
+        :rtype: `~pint.Quantity`
         """
         mode = self.mode
         units = UNITS[mode]

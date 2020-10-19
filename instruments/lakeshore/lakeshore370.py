@@ -7,7 +7,7 @@ Provides support for the Lakeshore 370 AC resistance bridge.
 # IMPORTS #####################################################################
 
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -54,7 +54,7 @@ class Lakeshore370(SCPIInstrument):
             Gets the resistance of the specified sensor.
 
             :units: Ohm
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
             value = self._parent.query('RDGR? {}'.format(self._idx))
             return u.Quantity(float(value), u.ohm)

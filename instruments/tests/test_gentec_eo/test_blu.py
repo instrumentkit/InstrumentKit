@@ -11,7 +11,7 @@ import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
-import instruments.units as u
+from instruments.units import ureg as u
 
 # TESTS ######################################################################
 
@@ -395,7 +395,7 @@ def test_blu_user_offset_joules():
 
             ],
             [
-                "Mode: 2",  # power mode watts
+                "Mode: 2",  # power mode joules
                 "User Offset : 1.500e-3",
                 "ACK"
             ],

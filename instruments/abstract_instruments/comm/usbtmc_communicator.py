@@ -14,7 +14,7 @@ import usbtmc
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
-import instruments.units as u
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -67,14 +67,14 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         """
         Gets/sets the communication timeout of the usbtmc comm channel.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
         return self._filelike.timeout * u.second
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, u.second).rescale(u.s).magnitude
+        newval = assume_units(newval, u.second).to(u.s).magnitude
         self._filelike.timeout = newval
 
     # FILE-LIKE METHODS #

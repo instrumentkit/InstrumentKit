@@ -8,9 +8,8 @@ Module containing tests for the SRS DG645
 
 import pytest
 
-import instruments.units as u
-
 import instruments as ik
+from instruments.units import ureg as u
 from instruments.tests import expected_protocol, make_name_test, unit_eq
 
 # TESTS ######################################################################
@@ -50,7 +49,7 @@ def test_srsdg645_channel_delay():
             ik.srs.SRSDG645,
             [
                 "DLAY?2",
-                "DLAY 3,2,60.0",
+                "DLAY 3,2,60",
                 "DLAY 5,4,10"
             ],
             [
@@ -227,7 +226,7 @@ def test_srsdg645_holdoff():
                 "+0.001001000000"
             ]
     ) as ddg:
-        assert ddg.holdoff == u.Quantity(1001, u.us)
+        assert u.Quantity(1001, u.us) == ddg.holdoff
         ddg.holdoff = 0
         ddg.holdoff = u.Quantity(10, u.ms)  # unitful hold off
 
@@ -304,7 +303,7 @@ def test_srsdg645_burst_period():
                 "100E-9"
             ]
     ) as ddg:
-        unit_eq(ddg.burst_period, u.Quantity(100, "ns").rescale(u.s))
+        unit_eq(ddg.burst_period, u.Quantity(100, "ns").to(u.sec))
         ddg.burst_period = u.Quantity(13, "s")
         ddg.burst_period = 0.1
 

@@ -17,8 +17,12 @@ import numpy as np
 import pytest
 
 import instruments as ik
-from instruments import units as u
-from instruments.tests import expected_protocol, make_name_test
+from instruments.tests import (
+    expected_protocol,
+    make_name_test,
+    unit_eq,
+)
+from instruments.units import ureg as u
 
 
 # TESTS #######################################################################
@@ -303,7 +307,7 @@ def test_math_filter_risetime(value):
     ) as inst:
         inst.math[math].filter_risetime = value
         inst.math[math].filter_risetime = value_unitful
-        assert inst.math[math].filter_risetime == pytest.approx(value_unitful)
+        unit_eq(inst.math[math].filter_risetime, value_unitful)
 
 
 @given(value=st.text(alphabet=st.characters(blacklist_characters="\n",
@@ -404,7 +408,7 @@ def test_math_spectral_center(value):
     ) as inst:
         inst.math[math].spectral_center = value
         inst.math[math].spectral_center = value_unitful
-        assert inst.math[math].spectral_center == pytest.approx(value_unitful)
+        unit_eq(inst.math[math].spectral_center, value_unitful)
 
 
 @given(value=st.floats(allow_nan=False))
@@ -426,7 +430,7 @@ def test_math_spectral_gatepos(value):
     ) as inst:
         inst.math[math].spectral_gatepos = value
         inst.math[math].spectral_gatepos = value_unitful
-        assert inst.math[math].spectral_gatepos == pytest.approx(value_unitful)
+        unit_eq(inst.math[math].spectral_gatepos, value_unitful)
 
 
 @given(value=st.floats(allow_nan=False))
@@ -448,7 +452,7 @@ def test_math_spectral_gatewidth(value):
     ) as inst:
         inst.math[math].spectral_gatewidth = value
         inst.math[math].spectral_gatewidth = value_unitful
-        assert inst.math[math].spectral_gatewidth == pytest.approx(value_unitful)
+        unit_eq(inst.math[math].spectral_gatewidth, value_unitful)
 
 
 @pytest.mark.parametrize("value", [True, False])
@@ -566,8 +570,7 @@ def test_math_spectral_resolution_bandwidth(value):
     ) as inst:
         inst.math[math].spectral_resolution_bandwidth = value
         inst.math[math].spectral_resolution_bandwidth = value_unitful
-        assert inst.math[math].spectral_resolution_bandwidth == \
-               pytest.approx(value_unitful)
+        unit_eq(inst.math[math].spectral_resolution_bandwidth, value_unitful)
 
 
 @given(value=st.floats(min_value=0))
@@ -589,7 +592,7 @@ def test_math_spectral_span(value):
     ) as inst:
         inst.math[math].spectral_span = value
         inst.math[math].spectral_span = value_unitful
-        assert inst.math[math].spectral_span == pytest.approx(value_unitful)
+        unit_eq(inst.math[math].spectral_span, value_unitful)
 
 
 @given(value=st.floats(allow_nan=False))
@@ -669,7 +672,7 @@ def test_math_threshold(value):
     ) as inst:
         inst.math[math].threshhold = value
         inst.math[math].threshhold = value_unitful
-        assert inst.math[math].threshhold == pytest.approx(value_unitful)
+        unit_eq(inst.math[math].threshhold, value_unitful)
 
 
 @given(value=st.text(alphabet=st.characters(blacklist_characters="\n",
@@ -751,7 +754,7 @@ def test_math_scale(value):
     ) as inst:
         inst.math[math].scale = value
         inst.math[math].scale = value_unitful
-        assert inst.math[math].scale == pytest.approx(value_unitful)
+        unit_eq(inst.math[math].scale, value_unitful)
 
 
 @given(value=st.lists(st.floats(min_value=-2147483648, max_value=2147483647),
@@ -869,7 +872,7 @@ def test_channel_bandwidth(value):
     ) as inst:
         inst.channel[channel].bandwidth = value
         inst.channel[channel].bandwidth = value_unitful
-        assert inst.channel[channel].bandwidth == pytest.approx(value_unitful)
+        unit_eq(inst.channel[channel].bandwidth, value_unitful)
 
 
 @given(value=st.floats(min_value=-25e-9, max_value=25e-9))
@@ -894,7 +897,7 @@ def test_channel_deskew(value):
     ) as inst:
         inst.channel[channel].deskew = value
         inst.channel[channel].deskew = value_unitful
-        assert inst.channel[channel].deskew == pytest.approx(value_unitful)
+        unit_eq(inst.channel[channel].deskew, value_unitful)
 
 
 @pytest.mark.parametrize("value", [50, 1000000])
@@ -906,7 +909,7 @@ def test_channel_termination(value):
     """
     channel = 0
     cmd = "TERM"
-    value_unitful = u.Quantity(value, u.Ohm)
+    value_unitful = u.Quantity(value, u.ohm)
     with expected_protocol(
             ik.tektronix.TekDPO70000,
             [
@@ -920,8 +923,7 @@ def test_channel_termination(value):
     ) as inst:
         inst.channel[channel].termination = value
         inst.channel[channel].termination = value_unitful
-        assert inst.channel[channel].termination == \
-               pytest.approx(value_unitful)
+        unit_eq(inst.channel[channel].termination, value_unitful)
 
 
 @given(value=st.text(alphabet=st.characters(blacklist_characters="\n",
@@ -1003,7 +1005,7 @@ def test_channel_offset(value):
     ) as inst:
         inst.channel[channel].offset = value
         inst.channel[channel].offset = value_unitful
-        assert inst.channel[channel].offset == pytest.approx(value_unitful)
+        unit_eq(inst.channel[channel].offset, value_unitful)
 
 
 @given(value=st.floats(min_value=-ik.tektronix.TekDPO70000.VERT_DIVS,
@@ -1045,7 +1047,7 @@ def test_channel_scale(value):
     ) as inst:
         inst.channel[channel].scale = value
         inst.channel[channel].scale = value_unitful
-        assert inst.channel[channel].scale == pytest.approx(value_unitful)
+        unit_eq(inst.channel[channel].scale, value_unitful)
 
 
 @given(value=st.lists(st.floats(min_value=-2147483648, max_value=2147483647),
@@ -1073,8 +1075,7 @@ def test_channel_scale_raw_data(value):
                 f"{offset}"
             ]
     ) as inst:
-        np.testing.assert_equal(inst.channel[channel]._scale_raw_data(value),
-                                expected_value)
+        np.testing.assert_array_equal(inst.channel[channel]._scale_raw_data(value), expected_value)
 
 
 # INSTRUMENT #
@@ -1520,7 +1521,7 @@ def test_horiz_acq_duration(value):
                 f"{value}"
             ]
     ) as inst:
-        assert inst.horiz_acq_duration == pytest.approx(value_unitful)
+        unit_eq(inst.horiz_acq_duration, value_unitful)
 
 
 @given(value=st.integers(min_value=0))
@@ -1575,7 +1576,7 @@ def test_horiz_delay_pos(value):
     ) as inst:
         inst.horiz_delay_pos = value
         inst.horiz_delay_pos = value_unitful
-        assert inst.horiz_delay_pos == pytest.approx(value_unitful)
+        unit_eq(inst.horiz_delay_pos, value_unitful)
 
 
 @given(value=st.floats(min_value=0))
@@ -1595,7 +1596,7 @@ def test_horiz_delay_time(value):
     ) as inst:
         inst.horiz_delay_time = value
         inst.horiz_delay_time = value_unitful
-        assert inst.horiz_delay_time == pytest.approx(value_unitful)
+        unit_eq(inst.horiz_delay_time, value_unitful)
 
 
 @given(value=st.floats(min_value=0))
@@ -1632,7 +1633,7 @@ def test_horiz_main_pos(value):
     ) as inst:
         inst.horiz_main_pos = value
         inst.horiz_main_pos = value_unitful
-        assert inst.horiz_main_pos == pytest.approx(value_unitful)
+        unit_eq(inst.horiz_main_pos, value_unitful)
 
 
 def test_horiz_unit():
@@ -1722,7 +1723,7 @@ def test_horiz_sample_rate(value):
     ) as inst:
         inst.horiz_sample_rate = value_unitful
         inst.horiz_sample_rate = value
-        assert inst.horiz_sample_rate == pytest.approx(value_unitful)
+        unit_eq(inst.horiz_sample_rate, value_unitful)
 
 
 @given(value=st.floats(min_value=0))
@@ -1744,7 +1745,7 @@ def test_horiz_scale(value):
     ) as inst:
         inst.horiz_scale = value_unitful
         inst.horiz_scale = value
-        assert inst.horiz_scale == pytest.approx(value_unitful)
+        unit_eq(inst.horiz_scale, value_unitful)
 
 
 @given(value=st.floats(min_value=0))
@@ -1767,7 +1768,7 @@ def test_horiz_pos(value):
     ) as inst:
         inst.horiz_pos = value_unitful
         inst.horiz_pos = value
-        assert inst.horiz_pos == pytest.approx(value_unitful)
+        unit_eq(inst.horiz_pos, value_unitful)
 
 
 @pytest.mark.parametrize("value", ["AUTO", "OFF", "ON"])

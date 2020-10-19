@@ -77,7 +77,7 @@ class Multimeter(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the current input range setting of the multimeter.
         This is an abstract method.
 
-        :type: `~quantities.quantity.Quantity` or `~enum.Enum`
+        :type: `~pint.Quantity` or `~enum.Enum`
         """
 
     @input_range.setter

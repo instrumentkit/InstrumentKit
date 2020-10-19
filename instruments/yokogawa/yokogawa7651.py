@@ -9,7 +9,7 @@ Provides support for the Yokogawa 7651 power supply.
 
 from enum import IntEnum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import (
     PowerSupply,
@@ -82,16 +82,16 @@ class Yokogawa7651(PowerSupply, Instrument):
 
             Querying the voltage is not supported by this instrument.
 
-            :units: As specified (if a `~quantities.quantity.Quantity`) or
+            :units: As specified (if a `~pint.Quantity`) or
                 assumed to be of units Volts.
-            :type: `~quantities.quantity.Quantity` with units Volt
+            :type: `~pint.Quantity` with units Volt
             """
             raise NotImplementedError('This instrument does not support '
                                       'querying the output voltage setting.')
 
         @voltage.setter
         def voltage(self, newval):
-            newval = assume_units(newval, u.volt).rescale(u.volt).magnitude
+            newval = assume_units(newval, u.volt).to(u.volt).magnitude
             self.mode = self._parent.Mode.voltage
             self._parent.sendcmd('SA{};'.format(newval))
             self._parent.trigger()
@@ -104,16 +104,16 @@ class Yokogawa7651(PowerSupply, Instrument):
 
             Querying the current is not supported by this instrument.
 
-            :units: As specified (if a `~quantities.quantity.Quantity`) or
+            :units: As specified (if a `~pint.Quantity`) or
                 assumed to be of units Amps.
-            :type: `~quantities.quantity.Quantity` with units Amp
+            :type: `~pint.Quantity` with units Amp
             """
             raise NotImplementedError('This instrument does not support '
                                       'querying the output current setting.')
 
         @current.setter
         def current(self, newval):
-            newval = assume_units(newval, u.amp).rescale(u.amp).magnitude
+            newval = assume_units(newval, u.amp).to(u.amp).magnitude
             self.mode = self._parent.Mode.current
             self._parent.sendcmd('SA{};'.format(newval))
             self._parent.trigger()
@@ -175,9 +175,9 @@ class Yokogawa7651(PowerSupply, Instrument):
 
         Querying the voltage is not supported by this instrument.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Volts.
-        :type: `~quantities.quantity.Quantity` with units Volt
+        :type: `~pint.Quantity` with units Volt
         """
         raise NotImplementedError('This instrument does not support querying '
                                   'the output voltage setting.')
@@ -193,9 +193,9 @@ class Yokogawa7651(PowerSupply, Instrument):
 
         Querying the current is not supported by this instrument.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Amps.
-        :type: `~quantities.quantity.Quantity` with units Amp
+        :type: `~pint.Quantity` with units Amp
         """
         raise NotImplementedError('This instrument does not support querying '
                                   'the output current setting.')

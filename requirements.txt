@@ -1,8 +1,8 @@
 numpy
 pyserial
 pyvisa>=1.9
-quantities>=0.12.1
 python-vxi11>=0.8
 pyusb
 python-usbtmc
 ruamel.yaml~=0.15.37
+pint>=0.16.1

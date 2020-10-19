@@ -12,7 +12,7 @@ from instruments.abstract_instruments import (
     PowerSupply,
     PowerSupplyChannel
 )
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList, unitful_property, bool_property
 
 # CLASSES #####################################################################
@@ -116,7 +116,7 @@ class HP6624a(PowerSupply):
             Note there is no bounds checking on the value specified.
 
             :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-            :type: `float` or `~quantities.quantity.Quantity`
+            :type: `float` or `~pint.Quantity`
             """
         )
 
@@ -132,7 +132,7 @@ class HP6624a(PowerSupply):
             Note there is no bounds checking on the value specified.
 
             :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-            :type: `float` or `~quantities.quantity.Quantity`
+            :type: `float` or `~pint.Quantity`
             """
         )
 
@@ -145,7 +145,7 @@ class HP6624a(PowerSupply):
             specified channel.
 
             :units: :math:`\\text{V}` (volts)
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
         )
 
@@ -158,7 +158,7 @@ class HP6624a(PowerSupply):
             the specified channel.
 
             :units: :math:`\\text{A}` (amps)
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
         )
 
@@ -173,7 +173,7 @@ class HP6624a(PowerSupply):
             Note there is no bounds checking on the value specified.
 
             :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-            :type: `float` or `~quantities.quantity.Quantity`
+            :type: `float` or `~pint.Quantity`
             """
         )
 
@@ -246,9 +246,9 @@ class HP6624a(PowerSupply):
         """
         Gets/sets the voltage for all four channels.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units Volts.
-        :type: `list` of `~quantities.quantity.Quantity` with units Volt
+        :type: `list` of `~pint.Quantity` with units Volt
         """
         return [
             self.channel[i].voltage for i in range(self.channel_count)
@@ -272,9 +272,9 @@ class HP6624a(PowerSupply):
         """
         Gets/sets the current for all four channels.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units Amps.
-        :type: `list` of `~quantities.quantity.Quantity` with units Amp
+        :type: `list` of `~pint.Quantity` with units Amp
         """
         return [
             self.channel[i].current for i in range(self.channel_count)
@@ -299,7 +299,7 @@ class HP6624a(PowerSupply):
         Gets the actual voltage as measured by the sense wires for all channels.
 
         :units: :math:`\\text{V}` (volts)
-        :rtype: `tuple` of `~quantities.quantity.Quantity`
+        :rtype: `tuple` of `~pint.Quantity`
         """
         return (
             self.channel[i].voltage_sense for i in range(self.channel_count)
@@ -311,7 +311,7 @@ class HP6624a(PowerSupply):
         Gets the actual current as measured by the instrument for all channels.
 
         :units: :math:`\\text{A}` (amps)
-        :rtype: `tuple` of `~quantities.quantity.Quantity`
+        :rtype: `tuple` of `~pint.Quantity`
         """
         return (
             self.channel[i].current_sense for i in range(self.channel_count)

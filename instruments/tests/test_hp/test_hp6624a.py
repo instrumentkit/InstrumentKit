@@ -11,7 +11,7 @@ import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
-import instruments.units as u
+from instruments.units import ureg as u
 from .. import mock
 
 # TESTS #######################################################################

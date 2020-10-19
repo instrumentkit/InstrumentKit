@@ -11,7 +11,7 @@ Class originally contributed by Catherine Holloway.
 
 from enum import IntEnum
 
-import instruments.units as u
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import convert_temperature, assume_units
@@ -80,7 +80,7 @@ class LM(Instrument):
 
             :return: Current ACC of the Laser
             :units: mA
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             response = float(self._parent.query("rstli?"))
             return response*u.mA
@@ -169,7 +169,7 @@ class LM(Instrument):
 
             :return: the target laser power
             :units: mW
-            :type: `~quantities.Quantities`
+            :type: `~pint.Quantity`
             """
             response = self._parent.query("rslp?")
             return float(response)*u.mW
@@ -258,16 +258,16 @@ class LM(Instrument):
             >>> laser.modulation.on_time = 1 * u.ms
 
             :return: The TTL modulation on time
-            :units: As specified (if a `~quantities.Quantity`) or assumed
+            :units: As specified (if a `~pint.Quantity`) or assumed
                 to be of units milliseconds.
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             response = self._parent.query("stsont?")
             return float(response)*u.ms
 
         @on_time.setter
         def on_time(self, newval):
-            newval = assume_units(newval, u.ms).rescale(u.ms).magnitude
+            newval = assume_units(newval, u.ms).to(u.ms).magnitude
             self._parent.sendcmd("stsont:"+str(newval))
 
         @property
@@ -286,16 +286,16 @@ class LM(Instrument):
             >>> laser.modulation.on_time = 1 * u.ms
 
             :return: The TTL modulation off time.
-            :units: As specified (if a `~quantities.Quantity`) or assumed
+            :units: As specified (if a `~pint.Quantity`) or assumed
                 to be of units milliseconds.
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             response = self._parent.query("stsofft?")
             return float(response)*u.ms
 
         @off_time.setter
         def off_time(self, newval):
-            newval = assume_units(newval, u.ms).rescale(u.ms).magnitude
+            newval = assume_units(newval, u.ms).to(u.ms).magnitude
             self._parent.sendcmd("stsofft:"+str(newval))
 
         @property
@@ -353,7 +353,7 @@ class LM(Instrument):
             >>> print(laser.tec.current)
 
             :units: mA
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             response = self._parent.query("rti?")
             return float(response)*u.mA
@@ -372,10 +372,10 @@ class LM(Instrument):
             >>> print(laser.tec.target)
 
             :units: Degrees Celcius
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             response = self._parent.query("rstt?")
-            return float(response)*u.degC
+            return u.Quantity(float(response), u.degC)
 
         @property
         def enabled(self):
@@ -427,16 +427,16 @@ class LM(Instrument):
         """
         Gets/sets the laser diode current, in mA.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
                 to be of units mA.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         response = self.query("rli?")
         return float(response)*u.mA
 
     @current.setter
     def current(self, newval):
-        newval = assume_units(newval, u.mA).rescale(u.mA).magnitude
+        newval = assume_units(newval, u.mA).to(u.mA).magnitude
         self.sendcmd("slc:"+str(newval))
 
     @property
@@ -445,16 +445,16 @@ class LM(Instrument):
         Get/Set the maximum laser diode current in mA. If the current is set
         over the limit, the laser will shut down.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
                 to be of units mA.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         response = self.query("rlcm?")
         return float(response)*u.mA
 
     @maximum_current.setter
     def maximum_current(self, newval):
-        newval = assume_units(newval, u.mA).rescale('mA').magnitude
+        newval = assume_units(newval, u.mA).to('mA').magnitude
         self.sendcmd("smlc:" + str(newval))
 
     @property
@@ -462,16 +462,16 @@ class LM(Instrument):
         """
         Get/Set the laser's optical power in mW.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
                 to be of units mW.
-        :rtype: `~quantities.Quantity`
+        :rtype: `~pint.Quantity`
         """
         response = self.query("rlp?")
         return float(response)*u.mW
 
     @power.setter
     def power(self, newval):
-        newval = assume_units(newval, u.mW).rescale(u.mW).magnitude
+        newval = assume_units(newval, u.mW).to(u.mW).magnitude
         self.sendcmd("slp:"+str(newval))
 
     @property
@@ -499,12 +499,12 @@ class LM(Instrument):
         """
         Gets/sets laser diode temperature.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
                 to be of units degrees celcius.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         response = self.query("rtt?")
-        return float(response)*u.degC
+        return u.Quantity(float(response), u.degC)
 
     @temperature.setter
     def temperature(self, newval):

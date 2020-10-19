@@ -9,10 +9,9 @@ Unit tests for the Ondax Laser Module
 
 import pytest
 
-import quantities
-
 from instruments import ondax
 from instruments.tests import expected_protocol
+from instruments.units import ureg as u
 
 # TESTS #######################################################################
 
@@ -28,7 +27,7 @@ def test_acc_target():
             ],
             sep="\r"
     ) as lm:
-        assert lm.acc.target == 100 * quantities.mA
+        assert lm.acc.target == 100 * u.mA
 
 
 def test_acc_enable():
@@ -111,7 +110,7 @@ def test_apc_target():
             ],
             sep="\r"
     ) as lm:
-        assert lm.apc.target == 100 * quantities.mW
+        assert lm.apc.target == 100 * u.mW
 
 
 def test_apc_enable():
@@ -188,7 +187,7 @@ def test_modulation_on_time():
             ondax.LM,
             [
                 "stsont?",
-                "stsont:20.0"
+                "stsont:20"
             ],
             [
                 "10",
@@ -196,8 +195,8 @@ def test_modulation_on_time():
             ],
             sep="\r"
     ) as lm:
-        assert lm.modulation.on_time == 10 * quantities.ms
-        lm.modulation.on_time = 20 * quantities.ms
+        assert lm.modulation.on_time == 10 * u.ms
+        lm.modulation.on_time = 20 * u.ms
 
 
 def test_modulation_off_time():
@@ -205,7 +204,7 @@ def test_modulation_off_time():
             ondax.LM,
             [
                 "stsofft?",
-                "stsofft:20.0"
+                "stsofft:20"
             ],
             [
                 "10",
@@ -213,8 +212,8 @@ def test_modulation_off_time():
             ],
             sep="\r"
     ) as lm:
-        assert lm.modulation.off_time == 10 * quantities.ms
-        lm.modulation.off_time = 20 * quantities.ms
+        assert lm.modulation.off_time == 10 * u.ms
+        lm.modulation.off_time = 20 * u.ms
 
 
 def test_modulation_enabled():
@@ -269,7 +268,7 @@ def test_tec_current():
             ],
             sep="\r"
     ) as lm:
-        assert lm.tec.current == 100 * quantities.mA
+        assert lm.tec.current == 100 * u.mA
 
 
 def test_tec_target():
@@ -283,7 +282,7 @@ def test_tec_target():
             ],
             sep="\r"
     ) as lm:
-        assert lm.tec.target == 22 * quantities.degC
+        assert lm.tec.target == u.Quantity(22, u.degC)
 
 
 def test_tec_enable():
@@ -346,7 +345,7 @@ def test_current():
             ondax.LM,
             [
                 "rli?",
-                "slc:100.0"
+                "slc:100"
             ],
             [
                 "120",
@@ -354,8 +353,8 @@ def test_current():
             ],
             sep="\r"
     ) as lm:
-        assert lm.current == 120 * quantities.mA
-        lm.current = 100 * quantities.mA
+        assert lm.current == 120 * u.mA
+        lm.current = 100 * u.mA
 
 
 def test_maximum_current():
@@ -363,7 +362,7 @@ def test_maximum_current():
             ondax.LM,
             [
                 "rlcm?",
-                "smlc:100.0"
+                "smlc:100"
             ],
             [
                 "120",
@@ -371,8 +370,8 @@ def test_maximum_current():
             ],
             sep="\r"
     ) as lm:
-        assert lm.maximum_current == 120 * quantities.mA
-        lm.maximum_current = 100 * quantities.mA
+        assert lm.maximum_current == 120 * u.mA
+        lm.maximum_current = 100 * u.mA
 
 
 def test_power():
@@ -380,7 +379,7 @@ def test_power():
             ondax.LM,
             [
                 "rlp?",
-                "slp:100.0"
+                "slp:100"
             ],
             [
                 "120",
@@ -388,8 +387,8 @@ def test_power():
             ],
             sep="\r"
     ) as lm:
-        assert lm.power == 120 * quantities.mW
-        lm.power = 100 * quantities.mW
+        assert lm.power == 120 * u.mW
+        lm.power = 100 * u.mW
 
 
 def test_serial_number():
@@ -425,7 +424,7 @@ def test_temperature():
             ondax.LM,
             [
                 "rtt?",
-                "stt:40.0"
+                "stt:40"
             ],
             [
                 "35",
@@ -433,8 +432,8 @@ def test_temperature():
             ],
             sep="\r"
     ) as lm:
-        assert lm.temperature == 35 * quantities.degC
-        lm.temperature = 40 * quantities.degC
+        assert lm.temperature == u.Quantity(35, u.degC)
+        lm.temperature = u.Quantity(40, u.degC)
 
 
 def test_enable():

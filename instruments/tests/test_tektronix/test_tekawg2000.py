@@ -13,7 +13,7 @@ from hypothesis import (
 import numpy as np
 import pytest
 
-import instruments.units as u
+from instruments.units import ureg as u
 import instruments as ik
 from instruments.tests import expected_protocol, make_name_test
 
@@ -74,7 +74,7 @@ def test_channel_amplitude(channel, val_read, val_unitless, val_millivolt):
             [
                 f"FG:CH{channel+1}:AMPL?",
                 f"FG:CH{channel+1}:AMPL {val_unitless}",
-                f"FG:CH{channel+1}:AMPL {val_unitful.rescale(u.V).magnitude}"
+                f"FG:CH{channel+1}:AMPL {val_unitful.to(u.V).magnitude}"
             ],
             [
                 f"{val_read.magnitude}"
@@ -98,7 +98,7 @@ def test_channel_offset(channel, val_read, val_unitless, val_millivolt):
             [
                 f"FG:CH{channel+1}:OFFS?",
                 f"FG:CH{channel+1}:OFFS {val_unitless}",
-                f"FG:CH{channel+1}:OFFS {val_unitful.rescale(u.V).magnitude}"
+                f"FG:CH{channel+1}:OFFS {val_unitful.to(u.V).magnitude}"
             ],
             [
                 f"{val_read.magnitude}"
@@ -122,7 +122,7 @@ def test_channel_frequency(channel, val_read, val_unitless, val_kilohertz):
             [
                 f"FG:FREQ?",
                 f"FG:FREQ {val_unitless}HZ",
-                f"FG:FREQ {val_unitful.rescale(u.Hz).magnitude}HZ"
+                f"FG:FREQ {val_unitful.to(u.Hz).magnitude}HZ"
             ],
             [
                 f"{val_read.magnitude}"

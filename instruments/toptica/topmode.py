@@ -13,7 +13,7 @@ from enum import IntEnum
 from instruments.abstract_instruments import Instrument
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
 from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -102,7 +102,7 @@ class TopMode(Instrument):
 
             :return: The wavelength of the specified laser
             :units: Nanometers (nm)
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             return float(self.parent.reference(self.name + ":wavelength")) * u.nm
 
@@ -156,7 +156,7 @@ class TopMode(Instrument):
 
             :return: The 'on time' value for the specified laser
             :units: Seconds (s)
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             return float(self.parent.reference(self.name + ":ontime")) * u.s
 

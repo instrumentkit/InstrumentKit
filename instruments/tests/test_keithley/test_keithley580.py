@@ -17,8 +17,8 @@ from hypothesis import (
 import pytest
 
 import instruments as ik
-import instruments.units as u
 from instruments.tests import expected_protocol
+from instruments.units import ureg as u
 
 
 # TESTS ######################################################################
@@ -761,7 +761,7 @@ def test_measure(init, create_measurement, resistance):
             sep="\n"
     ) as inst:
         read_value = inst.measure()
-        assert read_value.magnitude == pytest.approx(resistance, rel=1e-6)
+        assert read_value.magnitude == pytest.approx(resistance, rel=1e-5)
         assert read_value.units == u.ohm
 
 

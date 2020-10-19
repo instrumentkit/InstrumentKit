@@ -14,7 +14,7 @@ import warnings
 
 from hypothesis import given, strategies as st
 import pytest
-import instruments.units as u
+from instruments.units import ureg as u
 
 import instruments as ik
 from instruments.thorlabs._packets import ThorLabsPacket, hw_info_data

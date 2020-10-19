@@ -12,7 +12,7 @@ from enum import Enum
 import numpy as np
 
 from instruments.generic_scpi import SCPIInstrument
-import instruments.units as u
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -116,7 +116,7 @@ class SRSCTC100(SCPIInstrument):
             kind of sensor and/or channel you have specified. Units can be one
             of ``celsius``, ``watt``, ``volt``, ``ohm``, or ``dimensionless``.
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             # WARNING: Queries all units all the time.
             # TODO: Make an OutputChannel that subclasses this class,
@@ -134,7 +134,7 @@ class SRSCTC100(SCPIInstrument):
             Units can be one of ``celsius``, ``watt``, ``volt``, ``ohm``, or
             ``dimensionless``.
 
-            :type: `~quantities.UnitQuantity`
+            :type: `~pint.Unit`
             """
             # FIXME: does not respect "chan.d/dt" property.
             return self._ctc.channel_units()[self._chan_name]
@@ -190,7 +190,7 @@ class SRSCTC100(SCPIInstrument):
             Gets the average measurement for the specified channel as
             determined by the statistics gathering.
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             return u.Quantity(
                 float(self._get('average')),
@@ -203,7 +203,7 @@ class SRSCTC100(SCPIInstrument):
             Gets the standard deviation for the specified channel as determined
             by the statistics gathering.
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             return u.Quantity(
                 float(self._get('SD')),
@@ -222,9 +222,9 @@ class SRSCTC100(SCPIInstrument):
             :param units: Units to attach to the returned data point. If left
                 with the value of `None` then the instrument will be queried
                 for the current units setting.
-            :type units: `~quantities.UnitQuantity`
+            :type units: `~pint.Unit`
             :return: The log data point with units
-            :rtype: `~quantities.Quantity`
+            :rtype: `~pint.Quantity`
             """
             if units is None:
                 units = self.units
@@ -245,7 +245,7 @@ class SRSCTC100(SCPIInstrument):
 
             :return: Tuple of all the log data points. First value is time,
                 second is the measurement value.
-            :rtype: Tuple of 2x `~quantities.Quantity`, each comprised of
+            :rtype: Tuple of 2x `~pint.Quantity`, each comprised of
                 a numpy array (`numpy.dnarray`).
             """
             # Remember the current units.

@@ -7,12 +7,11 @@ Unit tests for the HP 3456a digital voltmeter
 # IMPORTS #####################################################################
 
 
-import numpy as np
 import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
-import instruments.units as u
+from instruments.units import ureg as u
 
 # TESTS #######################################################################
 
@@ -180,15 +179,9 @@ def test_hp3456a_fetch():
             sep="\r"
     ) as dmm:
         v = dmm.fetch(dmm.Mode.resistance_2wire)
-        np.testing.assert_array_equal(
-            v, [0.1055, 0.1043, 0.1005, 0.1014] * u.ohm
-        )
-        assert v[0].units == u.ohm
+        assert v == [0.1055 * u.ohm, 0.1043 * u.ohm, 0.1005 * u.ohm, 0.1014 * u.ohm]
         v = dmm.fetch()
-        np.testing.assert_array_equal(
-            v, [0.1055, 0.1043, 0.1005, 0.1014] * u.ohm
-        )
-        assert isinstance(v[0], float)
+        assert v == [0.1055, 0.1043, 0.1005, 0.1014]
 
 
 def test_hp3456a_variance():
@@ -239,7 +232,7 @@ def test_hp3456a_delay():
             [
                 "HO0T4SO1",
                 "RED",
-                "W1.0STD"
+                "W1STD"
             ], [
                 "-000.0000E+0"
             ],

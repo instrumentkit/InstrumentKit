@@ -75,12 +75,12 @@ These properties, when implemented in your class, might look like this::
         voltage = unitful_property(
         "VOLT",
         u.volt,
-        valid_range=(0*quantities.volt, 10*quantities.volt)
+        valid_range=(0*u.volt, 10*u.volt)
         doc="""
         Gets/sets the output voltage.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -136,11 +136,11 @@ the `~instruments.thorlabs.TC200` class::
         doc="""
         Gets the actual temperature of the sensor
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units degrees C.
-        :type: `~quantities.quantity.Quantity` or `int`
+        :type: `~pint.Quantity` or `int`
         :return: the temperature (in degrees C)
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
