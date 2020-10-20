@@ -127,7 +127,8 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
             ymult = self._tek.query("WFMP:YMU?")  # Retrieve Y multiplier
             yzero = self._tek.query("WFMP:YZE?")  # Retrieve Y zero
 
-            y = ((raw - yoffs) * float(ymult)) + float(yzero)
+            # y = ((raw - yoffs) * float(ymult)) + float(yzero)
+            y = [((x - yoffs) * float(ymult)) + float(yzero) for x in raw]
 
             xzero = self._tek.query("WFMP:XZE?")  # Retrieve X zero
             xincr = self._tek.query("WFMP:XIN?")  # Retrieve X incr

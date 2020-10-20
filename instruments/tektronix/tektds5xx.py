@@ -145,7 +145,8 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
             # Retrieve Y zero
             yzero = self._parent.query('WFMP:{}:YZE?'.format(self.name))
 
-            y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
+            # y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
+            y = [((x - float(yoffs)) * float(ymult)) + float(yzero) for x in raw]
 
             # Retrieve X incr
             xincr = self._parent.query('WFMP:{}:XIN?'.format(self.name))

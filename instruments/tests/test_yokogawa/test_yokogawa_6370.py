@@ -17,7 +17,10 @@ import numpy as np
 from instruments.units import ureg as u
 
 import instruments as ik
-from instruments.tests import expected_protocol
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+)
 
 
 # TESTS #######################################################################
@@ -55,7 +58,7 @@ def test_channel_data(values, channel):
                 b"#" + values_len_of_len + values_len + values_packed
             ]
     ) as inst:
-        np.testing.assert_array_equal(inst.channel[channel].data(), np.array(values, dtype="<d"))
+        iterable_eq(inst.channel[channel].data(), np.array(values, dtype="<d"))
 
 
 @given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False), min_size=1),
@@ -74,7 +77,7 @@ def test_channel_wavelength(values, channel):
                 b"#" + values_len_of_len + values_len + values_packed
             ]
     ) as inst:
-        np.testing.assert_array_equal(
+        iterable_eq(
             inst.channel[channel].wavelength(),
             np.array(values, dtype="<d")
         )
@@ -252,7 +255,7 @@ def test_data_active_trace(values):
         data_call_by_trace = inst.channel[channel].data()
         # call active trace data
         data_active_trace = inst.data()
-        assert (data_call_by_trace == data_active_trace).all()
+        iterable_eq(data_call_by_trace, data_active_trace)
 
 
 @given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False),
@@ -281,7 +284,7 @@ def test_wavelength_active_trace(values):
         data_call_by_trace = inst.channel[channel].wavelength()
         # call active trace data
         data_active_trace = inst.wavelength()
-        assert (data_call_by_trace == data_active_trace).all()
+        iterable_eq(data_call_by_trace, data_active_trace)
 
 
 def test_start_sweep():

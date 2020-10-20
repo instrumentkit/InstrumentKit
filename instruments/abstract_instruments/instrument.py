@@ -10,11 +10,15 @@ Provides the base Instrument class for all instruments.
 import os
 import collections
 import socket
+import struct
 import urllib.parse as parse
 
 from serial import SerialException
 from serial.tools.list_ports import comports
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 import pyvisa
 import usb
 import usb.core
@@ -285,7 +289,9 @@ class Instrument:
                     raise IOError("Did not read in the required number of bytes"
                                   "during binblock read. Got {}, expected "
                                   "{}".format(len(data), num_of_bytes))
-            return np.frombuffer(data, dtype=fmt)
+            if numpy:
+                return numpy.frombuffer(data, dtype=fmt)
+            return struct.unpack(f"{fmt[0]}{int(len(data)/data_width)}{fmt[-1]}", data)
 
     # CLASS METHODS #
 

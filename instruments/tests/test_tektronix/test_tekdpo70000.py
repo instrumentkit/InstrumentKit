@@ -53,8 +53,8 @@ def test_dtype(binary_format, byte_order, n_bytes):
         ik.tektronix.TekDPO70000.ByteOrder.little_endian: "<"
     }
     value_expected = f"{byte_order_dict[byte_order]}" \
-                     f"{binary_format_dict[binary_format]}" \
-                     f"{n_bytes}"
+                     f"{n_bytes}" \
+                     f"{binary_format_dict[binary_format]}"
     with expected_protocol(
             ik.tektronix.TekDPO70000,
             [
@@ -93,10 +93,10 @@ def test_data_source_read_waveform(channel, values):
     n_bytes = 4
     # get the dtype
     dtype_set = ik.tektronix.TekDPO70000._dtype(binary_format, byte_order,
-                                                n_bytes)
+                                                n_bytes=None)
 
     # pack the values
-    values_packed = b"".join(struct.pack(dtype_set[:-1],
+    values_packed = b"".join(struct.pack(dtype_set,
                                          value) for value in values)
     values_len = str(len(values_packed)).encode()
     values_len_of_len = str(len(values_len)).encode()
@@ -137,7 +137,8 @@ def test_data_source_read_waveform(channel, values):
     ) as inst:
         # query waveform
         scaled_raw = inst.channel[channel].read_waveform()
-        np.testing.assert_equal(scaled_raw, scaled_values)
+        for a, b in zip(scaled_raw, scaled_values):
+            unit_eq(a, b * u.V)
 
 
 def test_data_source_read_waveform_with_old_data_source():
@@ -149,11 +150,11 @@ def test_data_source_read_waveform_with_old_data_source():
     n_bytes = 4
     # get the dtype
     dtype_set = ik.tektronix.TekDPO70000._dtype(binary_format, byte_order,
-                                                n_bytes)
+                                                n_bytes=None)
 
     # pack the values
     values = np.arange(10)
-    values_packed = b"".join(struct.pack(dtype_set[:-1],
+    values_packed = b"".join(struct.pack(dtype_set,
                                          value) for value in values)
     values_len = str(len(values_packed)).encode()
     values_len_of_len = str(len(values_len)).encode()
@@ -197,7 +198,8 @@ def test_data_source_read_waveform_with_old_data_source():
     ) as inst:
         # query waveform
         scaled_raw = inst.channel[channel].read_waveform()
-        np.testing.assert_equal(scaled_raw, scaled_values)
+        for a, b in zip(scaled_raw, scaled_values):
+            unit_eq(a, b * u.V)
 
 
 # MATH #
@@ -1075,7 +1077,9 @@ def test_channel_scale_raw_data(value):
                 f"{offset}"
             ]
     ) as inst:
-        np.testing.assert_array_equal(inst.channel[channel]._scale_raw_data(value), expected_value)
+        actual_data = inst.channel[channel]._scale_raw_data(value)
+        for a, b in zip(actual_data, expected_value):
+            unit_eq(a, b)
 
 
 # INSTRUMENT #

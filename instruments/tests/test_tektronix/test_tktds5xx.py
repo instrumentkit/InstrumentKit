@@ -20,7 +20,11 @@ import numpy as np
 import pytest
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+    make_name_test,
+)
 
 
 # TESTS #######################################################################
@@ -160,8 +164,8 @@ def test_data_source_read_waveform_binary(values):
     ) as inst:
         channel = inst.channel[channel_no]
         x_read, y_read = channel.read_waveform(bin_format=True)
-        np.testing.assert_equal(x_read, x_calc)
-        np.testing.assert_equal(y_read, y_calc)
+        iterable_eq(x_read, x_calc)
+        iterable_eq(y_read, y_calc)
 
 
 @given(values=st.lists(st.floats(min_value=0), min_size=1))

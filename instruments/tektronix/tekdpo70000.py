@@ -10,6 +10,11 @@ import abc
 from enum import Enum
 import time
 
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
 from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
 )
@@ -148,11 +153,11 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         return "{}{}{}".format({
             TekDPO70000.ByteOrder.big_endian: ">",
             TekDPO70000.ByteOrder.little_endian: "<"
-        }[byte_order], {
+        }[byte_order], (n_bytes if n_bytes is not None else ""), {
             TekDPO70000.BinaryFormat.int: "i",
             TekDPO70000.BinaryFormat.uint: "u",
             TekDPO70000.BinaryFormat.float: "f"
-        }[binary_format], n_bytes)
+        }[binary_format])
 
     # CLASSES #
 
@@ -186,7 +191,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
                 dtype = self._parent._dtype(
                     self._parent.outgoing_binary_format,
                     self._parent.outgoing_byte_order,
-                    n_bytes
+                    n_bytes=None
                 )
                 self._parent.sendcmd("CURV?")
                 raw = self._parent.binblockread(n_bytes, fmt=dtype)
@@ -614,10 +619,20 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         )
 
         def _scale_raw_data(self, data):
-            return self.scale * (
-                (TekDPO70000.VERT_DIVS / 2) *
-                data.astype(float) / (2**15) - self.position
-            ) + self.offset
+            scale = self.scale
+            position = self.position
+            offset = self.offset
+
+            if numpy:
+                return scale * (
+                    (TekDPO70000.VERT_DIVS / 2) *
+                    data.astype(float) / (2**15) - position
+                ) + offset
+
+            return [
+                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2 ** 15) - position) + offset
+                for d in map(float, data)
+            ]
 
     # PROPERTIES ##
 

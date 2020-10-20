@@ -377,8 +377,8 @@ def test_data_source_read_waveform_bin(values, ymult, yzero, xzero, xincr):
         x_read, y_read = inst.channel[channel].read_waveform()
         x_calc = np.arange(ptcnt) * xincr + xzero
         y_calc = ((np.array(values) - yoffs) * ymult) + yzero
-        np.testing.assert_equal(x_read, x_calc)
-        np.testing.assert_equal(y_read, y_calc)
+        assert (x_read == x_calc).all()
+        assert (y_read == y_calc).all()
 
 
 @given(values=st.lists(st.integers(min_value=-32768, max_value=32767),

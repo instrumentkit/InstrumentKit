@@ -6,11 +6,14 @@ Module containing tests for the Rigol DS1000
 
 # IMPORTS ####################################################################
 
-import numpy as np
 import pytest
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+    make_name_test,
+)
 
 # TESTS ######################################################################
 
@@ -156,10 +159,7 @@ def test_channel_read_waveform():
                 b"#210" + bytes.fromhex("00000001000200030004") + b"0"
             ]
     ) as osc:
-        np.testing.assert_array_equal(
-            osc.channel[1].read_waveform(),
-            [0, 1, 2, 3, 4]
-        )
+        iterable_eq(osc.channel[1].read_waveform(), (0, 1, 2, 3, 4))
 
 
 # TEST MATH #
@@ -188,10 +188,7 @@ def test_math_read_waveform():
                 b"#210" + bytes.fromhex("00000001000200030004") + b"0"
             ]
     ) as osc:
-        np.testing.assert_array_equal(
-            osc.math.read_waveform(),
-            [0, 1, 2, 3, 4]
-        )
+        iterable_eq(osc.math.read_waveform(), (0, 1, 2, 3, 4))
 
 
 # TEST REF DATASOURCE #

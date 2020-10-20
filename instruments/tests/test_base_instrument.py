@@ -13,7 +13,6 @@ import serial
 from serial.tools.list_ports_common import ListPortInfo
 
 import pytest
-import numpy as np
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -24,6 +23,7 @@ from instruments.abstract_instruments.comm import (
     USBTMCCommunicator, VXI11Communicator, serial_manager, SerialCommunicator
 )
 from instruments.errors import AcknowledgementError, PromptError
+from instruments.tests import iterable_eq
 
 from . import mock
 
@@ -43,7 +43,8 @@ def test_instrument_binblockread():
             ],
             sep="\n"
     ) as inst:
-        np.testing.assert_array_equal(inst.binblockread(2), [0, 1, 2, 3, 4])
+        actual_data = inst.binblockread(2)
+        iterable_eq(actual_data, (0, 1, 2, 3, 4))
 
 
 def test_instrument_binblockread_two_reads():
@@ -53,11 +54,11 @@ def test_instrument_binblockread_two_reads():
         side_effect=[b"#", b"2", b"10", data[:6], data[6:]]
     )
 
-    np.testing.assert_array_equal(inst.binblockread(2), [0, 1, 2, 3, 4])
+    iterable_eq(inst.binblockread(2), (0, 1, 2, 3, 4))
 
     calls_expected = [1, 1, 2, 10, 4]
     calls_actual = [call[0][0] for call in inst._file.read_raw.call_args_list]
-    np.testing.assert_array_equal(calls_expected, calls_actual)
+    iterable_eq(calls_actual, calls_expected)
 
 
 def test_instrument_binblockread_too_many_reads():

@@ -15,6 +15,10 @@ from io import BytesIO
 from unittest import mock
 
 import pytest
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 # FUNCTIONS ##################################################################
 
@@ -116,3 +120,13 @@ def make_name_test(ins_class, name_cmd="*IDN?"):
         with expected_protocol(ins_class, name_cmd + "\n", "NAME\n") as ins:
             assert ins.name == "NAME"
     return test
+
+
+def iterable_eq(a, b):
+    """
+    Asserts that the contents of two iterables are the same.
+    """
+    if numpy and (isinstance(a, numpy.ndarray) or isinstance(b, numpy.ndarray)):
+        assert (a == b).all()
+    else:
+        assert a == b
