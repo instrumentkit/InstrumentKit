@@ -7,10 +7,11 @@ Unit tests for the SRS 345 function generator
 # IMPORTS #####################################################################
 
 
-import numpy as np
-
 import instruments as ik
-from instruments.tests import expected_protocol
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+)
 from instruments.units import ureg as u
 
 # TESTS #######################################################################
@@ -28,9 +29,7 @@ def test_amplitude():
                 "1.234VP",
             ]
     ) as inst:
-        np.testing.assert_array_equal(
-            inst.amplitude, (1.234 * u.V, inst.VoltageMode.peak_to_peak)
-        )
+        iterable_eq(inst.amplitude, (1.234 * u.V, inst.VoltageMode.peak_to_peak))
         inst.amplitude = 0.1 * u.V
         inst.amplitude = (0.1 * u.V, inst.VoltageMode.rms)
 

@@ -10,7 +10,10 @@ from hypothesis import (
     given,
     strategies as st,
 )
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 import pytest
 
 from instruments.units import ureg as u
@@ -241,6 +244,7 @@ def test_waveform_name_type_mismatch():
         assert exc_msg == "Waveform name must be specified as a string."
 
 
+@pytest.mark.skipif(numpy is None, reason="Numpy required for this test")
 @given(yzero=st.floats(min_value=-5, max_value=5),
        ymult=st.floats(min_value=0.00001),
        xincr=st.floats(min_value=5e-8, max_value=1e-1),
@@ -248,7 +252,7 @@ def test_waveform_name_type_mismatch():
 def test_upload_waveform(yzero, ymult, xincr, waveform):
     """Upload a waveform from the PC to the instrument."""
     # prep waveform
-    waveform = np.array(waveform)
+    waveform = numpy.array(waveform)
     waveform_send = waveform * (2**12 - 1)
     waveform_send = waveform_send.astype("<u2").tobytes()
     wfm_header_2 = str(len(waveform_send))
@@ -268,6 +272,7 @@ def test_upload_waveform(yzero, ymult, xincr, waveform):
         inst.upload_waveform(yzero, ymult, xincr, waveform)
 
 
+@pytest.mark.skipif(numpy is None, reason="Numpy required for this test")
 @given(yzero=st.floats(min_value=-5, max_value=5),
        ymult=st.floats(min_value=0.00001),
        xincr=st.floats(min_value=5e-8, max_value=1e-1),
@@ -277,7 +282,7 @@ def test_upload_waveform_type_mismatch(yzero, ymult, xincr, waveform):
     wrong_type_yzero = "42"
     wrong_type_ymult = "42"
     wrong_type_xincr = "42"
-    waveform_ndarray = np.array(waveform)
+    waveform_ndarray = numpy.array(waveform)
     with expected_protocol(
             ik.tektronix.TekAWG2000,
             [
@@ -310,13 +315,14 @@ def test_upload_waveform_type_mismatch(yzero, ymult, xincr, waveform):
         assert exc_msg == "waveform must be specified as a numpy array"
 
 
+@pytest.mark.skipif(numpy is None, reason="Numpy required for this test")
 @given(yzero=st.floats(min_value=-5, max_value=5),
        ymult=st.floats(min_value=0.00001),
        xincr=st.floats(min_value=5e-8, max_value=1e-1),
        waveform=st.lists(st.floats(min_value=0, max_value=1), min_size=1))
 def test_upload_waveform_wrong_max(yzero, ymult, xincr, waveform):
     """Raise ValueError when waveform maximum is too large."""
-    waveform_wrong_max = np.array(waveform)
+    waveform_wrong_max = numpy.array(waveform)
     waveform_wrong_max[0] = 42.
     with expected_protocol(
             ik.tektronix.TekAWG2000,

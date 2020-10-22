@@ -12,7 +12,10 @@ import time
 import warnings
 from enum import Enum, IntEnum
 
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 from instruments.abstract_instruments.comm import (
     GPIBCommunicator,
@@ -380,7 +383,9 @@ class SRS830(SCPIInstrument):
         ch1 = self.read_data_buffer('ch1')
         ch2 = self.read_data_buffer('ch2')
 
-        return np.array([ch1, ch2])
+        if numpy:
+            return numpy.array([ch1, ch2])
+        return ch1, ch2
 
     # OTHER METHODS #
 
@@ -517,10 +522,10 @@ class SRS830(SCPIInstrument):
         # Query device for entire buffer, returning in ASCII, then
         # converting to a list of floats before returning to the
         # calling method
-        return np.fromstring(
-            self.query('TRCA?{},0,{}'.format(channel, N)).strip(),
-            sep=','
-        )
+        data = self.query('TRCA?{},0,{}'.format(channel, N)).strip()
+        if numpy:
+            return numpy.fromstring(data, sep=',')
+        return tuple(map(float, data.split(",")))
 
     def clear_data_buffer(self):
         """

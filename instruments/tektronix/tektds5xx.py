@@ -40,7 +40,10 @@ import operator
 import struct
 import time
 
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
@@ -125,7 +128,10 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
                 self._parent.sendcmd('DAT:ENC ASCI')
                 raw = self._parent.query('CURVE?')
                 raw = raw.split(',')  # Break up comma delimited string
-                raw = np.array(raw, dtype=np.float)  # Convert into numpy array
+                if numpy:
+                    raw = numpy.array(raw, dtype=numpy.float)  # Convert to numpy array
+                else:
+                    raw = map(float, raw)
             else:
                 # Set encoding to signed, big-endian
                 self._parent.sendcmd('DAT:ENC RIB')
@@ -139,23 +145,25 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
                 self._parent._file.read_raw(1)
 
             # Retrieve Y offset
-            yoffs = self._parent.query('WFMP:{}:YOF?'.format(self.name))
+            yoffs = float(self._parent.query('WFMP:{}:YOF?'.format(self.name)))
             # Retrieve Y multiply
-            ymult = self._parent.query('WFMP:{}:YMU?'.format(self.name))
+            ymult = float(self._parent.query('WFMP:{}:YMU?'.format(self.name)))
             # Retrieve Y zero
-            yzero = self._parent.query('WFMP:{}:YZE?'.format(self.name))
-
-            # y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
-            y = [((x - float(yoffs)) * float(ymult)) + float(yzero) for x in raw]
+            yzero = float(self._parent.query('WFMP:{}:YZE?'.format(self.name)))
 
             # Retrieve X incr
-            xincr = self._parent.query('WFMP:{}:XIN?'.format(self.name))
+            xincr = float(self._parent.query('WFMP:{}:XIN?'.format(self.name)))
             # Retrieve number of data points
-            ptcnt = self._parent.query('WFMP:{}:NR_P?'.format(self.name))
+            ptcnt = int(self._parent.query('WFMP:{}:NR_P?'.format(self.name)))
 
-            x = np.arange(float(ptcnt)) * float(xincr)
+            if numpy:
+                x = numpy.arange(float(ptcnt)) * float(xincr)
+                y = ((raw - yoffs) * float(ymult)) + float(yzero)
+            else:
+                x = tuple([float(val) * float(xincr) for val in range(ptcnt)])
+                y = [((x - yoffs) * float(ymult)) + float(yzero) for x in raw]
 
-            return (x, y)
+            return x, y
 
 
 class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
@@ -401,7 +409,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         :rtype: `list`
         """
         active = []
-        channels = np.array(self.query('SEL?').split(';')[0:11], dtype=np.int)
+        channels = list(map(int, self.query('SEL?').split(';')[0:11]))
         for idx in range(0, 4):
             if channels[idx]:
                 active.append(_TekTDS5xxChannel(self, idx))

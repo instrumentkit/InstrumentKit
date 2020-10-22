@@ -6,7 +6,10 @@ Module containing tests for Agilent 34410a
 
 # IMPORTS ####################################################################
 
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 import pytest
 
 import instruments as ik
@@ -96,7 +99,10 @@ def test_agilent34410a_r():
                 b"#18" + bytes.fromhex("3FF0000000000000")
             ]
     ) as dmm:
-        unit_eq(dmm.r(1), np.array([1]) * u.volt)
+        expected = [1] * u.volt
+        if numpy:
+            expected = numpy.array([1]) * u.volt
+        unit_eq(dmm.r(1), expected)
 
 
 def test_agilent34410a_r_count_zero():
@@ -113,7 +119,10 @@ def test_agilent34410a_r_count_zero():
                 b"#18" + bytes.fromhex("3FF0000000000000")
             ]
     ) as dmm:
-        unit_eq(dmm.r(0), np.array([1]) * u.volt)
+        expected = [1] * u.volt
+        if numpy:
+            expected = numpy.array([1]) * u.volt
+        unit_eq(dmm.r(0), expected)
 
 
 def test_agilent34410a_r_type_error():

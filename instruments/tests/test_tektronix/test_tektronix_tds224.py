@@ -10,11 +10,18 @@ from enum import Enum
 import time
 
 from hypothesis import given, strategies as st
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 import pytest
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+    make_name_test,
+)
 
 # TESTS ######################################################################
 
@@ -193,10 +200,12 @@ def test_tektds224_data_source_read_waveform():
                 "5"
             ]
     ) as tek:
-        data = np.array([0, 1, 2, 3, 4])
+        data = tuple(range(5))
+        if numpy:
+            data = numpy.array([0, 1, 2, 3, 4])
         (x, y) = tek.channel[1].read_waveform()
-        assert (x == data).all()
-        assert (y == data).all()
+        iterable_eq(x, data)
+        iterable_eq(y, data)
 
 
 @given(values=st.lists(st.floats(allow_infinity=False, allow_nan=False),
@@ -239,12 +248,15 @@ def test_tektds224_data_source_read_waveform_ascii(values):
                 f"{ptcnt}"
             ]
     ) as tek:
-        x_expected = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
-        y_expected = ((np.array(values) - float(yoffs)) * float(ymult)) + \
-                     float(yzero)
+        if numpy:
+            x_expected = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
+            y_expected = ((numpy.array(values) - float(yoffs)) * float(ymult)) + float(yzero)
+        else:
+            x_expected = tuple([float(val) * float(xincr) + float(xzero) for val in range(ptcnt)])
+            y_expected = tuple([((val - float(yoffs)) * float(ymult)) + float(yzero) for val in values])
         x_read, y_read = tek.channel[1].read_waveform(bin_format=False)
-        np.testing.assert_equal(x_read, x_expected)
-        np.testing.assert_equal(y_read, y_expected)
+        iterable_eq(x_read, x_expected)
+        iterable_eq(y_read, y_expected)
 
 
 def test_force_trigger():

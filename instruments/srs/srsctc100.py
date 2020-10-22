@@ -9,7 +9,10 @@ Provides support for the SRS CTC-100 cryogenic temperature controller.
 from contextlib import contextmanager
 from enum import Enum
 
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.units import ureg as u
@@ -257,8 +260,12 @@ class SRSCTC100(SCPIInstrument):
 
             # Make an empty quantity that size for the times and for the channel
             # values.
-            ts = u.Quantity(np.empty((n_points,)), 'ms')
-            temps = u.Quantity(np.empty((n_points,)), units)
+            if numpy:
+                ts = u.Quantity(numpy.empty((n_points,)), u.ms)
+                temps = u.Quantity(numpy.empty((n_points,)), units)
+            else:
+                ts = u.Quantity([0] * n_points, u.ms)
+                temps = u.Quantity([0] * n_points, units)
 
             # Reset the position to the first point, then save it.
             # pylint: disable=protected-access

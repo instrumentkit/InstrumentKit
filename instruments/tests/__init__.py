@@ -20,6 +20,8 @@ try:
 except ImportError:
     numpy = None
 
+from instruments.units import ureg as u
+
 # FUNCTIONS ##################################################################
 
 
@@ -128,5 +130,7 @@ def iterable_eq(a, b):
     """
     if numpy and (isinstance(a, numpy.ndarray) or isinstance(b, numpy.ndarray)):
         assert (a == b).all()
+    elif isinstance(a, u.Quantity) and isinstance(b, u.Quantity):
+        unit_eq(a, b)
     else:
         assert a == b

@@ -6,12 +6,18 @@ Module containing tests for the Thorlabs TC200
 
 # IMPORTS ####################################################################
 
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 import pytest
 
 import instruments as ik
 from instruments.units import ureg as u
-from instruments.tests import expected_protocol
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+)
 
 # TESTS ######################################################################
 
@@ -90,13 +96,20 @@ def test_maui_data_source_read_waveform(init):
             ],
             sep="\n"
     ) as osc:
-        wf = np.array(
-            [
-                [0., 2.5, 5., 7.5],
-                [1., 2., 3., 4.]
-            ]
-        )
-        assert (osc.channel[0].read_waveform() == wf).all()
+        if numpy:
+            expected_wf = numpy.array(
+                [
+                    [0., 2.5, 5., 7.5],
+                    [1., 2., 3., 4.]
+                ]
+            )
+        else:
+            expected_wf = (
+                (0., 2.5, 5., 7.5),
+                (1., 2., 3., 4.)
+            )
+        actual_wf = osc.channel[0].read_waveform()
+        iterable_eq(actual_wf, expected_wf)
 
 
 def test_maui_data_source_read_waveform_different_length(init):
@@ -132,22 +145,30 @@ def test_maui_data_source_read_waveform_different_length(init):
             ],
             sep="\n"
     ) as osc:
-        # create the signal that we want to get returned
-        signal = np.array(faulty_dataset_int)
         h_offset = 9.8895e-06
         h_interval = 5e-10
-        timebase = np.arange(
-            h_offset,
-            h_offset + h_interval * (len(signal)),
-            h_interval
-        )
 
-        # now cut timebase to the length of the signal
-        timebase = timebase[0:len(signal)]
+        if numpy:
+            # create the signal that we want to get returned
+            signal = numpy.array(faulty_dataset_int)
+            timebase = numpy.arange(
+                h_offset,
+                h_offset + h_interval * (len(signal)),
+                h_interval
+            )
 
-        # create return dataset
-        dataset_return = np.stack((timebase, signal))
-        assert (osc.channel[0].read_waveform() == dataset_return).all()
+            # now cut timebase to the length of the signal
+            timebase = timebase[0:len(signal)]
+            # create return dataset
+            dataset_return = numpy.stack((timebase, signal))
+        else:
+            signal = tuple(faulty_dataset_int)
+            timebase = tuple([float(val) * h_interval + h_offset for val in range(len(signal))])
+            timebase = timebase[0:len(signal)]
+            dataset_return = timebase, signal
+
+        actual_wf = osc.channel[0].read_waveform()
+        iterable_eq(actual_wf, dataset_return)
 
 
 def test_maui_data_source_read_waveform_math(init):
@@ -167,13 +188,20 @@ def test_maui_data_source_read_waveform_math(init):
             ],
             sep="\n"
     ) as osc:
-        wf = np.array(
-            [
-                [0., 2.5, 5., 7.5],
-                [1., 2., 3., 4.]
-            ]
-        )
-        assert (osc.channel[0].read_waveform(single=False) == wf).all()
+        if numpy:
+            expected_wf = numpy.array(
+                [
+                    [0., 2.5, 5., 7.5],
+                    [1., 2., 3., 4.]
+                ]
+            )
+        else:
+            expected_wf = (
+                (0., 2.5, 5., 7.5),
+                (1., 2., 3., 4.)
+            )
+        actual_wf = osc.channel[0].read_waveform(single=False)
+        iterable_eq(actual_wf, expected_wf)
 
 
 def test_maui_data_source_read_waveform_bin_format(init):

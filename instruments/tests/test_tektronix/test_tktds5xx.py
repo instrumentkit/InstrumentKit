@@ -16,7 +16,10 @@ from hypothesis import (
     given,
     strategies as st,
 )
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 import pytest
 
 import instruments as ik
@@ -128,14 +131,20 @@ def test_data_source_read_waveform_binary(values):
     xincr = 0.001
     # make values to compare with
     ptcnt = len(values)
-    values_arr = np.array(values)
+    values_arr = values
+    if numpy:
+        values_arr = numpy.array(values)
     values_packed = b"".join(struct.pack(">h", value) for value in values)
     values_len = str(len(values_packed)).encode()
     values_len_of_len = str(len(values_len)).encode()
 
     # calculations
-    y_calc = ((values_arr - yoffs) * ymult) + yzero
-    x_calc = np.arange(float(ptcnt)) * xincr
+    if numpy:
+        x_calc = numpy.arange(float(ptcnt)) * xincr
+        y_calc = ((values_arr - yoffs) * ymult) + yzero
+    else:
+        x_calc = tuple([float(val) * float(xincr) for val in range(ptcnt)])
+        y_calc = [((val - yoffs) * float(ymult)) + float(yzero) for val in values]
 
     with expected_protocol(
             ik.tektronix.TekTDS5xx,
@@ -179,12 +188,18 @@ def test_data_source_read_waveform_ascii(values):
     xincr = 0.001
     # make values to compare with
     values_str = ",".join([str(value) for value in values])
-    values_arr = np.array(values)
+    values_arr = values
+    if numpy:
+        values_arr = numpy.array(values)
 
     # calculations
     ptcnt = len(values)
-    y_calc = ((values_arr - yoffs) * ymult) + yzero
-    x_calc = np.arange(float(ptcnt)) * xincr
+    if numpy:
+        x_calc = numpy.arange(float(ptcnt)) * xincr
+        y_calc = ((values_arr - yoffs) * ymult) + yzero
+    else:
+        x_calc = tuple([float(val) * float(xincr) for val in range(ptcnt)])
+        y_calc = [((val - yoffs) * float(ymult)) + float(yzero) for val in values]
 
     with expected_protocol(
             ik.tektronix.TekTDS5xx,
@@ -211,8 +226,8 @@ def test_data_source_read_waveform_ascii(values):
     ) as inst:
         channel = inst.channel[channel_no]
         x_read, y_read = channel.read_waveform(bin_format=False)
-        np.testing.assert_equal(x_read, x_calc)
-        np.testing.assert_equal(y_read, y_calc)
+        iterable_eq(x_read, x_calc)
+        iterable_eq(y_read, y_calc)
 
 
 # CHANNEL #

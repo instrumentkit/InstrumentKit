@@ -13,7 +13,10 @@ from hypothesis import (
     given,
     strategies as st,
 )
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 from instruments.units import ureg as u
 
 import instruments as ik
@@ -58,7 +61,9 @@ def test_channel_data(values, channel):
                 b"#" + values_len_of_len + values_len + values_packed
             ]
     ) as inst:
-        iterable_eq(inst.channel[channel].data(), np.array(values, dtype="<d"))
+        if numpy:
+            values = numpy.array(values, dtype="<d")
+        iterable_eq(inst.channel[channel].data(), values)
 
 
 @given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False), min_size=1),
@@ -77,10 +82,9 @@ def test_channel_wavelength(values, channel):
                 b"#" + values_len_of_len + values_len + values_packed
             ]
     ) as inst:
-        iterable_eq(
-            inst.channel[channel].wavelength(),
-            np.array(values, dtype="<d")
-        )
+        if numpy:
+            values = numpy.array(values, dtype="<d")
+        iterable_eq(inst.channel[channel].wavelength(), values)
 
 
 @given(value=st.floats(min_value=600e-9, max_value=1700e-9))

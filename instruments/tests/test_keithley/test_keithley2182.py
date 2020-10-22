@@ -7,11 +7,13 @@ Unit tests for the Keithley 2182 nano-voltmeter
 # IMPORTS #####################################################################
 
 
-import numpy as np
 import pytest
 
 import instruments as ik
-from instruments.tests import expected_protocol
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+)
 from instruments.units import ureg as u
 
 # TESTS #######################################################################
@@ -136,9 +138,8 @@ def test_fetch():
                 "VOLT",
             ]
     ) as inst:
-        np.testing.assert_array_equal(
-            inst.fetch(), [1.234, 1, 5.678] * u.volt
-        )
+        data = inst.fetch()
+        iterable_eq(data, [1.234, 1, 5.678] * u.volt)
 
 
 def test_measure():

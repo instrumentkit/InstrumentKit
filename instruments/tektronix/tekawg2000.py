@@ -8,7 +8,10 @@ Provides support for the Tektronix AWG2000 series arbitrary wave generators.
 
 from enum import Enum
 
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.units import ureg as u
@@ -231,6 +234,10 @@ class TekAWG2000(SCPIInstrument):
             that all absolute values contained within the array should not
             exceed 1.
         """
+        if numpy is None:
+            raise ImportError("Missing optional dependency numpy, which is required"
+                              "for uploading waveforms.")
+
         if not isinstance(yzero, float) and not isinstance(yzero, int):
             raise TypeError("yzero must be specified as a float or int")
 
@@ -240,10 +247,10 @@ class TekAWG2000(SCPIInstrument):
         if not isinstance(xincr, float) and not isinstance(xincr, int):
             raise TypeError("xincr must be specified as a float or int")
 
-        if not isinstance(waveform, np.ndarray):
+        if not isinstance(waveform, numpy.ndarray):
             raise TypeError("waveform must be specified as a numpy array")
 
-        if np.max(np.abs(waveform)) > 1:
+        if numpy.max(numpy.abs(waveform)) > 1:
             raise ValueError("The max value for an element in waveform is 1.")
 
         self.sendcmd("WFMP:YZERO {}".format(yzero))

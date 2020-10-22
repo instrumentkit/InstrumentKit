@@ -11,10 +11,16 @@ from hypothesis import (
     strategies as st,
 )
 import pytest
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 import instruments as ik
-from instruments.tests import expected_protocol
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+)
 from instruments.units import ureg as u
 
 # TESTS ######################################################################
@@ -366,12 +372,15 @@ def test_channel_get_log(channel):
                                    it in range(1, n_points)])
 
     # make data to compare with
-    ts = u.Quantity(np.empty((n_points,)), u.ms)
-    temps = u.Quantity(np.empty((n_points,)), units)
+    if numpy:
+        ts = u.Quantity(numpy.empty((n_points,)), u.ms)
+        temps = u.Quantity(numpy.empty((n_points,)), units)
+    else:
+        ts = u.Quantity([0] * n_points, u.ms)
+        temps = u.Quantity([0] * n_points, units)
     for it, time in enumerate(times):
         ts[it] = u.Quantity(time, u.ms)
         temps[it] = u.Quantity(values[it], units)
-
 
     with expected_protocol(
             ik.srs.SRSCTC100,
@@ -405,8 +414,8 @@ def test_channel_get_log(channel):
         ch = inst.channel[channel]
         ts_read, temps_read = ch.get_log()
         # assert the data is correct
-        np.testing.assert_array_equal(ts, ts_read)
-        np.testing.assert_array_equal(temps, temps_read)
+        iterable_eq(ts, ts_read)
+        iterable_eq(temps, temps_read)
 
 
 # INSTRUMENT #

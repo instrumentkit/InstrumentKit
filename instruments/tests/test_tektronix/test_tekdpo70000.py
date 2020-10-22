@@ -13,12 +13,16 @@ from hypothesis import (
     given,
     strategies as st,
 )
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 import pytest
 
 import instruments as ik
 from instruments.tests import (
     expected_protocol,
+    iterable_eq,
     make_name_test,
     unit_eq,
 )
@@ -100,7 +104,8 @@ def test_data_source_read_waveform(channel, values):
                                          value) for value in values)
     values_len = str(len(values_packed)).encode()
     values_len_of_len = str(len(values_len)).encode()
-    values = np.array(values)
+    if numpy:
+        values = numpy.array(values)
     # scale the values
     scale = 1.
     position = 0.
@@ -153,7 +158,9 @@ def test_data_source_read_waveform_with_old_data_source():
                                                 n_bytes=None)
 
     # pack the values
-    values = np.arange(10)
+    values = range(10)
+    if numpy:
+        values = numpy.arange(10)
     values_packed = b"".join(struct.pack(dtype_set,
                                          value) for value in values)
     values_len = str(len(values_packed)).encode()
@@ -764,9 +771,10 @@ def test_math_scale(value):
 def test_math_scale_raw_data(value):
     """Return scaled raw data according to current settings."""
     math = 0
-    scale = 1.
+    scale = 1. * u.V
     position = -2.3
-    value = np.array(value)
+    if numpy:
+        value = numpy.array(value)
     expected_value = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
                               value.astype(float) / (2**15) - position)
     with expected_protocol(
@@ -780,8 +788,7 @@ def test_math_scale_raw_data(value):
                 f"{position}"
             ]
     ) as inst:
-        np.testing.assert_equal(inst.math[math]._scale_raw_data(value),
-                                expected_value)
+        iterable_eq(inst.math[math]._scale_raw_data(value), expected_value)
 
 
 # CHANNEL #
@@ -1060,7 +1067,8 @@ def test_channel_scale_raw_data(value):
     scale = u.Quantity(1., u.V)
     position = -1.
     offset = u.Quantity(0., u.V)
-    value = np.array(value)
+    if numpy:
+        value = numpy.array(value)
     expected_value = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
                               value.astype(float) / (2**15) -
                               position) + offset
@@ -1078,8 +1086,7 @@ def test_channel_scale_raw_data(value):
             ]
     ) as inst:
         actual_data = inst.channel[channel]._scale_raw_data(value)
-        for a, b in zip(actual_data, expected_value):
-            unit_eq(a, b)
+        iterable_eq(actual_data, expected_value)
 
 
 # INSTRUMENT #

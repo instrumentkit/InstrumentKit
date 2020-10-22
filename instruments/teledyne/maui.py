@@ -16,7 +16,10 @@ class.
 # IMPORTS #####################################################################
 
 from enum import Enum
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
@@ -265,19 +268,25 @@ class MAUI(Oscilloscope):
                 self._parent.trigger_state = trig_state
 
             # format the string to appropriate data
-            dat_val = np.array(retval.replace('"', '').split(),
-                               dtype=np.float)
+            retval = retval.replace('"', '').split()
+            if numpy:
+                dat_val = numpy.array(retval, dtype=numpy.float)  # Convert to ndarray
+            else:
+                dat_val = tuple(map(float, retval))
 
             # format horizontal data into floats
             horiz_off = float(horiz_off.replace('"', '').split(':')[1])
             horiz_int = float(horiz_int.replace('"', '').split(':')[1])
 
             # create time base
-            dat_time = np.arange(
-                horiz_off,
-                horiz_off + horiz_int * (len(dat_val)),
-                horiz_int
-            )
+            if numpy:
+                dat_time = numpy.arange(
+                    horiz_off,
+                    horiz_off + horiz_int * (len(dat_val)),
+                    horiz_int
+                )
+            else:
+                dat_time = tuple(val * horiz_int + horiz_off for val in range(len(dat_val)))
 
             # fix length bug, sometimes dat_time is longer than dat_signal
             if len(dat_time) > len(dat_val):
@@ -285,7 +294,10 @@ class MAUI(Oscilloscope):
             else:  # in case the opposite is the case
                 dat_val = dat_val[0:len(dat_time)]
 
-            return np.stack((dat_time, dat_val))
+            if numpy:
+                return numpy.stack((dat_time, dat_val))
+            else:
+                return dat_time, dat_val
 
         trace = bool_property(
             command="TRA",

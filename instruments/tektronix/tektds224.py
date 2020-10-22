@@ -10,7 +10,10 @@ import time
 
 from enum import Enum
 
-import numpy as np
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
@@ -72,7 +75,10 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
                 # Set the data encoding format to ASCII
                 raw = self._tek.query("CURVE?")
                 raw = raw.split(',')  # Break up comma delimited string
-                raw = np.array(raw, dtype=np.float)  # Convert to ndarray
+                if numpy:
+                    raw = numpy.array(raw, dtype=numpy.float)  # Convert to ndarray
+                else:
+                    raw = tuple(map(float, raw))
             else:
                 self._tek.sendcmd("DAT:ENC RIB")
                 # Set encoding to signed, big-endian
@@ -98,7 +104,10 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
             # of data
             # points
 
-            x = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
+            if numpy:
+                x = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
+            else:
+                x = tuple(float(val) * float(xincr) + float(xzero) for val in range(ptcnt))
 
             return x, y
 
