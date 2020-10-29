@@ -264,8 +264,8 @@ class SRSCTC100(SCPIInstrument):
                 ts = u.Quantity(numpy.empty((n_points,)), u.ms)
                 temps = u.Quantity(numpy.empty((n_points,)), units)
             else:
-                ts = u.Quantity([0] * n_points, u.ms)
-                temps = u.Quantity([0] * n_points, units)
+                ts = [u.Quantity(0, u.ms)] * n_points
+                temps = [u.Quantity(0, units)] * n_points
 
             # Reset the position to the first point, then save it.
             # pylint: disable=protected-access

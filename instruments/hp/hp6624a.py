@@ -250,9 +250,9 @@ class HP6624a(PowerSupply):
             of units Volts.
         :type: `list` of `~pint.Quantity` with units Volt
         """
-        return [
+        return tuple([
             self.channel[i].voltage for i in range(self.channel_count)
-        ]
+        ])
 
     @voltage.setter
     def voltage(self, newval):
@@ -276,9 +276,9 @@ class HP6624a(PowerSupply):
             of units Amps.
         :type: `list` of `~pint.Quantity` with units Amp
         """
-        return [
+        return tuple([
             self.channel[i].current for i in range(self.channel_count)
-        ]
+        ])
 
     @current.setter
     def current(self, newval):
@@ -301,7 +301,7 @@ class HP6624a(PowerSupply):
         :units: :math:`\\text{V}` (volts)
         :rtype: `tuple` of `~pint.Quantity`
         """
-        return (
+        return tuple(
             self.channel[i].voltage_sense for i in range(self.channel_count)
         )
 
@@ -313,7 +313,7 @@ class HP6624a(PowerSupply):
         :units: :math:`\\text{A}` (amps)
         :rtype: `tuple` of `~pint.Quantity`
         """
-        return (
+        return tuple(
             self.channel[i].current_sense for i in range(self.channel_count)
         )
 

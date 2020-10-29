@@ -95,19 +95,16 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
             ymult = self._tek.query(f"WFMP:{self.name}:YMU?")  # Retrieve Y multiply
             yzero = self._tek.query(f"WFMP:{self.name}:YZE?")  # Retrieve Y zero
 
-            # y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
-            y = [((x - float(yoffs)) * float(ymult)) + float(yzero) for x in raw]
-
             xzero = self._tek.query("WFMP:XZE?")  # Retrieve X zero
             xincr = self._tek.query("WFMP:XIN?")  # Retrieve X incr
-            ptcnt = self._tek.query(f"WFMP:{self.name}:NR_P?")  # Retrieve number
-            # of data
-            # points
+            ptcnt = self._tek.query(f"WFMP:{self.name}:NR_P?")  # Retrieve number of data points
 
             if numpy:
                 x = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
+                y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
             else:
-                x = tuple(float(val) * float(xincr) + float(xzero) for val in range(ptcnt))
+                x = tuple(float(val) * float(xincr) + float(xzero) for val in range(int(ptcnt)))
+                y = tuple(((x - float(yoffs)) * float(ymult)) + float(yzero) for x in raw)
 
             return x, y
 

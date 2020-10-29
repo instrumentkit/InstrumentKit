@@ -8,6 +8,10 @@ Unit tests for the Keithley 2182 nano-voltmeter
 
 
 import pytest
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 import instruments as ik
 from instruments.tests import (
@@ -139,7 +143,11 @@ def test_fetch():
             ]
     ) as inst:
         data = inst.fetch()
-        iterable_eq(data, [1.234, 1, 5.678] * u.volt)
+        vals = [1.234, 1, 5.678]
+        expected_data = tuple(v * u.volt for v in vals)
+        if numpy:
+            expected_data = vals * u.volt
+        iterable_eq(data, expected_data)
 
 
 def test_measure():

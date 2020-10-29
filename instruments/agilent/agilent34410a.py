@@ -6,6 +6,11 @@ Provides support for the Agilent 34410a digital multimeter.
 
 # IMPORTS #####################################################################
 
+try:
+    import numpy
+except ImportError:
+    numpy = None
+
 from instruments.generic_scpi import SCPIMultimeter
 from instruments.units import ureg as u
 
@@ -91,7 +96,10 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         self.sendcmd('FORM:DATA REAL,64')
         self.sendcmd(msg)
         data = self.binblockread(8, fmt=">d")
-        return data * units
+        if numpy:
+            return data * units
+        else:
+            return tuple(val * units for val in data)
 
     # DATA READING METHODS #
 
@@ -110,7 +118,10 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         :rtype: `list` of `~pint.Quantity` elements
         """
         units = UNITS[self.mode]
-        return list(map(float, self.query('FETC?').split(','))) * units
+        data = list(map(float, self.query('FETC?').split(',')))
+        if numpy:
+            return data * units
+        return tuple(val * units for val in data)
 
     def read_data(self, sample_count):
         """
@@ -133,7 +144,10 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         units = UNITS[self.mode]
         self.sendcmd('FORM:DATA ASC')
         data = self.query('DATA:REM? {}'.format(sample_count)).split(',')
-        return list(map(float, data)) * units
+        data = list(map(float, data))
+        if numpy:
+            return data * units
+        return tuple(val * units for val in data)
 
     def read_data_nvmem(self):
         """
@@ -143,7 +157,9 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         """
         units = UNITS[self.mode]
         data = list(map(float, self.query('DATA:DATA? NVMEM').split(',')))
-        return data * units
+        if numpy:
+            return data * units
+        return tuple(val * units for val in data)
 
     def read_last_data(self):
         """

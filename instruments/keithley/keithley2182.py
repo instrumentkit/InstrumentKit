@@ -7,10 +7,15 @@ Driver for the Keithley 2182 nano-voltmeter
 # IMPORTS #####################################################################
 
 from enum import Enum
-from instruments.units import ureg as u
+
+try:
+    import numpy
+except ImportError:
+    numpy = None
 
 from instruments.generic_scpi import SCPIMultimeter
 from instruments.abstract_instruments import Multimeter
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -214,7 +219,11 @@ class Keithley2182(SCPIMultimeter):
         :return: Measurement readings from the instrument output buffer.
         :rtype: `list` of `~pint.Quantity` elements
         """
-        return list(map(float, self.query("FETC?").split(","))) * self.units
+        data = list(map(float, self.query("FETC?").split(",")))
+        unit = self.units
+        if numpy:
+            return data * unit
+        return tuple(d * unit for d in data)
 
     def measure(self, mode=None):
         """

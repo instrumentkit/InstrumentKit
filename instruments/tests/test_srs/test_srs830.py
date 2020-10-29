@@ -266,7 +266,7 @@ def test_take_measurement():
             ]
     ) as inst:
         resp = inst.take_measurement(sample_rate=1, num_samples=2)
-        iterable_eq(resp, [[1.234, 5.678], [0.456, 5.321]])
+        iterable_eq(resp, ((1.234, 5.678), (0.456, 5.321)))
 
 
 def test_take_measurement_invalid_num_samples():
@@ -437,7 +437,7 @@ def test_read_data_buffer():
             ]
     ) as inst:
         data = inst.read_data_buffer(channel=inst.Mode.ch1)
-        expected = [1.234, 9.876]
+        expected = (1.234, 9.876)
         iterable_eq(data, expected)
 
 
@@ -454,7 +454,7 @@ def test_read_data_buffer_mode_as_str():
             ]
     ) as inst:
         data = inst.read_data_buffer(channel="ch1")
-        expected = [1.234, 9.876]
+        expected = (1.234, 9.876)
         iterable_eq(data, expected)
 
 

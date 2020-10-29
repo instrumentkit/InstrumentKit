@@ -45,7 +45,7 @@ def test_init():
         pass
 
 
-@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False), min_size=1),
+@given(values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
        channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces))
 def test_channel_data(values, channel):
     values_packed = b"".join(struct.pack("<d", value) for value in values)
@@ -61,12 +61,13 @@ def test_channel_data(values, channel):
                 b"#" + values_len_of_len + values_len + values_packed
             ]
     ) as inst:
+        values = tuple(values)
         if numpy:
             values = numpy.array(values, dtype="<d")
         iterable_eq(inst.channel[channel].data(), values)
 
 
-@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False), min_size=1),
+@given(values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
        channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces))
 def test_channel_wavelength(values, channel):
     values_packed = b"".join(struct.pack("<d", value) for value in values)
@@ -82,6 +83,7 @@ def test_channel_wavelength(values, channel):
                 b"#" + values_len_of_len + values_len + values_packed
             ]
     ) as inst:
+        values = tuple(values)
         if numpy:
             values = numpy.array(values, dtype="<d")
         iterable_eq(inst.channel[channel].wavelength(), values)

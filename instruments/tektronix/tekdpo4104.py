@@ -142,8 +142,8 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
                 x = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
                 y = ((raw - yoffs) * float(ymult)) + float(yzero)
             else:
-                x = tuple([float(val) * float(xincr) + float(xzero) for val in range(ptcnt)])
-                y = [((x - yoffs) * float(ymult)) + float(yzero) for x in raw]
+                x = tuple([float(val) * float(xincr) + float(xzero) for val in range(int(ptcnt))])
+                y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
 
             self._tek.sendcmd("DAT:STOP {}".format(old_dat_stop))
 

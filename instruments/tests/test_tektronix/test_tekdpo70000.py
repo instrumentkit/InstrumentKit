@@ -104,15 +104,17 @@ def test_data_source_read_waveform(channel, values):
                                          value) for value in values)
     values_len = str(len(values_packed)).encode()
     values_len_of_len = str(len(values_len)).encode()
-    if numpy:
-        values = numpy.array(values)
     # scale the values
     scale = 1.
     position = 0.
     offset = 0.
-    scaled_values = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
-                             values.astype(float) / (2**15) - position
-                             ) + offset
+    scaled_values = [scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2**15) - position) + offset
+                     for v in values]
+    if numpy:
+        values = numpy.array(values)
+        scaled_values = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
+                                 values.astype(float) / (2**15) - position
+                                 ) + offset
 
     # run through the instrument
     with expected_protocol(
@@ -141,9 +143,11 @@ def test_data_source_read_waveform(channel, values):
             ]
     ) as inst:
         # query waveform
-        scaled_raw = inst.channel[channel].read_waveform()
-        for a, b in zip(scaled_raw, scaled_values):
-            unit_eq(a, b * u.V)
+        actual_waveform = inst.channel[channel].read_waveform()
+        expected_waveform = tuple(v * u.V for v in scaled_values)
+        if numpy:
+            expected_waveform = scaled_values * u.V
+        iterable_eq(actual_waveform, expected_waveform)
 
 
 def test_data_source_read_waveform_with_old_data_source():
@@ -169,9 +173,12 @@ def test_data_source_read_waveform_with_old_data_source():
     scale = 1.
     position = 0.
     offset = 0.
-    scaled_values = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
-                             values.astype(float) / (2**15) - position
-                             ) + offset
+    scaled_values = [scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2 ** 15) - position) + offset
+                     for v in values]
+    if numpy:
+        scaled_values = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
+                                 values.astype(float) / (2 ** 15) - position
+                                 ) + offset
 
     # old data source to set manually - ensure it is set back later
     old_dsrc = "MATH1"
@@ -204,9 +211,11 @@ def test_data_source_read_waveform_with_old_data_source():
             ]
     ) as inst:
         # query waveform
-        scaled_raw = inst.channel[channel].read_waveform()
-        for a, b in zip(scaled_raw, scaled_values):
-            unit_eq(a, b * u.V)
+        actual_waveform = inst.channel[channel].read_waveform()
+        expected_waveform = tuple(v * u.V for v in scaled_values)
+        if numpy:
+            expected_waveform = scaled_values * u.V
+        iterable_eq(actual_waveform, expected_waveform)
 
 
 # MATH #
@@ -766,17 +775,21 @@ def test_math_scale(value):
         unit_eq(inst.math[math].scale, value_unitful)
 
 
-@given(value=st.lists(st.floats(min_value=-2147483648, max_value=2147483647),
-                      min_size=1))
-def test_math_scale_raw_data(value):
+@given(values=st.lists(st.floats(min_value=-2147483648, max_value=2147483647),
+                       min_size=1))
+def test_math_scale_raw_data(values):
     """Return scaled raw data according to current settings."""
     math = 0
     scale = 1. * u.V
     position = -2.3
+    expected_value = tuple(scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2 ** 15) - position)
+                           for v in values)
     if numpy:
-        value = numpy.array(value)
-    expected_value = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
-                              value.astype(float) / (2**15) - position)
+        values = numpy.array(values)
+        expected_value = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
+                                  values.astype(float) / (2 ** 15) - position
+                                  )
+
     with expected_protocol(
             ik.tektronix.TekDPO70000,
             [
@@ -788,7 +801,7 @@ def test_math_scale_raw_data(value):
                 f"{position}"
             ]
     ) as inst:
-        iterable_eq(inst.math[math]._scale_raw_data(value), expected_value)
+        iterable_eq(inst.math[math]._scale_raw_data(values), expected_value)
 
 
 # CHANNEL #
@@ -1059,19 +1072,21 @@ def test_channel_scale(value):
         unit_eq(inst.channel[channel].scale, value_unitful)
 
 
-@given(value=st.lists(st.floats(min_value=-2147483648, max_value=2147483647),
+@given(values=st.lists(st.floats(min_value=-2147483648, max_value=2147483647),
                       min_size=1))
-def test_channel_scale_raw_data(value):
+def test_channel_scale_raw_data(values):
     """Return scaled raw data according to current settings."""
     channel = 0
     scale = u.Quantity(1., u.V)
     position = -1.
     offset = u.Quantity(0., u.V)
+    expected_value = tuple(scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2 ** 15) - position)
+                           for v in values)
     if numpy:
-        value = numpy.array(value)
-    expected_value = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
-                              value.astype(float) / (2**15) -
-                              position) + offset
+        values = numpy.array(values)
+        expected_value = scale * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) *
+                                  values.astype(float) / (2**15) -
+                                  position) + offset
     with expected_protocol(
             ik.tektronix.TekDPO70000,
             [
@@ -1085,7 +1100,7 @@ def test_channel_scale_raw_data(value):
                 f"{offset}"
             ]
     ) as inst:
-        actual_data = inst.channel[channel]._scale_raw_data(value)
+        actual_data = inst.channel[channel]._scale_raw_data(values)
         iterable_eq(actual_data, expected_value)
 
 
