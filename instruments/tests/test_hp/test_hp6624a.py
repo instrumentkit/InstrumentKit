@@ -6,10 +6,6 @@ Unit tests for the HP 6624a power supply
 
 # IMPORTS #####################################################################
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
 import pytest
 
 import instruments as ik

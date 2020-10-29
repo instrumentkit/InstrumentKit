@@ -1073,7 +1073,7 @@ def test_channel_scale(value):
 
 
 @given(values=st.lists(st.floats(min_value=-2147483648, max_value=2147483647),
-                      min_size=1))
+                       min_size=1))
 def test_channel_scale_raw_data(values):
     """Return scaled raw data according to current settings."""
     channel = 0

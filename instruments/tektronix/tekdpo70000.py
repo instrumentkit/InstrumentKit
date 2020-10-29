@@ -27,6 +27,8 @@ from instruments.util_fns import (
 
 # CLASSES #####################################################################
 
+# pylint: disable=too-many-lines
+
 
 class TekDPO70000(SCPIInstrument, Oscilloscope):
 
@@ -485,9 +487,9 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             # TODO: incorperate the unit_string somehow
             if numpy:
                 return self.scale * (
-                    (TekDPO70000.VERT_DIVS / 2) *
-                    data.astype(float) / (2**15) - self.position
+                    (TekDPO70000.VERT_DIVS / 2) * data.astype(float) / (2**15) - self.position
                 )
+
             scale = self.scale
             position = self.position
             rval = tuple(

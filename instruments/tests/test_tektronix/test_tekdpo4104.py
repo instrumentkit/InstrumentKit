@@ -442,7 +442,7 @@ def test_data_source_read_waveform_ascii(values, ymult, yzero, xzero, xincr):
     ) as inst:
         # get the values from the instrument
         x_read, y_read = inst.channel[channel].read_waveform(bin_format=False)
-        
+
         # manually calculate the values
         if numpy:
             raw = numpy.array(values_str.split(","), dtype=numpy.float)
@@ -451,7 +451,7 @@ def test_data_source_read_waveform_ascii(values, ymult, yzero, xzero, xincr):
         else:
             x_calc = tuple([float(val) * xincr + xzero for val in range(ptcnt)])
             y_calc = tuple([((float(val) - yoffs) * ymult) + yzero for val in values])
-        
+
         # assert arrays are equal
         iterable_eq(x_read, x_calc)
         iterable_eq(y_read, y_calc)
