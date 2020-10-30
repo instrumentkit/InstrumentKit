@@ -13,7 +13,7 @@ likely contains bugs and non-complete behaviour.
 from contextlib import contextmanager
 from enum import IntEnum
 from functools import reduce
-from time import time, sleep
+import time
 
 from instruments.abstract_instruments import Instrument
 from instruments.newport.errors import NewportError
@@ -689,7 +689,7 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("DP?", target=self.axis_id)),
+            float(self._newport_cmd("DV?", target=self.axis_id)),
             self._units / u.s
         )
 
@@ -709,7 +709,7 @@ class NewportESP301Axis:
         )
 
     @home.setter
-    def home(self, newval=0):
+    def home(self, newval):
         if newval is None:
             return
         newval = float(assume_units(newval, self._units).to(
@@ -721,9 +721,8 @@ class NewportESP301Axis:
         """
         Get the units that all commands are in reference to.
 
-        :type: `~pint.Quantity` with units corresponding to
-            units of axis connected  or int which corresponds to Newport
-            unit number
+        :type: `~pint.Unit` corresponding to units of axis connected  or
+            int which corresponds to Newport unit number
         """
         self._units = self._get_pq_unit(self._get_units())
         return self._units
@@ -734,7 +733,7 @@ class NewportESP301Axis:
             return
         if isinstance(newval, int):
             self._units = self._get_pq_unit(NewportESP301Units(int(newval)))
-        elif isinstance(newval, u.Quantity):
+        elif isinstance(newval, u.Unit):
             self._units = newval
             newval = self._get_unit_num(newval)
         self._set_units(newval)
@@ -1121,7 +1120,7 @@ class NewportESP301Axis:
         if wait:
             self.wait_for_position(position)
             if block:
-                sleep(0.003)
+                time.sleep(0.003)
                 mot = self.is_motion_done
                 while not mot:
                     mot = self.is_motion_done
@@ -1154,10 +1153,7 @@ class NewportESP301Axis:
         """
         Stop all motion on axis. With programmed deceleration rate
         """
-        try:
-            self._newport_cmd("ST", target=self.axis_id)
-        except NewportError as e:
-            raise NewportError(e)
+        self._newport_cmd("ST", target=self.axis_id)
 
     def wait_for_position(self, position):
         """
@@ -1190,15 +1186,16 @@ class NewportESP301Axis:
         #        be ignored.
         poll_interval = float(assume_units(poll_interval, u.s).to(
             u.s).magnitude)
-        max_wait = float(assume_units(max_wait, u.s).to(
-            u.s).magnitude)
-        tic = time()
+        if max_wait is not None:
+            max_wait = float(assume_units(max_wait, u.s).to(
+                u.s).magnitude)
+        tic = time.time()
         while True:
             if self.is_motion_done:
                 return
             else:
-                if max_wait is None or (time() - tic) < max_wait:
-                    sleep(poll_interval)
+                if max_wait is None or (time.time() - tic) < max_wait:
+                    time.sleep(poll_interval)
                 else:
                     raise IOError("Timed out waiting for motion to finish.")
 
@@ -1230,19 +1227,24 @@ class NewportESP301Axis:
         * 'jog_low_velocity' = jog low speed (U/s)
         * 'max_acceleration' = maximum acceleration (U/s^2)
         * 'acceleration' = acceleration (U/s^2)
+        * 'velocity' = velocity (U/s)
         * 'deceleration' = set deceleration (U/s^2)
         * 'error_threshold' = set error threshold (U)
+        * 'estop_deceleration' = estop deceleration (U/s^2)
+        * 'jerk' = jerk rate (U/s^3)
         * 'proportional_gain' = PID proportional gain (optional)
         * 'derivative_gain' = PID derivative gain (optional)
-        * 'interal_gain' = PID internal gain (optional)
+        * 'integral_gain' = PID internal gain (optional)
         * 'integral_saturation_gain' = PID integral saturation (optional)
         * 'trajectory' = trajectory mode (optional)
         * 'position_display_resolution' (U per step)
         * 'feedback_configuration'
         * 'full_step_resolution'  = (U per step)
         * 'home' = (U)
-        * 'acceleration_feed_forward' = bewtween 0 to 2e9
-        * 'reduce_motor_torque' =  (time(ms),percentage)
+        * 'acceleration_feed_forward' = between 0 to 2e9
+        * 'microstep_factor' = axis microstep factor
+        * 'reduce_motor_torque_time' =  time (ms) between 0 and 60000,
+        * 'reduce_motor_torque_percentage' = percentage between 0 and 100
         """
 
         self.motor_type = kwargs.get('motor_type')
@@ -1285,7 +1287,7 @@ class NewportESP301Axis:
             percentage = int(assume_units(percentage, u.percent).to(
                 u.percent).magnitude)
             if percentage < 0 or percentage > 100:
-                raise ValueError("Time must be between 0 and 60000 ms")
+                raise ValueError(r"Percentage must be between 0 and 100%")
             self._newport_cmd(
                 "QR", target=self._axis_id, params=[motor_time, percentage])
 
