@@ -207,3 +207,31 @@ def test_mhs_serial_number():
             sep="\r\n"
     ) as mhs:
         assert mhs.serial_number == "5225A1"
+
+
+def test_mhs_get_amplitude():
+    """Raise NotImplementedError when trying to get amplitude"""
+    with expected_protocol(
+            ik.minghe.MHS5200,
+            [
+            ],
+            [
+            ],
+            sep="\r\n"
+    ) as mhs:
+        with pytest.raises(NotImplementedError):
+            mhs._get_amplitude_()
+
+
+def test_mhs_set_amplitude():
+    """Raise NotImplementedError when trying to set amplitude"""
+    with expected_protocol(
+            ik.minghe.MHS5200,
+            [
+            ],
+            [
+            ],
+            sep="\r\n"
+    ) as mhs:
+        with pytest.raises(NotImplementedError):
+            mhs._set_amplitude_(1, 2)
