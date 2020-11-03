@@ -15,6 +15,8 @@ from instruments.units import ureg as u
 
 # TESTS ######################################################################
 
+# pylint: disable=protected-access
+
 def set_defaults(inst):
     """
     Sets default values for the voltage and current range of the Glassman FR
