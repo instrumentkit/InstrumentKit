@@ -110,13 +110,13 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         """
         Enum containing the possible reponse codes returned by the instrument.
         """
-        #: A set command expects an acknoledge response (`A`)
+        #: A set command expects an acknowledge response (`A`)
         S = "A"
         #: A query command expects a response packet (`R`)
         Q = "R"
         #: A version query expects a different response packet (`B`)
         V = "B"
-        #: A configure command expects an acknoledge response (`A`)
+        #: A configure command expects an acknowledge response (`A`)
         C = "A"
 
     class ErrorCode(Enum):
@@ -228,13 +228,13 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
     @output.setter
     def output(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError("Ouput status mode must be a boolean.")
+            raise TypeError("Output status mode must be a boolean.")
         self.set_status(output=newval)
 
     @property
     def fault(self):
         """
-        Gets/sets the output status.
+        Gets the output status.
 
         Returns True if the instrument has a fault.
 
