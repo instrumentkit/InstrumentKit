@@ -141,7 +141,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         is lower than I. If the load is smaller than V/I, the set current
         I acts as a current limiter and the voltage is lower than V.
         """
-        return AttributeError("The `HPe3631a` sets its mode automatically")
+        raise AttributeError("The `HPe3631a` sets its mode automatically")
 
     channelid = int_property(
         "INST:NSEL",

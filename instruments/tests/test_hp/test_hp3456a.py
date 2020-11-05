@@ -6,6 +6,7 @@ Unit tests for the HP 3456a digital voltmeter
 
 # IMPORTS #####################################################################
 
+import time
 
 import pytest
 
@@ -16,6 +17,12 @@ from instruments.units import ureg as u
 # TESTS #######################################################################
 
 # pylint: disable=protected-access
+
+
+@pytest.fixture(autouse=True)
+def time_mock(mocker):
+    """Mock out time to speed up."""
+    return mocker.patch.object(time, 'sleep', return_value=None)
 
 
 def test_hp3456a_trigger_mode():
@@ -338,6 +345,8 @@ def test_hp3456a_input_range():
     ) as dmm:
         dmm.input_range = 10 ** -1 * u.volt
         dmm.input_range = 1e3 * u.ohm
+        with pytest.raises(NotImplementedError):
+            _ = dmm.input_range
 
 
 def test_hp3456a_input_range_invalid_str():
