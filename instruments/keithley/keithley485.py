@@ -201,7 +201,7 @@ class Keithley485(Instrument):
                 raise ValueError("Only `auto` is acceptable when specifying "
                                  "the range as a string.")
         if isinstance(newval, u.Quantity):
-            newval = float(newval)
+            newval = float(newval.magnitude)
 
         if isinstance(newval, (float, int)):
             if newval in valid:
@@ -334,7 +334,7 @@ class Keithley485(Instrument):
             statusword = self.query("U0X")
             tries -= 1
 
-        if statusword is None:
+        if tries == 0:
             raise IOError("Could not retrieve status word")
 
         return statusword[:-1]
@@ -413,10 +413,16 @@ class Keithley485(Instrument):
 
         try:
             status = self.Status(status)
-            if status != self.Status.normal:
-                raise ValueError("Instrument not in normal mode: {}".format(status.name))
-            if function != b"DC":
-                raise ValueError("Instrument not returning DC function: {}".format(function))
+        except ValueError:
+            raise ValueError(f"Invalid status word in measurement: {status}")
+
+        if status != self.Status.normal:
+            raise ValueError("Instrument not in normal mode: {}".format(status.name))
+
+        if function != b"DC":
+            raise ValueError("Instrument not returning DC function: {}".format(function))
+
+        try:
             current = float(current) * u.amp if base == b"A" else 10 ** (float(current)) * u.amp
         except:
             raise Exception("Cannot parse measurement: {}".format(measurement))
