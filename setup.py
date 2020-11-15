@@ -34,7 +34,6 @@ CLASSIFIERS = [
     "Topic :: Software Development :: Libraries"
 ]
 INSTALL_REQUIRES = [
-    "numpy",
     "pyserial>=3.3",
     "pyvisa>=1.9",
     "python-vxi11>=0.8",
