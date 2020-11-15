@@ -59,6 +59,21 @@ def test_channel_query():
     assert value == "FOO"
 
 
+def test_mode():
+    """Raise NotImplementedError when mode is called."""
+    with expected_protocol(
+            ik.hp.HP6624a,
+            [],
+            [],
+            sep="\n"
+    ) as hp:
+        channel = hp.channel[0]
+        with pytest.raises(NotImplementedError):
+            _ = channel.mode
+        with pytest.raises(NotImplementedError):
+            channel.mode = 42
+
+
 def test_channel_voltage():
     with expected_protocol(
             ik.hp.HP6624a,

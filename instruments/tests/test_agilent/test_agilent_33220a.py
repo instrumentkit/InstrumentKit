@@ -6,6 +6,8 @@ Module containing tests for generic SCPI function generator instruments
 
 # IMPORTS ####################################################################
 
+from hypothesis import given, strategies as st
+import pytest
 
 from instruments.units import ureg as u
 
@@ -166,3 +168,32 @@ def test_agilent33220a_load_resistance():
         assert fg.load_resistance == fg.LoadResistance.high_impedance
         fg.load_resistance = 100 * u.ohm
         fg.load_resistance = fg.LoadResistance.maximum
+
+
+@given(value=st.floats().filter(lambda x: x < 0 or x > 10000))
+def test_agilent33220a_load_resistance_value_invalid(value):
+    """Raise ValueError when resistance value loaded is out of range."""
+    with expected_protocol(
+            ik.agilent.Agilent33220a,
+            [
+            ], [
+            ]
+    ) as fg:
+        with pytest.raises(ValueError) as err_info:
+            fg.load_resistance = value
+        err_msg = err_info.value.args[0]
+        assert err_msg == "Load resistance must be between 0 and 10,000"
+
+
+def test_phase_not_implemented_error():
+    """Raise a NotImplementedError when getting / setting the phase."""
+    with expected_protocol(
+            ik.agilent.Agilent33220a,
+            [
+            ], [
+            ]
+    ) as fg:
+        with pytest.raises(NotImplementedError):
+            _ = fg.phase()
+        with pytest.raises(NotImplementedError):
+            fg.phase = 42

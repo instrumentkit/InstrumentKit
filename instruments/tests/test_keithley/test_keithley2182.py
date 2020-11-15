@@ -40,6 +40,70 @@ def test_channel_mode():
     ) as inst:
         channel = inst.channel[0]
         assert channel.mode == inst.Mode.voltage_dc
+        with pytest.raises(NotImplementedError):
+            channel.mode = 42
+
+
+def test_channel_trigger_mode():
+    """Raise NotImplementedError when getting / setting trigger mode."""
+    with expected_protocol(
+            ik.keithley.Keithley2182,
+            [
+            ],
+            [
+            ]
+    ) as inst:
+        channel = inst.channel[0]
+        with pytest.raises(NotImplementedError):
+            _ = channel.trigger_mode
+        with pytest.raises(NotImplementedError):
+            channel.trigger_mode = 42
+
+
+def test_channel_relative():
+    """Raise NotImplementedError when getting / setting relative."""
+    with expected_protocol(
+            ik.keithley.Keithley2182,
+            [
+            ],
+            [
+            ]
+    ) as inst:
+        channel = inst.channel[0]
+        with pytest.raises(NotImplementedError):
+            _ = channel.relative
+        with pytest.raises(NotImplementedError):
+            channel.relative = 42
+
+
+def test_channel_input_range():
+    """Raise NotImplementedError when getting / setting input range."""
+    with expected_protocol(
+            ik.keithley.Keithley2182,
+            [
+            ],
+            [
+            ]
+    ) as inst:
+        channel = inst.channel[0]
+        with pytest.raises(NotImplementedError):
+            _ = channel.input_range
+        with pytest.raises(NotImplementedError):
+            channel.input_range = 42
+
+
+def test_channel_measure_mode_not_none():
+    """Raise NotImplementedError measuring with non-None mode."""
+    with expected_protocol(
+            ik.keithley.Keithley2182,
+            [
+            ],
+            [
+            ]
+    ) as inst:
+        channel = inst.channel[0]
+        with pytest.raises(NotImplementedError):
+            channel.measure(mode="Some Mode")
 
 
 def test_channel_measure_voltage():
@@ -234,3 +298,18 @@ def test_relative_set_wrong_type():
             []
     ) as inst:
         inst.relative = "derp"
+
+
+def test_input_range():
+    """Raise NotImplementedError when getting / setting input range."""
+    with expected_protocol(
+            ik.keithley.Keithley2182,
+            [
+            ],
+            [
+            ]
+    ) as inst:
+        with pytest.raises(NotImplementedError):
+            _ = inst.input_range
+        with pytest.raises(NotImplementedError):
+            inst.input_range = 42

@@ -6,12 +6,16 @@ Module containing tests for the Glassman FR power supply
 
 # IMPORTS ####################################################################
 
+import pytest
+
 import instruments as ik
 from instruments.tests import expected_protocol
 from instruments.units import ureg as u
 
 
 # TESTS ######################################################################
+
+# pylint: disable=protected-access
 
 def set_defaults(inst):
     """
@@ -140,6 +144,38 @@ def test_output():
         assert inst.output
 
 
+def test_output_type_error():
+    """Raise TypeError when setting output w non-boolean value."""
+    with expected_protocol(
+            ik.glassman.GlassmanFR,
+            [
+            ],
+            [
+            ],
+            "\r"
+    ) as inst:
+        with pytest.raises(TypeError) as err_info:
+            inst.output = 42
+        err_msg = err_info.value.args[0]
+        assert err_msg == "Output status mode must be a boolean."
+
+
+@pytest.mark.parametrize("value", [0, 2])
+def test_fault(value):
+    """Get the instrument status: True if fault."""
+    with expected_protocol(
+            ik.glassman.GlassmanFR,
+            [
+                "\x01Q51"
+            ],
+            [
+                f"R000000000{value}004{value}",
+            ],
+            "\r"
+    ) as inst:
+        assert inst.fault == bool(value)
+
+
 def test_version():
     with expected_protocol(
             ik.glassman.GlassmanFR,
@@ -173,6 +209,22 @@ def test_device_timeout():
         assert not inst.device_timeout
 
 
+def test_device_timeout_type_error():
+    """Raise TypeError if device timeout mode not set with boolean."""
+    with expected_protocol(
+            ik.glassman.GlassmanFR,
+            [
+            ],
+            [
+            ],
+            "\r"
+    ) as inst:
+        with pytest.raises(TypeError) as err_info:
+            inst.device_timeout = 42
+        err_msg = err_info.value.args[0]
+        assert err_msg == "Device timeout mode must be a boolean."
+
+
 def test_sendcmd():
     with expected_protocol(
             ik.glassman.GlassmanFR,
@@ -186,17 +238,79 @@ def test_sendcmd():
 
 
 def test_query():
+    """Query the instrument."""
+    response = "R123ABC5C"
     with expected_protocol(
             ik.glassman.GlassmanFR,
             [
                 "\x01Q123ABCAD"
             ],
             [
-                "R123ABC5C"
+                response
             ],
             "\r"
     ) as inst:
-        inst.query("Q123ABC")
+        assert inst.query("Q123ABC") == response[1:-2]
+
+
+def test_query_invalid_response_code():
+    """Raise ValueError when query receives an invalid response code."""
+    response = "A123ABC5C"
+    with expected_protocol(
+            ik.glassman.GlassmanFR,
+            [
+                "\x01Q123ABCAD"
+            ],
+            [
+                response
+            ],
+            "\r"
+    ) as inst:
+        with pytest.raises(ValueError) as err_info:
+            inst.query("Q123ABC")
+        err_msg = err_info.value.args[0]
+        assert err_msg == f"Invalid response code: {response}"
+
+
+def test_query_invalid_checksum():
+    """Raise ValueError if query returns with invalid checksum."""
+    response = "R123ABC5A"
+    with expected_protocol(
+            ik.glassman.GlassmanFR,
+            [
+                "\x01Q123ABCAD"
+            ],
+            [
+                response
+            ],
+            "\r"
+    ) as inst:
+        with pytest.raises(ValueError) as err_info:
+            inst.query("Q123ABC")
+        err_msg = err_info.value.args[0]
+        assert err_msg == f"Invalid checksum: {response}"
+
+
+@pytest.mark.parametrize("err", ik.glassman.GlassmanFR.ErrorCode)
+def test_query_error(err):
+    """Raise ValueError if query returns with error."""
+    err_code = err.value
+    check_sum = ord(err_code) % 256
+    response = f"E{err_code}{format(check_sum, '02X')}"
+    with expected_protocol(
+            ik.glassman.GlassmanFR,
+            [
+                "\x01Q123ABCAD"
+            ],
+            [
+                response
+            ],
+            "\r"
+    ) as inst:
+        with pytest.raises(ValueError) as err_info:
+            inst.query("Q123ABC")
+        err_msg = err_info.value.args[0]
+        assert err_msg == f"Instrument responded with error: {err.name}"
 
 
 def test_reset():
@@ -231,3 +345,20 @@ def test_set_status():
         assert inst.output
         assert inst.voltage == 10 * u.kilovolt
         assert inst.current == 1.2 * u.milliamp
+
+
+def test_parse_invalid_response():
+    """Raise a RunTime error if response cannot be parsed."""
+    response = "000000000X00"  # invalid monitors
+    with expected_protocol(
+            ik.glassman.GlassmanFR,
+            [
+            ],
+            [
+            ],
+            "\r"
+    ) as inst:
+        with pytest.raises(RuntimeError) as err_info:
+            inst._parse_response(response)
+        err_msg = err_info.value.args[0]
+        assert err_msg == f"Cannot parse response packet: {response}"

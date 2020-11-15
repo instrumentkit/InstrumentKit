@@ -6,6 +6,7 @@ Unit tests for the HP 6632b power supply
 
 # IMPORTS #####################################################################
 
+import pytest
 
 from instruments.units import ureg as u
 
@@ -324,6 +325,45 @@ def test_hp6632b_abort_output_trigger():
             []
     ) as psu:
         psu.abort_output_trigger()
+
+
+def test_line_frequency():
+    """Raise NotImplemented error when called."""
+    with expected_protocol(
+            ik.hp.HP6632b,
+            [],
+            []
+    ) as psu:
+        with pytest.raises(NotImplementedError):
+            psu.line_frequency = 42
+        with pytest.raises(NotImplementedError):
+            _ = psu.line_frequency
+
+
+def test_display_brightness():
+    """Raise NotImplemented error when called."""
+    with expected_protocol(
+            ik.hp.HP6632b,
+            [],
+            []
+    ) as psu:
+        with pytest.raises(NotImplementedError):
+            psu.display_brightness = 42
+        with pytest.raises(NotImplementedError):
+            _ = psu.display_brightness
+
+
+def test_display_contrast():
+    """Raise NotImplemented error when called."""
+    with expected_protocol(
+            ik.hp.HP6632b,
+            [],
+            []
+    ) as psu:
+        with pytest.raises(NotImplementedError):
+            psu.display_contrast = 42
+        with pytest.raises(NotImplementedError):
+            _ = psu.display_contrast
 
 
 def test_hp6632b_check_error_queue():

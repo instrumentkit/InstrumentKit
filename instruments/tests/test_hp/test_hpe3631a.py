@@ -6,6 +6,9 @@ Module containing tests for the HP E3631A power supply
 
 # IMPORTS #####################################################################
 
+import time
+
+import pytest
 
 from instruments.units import ureg as u
 
@@ -14,6 +17,12 @@ from instruments.tests import expected_protocol
 
 
 # TESTS #######################################################################
+
+@pytest.fixture(autouse=True)
+def time_mock(mocker):
+    """Mock out time such that the tests go faster."""
+    return mocker.patch.object(time, 'sleep', return_value=None)
+
 
 def test_channel():
     with expected_protocol(
@@ -34,6 +43,7 @@ def test_channel():
         assert inst.channelid == 1
         assert inst.channel[2] == inst
         assert inst.channelid == 2
+        assert inst.channel.__len__() == len([1, 2, 3])  # len of valild set
 
 
 def test_channelid():
@@ -53,6 +63,22 @@ def test_channelid():
         assert inst.channelid == 1
         inst.channelid = 2
         assert inst.channelid == 2
+
+
+def test_mode():
+    """Raise AttributeError since instrument sets mode automatically."""
+    with expected_protocol(
+            ik.hp.HPe3631a,
+            [
+                "SYST:REM"
+            ],
+            [
+            ]
+    ) as inst:
+        with pytest.raises(AttributeError) as err_info:
+            _ = inst.mode()
+        err_msg = err_info.value.args[0]
+        assert err_msg == "The `HPe3631a` sets its mode automatically"
 
 
 def test_voltage():
@@ -81,14 +107,36 @@ def test_voltage():
         assert inst.voltage_max == 6.0 * u.volt
         inst.voltage = 3.0 * u.volt
         assert inst.voltage == 3.0 * u.volt
-        try:
-            inst.voltage = -1.0 * u.volt
-        except ValueError:
-            pass
-        try:
-            inst.voltage = 7.0 * u.volt
-        except ValueError:
-            pass
+        with pytest.raises(ValueError) as err_info:
+            newval = -1.0 * u.volt
+            inst.voltage = newval
+        err_msg = err_info.value.args[0]
+        assert err_msg == f"Voltage quantity is too low. Got {newval}, " \
+                          f"minimum value is {0.}"
+        with pytest.raises(ValueError) as err_info:
+            newval = 7.0 * u.volt
+            inst.voltage = newval
+        err_msg = err_info.value.args[0]
+        assert err_msg == f"Voltage quantity is too high. Got {newval}, " \
+                          f"maximum value is {u.Quantity(6.0, u.V)}"
+
+
+def test_voltage_range_negative():
+    """Get voltage max if negative."""
+    max_volts = -6.
+    with expected_protocol(
+            ik.hp.HPe3631a,
+            [
+                "SYST:REM",  # 0
+                "SOUR:VOLT? MAX"  # 1
+            ],
+            [
+                f"{max_volts}",  # 1
+            ]
+    ) as inst:
+        expected_value = u.Quantity(max_volts, u.V), 0.
+        received_value = inst.voltage_range
+        assert expected_value == received_value
 
 
 def test_current():

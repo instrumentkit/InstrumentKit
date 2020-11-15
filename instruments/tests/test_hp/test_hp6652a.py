@@ -6,6 +6,7 @@ Unit tests for the HP 6652a single output power supply
 
 # IMPORTS #####################################################################
 
+import pytest
 
 import instruments as ik
 from instruments.tests import expected_protocol
@@ -26,6 +27,21 @@ def test_name():
     ) as hp:
         assert hp.name == "FOO BAR"
 
+
+def test_mode():
+    """Raise NotImplementedError when called."""
+    with expected_protocol(
+            ik.hp.HP6652a,
+            [
+            ],
+            [
+            ],
+            sep="\n"
+    ) as hp:
+        with pytest.raises(NotImplementedError):
+            _ = hp.mode
+        with pytest.raises(NotImplementedError):
+            hp.mode = 42
 
 def test_reset():
     with expected_protocol(
