@@ -25,7 +25,7 @@ before_script:
   - pylint --version
 script:
   - pytest --cov=instruments
-  - pylint --disable=I,R instruments
+  - if [[ $TRAVIS_PYTHON_VERSION != 3.9 ]]; then pylint --disable=I,R instruments; fi
 after_success:
   - coveralls
 deploy:
