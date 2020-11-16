@@ -6,26 +6,41 @@ python:
   - "3.7"
   - "3.8"
   - "3.9"
+stages:
+- prechecks
+- tests-cpython
+jobs:
+  include:
+  - stage: prechecks
+    python: 3.6
+    env: TOXENV=pylint
+  - stage: tests-cpython
+    python: 3.6
+    env: TOXENV=py36
+  - python: 3.7
+    env: TOXENV=py37
+  - python: 3.8
+    env: TOXENV=py38
+  - python: 3.9
+    env: TOXENV=py39
+before_install:
+- python --version
+- uname -a
+- lsb_release -a
 install:
-  - "pip install -r requirements.txt"
-  - "pip install -r dev-requirements.txt"
-  - pip install coveralls
-  - pip install coverage
-  - pip install pytest-cov
+  - pip install -U setuptools
+  - pip install tox coverage coveralls
 before_script:
   # We use before_script to report version and path information in a way
   # that can be easily hidden by Travis' log folding. Moreover, a nonzero
   # exit code from this block kills the entire job, meaning that if we can't
   # even sensibly get version information, we correctly abort.
-  - which python
-  - python --version
-  - which pytest
-  - pytest --version
-  - which pylint
-  - pylint --version
+  - virtualenv --version
+  - pip --version
+  - tox --version
+  - coverage --version
 script:
-  - pytest --cov=instruments
-  - if [[ $TRAVIS_PYTHON_VERSION != 3.9 ]]; then pylint --disable=I,R instruments; fi
+  - tox
 after_success:
   - coveralls
 deploy:
