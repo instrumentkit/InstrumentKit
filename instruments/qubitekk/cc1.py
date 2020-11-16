@@ -116,18 +116,23 @@ class CC1(SCPIInstrument):
             :rtype: `int`
             """
             count = self._cc1.query("COUN:{0}?".format(self._chan))
-            # FIXME: Does this property actually work? The try block seems
-            # wrong.
+            tries = 5
             try:
                 count = int(count)
-            except ValueError:  # pragma: no cover
+            except ValueError:
                 count = None
-                while count is None:
+                while count is None and tries > 0:
                     # try to read again
                     try:
                         count = int(self._cc1.read(-1))
                     except ValueError:
                         count = None
+                        tries -= 1
+
+            if tries == 0:
+                raise IOError(f"Could not read the count of channel "
+                              f"{self._chan}.")
+
             self._count = count
             return self._count
 
