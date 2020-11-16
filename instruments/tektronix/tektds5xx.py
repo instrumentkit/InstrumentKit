@@ -40,10 +40,6 @@ import operator
 import struct
 import time
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
@@ -51,6 +47,7 @@ from instruments.abstract_instruments import (
     Oscilloscope,
 )
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################

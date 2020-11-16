@@ -11,12 +11,9 @@ from hypothesis import (
     strategies as st,
 )
 import pytest
-try:
-    import numpy
-except ImportError:
-    numpy = None
 
 import instruments as ik
+from instruments.optional_dep_finder import numpy
 from instruments.tests import (
     expected_protocol,
     iterable_eq,

@@ -8,13 +8,9 @@ Driver for the Keithley 2182 nano-voltmeter
 
 from enum import Enum
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
-
-from instruments.generic_scpi import SCPIMultimeter
 from instruments.abstract_instruments import Multimeter
+from instruments.generic_scpi import SCPIMultimeter
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 

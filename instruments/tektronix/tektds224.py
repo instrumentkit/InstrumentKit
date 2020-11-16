@@ -10,17 +10,13 @@ import time
 
 from enum import Enum
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
-
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
     OscilloscopeDataSource,
     Oscilloscope,
 )
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.util_fns import ProxyList
 from instruments.units import ureg as u
 

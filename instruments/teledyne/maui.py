@@ -16,14 +16,11 @@ class.
 # IMPORTS #####################################################################
 
 from enum import Enum
-try:
-    import numpy
-except ImportError:
-    numpy = None
 
 from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
 )
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import (
     assume_units, enum_property, bool_property, ProxyList

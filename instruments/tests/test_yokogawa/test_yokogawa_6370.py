@@ -13,17 +13,14 @@ from hypothesis import (
     given,
     strategies as st,
 )
-try:
-    import numpy
-except ImportError:
-    numpy = None
-from instruments.units import ureg as u
 
 import instruments as ik
+from instruments.optional_dep_finder import numpy
 from instruments.tests import (
     expected_protocol,
     iterable_eq,
 )
+from instruments.units import ureg as u
 
 
 # TESTS #######################################################################

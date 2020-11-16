@@ -15,15 +15,12 @@ import urllib.parse as parse
 
 from serial import SerialException
 from serial.tools.list_ports import comports
-try:
-    import numpy
-except ImportError:
-    numpy = None
 import pyvisa
 import usb
 import usb.core
 import usb.util
 
+from instruments.optional_dep_finder import numpy
 from instruments.abstract_instruments.comm import (
     SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
     LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,

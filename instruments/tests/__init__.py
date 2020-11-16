@@ -15,11 +15,8 @@ from io import BytesIO
 from unittest import mock
 
 import pytest
-try:
-    import numpy
-except ImportError:
-    numpy = None
 
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 
 # FUNCTIONS ##################################################################

@@ -35,9 +35,8 @@ from . import thorlabs
 from . import toptica
 from . import yokogawa
 
-from .units import ureg as units
-
 from .config import load_instruments
+from .units import ureg as units
 
 # VERSION METADATA ###########################################################
 # In keeping with PEP-396, we define a version number of the form

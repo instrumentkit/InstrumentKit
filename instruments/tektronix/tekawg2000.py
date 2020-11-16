@@ -8,12 +8,8 @@ Provides support for the Tektronix AWG2000 series arbitrary wave generators.
 
 from enum import Enum
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
-
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units, ProxyList
 

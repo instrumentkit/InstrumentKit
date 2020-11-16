@@ -12,17 +12,13 @@ import time
 import warnings
 from enum import Enum, IntEnum
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
-
 from instruments.abstract_instruments.comm import (
     GPIBCommunicator,
     SerialCommunicator,
     LoopbackCommunicator
 )
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import (
     bool_property, bounded_unitful_property, enum_property, unitful_property

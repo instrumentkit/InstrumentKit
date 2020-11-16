@@ -9,12 +9,8 @@ Provides support for the SRS CTC-100 cryogenic temperature controller.
 from contextlib import contextmanager
 from enum import Enum
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
-
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 

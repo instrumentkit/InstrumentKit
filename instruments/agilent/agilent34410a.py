@@ -6,12 +6,8 @@ Provides support for the Agilent 34410a digital multimeter.
 
 # IMPORTS #####################################################################
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
-
 from instruments.generic_scpi import SCPIMultimeter
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 
 # CLASSES #####################################################################

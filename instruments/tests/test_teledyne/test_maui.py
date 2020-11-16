@@ -6,18 +6,15 @@ Module containing tests for the Thorlabs TC200
 
 # IMPORTS ####################################################################
 
-try:
-    import numpy
-except ImportError:
-    numpy = None
 import pytest
 
 import instruments as ik
-from instruments.units import ureg as u
+from instruments.optional_dep_finder import numpy
 from instruments.tests import (
     expected_protocol,
     iterable_eq,
 )
+from instruments.units import ureg as u
 
 # TESTS ######################################################################
 
