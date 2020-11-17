@@ -6,7 +6,7 @@ Module containing tests for the Qubitekk CC1
 
 # IMPORTS ####################################################################
 
-
+from io import BytesIO
 import pytest
 from instruments.units import ureg as u
 
@@ -15,6 +15,19 @@ from instruments.tests import expected_protocol, unit_eq
 
 
 # TESTS ######################################################################
+
+
+def test_init_os_error(mocker):
+    """Initialize with acknowledgements already turned off.
+
+    This raises an OSError in the read which must pass without an issue.
+    """
+    stdout = BytesIO(":ACKN OF\nFIRM?\n".encode("utf-8"))
+    stdin = BytesIO("Firmware v2.010\n".encode("utf-8"))
+    mock_read = mocker.patch.object(ik.qubitekk.CC1, 'read')
+    mock_read.side_effect = OSError
+    _ = ik.qubitekk.CC1.open_test(stdin, stdout)
+    mock_read.assert_called_with(-1)
 
 
 def test_cc1_count():
@@ -33,6 +46,32 @@ def test_cc1_count():
             sep="\n"
     ) as cc:
         assert cc.channel[0].count == 20.0
+
+
+def test_cc1_count_valule_error():
+    with expected_protocol(
+            ik.qubitekk.CC1,
+            [
+                ":ACKN OF",
+                "FIRM?",
+                "COUN:C1?"
+            ],
+            [
+                "",
+                "Firmware v2.010",
+                "bad_count",
+                "try1"
+                "try2"
+                "try3"
+                "try4"
+                "try5"
+            ],
+            sep="\n"
+    ) as cc:
+        with pytest.raises(IOError) as err_info:
+            _ = cc.channel[0].count
+        err_msg = err_info.value.args[0]
+        assert err_msg == "Could not read the count of channel C1."
 
 
 def test_cc1_window():
