@@ -7,6 +7,8 @@ Unit tests for the Phasematrix FSW0020
 # IMPORTS #####################################################################
 
 
+import pytest
+
 from instruments.units import ureg as u
 
 import instruments as ik
@@ -56,6 +58,21 @@ def test_power():
         inst.power = u.Quantity(10, u.dBm)
 
 
+def test_phase():
+    """Raise NotImplementedError when phase is set / got."""
+    with expected_protocol(
+            ik.phasematrix.PhaseMatrixFSW0020,
+            [
+            ],
+            [
+            ]
+    ) as inst:
+        with pytest.raises(NotImplementedError):
+            _ = inst.phase
+        with pytest.raises(NotImplementedError):
+            inst.phase = 42
+
+
 def test_blanking():
     with expected_protocol(
             ik.phasematrix.PhaseMatrixFSW0020,
@@ -67,6 +84,8 @@ def test_blanking():
     ) as inst:
         inst.blanking = True
         inst.blanking = False
+        with pytest.raises(NotImplementedError):
+            _ = inst.blanking
 
 
 def test_ref_output():
@@ -80,6 +99,8 @@ def test_ref_output():
     ) as inst:
         inst.ref_output = True
         inst.ref_output = False
+        with pytest.raises(NotImplementedError):
+            _ = inst.ref_output
 
 
 def test_output():
@@ -93,6 +114,8 @@ def test_output():
     ) as inst:
         inst.output = True
         inst.output = False
+        with pytest.raises(NotImplementedError):
+            _ = inst.output
 
 
 def test_pulse_modulation():
@@ -106,6 +129,8 @@ def test_pulse_modulation():
     ) as inst:
         inst.pulse_modulation = True
         inst.pulse_modulation = False
+        with pytest.raises(NotImplementedError):
+            _ = inst.pulse_modulation
 
 
 def test_am_modulation():
@@ -119,3 +144,5 @@ def test_am_modulation():
     ) as inst:
         inst.am_modulation = True
         inst.am_modulation = False
+        with pytest.raises(NotImplementedError):
+            _ = inst.am_modulation
