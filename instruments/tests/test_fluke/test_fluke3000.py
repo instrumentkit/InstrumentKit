@@ -421,3 +421,20 @@ def test_parse_wrong_mode():
                           f"the Fluke 3000FC Multimeter is in mode " \
                           f"{mode_result.name} instead. Could not read the " \
                           f"requested quantity."
+
+
+def test_parse_factor_wrong_code():
+    """Raise ValueError if code not in prefixes."""
+    data = "00000012"
+    byte = format(int(data[6:8], 16), "08b")
+    code = int(byte[1:4], 2)
+    with expected_protocol(
+            ik.fluke.Fluke3000,
+            init_sequence,
+            init_response,
+            "\r"
+    ) as inst:
+        with pytest.raises(ValueError) as err_info:
+            inst._parse_factor(data)
+        err_msg = err_info.value.args[0]
+        assert err_msg == f"Metric prefix not recognized: {code}"
