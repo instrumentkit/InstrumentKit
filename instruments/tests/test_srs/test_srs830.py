@@ -215,30 +215,8 @@ def test_num_data_points_no_answer():
     answer = ""
     with expected_protocol(
             ik.srs.SRS830,
-            [
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?"
-            ],
-            [
-                answer,
-                answer,
-                answer,
-                answer,
-                answer,
-                answer,
-                answer,
-                answer,
-                answer,
-                answer
-            ]
+            ["SPTS?"] * 10,
+            [answer] * 10
     ) as inst:
         with pytest.raises(IOError) as err_info:
             _ = inst.num_data_points
@@ -363,33 +341,20 @@ def test_take_measurement_num_dat_points_fails():
                 "SEND 0",
                 "FAST 2",
                 "STRD",
-                "PAUS",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
-                "SPTS?",
+                "PAUS"
+            ] +
+            [
+                "SPTS?"
+            ] * 11 +
+            [
                 "TRCA?1,0,2",
                 "SPTS?",
                 "TRCA?2,0,2"
             ],
             [
                 "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
+            ] * 10 +
+            [
                 "2",
                 "1.234,5.678",
                 "2",
