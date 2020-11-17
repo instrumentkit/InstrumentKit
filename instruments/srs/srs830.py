@@ -47,7 +47,7 @@ class SRS830(SCPIInstrument):
     >>> data = srs.take_measurement(1, 10) # 1Hz sample rate, 10 samples total
     """
 
-    def __init__(self, filelike, outx_mode=None):  # pragma: no cover
+    def __init__(self, filelike, outx_mode=None):
         """
         Class initialization method.
 
@@ -70,7 +70,7 @@ class SRS830(SCPIInstrument):
                 pass
             else:
                 warnings.warn("OUTX command has not been set. Instrument "
-                              "behavour is unknown.", UserWarning)
+                              "behaviour is unknown.", UserWarning)
     # ENUMS #
 
     class FreqSource(IntEnum):
@@ -251,7 +251,7 @@ class SRS830(SCPIInstrument):
         while not resp and i < 10:
             resp = self.query('SPTS?').strip()
             i += 1
-        if not resp:  # pragma: no cover
+        if not resp:
             raise IOError(
                 "Expected integer response from instrument, got {}".format(
                     repr(resp))
@@ -363,8 +363,7 @@ class SRS830(SCPIInstrument):
         self.init(sample_rate, SRS830.BufferMode['one_shot'])
         self.start_data_transfer()
 
-        if not self._testing:
-            time.sleep(sample_time + 0.1)
+        time.sleep(sample_time + 0.1)
 
         self.pause()
 
@@ -374,7 +373,7 @@ class SRS830(SCPIInstrument):
         # in future versions.
         try:
             self.num_data_points
-        except IOError:  # pragma: no cover
+        except IOError:
             pass
 
         ch1 = self.read_data_buffer('ch1')

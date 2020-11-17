@@ -6,15 +6,61 @@ Unit tests for the SRS 830 lock-in amplifier
 
 # IMPORTS #####################################################################
 
+import time
 
 import numpy as np
 import pytest
+import serial
 
 import instruments as ik
+from instruments.abstract_instruments.comm import GPIBCommunicator, \
+    LoopbackCommunicator, SerialCommunicator, USBCommunicator
 from instruments.tests import expected_protocol
 from instruments.units import ureg as u
 
 # TESTS #######################################################################
+
+
+@pytest.fixture(autouse=True)
+def time_mock(mocker):
+    """Mock out sleep such that test runs fast."""
+    return mocker.patch.object(time, 'sleep', return_value=None)
+
+
+@pytest.mark.parametrize("mode", (1, 2))
+def test_init_mode_given(mocker, mode):
+    """Test initialization with a given mode."""
+    comm = LoopbackCommunicator()
+    send_spy = mocker.spy(comm, 'sendcmd')
+    ik.srs.SRS830(comm, outx_mode=mode)
+    send_spy.assert_called_with(f"OUTX {mode}")
+
+
+def test_init_mode_gpibcomm(mocker):
+    """Test initialization with GPIBCommunicator"""
+    mock_gpib = mocker.MagicMock()
+    comm = GPIBCommunicator(mock_gpib, 1)
+    mock_send = mocker.patch.object(comm, 'sendcmd')
+    ik.srs.SRS830(comm)
+    mock_send.assert_called_with("OUTX 1")
+
+
+def test_init_mode_serial_comm(mocker):
+    """Test initialization with SerialCommunicator"""
+    comm = SerialCommunicator(serial.Serial())
+    mock_send = mocker.patch.object(comm, 'sendcmd')
+    ik.srs.SRS830(comm)
+    mock_send.assert_called_with("OUTX 2")
+
+
+def test_init_mode_invalid():
+    """Test initialization with invalild communicator."""
+    comm = USBCommunicator(None)
+    with pytest.warns(UserWarning) as wrn_info:
+        ik.srs.SRS830(comm)
+    wrn_msg = wrn_info[0].message.args[0]
+    assert wrn_msg == "OUTX command has not been set. Instrument behaviour " \
+                       "is unknown."
 
 
 def test_frequency_source():
@@ -164,6 +210,21 @@ def test_num_data_points():
         assert inst.num_data_points == 5
 
 
+def test_num_data_points_no_answer():
+    """Raise IOError after no answer 10 times."""
+    answer = ""
+    with expected_protocol(
+            ik.srs.SRS830,
+            ["SPTS?"] * 10,
+            [answer] * 10
+    ) as inst:
+        with pytest.raises(IOError) as err_info:
+            _ = inst.num_data_points
+        err_msg = err_info.value.args[0]
+        assert err_msg == f"Expected integer response from instrument, got " \
+                          f"{repr(answer)}"
+
+
 def test_data_transfer():
     with expected_protocol(
             ik.srs.SRS830,
@@ -257,6 +318,43 @@ def test_take_measurement():
             ],
             [
                 "2",
+                "2",
+                "1.234,5.678",
+                "2",
+                "0.456,5.321"
+            ]
+    ) as inst:
+        resp = inst.take_measurement(sample_rate=1, num_samples=2)
+        np.testing.assert_array_equal(resp, [[1.234, 5.678], [0.456, 5.321]])
+
+
+def test_take_measurement_num_dat_points_fails():
+    """Simulate the failure of num_data_points.
+
+    This is the way it is currently implemented.
+    """
+    with expected_protocol(
+            ik.srs.SRS830,
+            [
+                "REST",
+                "SRAT 4",
+                "SEND 0",
+                "FAST 2",
+                "STRD",
+                "PAUS"
+            ] +
+            [
+                "SPTS?"
+            ] * 11 +
+            [
+                "TRCA?1,0,2",
+                "SPTS?",
+                "TRCA?2,0,2"
+            ],
+            [
+                "",
+            ] * 10 +
+            [
                 "2",
                 "1.234,5.678",
                 "2",
