@@ -332,3 +332,12 @@ def test_upload_waveform_wrong_max(yzero, ymult, xincr, waveform):
             inst.upload_waveform(yzero, ymult, xincr, waveform_wrong_max)
         exc_msg = exc_info.value.args[0]
         assert exc_msg == "The max value for an element in waveform is 1."
+
+
+@pytest.mark.skipif(numpy is not None, reason="Numpy missing is required for this test")
+def test_upload_waveform_missing_numpy_raises_exception():
+    with expected_protocol(
+            ik.tektronix.TekAWG2000, [], []
+    ) as inst:
+        with pytest.raises(ImportError):
+            inst.upload_waveform(0, 0, 0, [0])
