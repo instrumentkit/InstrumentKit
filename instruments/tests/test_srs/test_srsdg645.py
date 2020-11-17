@@ -9,12 +9,13 @@ Module containing tests for the SRS DG645
 import pytest
 
 import instruments as ik
+from instruments.abstract_instruments.comm import GPIBCommunicator
 from instruments.units import ureg as u
 from instruments.tests import expected_protocol, make_name_test, unit_eq
 
 # TESTS ######################################################################
 
-# pylint: disable=protected-access
+# pylint: disable=no-member,protected-access
 
 test_srsdg645_name = make_name_test(ik.srs.SRSDG645)
 
@@ -64,6 +65,14 @@ def test_srsdg645_channel_delay():
 
 
 # DG645 #
+
+
+def test_srsdg645_init_gpib(mocker):
+    """Initialize SRSDG645 with GPIB Communicator."""
+    mock_gpib = mocker.MagicMock()
+    comm = GPIBCommunicator(mock_gpib, 1)
+    ik.srs.SRSDG645(comm)
+    assert comm.strip == 2
 
 
 def test_srsdg645_output_level():
