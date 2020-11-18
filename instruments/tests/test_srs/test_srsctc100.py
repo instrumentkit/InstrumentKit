@@ -379,6 +379,10 @@ def test_channel_get_log(channel):
         ts[it] = u.Quantity(time, u.ms)
         temps[it] = u.Quantity(values[it], units)
 
+    if not numpy:
+        ts = tuple(ts)
+        temps = tuple(temps)
+
     with expected_protocol(
             ik.srs.SRSCTC100,
             [

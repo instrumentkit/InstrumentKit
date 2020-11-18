@@ -116,7 +116,8 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
         :param bool bin_format: If `True`, data is transfered
             in a binary format. Otherwise, data is transferred in ASCII.
 
-        :rtype: two item `tuple` of `numpy.ndarray`
+        :rtype: `tuple`[`tuple`[`float`, ...], `tuple`[`float`, ...]]
+            or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
         """
         with self:
 
@@ -158,7 +159,7 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
                 y = ((raw - yoffs) * float(ymult)) + float(yzero)
             else:
                 x = tuple([float(val) * float(xincr) for val in range(ptcnt)])
-                y = [((x - yoffs) * float(ymult)) + float(yzero) for x in raw]
+                y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
 
             return x, y
 

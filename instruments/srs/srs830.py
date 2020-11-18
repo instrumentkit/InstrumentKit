@@ -352,7 +352,8 @@ class SRS830(SCPIInstrument):
 
         :param `int` num_samples: Number of samples to take.
 
-        :rtype: `list`
+        :rtype: `tuple`[`tuple`[`float`, ...], `tuple`[`float`, ...]]
+            or if numpy is installed, `numpy.array`[`numpy.array`, `numpy.array`]
         """
         if num_samples > 16383:
             raise ValueError('Number of samples cannot exceed 16383.')
@@ -501,7 +502,7 @@ class SRS830(SCPIInstrument):
             given by {CH1|CH2}.
         :type channel: `SRS830.Mode` or `str`
 
-        :rtype: `list`
+        :rtype: `tuple`[`float`, ...] or if numpy is installed, `numpy.array`
         """
         if isinstance(channel, str):
             channel = channel.lower()

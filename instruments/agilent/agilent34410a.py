@@ -79,7 +79,8 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
 
         :param int count: Number of samples to take.
 
-        :rtype: `~pint.Quantity` with `numpy.array`
+        :rtype: `tuple`[`~pint.Quantity`, ...]
+            or if numpy is installed, `~pint.Quantity` with `numpy.array` data
         """
         mode = self.mode
         units = UNITS[mode]
@@ -94,8 +95,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         data = self.binblockread(8, fmt=">d")
         if numpy:
             return data * units
-        else:
-            return tuple(val * units for val in data)
+        return tuple(val * units for val in data)
 
     # DATA READING METHODS #
 
@@ -111,7 +111,8 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         recommended to transfer a large number of
         data points using this method.
 
-        :rtype: `list` of `~pint.Quantity` elements
+        :rtype: `tuple`[`~pint.Quantity`, ...]
+            or if numpy is installed, `~pint.Quantity` with `numpy.array` data
         """
         units = UNITS[self.mode]
         data = list(map(float, self.query('FETC?').split(',')))
@@ -130,7 +131,8 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
             output buffer. If set to -1, all points in memory will be
             transfered.
 
-        :rtype: `list` of `~pint.Quantity` elements
+        :rtype: `tuple`[`~pint.Quantity`, ...]
+            or if numpy is installed, `~pint.Quantity` with `numpy.array` data
         """
         if not isinstance(sample_count, int):
             raise TypeError('Parameter "sample_count" must be an integer.')
@@ -149,7 +151,8 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         """
         Returns all readings in non-volatile memory (NVMEM).
 
-        :rtype: `list` of `~pint.Quantity` elements
+        :rtype: `tuple`[`~pint.Quantity`, ...]
+            or if numpy is installed, `~pint.Quantity` with `numpy.array` data
         """
         units = UNITS[self.mode]
         data = list(map(float, self.query('DATA:DATA? NVMEM').split(',')))

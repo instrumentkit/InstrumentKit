@@ -141,7 +141,7 @@ def test_data_source_read_waveform_binary(values):
         y_calc = ((values_arr - yoffs) * ymult) + yzero
     else:
         x_calc = tuple([float(val) * float(xincr) for val in range(ptcnt)])
-        y_calc = [((val - yoffs) * float(ymult)) + float(yzero) for val in values]
+        y_calc = tuple(((val - yoffs) * float(ymult)) + float(yzero) for val in values)
 
     with expected_protocol(
             ik.tektronix.TekTDS5xx,
@@ -196,7 +196,7 @@ def test_data_source_read_waveform_ascii(values):
         y_calc = ((values_arr - yoffs) * ymult) + yzero
     else:
         x_calc = tuple([float(val) * float(xincr) for val in range(ptcnt)])
-        y_calc = [((val - yoffs) * float(ymult)) + float(yzero) for val in values]
+        y_calc = tuple(((val - yoffs) * float(ymult)) + float(yzero) for val in values)
 
     with expected_protocol(
             ik.tektronix.TekTDS5xx,

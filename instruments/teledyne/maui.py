@@ -230,7 +230,8 @@ class MAUI(Oscilloscope):
 
             :return: Data (time, signal) where time is in seconds and
                 signal in V
-            :rtype: ndarray
+            :rtype: `tuple`[`tuple`[`~pint.Quantity`, ...], `tuple`[`~pint.Quantity`, ...]]
+                or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
 
             :raises NotImplementedError: Bin format was chosen, but
                 it is not implemented.

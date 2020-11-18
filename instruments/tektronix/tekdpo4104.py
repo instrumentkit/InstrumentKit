@@ -95,6 +95,8 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
 
         :param bool bin_format: If `True`, data is transfered
             in a binary format. Otherwise, data is transferred in ASCII.
+        :rtype: `tuple`[`tuple`[`~pint.Quantity`, ...], `tuple`[`~pint.Quantity`, ...]]
+            or if numpy is installed, `tuple` of two `~pint.Quantity` with `numpy.array` data
         """
 
         # Set the acquisition channel

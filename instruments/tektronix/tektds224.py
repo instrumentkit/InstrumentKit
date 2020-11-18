@@ -62,7 +62,8 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
         :param bool bin_format: If `True`, data is transfered
             in a binary format. Otherwise, data is transferred in ASCII.
 
-        :rtype: two item `tuple` of `numpy.ndarray`
+        :rtype: `tuple`[`tuple`[`float`, ...], `tuple`[`float`, ...]]
+            or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
         """
         with self:
 

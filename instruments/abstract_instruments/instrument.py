@@ -20,12 +20,12 @@ import usb
 import usb.core
 import usb.util
 
-from instruments.optional_dep_finder import numpy
 from instruments.abstract_instruments.comm import (
     SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
     LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,
     USBTMCCommunicator, VXI11Communicator, serial_manager
 )
+from instruments.optional_dep_finder import numpy
 from instruments.errors import AcknowledgementError, PromptError
 
 # CONSTANTS ###################################################################

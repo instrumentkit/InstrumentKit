@@ -27,7 +27,7 @@ class Keithley2182(SCPIMultimeter):
 
     >>> import instruments as ik
     >>> meter = ik.keithley.Keithley2182.open_gpibusb("/dev/ttyUSB0", 10)
-    >>> print meter.measure(meter.Mode.voltage_dc)
+    >>> print(meter.measure(meter.Mode.voltage_dc))
 
 
     """
@@ -213,7 +213,8 @@ class Keithley2182(SCPIMultimeter):
         recommended to transfer a large number of data points using GPIB.
 
         :return: Measurement readings from the instrument output buffer.
-        :rtype: `list` of `~pint.Quantity` elements
+        :rtype: `tuple`[`~pint.Quantity`, ...]
+            or if numpy is installed, `~pint.Quantity` with `numpy.array` data
         """
         data = list(map(float, self.query("FETC?").split(",")))
         unit = self.units
