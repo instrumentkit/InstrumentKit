@@ -126,6 +126,9 @@ def iterable_eq(a, b):
     Asserts that the contents of two iterables are the same.
     """
     if numpy and (isinstance(a, numpy.ndarray) or isinstance(b, numpy.ndarray)):
+        # pylint: disable=unidiomatic-typecheck
+        assert type(a) == type(b), f"Expected two numpy arrays, got {type(a)}, {type(b)}"
+        assert len(a) == len(b), f"Length of iterables is not the same, got {len(a)} and {len(b)}"
         assert (a == b).all()
     elif isinstance(a, u.Quantity) and isinstance(b, u.Quantity):
         unit_eq(a, b)
