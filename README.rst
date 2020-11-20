@@ -131,10 +131,8 @@ existing classes which are similar to your work to learn more about the
 structure of this project.
 
 To run the tests against all supported version of Python, you will need to
-have the binary for each installed, as well as any requirements needed to
-install ``numpy`` under each Python version. On Debian/Ubuntu systems this means
-you will need to install the ``python-dev`` package for each version of Python
-supported (``python3.8-dev``, etc).
+have the binary for each installed. The easiest way to accomplish this is
+to use the tool `pyenv<https://github.com/pyenv/pyenv>_`.
 
 With the required system packages installed, all tests can be run with ``tox``:
 
