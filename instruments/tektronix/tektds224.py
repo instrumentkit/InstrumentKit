@@ -10,14 +10,13 @@ import time
 
 from enum import Enum
 
-import numpy as np
-
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
     OscilloscopeDataSource,
     Oscilloscope,
 )
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.util_fns import ProxyList
 from instruments.units import ureg as u
 
@@ -63,7 +62,8 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
         :param bool bin_format: If `True`, data is transfered
             in a binary format. Otherwise, data is transferred in ASCII.
 
-        :rtype: two item `tuple` of `numpy.ndarray`
+        :rtype: `tuple`[`tuple`[`float`, ...], `tuple`[`float`, ...]]
+            or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
         """
         with self:
 
@@ -72,7 +72,10 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
                 # Set the data encoding format to ASCII
                 raw = self._tek.query("CURVE?")
                 raw = raw.split(',')  # Break up comma delimited string
-                raw = np.array(raw, dtype=np.float)  # Convert to ndarray
+                if numpy:
+                    raw = numpy.array(raw, dtype=numpy.float)  # Convert to ndarray
+                else:
+                    raw = tuple(map(float, raw))
             else:
                 self._tek.sendcmd("DAT:ENC RIB")
                 # Set encoding to signed, big-endian
@@ -89,15 +92,16 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
             ymult = self._tek.query(f"WFMP:{self.name}:YMU?")  # Retrieve Y multiply
             yzero = self._tek.query(f"WFMP:{self.name}:YZE?")  # Retrieve Y zero
 
-            y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
-
             xzero = self._tek.query("WFMP:XZE?")  # Retrieve X zero
             xincr = self._tek.query("WFMP:XIN?")  # Retrieve X incr
-            ptcnt = self._tek.query(f"WFMP:{self.name}:NR_P?")  # Retrieve number
-            # of data
-            # points
+            ptcnt = self._tek.query(f"WFMP:{self.name}:NR_P?")  # Retrieve number of data points
 
-            x = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
+            if numpy:
+                x = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
+                y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
+            else:
+                x = tuple(float(val) * float(xincr) + float(xzero) for val in range(int(ptcnt)))
+                y = tuple(((x - float(yoffs)) * float(ymult)) + float(yzero) for x in raw)
 
             return x, y
 

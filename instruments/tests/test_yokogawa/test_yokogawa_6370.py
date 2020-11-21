@@ -13,11 +13,14 @@ from hypothesis import (
     given,
     strategies as st,
 )
-import numpy as np
-from instruments.units import ureg as u
 
 import instruments as ik
-from instruments.tests import expected_protocol
+from instruments.optional_dep_finder import numpy
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+)
+from instruments.units import ureg as u
 
 
 # TESTS #######################################################################
@@ -39,7 +42,7 @@ def test_init():
         pass
 
 
-@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False), min_size=1),
+@given(values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
        channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces))
 def test_channel_data(values, channel):
     values_packed = b"".join(struct.pack("<d", value) for value in values)
@@ -55,10 +58,13 @@ def test_channel_data(values, channel):
                 b"#" + values_len_of_len + values_len + values_packed
             ]
     ) as inst:
-        np.testing.assert_array_equal(inst.channel[channel].data(), np.array(values, dtype="<d"))
+        values = tuple(values)
+        if numpy:
+            values = numpy.array(values, dtype="<d")
+        iterable_eq(inst.channel[channel].data(), values)
 
 
-@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False), min_size=1),
+@given(values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
        channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces))
 def test_channel_wavelength(values, channel):
     values_packed = b"".join(struct.pack("<d", value) for value in values)
@@ -74,10 +80,10 @@ def test_channel_wavelength(values, channel):
                 b"#" + values_len_of_len + values_len + values_packed
             ]
     ) as inst:
-        np.testing.assert_array_equal(
-            inst.channel[channel].wavelength(),
-            np.array(values, dtype="<d")
-        )
+        values = tuple(values)
+        if numpy:
+            values = numpy.array(values, dtype="<d")
+        iterable_eq(inst.channel[channel].wavelength(), values)
 
 
 @given(value=st.floats(min_value=600e-9, max_value=1700e-9))
@@ -252,7 +258,7 @@ def test_data_active_trace(values):
         data_call_by_trace = inst.channel[channel].data()
         # call active trace data
         data_active_trace = inst.data()
-        assert (data_call_by_trace == data_active_trace).all()
+        iterable_eq(data_call_by_trace, data_active_trace)
 
 
 @given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False),
@@ -281,7 +287,7 @@ def test_wavelength_active_trace(values):
         data_call_by_trace = inst.channel[channel].wavelength()
         # call active trace data
         data_active_trace = inst.wavelength()
-        assert (data_call_by_trace == data_active_trace).all()
+        iterable_eq(data_call_by_trace, data_active_trace)
 
 
 def test_start_sweep():

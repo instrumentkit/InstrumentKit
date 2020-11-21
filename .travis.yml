@@ -18,6 +18,8 @@ jobs:
     env: TOXENV=py38
   - python: 3.9
     env: TOXENV=py39
+  - python: 3.9
+    env: TOXENV=py39-numpy
 before_install:
 - python --version
 - uname -a

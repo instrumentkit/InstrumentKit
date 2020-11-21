@@ -13,11 +13,15 @@ from hypothesis import (
     given,
     strategies as st,
 )
-import numpy as np
 import pytest
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test
+from instruments.optional_dep_finder import numpy
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+    make_name_test,
+)
 
 
 # TESTS #######################################################################
@@ -375,10 +379,14 @@ def test_data_source_read_waveform_bin(values, ymult, yzero, xzero, xincr):
             ],
     ) as inst:
         x_read, y_read = inst.channel[channel].read_waveform()
-        x_calc = np.arange(ptcnt) * xincr + xzero
-        y_calc = ((np.array(values) - yoffs) * ymult) + yzero
-        np.testing.assert_equal(x_read, x_calc)
-        np.testing.assert_equal(y_read, y_calc)
+        if numpy:
+            x_calc = numpy.arange(ptcnt) * xincr + xzero
+            y_calc = ((numpy.array(values) - yoffs) * ymult) + yzero
+        else:
+            x_calc = tuple([float(val) * xincr + xzero for val in range(ptcnt)])
+            y_calc = tuple([((float(val) - yoffs) * ymult) + yzero for val in values])
+        iterable_eq(x_read, x_calc)
+        iterable_eq(y_read, y_calc)
 
 
 @given(values=st.lists(st.integers(min_value=-32768, max_value=32767),
@@ -431,13 +439,19 @@ def test_data_source_read_waveform_ascii(values, ymult, yzero, xzero, xincr):
     ) as inst:
         # get the values from the instrument
         x_read, y_read = inst.channel[channel].read_waveform(bin_format=False)
+
         # manually calculate the values
-        raw = np.array(values_str.split(","), dtype=np.float)
-        y_calc = (raw - yoffs) * ymult + yzero
-        x_calc = np.arange(ptcnt) * xincr + xzero
+        if numpy:
+            raw = numpy.array(values_str.split(","), dtype=numpy.float)
+            x_calc = numpy.arange(ptcnt) * xincr + xzero
+            y_calc = (raw - yoffs) * ymult + yzero
+        else:
+            x_calc = tuple([float(val) * xincr + xzero for val in range(ptcnt)])
+            y_calc = tuple([((float(val) - yoffs) * ymult) + yzero for val in values])
+
         # assert arrays are equal
-        np.testing.assert_almost_equal(x_read, x_calc)
-        np.testing.assert_almost_equal(y_read, y_calc)
+        iterable_eq(x_read, x_calc)
+        iterable_eq(y_read, y_calc)
 
 
 @given(offset=st.floats(min_value=-100, max_value=100))

@@ -8,14 +8,21 @@ Unit tests for the SRS 830 lock-in amplifier
 
 import time
 
-import numpy as np
 import pytest
 import serial
 
 import instruments as ik
-from instruments.abstract_instruments.comm import GPIBCommunicator, \
-    LoopbackCommunicator, SerialCommunicator, USBCommunicator
-from instruments.tests import expected_protocol
+from instruments.abstract_instruments.comm import (
+    GPIBCommunicator,
+    LoopbackCommunicator,
+    SerialCommunicator,
+    USBCommunicator
+)
+from instruments.optional_dep_finder import numpy
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+)
 from instruments.units import ureg as u
 
 # TESTS #######################################################################
@@ -325,7 +332,10 @@ def test_take_measurement():
             ]
     ) as inst:
         resp = inst.take_measurement(sample_rate=1, num_samples=2)
-        np.testing.assert_array_equal(resp, [[1.234, 5.678], [0.456, 5.321]])
+        expected = ((1.234, 5.678), (0.456, 5.321))
+        if numpy:
+            expected = numpy.array(expected)
+        iterable_eq(resp, expected)
 
 
 def test_take_measurement_num_dat_points_fails():
@@ -362,7 +372,10 @@ def test_take_measurement_num_dat_points_fails():
             ]
     ) as inst:
         resp = inst.take_measurement(sample_rate=1, num_samples=2)
-        np.testing.assert_array_equal(resp, [[1.234, 5.678], [0.456, 5.321]])
+        expected = ((1.234, 5.678), (0.456, 5.321))
+        if numpy:
+            expected = numpy.array(expected)
+        iterable_eq(resp, expected)
 
 
 def test_take_measurement_invalid_num_samples():
@@ -475,7 +488,7 @@ def test_data_snap():
     ) as inst:
         data = inst.data_snap(mode1=inst.Mode.x, mode2=inst.Mode.y)
         expected = [1.234, 9.876]
-        np.testing.assert_array_equal(data, expected)
+        iterable_eq(data, expected)
 
 
 def test_data_snap_mode_as_str():
@@ -490,7 +503,7 @@ def test_data_snap_mode_as_str():
     ) as inst:
         data = inst.data_snap(mode1='x', mode2='y')
         expected = [1.234, 9.876]
-        np.testing.assert_array_equal(data, expected)
+        iterable_eq(data, expected)
 
 
 def test_data_snap_invalid_snap_mode1():
@@ -533,8 +546,10 @@ def test_read_data_buffer():
             ]
     ) as inst:
         data = inst.read_data_buffer(channel=inst.Mode.ch1)
-        expected = [1.234, 9.876]
-        np.testing.assert_array_equal(data, expected)
+        expected = (1.234, 9.876)
+        if numpy:
+            expected = numpy.array(expected)
+        iterable_eq(data, expected)
 
 
 def test_read_data_buffer_mode_as_str():
@@ -550,8 +565,10 @@ def test_read_data_buffer_mode_as_str():
             ]
     ) as inst:
         data = inst.read_data_buffer(channel="ch1")
-        expected = [1.234, 9.876]
-        np.testing.assert_array_equal(data, expected)
+        expected = (1.234, 9.876)
+        if numpy:
+            expected = numpy.array(expected)
+        iterable_eq(data, expected)
 
 
 def test_read_data_buffer_invalid_mode():

@@ -6,11 +6,13 @@ Unit tests for the HP 6624a power supply
 
 # IMPORTS #####################################################################
 
-
 import pytest
 
 import instruments as ik
-from instruments.tests import expected_protocol
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+)
 from instruments.units import ureg as u
 from .. import mock
 
@@ -215,7 +217,8 @@ def test_all_voltage():
             ],
             sep="\n"
     ) as hp:
-        assert sorted(hp.voltage) == sorted((2, 3, 4, 5) * u.V)
+        expected = (2 * u.V, 3 * u.V, 4 * u.V, 5 * u.V)
+        iterable_eq(hp.voltage, expected)
         hp.voltage = 5 * u.V
         hp.voltage = (1 * u.V, 2 * u.V, 3 * u.V, 4 * u.V)
 
@@ -257,7 +260,8 @@ def test_all_current():
             ],
             sep="\n"
     ) as hp:
-        assert sorted(hp.current) == sorted((2, 3, 4, 5) * u.A)
+        expected = (2 * u.A, 3 * u.A, 4 * u.A, 5 * u.A)
+        iterable_eq(hp.current, expected)
         hp.current = 5 * u.A
         hp.current = (1 * u.A, 2 * u.A, 3 * u.A, 4 * u.A)
 
@@ -289,7 +293,8 @@ def test_all_voltage_sense():
             ],
             sep="\n"
     ) as hp:
-        assert sorted(hp.voltage_sense) == sorted((2, 3, 4, 5) * u.V)
+        expected = (2 * u.V, 3 * u.V, 4 * u.V, 5 * u.V)
+        iterable_eq(hp.voltage_sense, expected)
 
 
 def test_all_current_sense():
@@ -309,7 +314,8 @@ def test_all_current_sense():
             ],
             sep="\n"
     ) as hp:
-        assert sorted(hp.current_sense) == sorted((2, 3, 4, 5) * u.A)
+        expected = (2 * u.A, 3 * u.A, 4 * u.A, 5 * u.A)
+        iterable_eq(hp.current_sense, expected)
 
 
 def test_clear():

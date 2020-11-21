@@ -16,6 +16,9 @@ from unittest import mock
 
 import pytest
 
+from instruments.optional_dep_finder import numpy
+from instruments.units import ureg as u
+
 # FUNCTIONS ##################################################################
 
 
@@ -116,3 +119,18 @@ def make_name_test(ins_class, name_cmd="*IDN?"):
         with expected_protocol(ins_class, name_cmd + "\n", "NAME\n") as ins:
             assert ins.name == "NAME"
     return test
+
+
+def iterable_eq(a, b):
+    """
+    Asserts that the contents of two iterables are the same.
+    """
+    if numpy and (isinstance(a, numpy.ndarray) or isinstance(b, numpy.ndarray)):
+        # pylint: disable=unidiomatic-typecheck
+        assert type(a) == type(b), f"Expected two numpy arrays, got {type(a)}, {type(b)}"
+        assert len(a) == len(b), f"Length of iterables is not the same, got {len(a)} and {len(b)}"
+        assert (a == b).all()
+    elif isinstance(a, u.Quantity) and isinstance(b, u.Quantity):
+        unit_eq(a, b)
+    else:
+        assert a == b

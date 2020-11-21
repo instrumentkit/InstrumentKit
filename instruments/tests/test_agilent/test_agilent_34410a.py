@@ -6,11 +6,16 @@ Module containing tests for Agilent 34410a
 
 # IMPORTS ####################################################################
 
-import numpy as np
 import pytest
 
 import instruments as ik
-from instruments.tests import expected_protocol, make_name_test, unit_eq
+from instruments.optional_dep_finder import numpy
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+    make_name_test,
+    unit_eq
+)
 from instruments.units import ureg as u
 
 # TESTS ######################################################################
@@ -96,7 +101,11 @@ def test_agilent34410a_r():
                 b"#18" + bytes.fromhex("3FF0000000000000")
             ]
     ) as dmm:
-        unit_eq(dmm.r(1), np.array([1]) * u.volt)
+        expected = (u.Quantity(1, u.volt),)
+        if numpy:
+            expected = numpy.array([1]) * u.volt
+        actual = dmm.r(1)
+        iterable_eq(actual, expected)
 
 
 def test_agilent34410a_r_count_zero():
@@ -113,7 +122,11 @@ def test_agilent34410a_r_count_zero():
                 b"#18" + bytes.fromhex("3FF0000000000000")
             ]
     ) as dmm:
-        unit_eq(dmm.r(0), np.array([1]) * u.volt)
+        expected = (u.Quantity(1, u.volt),)
+        if numpy:
+            expected = numpy.array([1]) * u.volt
+        actual = dmm.r(0)
+        iterable_eq(actual, expected)
 
 
 def test_agilent34410a_r_type_error():
@@ -145,8 +158,10 @@ def test_agilent34410a_fetch():
             ]
     ) as dmm:
         data = dmm.fetch()
-        unit_eq(data[0], 4.27150000E-03 * u.volt)
-        unit_eq(data[1], 5.27150000E-03 * u.volt)
+        expected = (4.27150000E-03 * u.volt, 5.27150000E-03 * u.volt)
+        if numpy:
+            expected = (4.27150000E-03, 5.27150000E-03) * u.volt
+        iterable_eq(data, expected)
 
 
 def test_agilent34410a_read_data():
@@ -201,6 +216,7 @@ def test_agilent34410a_read_data_type_error():
             dmm.read_data(wrong_type)
         err_msg = err_info.value.args[0]
         assert err_msg == 'Parameter "sample_count" must be an integer.'
+
 
 def test_agilent34410a_read_data_nvmem():
     with expected_protocol(

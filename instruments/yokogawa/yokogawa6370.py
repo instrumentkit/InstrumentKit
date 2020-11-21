@@ -62,14 +62,14 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         def data(self, bin_format=True):
             cmd = ":TRAC:Y? {0}".format(self._name)
             self._parent.sendcmd(cmd)
-            data = self._parent.binblockread(data_width=4, fmt="<d")
+            data = self._parent.binblockread(data_width=8, fmt="<d")
             self._parent._file.read_raw(1)  # pylint: disable=protected-access
             return data
 
         def wavelength(self, bin_format=True):
             cmd = ":TRAC:X? {0}".format(self._name)
             self._parent.sendcmd(cmd)
-            data = self._parent.binblockread(data_width=4, fmt="<d")
+            data = self._parent.binblockread(data_width=8, fmt="<d")
             self._parent._file.read_raw(1)  # pylint: disable=protected-access
             return data
 

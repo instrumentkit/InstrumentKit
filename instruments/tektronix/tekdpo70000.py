@@ -14,6 +14,7 @@ from instruments.abstract_instruments import (
     Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
 )
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import (
     enum_property, string_property, int_property, unitful_property,
@@ -21,6 +22,8 @@ from instruments.util_fns import (
 )
 
 # CLASSES #####################################################################
+
+# pylint: disable=too-many-lines
 
 
 class TekDPO70000(SCPIInstrument, Oscilloscope):
@@ -148,11 +151,11 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         return "{}{}{}".format({
             TekDPO70000.ByteOrder.big_endian: ">",
             TekDPO70000.ByteOrder.little_endian: "<"
-        }[byte_order], {
+        }[byte_order], (n_bytes if n_bytes is not None else ""), {
             TekDPO70000.BinaryFormat.int: "i",
             TekDPO70000.BinaryFormat.uint: "u",
             TekDPO70000.BinaryFormat.float: "f"
-        }[binary_format], n_bytes)
+        }[binary_format])
 
     # CLASSES #
 
@@ -186,7 +189,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
                 dtype = self._parent._dtype(
                     self._parent.outgoing_binary_format,
                     self._parent.outgoing_byte_order,
-                    n_bytes
+                    n_bytes=None
                 )
                 self._parent.sendcmd("CURV?")
                 raw = self._parent.binblockread(n_bytes, fmt=dtype)
@@ -478,10 +481,18 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
         def _scale_raw_data(self, data):
             # TODO: incorperate the unit_string somehow
-            return self.scale * (
-                (TekDPO70000.VERT_DIVS / 2) *
-                data.astype(float) / (2**15) - self.position
+            if numpy:
+                return self.scale * (
+                    (TekDPO70000.VERT_DIVS / 2) * data.astype(float) / (2**15) - self.position
+                )
+
+            scale = self.scale
+            position = self.position
+            rval = tuple(
+                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2 ** 15) - position)
+                for d in map(float, data)
             )
+            return rval
 
     class Channel(DataSource, OscilloscopeChannel):
 
@@ -614,10 +625,20 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         )
 
         def _scale_raw_data(self, data):
-            return self.scale * (
-                (TekDPO70000.VERT_DIVS / 2) *
-                data.astype(float) / (2**15) - self.position
-            ) + self.offset
+            scale = self.scale
+            position = self.position
+            offset = self.offset
+
+            if numpy:
+                return scale * (
+                    (TekDPO70000.VERT_DIVS / 2) *
+                    data.astype(float) / (2**15) - position
+                ) + offset
+
+            return tuple(
+                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2 ** 15) - position) + offset
+                for d in map(float, data)
+            )
 
     # PROPERTIES ##
 

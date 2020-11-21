@@ -12,14 +12,13 @@ import time
 import warnings
 from enum import Enum, IntEnum
 
-import numpy as np
-
 from instruments.abstract_instruments.comm import (
     GPIBCommunicator,
     SerialCommunicator,
     LoopbackCommunicator
 )
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import (
     bool_property, bounded_unitful_property, enum_property, unitful_property
@@ -353,7 +352,8 @@ class SRS830(SCPIInstrument):
 
         :param `int` num_samples: Number of samples to take.
 
-        :rtype: `list`
+        :rtype: `tuple`[`tuple`[`float`, ...], `tuple`[`float`, ...]]
+            or if numpy is installed, `numpy.array`[`numpy.array`, `numpy.array`]
         """
         if num_samples > 16383:
             raise ValueError('Number of samples cannot exceed 16383.')
@@ -379,7 +379,9 @@ class SRS830(SCPIInstrument):
         ch1 = self.read_data_buffer('ch1')
         ch2 = self.read_data_buffer('ch2')
 
-        return np.array([ch1, ch2])
+        if numpy:
+            return numpy.array([ch1, ch2])
+        return ch1, ch2
 
     # OTHER METHODS #
 
@@ -500,7 +502,7 @@ class SRS830(SCPIInstrument):
             given by {CH1|CH2}.
         :type channel: `SRS830.Mode` or `str`
 
-        :rtype: `list`
+        :rtype: `tuple`[`float`, ...] or if numpy is installed, `numpy.array`
         """
         if isinstance(channel, str):
             channel = channel.lower()
@@ -516,10 +518,10 @@ class SRS830(SCPIInstrument):
         # Query device for entire buffer, returning in ASCII, then
         # converting to a list of floats before returning to the
         # calling method
-        return np.fromstring(
-            self.query('TRCA?{},0,{}'.format(channel, N)).strip(),
-            sep=','
-        )
+        data = self.query('TRCA?{},0,{}'.format(channel, N)).strip()
+        if numpy:
+            return numpy.fromstring(data, sep=',')
+        return tuple(map(float, data.split(",")))
 
     def clear_data_buffer(self):
         """

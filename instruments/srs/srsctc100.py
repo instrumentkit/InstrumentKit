@@ -9,9 +9,8 @@ Provides support for the SRS CTC-100 cryogenic temperature controller.
 from contextlib import contextmanager
 from enum import Enum
 
-import numpy as np
-
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
@@ -245,8 +244,9 @@ class SRSCTC100(SCPIInstrument):
 
             :return: Tuple of all the log data points. First value is time,
                 second is the measurement value.
-            :rtype: Tuple of 2x `~pint.Quantity`, each comprised of
-                a numpy array (`numpy.dnarray`).
+            :rtype: If numpy is installed, tuple of 2x `~pint.Quantity`,
+                each comprised of a numpy array (`numpy.dnarray`).
+                Else, `tuple`[`tuple`[`~pint.Quantity`, ...], `tuple`[`~pint.Quantity`, ...]]
             """
             # Remember the current units.
             units = self.units
@@ -257,8 +257,12 @@ class SRSCTC100(SCPIInstrument):
 
             # Make an empty quantity that size for the times and for the channel
             # values.
-            ts = u.Quantity(np.empty((n_points,)), 'ms')
-            temps = u.Quantity(np.empty((n_points,)), units)
+            if numpy:
+                ts = u.Quantity(numpy.empty((n_points,)), u.ms)
+                temps = u.Quantity(numpy.empty((n_points,)), units)
+            else:
+                ts = [u.Quantity(0, u.ms)] * n_points
+                temps = [u.Quantity(0, units)] * n_points
 
             # Reset the position to the first point, then save it.
             # pylint: disable=protected-access
@@ -270,6 +274,10 @@ class SRSCTC100(SCPIInstrument):
             # Do an actual error check now.
             if self._ctc.error_check_toggle:
                 self._ctc.errcheck()
+
+            if not numpy:
+                ts = tuple(ts)
+                temps = tuple(temps)
 
             return ts, temps
 
