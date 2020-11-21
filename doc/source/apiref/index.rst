@@ -24,7 +24,6 @@ Contents:
     minghe
     newport
     ondax
-    other
     oxford
     phasematrix
     picowatt

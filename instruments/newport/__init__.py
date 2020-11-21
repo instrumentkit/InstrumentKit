@@ -4,7 +4,7 @@
 Module containing Newport instruments
 """
 
-from .agilis import AGUC2
+from .agilis import _Axis, AGUC2
 
 from .errors import NewportError
 from .newportesp301 import (
