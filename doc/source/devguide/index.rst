@@ -33,10 +33,6 @@ provided ``dev-requirements.txt``::
 
 $ pip install -r dev-requirements.txt
 
-- mock
-- pytest
-- pylint
-
 Optional Development Dependencies
 ---------------------------------
 
