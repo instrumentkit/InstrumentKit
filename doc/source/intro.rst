@@ -19,34 +19,6 @@ Dependencies
 
 Most of the required and optional dependencies can be obtained using  ``pip``.
 
-Required Dependencies
-~~~~~~~~~~~~~~~~~~~~~
-
-Using ``pip``, these requirements can be obtained automatically by using the
-provided ``requirements.txt``::
-
-$ pip install -r requirements.txt
-
-- NumPy
-- `PySerial`_
-- `pint`_
-- `python-vxi11`_
-- `PyUSB`_ (version 1.0a or higher, required for raw USB support)
-- `python-usbtmc`_
-- `ruamel.yaml`_ (required for configuration file support)
-- `PyVISA`_ (required for accessing instruments via VISA library)
-
-Optional Dependencies
-~~~~~~~~~~~~~~~~~~~~~
-
-.. _PySerial: http://pyserial.sourceforge.net/
-.. _pint: https://pint.readthedocs.io/en/stable/
-.. _ruamel.yaml: http://yaml.readthedocs.io
-.. _PyUSB: http://sourceforge.net/apps/trac/pyusb/
-.. _PyVISA: http://pyvisa.sourceforge.net/
-.. _python-usbtmc: https://pypi.python.org/pypi/python-usbtmc
-.. _python-vxi11: https://pypi.python.org/pypi/python-vxi11
-
 Getting Started
 ===============
 
