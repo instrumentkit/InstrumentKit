@@ -161,7 +161,7 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        return self._file.read(size, encoding)
+        return self._file.read(size, encoding).strip()
 
     # PROPERTIES #
 
