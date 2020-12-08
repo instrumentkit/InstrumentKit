@@ -287,6 +287,6 @@ class SCPIInstrument(Instrument):
     @display_contrast.setter
     def display_contrast(self, newval):
         if newval < 0 or newval > 1:
-            raise ValueError("Display brightness must be a number between 0"
+            raise ValueError("Display contrast must be a number between 0"
                              " and 1.")
         self.sendcmd("DISP:CONT {}".format(newval))
