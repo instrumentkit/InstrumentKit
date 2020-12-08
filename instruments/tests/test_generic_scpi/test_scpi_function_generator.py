@@ -6,6 +6,7 @@ Module containing tests for generic SCPI function generator instruments
 
 # IMPORTS ####################################################################
 
+import pytest
 
 from instruments.units import ureg as u
 
@@ -94,3 +95,17 @@ def test_scpi_func_gen_offset():
 
         assert fg.channel[0].offset == 12.34 * u.V
         fg.channel[0].offset = 0.4321 * u.V
+
+
+def test_scpi_func_gen_phase():
+    """Raise NotImplementedError when set / get phase."""
+    with expected_protocol(
+            ik.generic_scpi.SCPIFunctionGenerator,
+            [
+            ], [
+            ],
+    ) as fg:
+        with pytest.raises(NotImplementedError):
+            _ = fg.phase
+        with pytest.raises(NotImplementedError):
+            fg.phase = 42
