@@ -141,17 +141,15 @@ def fake_comports():
     """
     Generate a fake list of comports to compare against.
     """
-    fake_device = ListPortInfo()
+    fake_device = ListPortInfo(device='COM1')
     fake_device.vid = 0
     fake_device.pid = 1000
     fake_device.serial_number = 'a1'
-    fake_device.device = 'COM1'
 
-    fake_device2 = ListPortInfo()
+    fake_device2 = ListPortInfo(device='COM2')
     fake_device2.vid = 1
     fake_device2.pid = 1010
     fake_device2.serial_number = 'c0'
-    fake_device2.device = 'COM2'
     return [fake_device, fake_device2]
 
 
@@ -189,17 +187,15 @@ def test_instrument_open_serial_by_usb_ids_and_serial_number(mock_serial_manager
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial_by_usb_ids_multiple_matches(_, mock_comports):
     with pytest.raises(serial.SerialException):
-        fake_device = ListPortInfo()
+        fake_device = ListPortInfo(device='COM1')
         fake_device.vid = 0
         fake_device.pid = 1000
         fake_device.serial_number = 'a1'
-        fake_device.device = 'COM1'
 
-        fake_device2 = ListPortInfo()
+        fake_device2 = ListPortInfo(device='COM2')
         fake_device2.vid = 0
         fake_device2.pid = 1000
         fake_device2.serial_number = 'b2'
-        fake_device2.device = 'COM2'
 
         mock_comports.return_value = [fake_device, fake_device2]
 
