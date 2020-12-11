@@ -52,7 +52,8 @@ class OscilloscopeDataSource(metaclass=abc.ABCMeta):
 
     # PROPERTIES #
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self):
         """
         Gets the name of the channel. This is an abstract property.
@@ -116,7 +117,8 @@ class Oscilloscope(Instrument, metaclass=abc.ABCMeta):
 
     # PROPERTIES #
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def channel(self):
         """
         Gets an iterator or list for easy Pythonic access to the various
@@ -125,7 +127,8 @@ class Oscilloscope(Instrument, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def ref(self):
         """
         Gets an iterator or list for easy Pythonic access to the various
@@ -134,7 +137,8 @@ class Oscilloscope(Instrument, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def math(self):
         """
         Gets an iterator or list for easy Pythonic access to the various

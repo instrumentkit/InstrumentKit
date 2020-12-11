@@ -63,7 +63,8 @@ class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
 
     # PROPERTIES #
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def channel(self):
         """
         Gets an iterator or list for easy Pythonic access to the various
