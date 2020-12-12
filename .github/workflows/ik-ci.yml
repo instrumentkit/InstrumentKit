@@ -25,6 +25,7 @@ jobs:
       env:
         COVERALLS_PARALLEL: true
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SERIVCE_JOB_ID: ${{ matrix.test_number }}
       run: coveralls
 
   finish:
