@@ -11,6 +11,7 @@ import pytest
 from instruments.units import ureg as u
 
 import instruments as ik
+from instruments.tests import expected_protocol, unit_eq
 
 
 # TESTS ######################################################################
@@ -170,3 +171,58 @@ def test_func_gen_one_channel_passes_thru_call_setter(fg, mocker):
         mock_property.assert_called_once_with(1)
 
     mock_method.assert_called_once_with(magnitude=1, units=fg.VoltageMode.peak_to_peak)
+
+
+def test_func_gen_channel_set_amplitude_dbm(mocker):
+    """Get amplitude of channel when units are in dBm."""
+    with expected_protocol(
+            ik.abstract_instruments.FunctionGenerator,
+            [
+            ], [
+            ]
+    ) as inst:
+        value = 3.14
+        # mock out the _get_amplitude of parent to return value in dBm
+        mocker.patch.object(
+            inst, '_get_amplitude_', return_value=(
+                value,
+                ik.abstract_instruments.FunctionGenerator.VoltageMode.dBm
+            )
+        )
+
+        channel = inst.channel[0]
+        unit_eq(channel.amplitude, u.Quantity(value, u.dBm))
+
+
+def test_func_gen_channel_sendcmd(mocker):
+    """Send a command via parent class function."""
+    with expected_protocol(
+            ik.abstract_instruments.FunctionGenerator,
+            [
+            ], [
+            ]
+    ) as inst:
+        cmd = "COMMAND"
+        # mock out parent's send command
+        mock_sendcmd = mocker.patch.object(inst, 'sendcmd')
+        channel = inst.channel[0]
+        channel.sendcmd(cmd)
+        mock_sendcmd.assert_called_with(cmd)
+
+
+def test_func_gen__channel_sendcmd(mocker):
+    """Send a query via parent class function."""
+    with expected_protocol(
+            ik.abstract_instruments.FunctionGenerator,
+            [
+            ], [
+            ]
+    ) as inst:
+        cmd = "QUERY"
+        size = 13
+        retval = "ANSWER"
+        # mock out parent's query command
+        mock_query = mocker.patch.object(inst, 'query', return_value=retval)
+        channel = inst.channel[0]
+        assert channel.query(cmd, size=size) == retval
+        mock_query.assert_called_with(cmd, size)
