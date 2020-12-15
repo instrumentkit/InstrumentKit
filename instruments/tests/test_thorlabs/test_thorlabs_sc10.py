@@ -25,7 +25,7 @@ def test_sc10_name():
             [
                 "id?",
                 "bloopbloop",
-                ">"
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -42,8 +42,8 @@ def test_sc10_enable():
             [
                 "ens?",
                 "0",
-                ">ens=1",
-                ">"
+                "> ens=1",
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -71,8 +71,8 @@ def test_sc10_repeat():
             [
                 "rep?",
                 "20",
-                ">rep=10",
-                ">"
+                "> rep=10",
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -100,8 +100,8 @@ def test_sc10_mode():
             [
                 "mode?",
                 "1",
-                ">mode=2",
-                ">"
+                "> mode=2",
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -129,8 +129,8 @@ def test_sc10_trigger():
             [
                 "trig?",
                 "0",
-                ">trig=1",
-                ">"
+                "> trig=1",
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -148,8 +148,8 @@ def test_sc10_out_trigger():
             [
                 "xto?",
                 "0",
-                ">xto=1",
-                ">"
+                "> xto=1",
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -167,8 +167,8 @@ def test_sc10_open_time():
             [
                 "open?",
                 "20",
-                ">open=10",
-                ">"
+                "> open=10",
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -186,8 +186,8 @@ def test_sc10_shut_time():
             [
                 "shut?",
                 "20",
-                ">shut=10",
-                ">"
+                "> shut=10",
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -205,8 +205,8 @@ def test_sc10_baud_rate():
             [
                 "baud?",
                 "0",
-                ">baud=1",
-                ">"
+                "> baud=1",
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -233,7 +233,7 @@ def test_sc10_closed():
             [
                 "closed?",
                 "1",
-                ">"
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -249,7 +249,7 @@ def test_sc10_interlock():
             [
                 "interlock?",
                 "1",
-                ">"
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -265,7 +265,7 @@ def test_sc10_default():
             [
                 "default",
                 "1",
-                ">"
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -281,7 +281,7 @@ def test_sc10_save():
             [
                 "savp",
                 "1",
-                ">"
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -297,7 +297,7 @@ def test_sc10_save_mode():
             [
                 "save",
                 "1",
-                ">"
+                "> "
             ],
             sep="\r"
     ) as sc:
@@ -313,7 +313,7 @@ def test_sc10_restore():
             [
                 "resp",
                 "1",
-                ">"
+                "> "
             ],
             sep="\r"
     ) as sc:
