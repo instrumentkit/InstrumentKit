@@ -566,7 +566,7 @@ class Instrument:
         return cls(GPIBCommunicator(conn, gpib_address, model))
 
     @classmethod
-    def open_visa(cls, resource_name):
+    def open_visa(cls, resource_name, backend='ni'):
         """
         Opens an instrument, connecting using the VISA library. Note that
         `PyVISA`_ and a VISA implementation must both be present and installed
@@ -574,7 +574,9 @@ class Instrument:
 
         :param str resource_name: Name of a VISA resource representing the
             given instrument.
-
+        :para str backend: The PyVISA backend to use. Defaults to 'ni' to use
+            the Nation Instrument's library to not break compatibility. If 'py'
+            is passed, then the pyvisa-py backend is used.
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
 
@@ -591,7 +593,11 @@ class Instrument:
         while len(version) < 3:
             version += [0]
         if version[0] >= 1 and version[1] >= 6:
-            ins = pyvisa.ResourceManager().open_resource(resource_name)
+            if backend == 'ni':
+                rm = pyvisa.ResourceManager()
+            else: 
+                rm = pyvisa.ResourceManager('@py') 
+            ins = rm.open_resource(resource_name)
         else:
             ins = pyvisa.instrument(resource_name)  #pylint: disable=no-member
         return cls(VisaCommunicator(ins))
