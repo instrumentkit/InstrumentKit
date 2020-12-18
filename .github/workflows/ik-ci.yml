@@ -21,12 +21,18 @@ jobs:
         pip install tox tox-gh-actions coverage coveralls
     - name: Test with tox
       run: tox
-    - name: Submit to coveralls
-      env:
-        COVERALLS_PARALLEL: true
-        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SERIVCE_JOB_ID: ${{ matrix.test_number }}
-      run: coveralls
+#    - name: Submit to coveralls
+#      env:
+#        COVERALLS_PARALLEL: true
+#        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        SERIVCE_JOB_ID: ${{ matrix.test_number }}
+#      run: coveralls
+
+    - name: Coveralls
+      uses: AndreMiras/coveralls-python-action@develop
+      with:
+        parallel: true
+        flag-name: Unit Test
 
   finish:
     needs: test

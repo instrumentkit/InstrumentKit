@@ -9,3 +9,6 @@ exclude_lines =
     if not self._testing:
     raise NotImplementedError
     raise AssertionError
+
+[run]
+relative_files = True
