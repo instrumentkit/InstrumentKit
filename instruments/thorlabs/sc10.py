@@ -31,7 +31,7 @@ class SC10(Instrument):
     def __init__(self, filelike):
         super(SC10, self).__init__(filelike)
         self.terminator = '\r'
-        self.prompt = '>'
+        self.prompt = '> '
 
     def _ack_expected(self, msg=""):
         return msg
