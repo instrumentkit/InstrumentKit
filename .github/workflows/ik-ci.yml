@@ -1,6 +1,10 @@
 name: InstrumentKit CI
 
-on: [push]
+on:
+  push:
+  pull_request:
+    branches:
+      - master
 
 jobs:
   test:
