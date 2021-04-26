@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# hpe3631a.py: Driver for the Glassman FR Series Power Supplies
+# glassmanfr.py: Driver for the Glassman FR Series Power Supplies
 #
 # © 2019 Francois Drielsma (francois.drielsma@gmail.com).
 #
