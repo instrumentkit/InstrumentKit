@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Unit tests for the GPIBUSB communication layer
+Unit tests for the VISA communication layer
 """
 
 # IMPORTS ####################################################################
