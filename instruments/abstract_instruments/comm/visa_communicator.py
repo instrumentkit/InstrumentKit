@@ -29,9 +29,6 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, conn):
         super(VisaCommunicator, self).__init__(self)
 
-        if pyvisa is None:
-            raise ImportError("PyVISA required for accessing VISA instruments.")
-
         version = int(pyvisa.__version__.replace(".", "").ljust(3, "0"))
         # pylint: disable=no-member
         if (version < 160 and isinstance(conn, pyvisa.Instrument)) or \
@@ -118,7 +115,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
 
         elif size == -1:
             # Read the whole contents, appending the buffer we've already read.
-            msg = self._buf + self._conn.read()
+            msg = self._buf + self._conn.read_raw()
             # Reset the contents of the buffer.
             self._buf = bytearray()
         else:
@@ -136,10 +133,10 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         self._conn.write_raw(msg)
 
     def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
-        return NotImplemented
+        raise NotImplementedError
 
     def tell(self):  # pylint: disable=no-self-use
-        return NotImplemented
+        raise NotImplementedError
 
     def flush_input(self):
         """
