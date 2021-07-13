@@ -584,9 +584,6 @@ class Instrument:
 
         .. _PyVISA: http://pyvisa.sourceforge.net/
         """
-        if pyvisa is None:
-            raise ImportError("PyVISA is required for loading VISA "
-                              "instruments.")
         version = list(map(int, pyvisa.__version__.split(".")))
         while len(version) < 3:
             version += [0]
@@ -671,10 +668,6 @@ class Instrument:
         :return: Object representing the connected instrument.
         """
         # pylint: disable=no-member
-        if usb is None:
-            raise ImportError("USB support not imported. Do you have PyUSB "
-                              "version 1.0 or later?")
-
         dev = usb.core.find(idVendor=vid, idProduct=pid)
         if dev is None:
             raise IOError("No such device found.")
