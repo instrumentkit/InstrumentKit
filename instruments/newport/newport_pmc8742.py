@@ -1152,8 +1152,7 @@ class PicoMotorController8742(Instrument):
         https://github.com/cnanders/matlab-newfocus-model-8742
         """
         self.sendcmd(cmd)
-        # ToDo: Implement into `instrument.py` - after tests are done
-        retval = self._file.read_raw(size=size)
+        retval = self.read_raw(size=size)
         try:
             retval = retval.decode("utf-8")
         except UnicodeDecodeError:
