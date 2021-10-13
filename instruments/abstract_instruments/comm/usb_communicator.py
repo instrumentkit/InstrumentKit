@@ -124,7 +124,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         :param str msg: The command message to send to the instrument
         """
         msg += self._terminator
-        self._conn.sendall(msg)
+        self._conn.write(bytes(msg, "utf-8"))
 
     def _query(self, msg, size=-1):
         """
