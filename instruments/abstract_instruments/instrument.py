@@ -672,12 +672,11 @@ class Instrument:
             method.
 
         :param str vid: Vendor ID of the USB device to open.
-        :param int pid: Product ID of the USB device to open.
+        :param str pid: Product ID of the USB device to open.
 
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
         """
-        # pylint: disable=no-member
         dev = usb.core.find(idVendor=vid, idProduct=pid)
         if dev is None:
             raise IOError("No such device found.")
