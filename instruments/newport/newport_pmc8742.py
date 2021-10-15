@@ -85,7 +85,7 @@ class PicoMotorController8742(Instrument):
         super(PicoMotorController8742, self).__init__(filelike)
 
         # terminator
-        self.terminator = "\r"
+        self.terminator = "\r\n"
 
         # setup
         self._multiple_controllers = False
