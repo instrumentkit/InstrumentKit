@@ -14,6 +14,8 @@ import usb.core
 import usb.util
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
+from instruments.units import ureg as u
+from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
 
@@ -33,7 +35,8 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
 
     def __init__(self, dev):
         super(USBCommunicator, self).__init__(self)
-        # TODO: Check to make sure this is a USB connection
+        if not isinstance(dev, usb.core.Device):
+            raise TypeError("USBCommunicator must wrap a usb.core.Device object.")
 
         # follow (mostly) pyusb tutorial
 
@@ -99,11 +102,18 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
 
     @property
     def timeout(self):
-        raise NotImplementedError
+        """
+        Gets/sets the communication timeout of the USB communicator.
+
+        :type: `~pint.Quantity`
+        :units: As specified or assumed to be of units ``seconds``
+        """
+        return assume_units(self._dev.default_timeout, u.ms).to(u.second)
 
     @timeout.setter
     def timeout(self, newval):
-        raise NotImplementedError
+        newval = assume_units(newval, u.second).to(u.ms).magnitude
+        self._dev.default_timeout = newval
 
     # FILE-LIKE METHODS #
 
@@ -126,11 +136,12 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         """
         if size == -1:
             size = 1000
+        term = self._terminator.encode("utf-8")
         read_val = bytes(self._ep_in.read(size))
-        return read_val.rstrip(bytes(self._terminator, encoding="utf-8"))
-
-    def read(self, size=1000, encoding="utf-8"):
-        return self.read_raw(size).decode(encoding=encoding)
+        if term not in read_val:
+            raise IOError(f"Did not find the terminator in the returned string. "
+                          f"Total size of {size} might not be enough.")
+        return read_val.rstrip(term)
 
     def write_raw(self, msg):
         """Write bytes to the raw usb connection object.
@@ -138,20 +149,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         :param bytes msg: Bytes to be sent to the instrument over the usb
             connection.
         """
-        msg = msg + bytes(self._terminator, encoding="utf-8")
         self._ep_out.write(msg)
-
-    def write(self, msg, encoding="utf-8"):
-        """Write string to usb connection.
-
-        First, message is encoded and then termination character is added.
-
-        :param msg: Message to send to instrument
-        :type msg: str
-        :param encoding: Encoding for message
-        :type encoding: str
-        """
-        self.write_raw(bytes(f"{msg}{self._terminator}", encoding=encoding))
 
     def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
         return NotImplemented
@@ -167,7 +165,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         """
         while True:
             try:
-                self._ep_in.read(1000, 10)
+                self._ep_in.read(1000, 10)  # try to read until timeout error occurs
             except usb.core.USBTimeoutError:
                 break
 
@@ -182,6 +180,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
 
         :param str msg: The command message to send to the instrument
         """
+        msg += self._terminator
         self.write(msg)
 
     def _query(self, msg, size=1000):
