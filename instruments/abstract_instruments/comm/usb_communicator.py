@@ -129,7 +129,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
 
         String returned is most likely shorter than the size requested. Will
         terminate by itself.
-        Read size of -1 will be transformed into 1000.
+        Read size of -1 will be transformed into 1000 bytes.
 
         :param size: Size to read in bytes
         :type size: int
@@ -152,10 +152,10 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         self._ep_out.write(msg)
 
     def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
-        return NotImplemented
+        raise NotImplementedError
 
     def tell(self):  # pylint: disable=no-self-use
-        return NotImplemented
+        raise NotImplementedError
 
     def flush_input(self):
         """
@@ -165,8 +165,8 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         """
         while True:
             try:
-                self._ep_in.read(1000, 10)  # try to read until timeout error occurs
-            except usb.core.USBTimeoutError:
+                self._ep_in.read(1000, 10)  # read until any exception
+            except:  # pylint: disable=bare-except
                 break
 
     # METHODS #

@@ -1,148 +1,230 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Unit tests for the USBTMC communication layer
+Unit tests for the USB communicator.
 """
 
 # IMPORTS ####################################################################
 
-
+from hypothesis import given, strategies as st
 import pytest
 
-from instruments.abstract_instruments.comm import USBTMCCommunicator
-from instruments.tests import unit_eq
+import usb.core
+import usb.util
+
+from instruments.abstract_instruments.comm import USBCommunicator
 from instruments.units import ureg as u
 from .. import mock
 
 # TEST CASES #################################################################
 
-# pylint: disable=protected-access,unused-argument,no-member
+# pylint: disable=protected-access,unused-argument, redefined-outer-name
 
-patch_path = "instruments.abstract_instruments.comm.usbtmc_communicator.usbtmc"
-
-
-@mock.patch(patch_path)
-def test_usbtmccomm_init(mock_usbtmc):
-    _ = USBTMCCommunicator("foobar", var1=123)
-    mock_usbtmc.Instrument.assert_called_with("foobar", var1=123)
+patch_util = "instruments.abstract_instruments.comm.usb_communicator.usb.util"
 
 
-@mock.patch(patch_path, new=None)
-def test_usbtmccomm_init_missing_module():
-    with pytest.raises(ImportError):
-        _ = USBTMCCommunicator()
+@pytest.fixture()
+def dev():
+    """Return a usb core device for initialization."""
+    dev = mock.MagicMock()
+    dev.__class__ = usb.core.Device
+    return dev
 
 
-@mock.patch(patch_path)
-def test_usbtmccomm_terminator_getter(mock_usbtmc):
-    comm = USBTMCCommunicator()
-
-    term_char = mock.PropertyMock(return_value=10)
-    type(comm._filelike).term_char = term_char
-
-    assert comm.terminator == "\n"
-    term_char.assert_called_with()
+@pytest.fixture()
+@mock.patch(patch_util)
+def inst(patch_util, dev):
+    """Return a USB Communicator instrument."""
+    return USBCommunicator(dev)
 
 
-@mock.patch(patch_path)
-def test_usbtmccomm_terminator_setter(mock_usbtmc):
-    comm = USBTMCCommunicator()
+@mock.patch(patch_util)
+def test_init(usb_util, dev):
+    """Initialize usb communicator."""
+    # mock some behavior of the device required for initializing
+    dev.find.return_value.__class__ = usb.core.Device  # dev
+    # shortcuts for asserting calls
+    cfg = dev.get_active_configuration()
+    interface_number = cfg[(0, 0)].bInterfaceNumber
+    _ = dev.control.get_interface(
+        dev, cfg[(0, 0)].bInterfaceNumber
+    )
 
-    term_char = mock.PropertyMock(return_value="\n")
-    type(comm._filelike).term_char = term_char
+    inst = USBCommunicator(dev)
 
-    comm.terminator = "*"
-    assert comm._terminator == "*"
-    term_char.assert_called_with(42)
+    # # assert calls according to manual
+    dev.set_configuration.assert_called()  # check default configuration
+    dev.get_active_configuration.assert_called()  # get active configuration
+    dev.control.get_interface.assert_called_with(dev, interface_number)
+    usb_util.find_descriptor.assert_has_calls(cfg)
 
-    comm.terminator = b"*"
-    assert comm._terminator == "*"
-    term_char.assert_called_with(42)
+    assert isinstance(inst, USBCommunicator)
 
-
-@mock.patch(patch_path)
-def test_usbtmccomm_timeout(mock_usbtmc):
-    comm = USBTMCCommunicator()
-
-    timeout = mock.PropertyMock(return_value=1)
-    type(comm._filelike).timeout = timeout
-
-    unit_eq(comm.timeout, 1 * u.second)
-    timeout.assert_called_with()
-
-    comm.timeout = 10
-    timeout.assert_called_with(10.0)
-
-    comm.timeout = 1000 * u.millisecond
-    timeout.assert_called_with(1.0)
+    assert inst._dev == dev
 
 
-@mock.patch(patch_path)
-def test_usbtmccomm_close(mock_usbtmc):
-    comm = USBTMCCommunicator()
-
-    comm.close()
-    comm._filelike.close.assert_called_with()
-
-
-@mock.patch(patch_path)
-def test_usbtmccomm_read_raw(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm._filelike.read_raw = mock.MagicMock(return_value=b"abc")
-
-    assert comm.read_raw() == b"abc"
-    comm._filelike.read_raw.assert_called_with(num=-1)
-    assert comm._filelike.read_raw.call_count == 1
-
-    comm._filelike.read_raw = mock.MagicMock()
-    comm.read_raw(10)
-    comm._filelike.read_raw.assert_called_with(num=10)
+def test_init_wrong_type():
+    """Raise TypeError if initialized with wrong device."""
+    with pytest.raises(TypeError) as err:
+        _ = USBCommunicator(42)
+    err_msg = err.value.args[0]
+    assert err_msg == "USBCommunicator must wrap a usb.core.Device object."
 
 
-@mock.patch(patch_path)
-def test_usbtmccomm_write_raw(mock_usbtmc):
-    comm = USBTMCCommunicator()
+def test_init_no_endpoints(dev):
+    """Initialize usb communicator without endpoints."""
+    # mock some behavior of the device required for initializing
+    dev.find.return_value.__class__ = usb.core.Device  # dev
 
-    comm.write_raw(b"mock")
-    comm._filelike.write_raw.assert_called_with(b"mock")
-
-
-@mock.patch(patch_path)
-def test_usbtmccomm_sendcmd(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm.write = mock.MagicMock()
-
-    comm._sendcmd("mock")
-    comm.write.assert_called_with("mock")
+    with pytest.raises(IOError) as err:
+        _ = USBCommunicator(dev)
+    err_msg = err.value.args[0]
+    assert err_msg == "USB endpoint not found."
 
 
-@mock.patch(patch_path)
-def test_usbtmccomm_query(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm._filelike.ask = mock.MagicMock(return_value="answer")
-
-    assert comm._query("mock") == "answer"
-    comm._filelike.ask.assert_called_with("mock", num=-1, encoding="utf-8")
-
-    comm._query("mock", size=10)
-    comm._filelike.ask.assert_called_with("mock", num=10, encoding="utf-8")
-
-
-@mock.patch(patch_path)
-def test_usbtmccomm_seek(mock_usbtmc):
+def test_address(inst):
+    """Address of device can not be read, nor written."""
     with pytest.raises(NotImplementedError):
-        comm = USBTMCCommunicator()
-        comm.seek(1)
+        _ = inst.address
+
+    with pytest.raises(ValueError) as err:
+        inst.address = 42
+
+    msg = err.value.args[0]
+    assert msg == "Unable to change USB target address."
 
 
-@mock.patch(patch_path)
-def test_usbtmccomm_tell(mock_usbtmc):
+def test_terminator(inst):
+    """Get / set terminator of instrument."""
+    assert inst.terminator == "\n"
+    inst.terminator = "\r\n"
+    assert inst.terminator == "\r\n"
+
+
+def test_terminator_wrong_type(inst):
+    """Raise TypeError when setting bad terminator."""
+    with pytest.raises(TypeError) as err:
+        inst.terminator = 42
+    msg = err.value.args[0]
+    assert msg == "Terminator for USBCommunicator must be specified as a " \
+                  "character string."
+
+
+@given(val=st.integers(min_value=1))
+def test_timeout_get(val, inst):
+    """Get a timeout from device (ms) and turn into s."""
+    # mock timeout value of device
+    inst._dev.default_timeout = val
+
+    ret_val = inst.timeout
+    assert ret_val == u.Quantity(val, u.ms).to(u.s)
+
+
+def test_timeout_set_unitless(inst):
+    """Set a timeout value from device unitless (s)."""
+    val = 1000
+    inst.timeout = val
+    set_val = inst._dev.default_timeout
+    exp_val = 1000 * val
+    assert set_val == exp_val
+
+
+def test_timeout_set_minutes(inst):
+    """Set a timeout value from device in minutes."""
+    val = 10
+    val_to_set = u.Quantity(val, u.min)
+    inst.timeout = val_to_set
+    set_val = inst._dev.default_timeout
+    exp_val = 1000 * 60 * val
+    assert set_val == exp_val
+
+
+@mock.patch(patch_util)
+def test_close(usb_util, inst):
+    """Close the connection, release instrument."""
+    inst.close()
+    inst._dev.reset.assert_called()
+    usb_util.dispose_resources.assert_called_with(inst._dev)
+
+
+def test_read_raw(inst):
+    """Read raw information from instrument."""
+    msg = b"message\n"
+    msg_exp = b"message"
+
+    inst._ep_in.read.return_value = msg
+
+    assert inst.read_raw() == msg_exp
+
+
+def test_read_raw_size(inst):
+    """If size is -1, read 1000 bytes."""
+    msg = b"message\n"
+    inst._ep_in.read.return_value = msg
+
+    _ = inst.read_raw(size=-1)
+    inst._ep_in.read.assert_called_with(1000)
+
+
+def test_read_raw_termination_char_not_found(inst):
+    """Raise IOError if termination character not found."""
+    msg = b"message"
+    inst._ep_in.read.return_value = msg
+    default_read_size = 1000
+
+    with pytest.raises(IOError) as err:
+        _ = inst.read_raw()
+    err_msg = err.value.args[0]
+    assert err_msg == f"Did not find the terminator in the returned " \
+                      f"string. Total size of {default_read_size} might " \
+                      f"not be enough."
+
+
+def test_write_raw(inst):
+    """Write a message to the instrument."""
+    msg = b"message\n"
+    inst.write_raw(msg)
+    inst._ep_out.write.assert_called_with(msg)
+
+
+def test_seek(inst):
+    """Raise NotImplementedError if `seek` is called."""
     with pytest.raises(NotImplementedError):
-        comm = USBTMCCommunicator()
-        comm.tell()
+        inst.seek(42)
 
 
-@mock.patch(patch_path)
-def test_usbtmccomm_flush_input(mock_usbtmc):
-    comm = USBTMCCommunicator()
-    comm.flush_input()
+def test_tell(inst):
+    """Raise NotImplementedError if `tell` is called."""
+    with pytest.raises(NotImplementedError):
+        inst.tell()
+
+
+def test_flush_input(inst):
+    """Flush the input out by trying to read until no more available."""
+    inst._ep_in.read.side_effect = [b"message\n", usb.core.USBTimeoutError]
+    inst.flush_input()
+    inst._ep_in.read.assert_called()
+
+
+def test_sendcmd(inst):
+    """Send a command."""
+    msg = "msg"
+    msg_to_send = f"msg{inst._terminator}"
+
+    inst.write = mock.MagicMock()
+
+    inst._sendcmd(msg)
+    inst.write.assert_called_with(msg_to_send)
+
+
+def test_query(inst):
+    """Query the instrument."""
+    msg = "msg"
+    size = 1000
+
+    inst.sendcmd = mock.MagicMock()
+    inst.read = mock.MagicMock()
+
+    inst._query(msg)
+    inst.sendcmd.assert_called_with(msg)
+    inst.read.assert_called_with(size)
