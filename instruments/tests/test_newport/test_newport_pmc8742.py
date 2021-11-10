@@ -495,7 +495,7 @@ def test_axis_home_position(val):
         assert axis.home_position == val
 
 
-@given(val=st.integers().filter(lambda x: not -2147483648 <= x <= 2147483647))
+@pytest.mark.parametrize("val", [-2147483649, 2147483648])
 def test_axis_home_position_value_error(val):
     """Raise ValueError if home position out of range."""
     with expected_protocol(
@@ -584,7 +584,7 @@ def test_axis_move_absolute(val):
         assert axis.move_absolute == val
 
 
-@given(val=st.integers().filter(lambda x: not -2147483648 <= x <= 2147483647))
+@pytest.mark.parametrize("val", [-2147483649, 2147483648])
 def test_axis_move_absolute_value_error(val):
     """Raise ValueError if move absolute out of range."""
     with expected_protocol(
@@ -619,7 +619,7 @@ def test_axis_move_relative(val):
         assert axis.move_relative == val
 
 
-@given(val=st.integers().filter(lambda x: not -2147483648 <= x <= 2147483647))
+@pytest.mark.parametrize("val", [-2147483649, 2147483648])
 def test_axis_move_relative_value_error(val):
     """Raise ValueError if move relative out of range."""
     with expected_protocol(
