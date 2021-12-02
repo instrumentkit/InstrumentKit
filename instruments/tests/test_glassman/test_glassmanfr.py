@@ -28,8 +28,12 @@ def set_defaults(inst):
 def test_channel():
     with expected_protocol(
         ik.glassman.GlassmanFR,
-        [],
-        [],
+        [
+            "\x01C174"
+        ],
+        [
+            "A"
+        ],
         '\r'
     ) as inst:
         assert len(inst.channel) == 1
@@ -39,10 +43,12 @@ def test_voltage():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01Q51",
             "\x01S3330000000001CD"
         ],
         [
+            "A",
             "R00000000000040",
             "A"
         ],
@@ -56,10 +62,12 @@ def test_current():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01Q51",
             "\x01S0003330000001CD"
         ],
         [
+            "A",
             "R00000000000040",
             "A"
         ],
@@ -73,9 +81,11 @@ def test_voltage_sense():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01Q51"
         ],
         [
+            "A",
             "R10A00000010053"
         ],
         '\r'
@@ -87,9 +97,11 @@ def test_current_sense():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01Q51"
         ],
         [
+            "A",
             "R0001550001004C"
         ],
         '\r'
@@ -101,10 +113,12 @@ def test_mode():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01Q51",
             "\x01Q51"
         ],
         [
+            "A",
             "R00000000000040",
             "R00000000010041"
         ],
@@ -117,12 +131,14 @@ def test_output():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01S0000000000001C4",
             "\x01Q51",
             "\x01S0000000000002C5",
             "\x01Q51"
         ],
         [
+            "A",
             "A",
             "R00000000000040",
             "A",
@@ -139,9 +155,11 @@ def test_version():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01V56"
         ],
         [
+            "A",
             "B1465"
         ],
         '\r'
@@ -152,10 +170,12 @@ def test_device_timeout():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01C073",
             "\x01C174"
         ],
         [
+            "A",
             "A",
             "A"
         ],
@@ -170,9 +190,12 @@ def test_sendcmd():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01123ABC5C"
         ],
-        [],
+        [
+            "A"
+        ],
         '\r'
     ) as inst:
         inst.sendcmd('123ABC')
@@ -181,9 +204,11 @@ def test_query():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01Q123ABCAD"
         ],
         [
+            "A",
             "R123ABC5C"
         ],
         '\r'
@@ -194,9 +219,11 @@ def test_reset():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01S0000000000004C7"
         ],
         [
+            "A",
             "A"
         ],
         '\r'
@@ -207,10 +234,12 @@ def test_set_status():
     with expected_protocol(
         ik.glassman.GlassmanFR,
         [
+            "\x01C174",
             "\x01S3333330000002D7",
             "\x01Q51"
         ],
         [
+            "A",
             "A",
             "R00000000040044"
         ],
