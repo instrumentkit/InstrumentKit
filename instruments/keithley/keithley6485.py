@@ -86,10 +86,6 @@ class Keithley6485(SCPIInstrument):
     )
 
     @property
-    def unit(self):
-        return u.amp
-
-    @property
     def auto_range(self):
         """
         Gets/sets the auto range setting
@@ -151,14 +147,15 @@ class Keithley6485(SCPIInstrument):
 
     # PRIVATE METHODS ##
 
-    def _parse_measurement(self, ascii):
-        # Split the string in three comma-separated parts (value, time, number of triggers)
-        vals = ascii.split(',')
-        reading = float(vals[0][:-1]) * self.unit
-        timestamp = float(vals[1]) * u.second
-        trigger_count = int(float(vals[2]))
-        return reading, timestamp, trigger_count
-
     @staticmethod
     def _valid_range():
         return (2e-9, 20e-9, 200e-9, 2e-6, 20e-6, 200e-6, 2e-3, 20e-3)
+
+    @staticmethod
+    def _parse_measurement(ascii):
+        # Split the string in three comma-separated parts (value, time, number of triggers)
+        vals = ascii.split(',')
+        reading = float(vals[0][:-1]) * u.amp
+        timestamp = float(vals[1]) * u.second
+        trigger_count = int(float(vals[2]))
+        return reading, timestamp, trigger_count

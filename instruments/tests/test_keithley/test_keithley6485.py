@@ -68,15 +68,6 @@ def test_zero_correct():
         inst.zero_correct = True
 
 
-def test_unit():
-    with expected_protocol(
-            ik.keithley.Keithley6485,
-            init_sequence,
-            []
-    ) as inst:
-        assert inst.unit == u.amp
-
-
 def test_auto_range():
     with expected_protocol(
             ik.keithley.Keithley6485,
