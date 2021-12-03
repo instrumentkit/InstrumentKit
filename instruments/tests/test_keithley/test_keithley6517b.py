@@ -32,10 +32,10 @@ def test_parse_measurement():
             "\"VOLT:DC\""
         ]
     ) as inst:
-        reading, timestamp, status = inst._parse_measurement("1.0N,1234s,5678R00000")
+        reading, timestamp, trigger_count = inst._parse_measurement("1.0N,1234s,5678R00000")
         assert reading == 1.0 * pq.volt
         assert timestamp == 1234
-        assert status == 5678
+        assert trigger_count == 5678
 
 
 def test_mode():

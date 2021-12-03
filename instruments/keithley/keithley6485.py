@@ -71,45 +71,7 @@ class Keithley6485(SCPIInstrument):
         self.reset()
         self.zero_check = False
 
-    # ENUMS ##
-
-    class TriggerMode(Enum):
-        """
-        Enum containing valid trigger modes for the Keithley 6485
-        """
-        immediate = 'IMM'
-        tlink = 'TLINK'
-
-    class ArmSource(Enum):
-        """
-        Enum containing valid trigger arming sources for the Keithley 6485
-        """
-        immediate = 'IMM'
-        timer = 'TIM'
-        bus = 'BUS'
-        tlink = 'TLIN'
-        stest = 'STES'
-        pstest = 'PST'
-        nstest = 'NST'
-        manual = 'MAN'
-
     # PROPERTIES ##
-
-    trigger_mode = enum_property(
-        'TRIGGER:SOURCE',
-        TriggerMode,
-        doc="""
-        Gets/sets the trigger mode of the Keithley 6485.
-        """
-    )
-
-    arm_source = enum_property(
-        'ARM:SOURCE',
-        ArmSource,
-        doc="""
-        Gets/sets the arm source of the Keithley 6485.
-        """
-    )
 
     zero_check = bool_property(
         'SYST:ZCH',
@@ -141,13 +103,13 @@ class Keithley6485(SCPIInstrument):
         :type: `bool`
         """
         # pylint: disable=no-member
-        out = self.query('{CURR:RANGE:AUTO?')
+        out = self.query('RANG:AUTO?')
         return out == '1'
 
     @auto_range.setter
     def auto_range(self, newval):
         # pylint: disable=no-member
-        self.sendcmd('CUUR:RANGE:AUTO {}'.format('1' if newval else '0'))
+        self.sendcmd('RANG:AUTO {}'.format('1' if newval else '0'))
 
     @property
     def input_range(self):
@@ -157,17 +119,17 @@ class Keithley6485(SCPIInstrument):
         :type: `~quantities.Quantity`
         """
         # pylint: disable=no-member
-        out = self.query('CUUR:RANGE:UPPER?')
+        out = self.query('RANG?')
         return float(out) * pq.amp
 
     @input_range.setter
     def input_range(self, newval):
         # pylint: disable=no-member
         val = newval.rescale(pq.amp).item()
-        if val not in self._valid_range().value:
+        if val not in self._valid_range():
             raise ValueError(
                 'Unexpected range limit for currently selected mode.')
-        self.sendcmd('{}:RANGE:UPPER {:e}'.format(mode.value, val))
+        self.sendcmd('RANG {:e}'.format(val))
 
     # METHODS ##
 
