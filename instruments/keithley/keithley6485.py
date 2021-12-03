@@ -33,11 +33,9 @@ Kit project.
 
 # IMPORTS #####################################################################
 
-from enum import Enum
-
 from instruments.generic_scpi import SCPIInstrument
 from instruments.units import ureg as u
-from instruments.util_fns import bool_property, enum_property
+from instruments.util_fns import bool_property
 
 # CLASSES #####################################################################
 
@@ -144,7 +142,7 @@ class Keithley6485(SCPIInstrument):
         """
         return self._parse_measurement(self.query('READ?'))
 
-    def measure(self, mode=None):
+    def measure(self):
         """
         Trigger and acquire readings.
         Returns the measurement reading only.
@@ -153,9 +151,6 @@ class Keithley6485(SCPIInstrument):
 
     # PRIVATE METHODS ##
 
-    def _valid_range(self):
-        return (2e-9, 20e-9, 200e-9, 2e-6, 20e-6, 200e-6, 2e-3, 20e-3)
-
     def _parse_measurement(self, ascii):
         # Split the string in three comma-separated parts (value, time, number of triggers)
         vals = ascii.split(',')
@@ -163,3 +158,7 @@ class Keithley6485(SCPIInstrument):
         timestamp = float(vals[1]) * u.second
         trigger_count = int(float(vals[2]))
         return reading, timestamp, trigger_count
+
+    @staticmethod
+    def _valid_range():
+        return (2e-9, 20e-9, 200e-9, 2e-6, 20e-6, 200e-6, 2e-3, 20e-3)
