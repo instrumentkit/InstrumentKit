@@ -14,19 +14,24 @@ Contents:
     instrument
     generic_scpi
     agilent
+    fluke
+    gentec-eo
+    glassman
     holzworth
     hp
     keithley
     lakeshore
+    minghe
     newport
-    other
+    ondax
     oxford
     phasematrix
     picowatt
     qubitekk
     rigol
     srs
-    tektronix  
+    tektronix
+    teledyne
     thorlabs
     toptica
     yokogawa

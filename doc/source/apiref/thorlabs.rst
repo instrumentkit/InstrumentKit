@@ -21,6 +21,10 @@ ThorLabs
     :members:
     :undoc-members:
 
+.. autoclass:: APTPiezoInertiaActuator
+    :members:
+    :undoc-members:
+
 .. autoclass:: APTPiezoStage
     :members:
     :undoc-members:

@@ -1,4 +1,4 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # hpe3631a.py: Driver for the HP E3631A Power Supply
@@ -33,11 +33,9 @@ Kit project.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 import time
 
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import (
     PowerSupply,
@@ -91,9 +89,9 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         self._device_timeout = 0.1  # [s], device timeout at each set command
         self.sendcmd('SYST:REM')    # Puts the device in remote operation
 
-    # INNER CLASSES ##
+    # INNER CLASSES #
 
-    class Channel(object):
+    class Channel:
         """
         Class representing a power output channel on the HPe3631a.
 
@@ -143,7 +141,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         is lower than I. If the load is smaller than V/I, the set current
         I acts as a current limiter and the voltage is lower than V.
         """
-        return AttributeError('The `HPe3631a` sets its mode automatically')
+        raise AttributeError("The `HPe3631a` sets its mode automatically")
 
     channelid = int_property(
         "INST:NSEL",
@@ -157,23 +155,23 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
     @property
     def voltage(self):
-        '''
+        """
         Gets/sets the output voltage of the source.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
-        '''
-        raw = self.query('SOUR:VOLT?')
-        return pq.Quantity(*split_unit_str(raw, pq.volt)).rescale(pq.volt)
+        :type: `float` or `~pint.Quantity`
+        """
+        raw = self.query("SOUR:VOLT?")
+        return u.Quantity(*split_unit_str(raw, u.volt)).to(u.volt)
 
     @voltage.setter
     def voltage(self, newval):
-        '''
+        """
         Gets/sets the output voltage of the source.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
-        '''
+        :type: `float` or `~pint.Quantity`
+        """
         min_value, max_value = self.voltage_range
         if newval < min_value:
             raise ValueError("Voltage quantity is too low. Got {}, minimum "
@@ -185,7 +183,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
-        strval = '{:e}'.format(assume_units(newval, pq.volt).rescale(pq.volt).item())
+        strval = "{:e}".format(assume_units(newval, u.volt).to(u.volt).magnitude)
         self.sendcmd('SOUR:VOLT {}'.format(strval))
 
     @property
@@ -194,7 +192,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets the minimum voltage for the current channel.
 
         :units: :math:`\\text{V}`.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.voltage_range[0]
 
@@ -204,7 +202,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets the maximum voltage for the current channel.
 
         :units: :math:`\\text{V}`.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self.voltage_range[1]
 
@@ -219,47 +217,47 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         order the values as MAX can be negative.
 
         :units: :math:`\\text{V}`.
-        :type: array of `~quantities.Quantity`
+        :type: array of `~pint.Quantity`
         """
-        value = pq.Quantity(*split_unit_str(self.query('SOUR:VOLT? MAX'), pq.volt))
+        value = u.Quantity(*split_unit_str(self.query("SOUR:VOLT? MAX"), u.volt))
         if value < 0.:
-            return (value, 0.)
-        return (0., value)
+            return value, 0.
+        return 0., value
 
     current, current_min, current_max = bounded_unitful_property(
         "SOUR:CURR",
-        pq.amp,
+        u.amp,
         min_fmt_str="{}? MIN",
         max_fmt_str="{}? MAX",
         doc="""
         Gets/sets the output current of the source.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
     voltage_sense = unitful_property(
         "MEAS:VOLT",
-        pq.volt,
+        u.volt,
         readonly=True,
         doc="""
         Gets the actual output voltage as measured by the sense wires.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 
     current_sense = unitful_property(
         "MEAS:CURR",
-        pq.amp,
+        u.amp,
         readonly=True,
         doc="""
         Gets the actual output current as measured by the sense wires.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 

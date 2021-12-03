@@ -8,17 +8,13 @@ Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-
-from builtins import range, map
 from enum import IntEnum, Enum
 
-import quantities as pq
-
 from instruments.abstract_instruments import Instrument
-from instruments.util_fns import convert_temperature
-from instruments.util_fns import enum_property, unitful_property, int_property
+from instruments.units import ureg as u
+from instruments.util_fns import (
+    convert_temperature, enum_property, unitful_property, int_property
+)
 
 # CLASSES #####################################################################
 
@@ -111,7 +107,7 @@ class TC200(Instrument):
         :type: `bool`
         """
         response = self.status
-        return True if int(response) % 2 is 1 else False
+        return True if int(response) % 2 == 1 else False
 
     @enable.setter
     def enable(self, newval):
@@ -151,34 +147,34 @@ class TC200(Instrument):
 
     temperature = unitful_property(
         "tact",
-        units=pq.degC,
+        units=u.degC,
         readonly=True,
         input_decoration=lambda x: x.replace(
             " C", "").replace(" F", "").replace(" K", ""),
         doc="""
         Gets the actual temperature of the sensor
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units degrees C.
-        :type: `~quantities.quantity.Quantity` or `int`
+        :type: `~pint.Quantity` or `int`
         :return: the temperature (in degrees C)
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
     max_temperature = unitful_property(
         "tmax",
-        units=pq.degC,
+        units=u.degC,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(20*pq.degC, 205*pq.degC),
+        valid_range=(u.Quantity(20, u.degC), u.Quantity(205, u.degC)),
         doc="""
         Gets/sets the maximum temperature
 
         :return: the maximum temperature (in deg C)
         :units: As specified or assumed to be degree Celsius. Returns with
             units degC.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
@@ -187,23 +183,23 @@ class TC200(Instrument):
         """
         Gets/sets the actual temperature of the sensor
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units degrees C.
-        :type: `~quantities.quantity.Quantity` or `int`
+        :type: `~pint.Quantity` or `int`
         :return: the temperature (in degrees C)
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         response = self.query("tset?").replace(
             " C", "").replace(" F", "").replace(" K", "")
-        return float(response) * pq.degC
+        return u.Quantity(float(response), u.degC)
 
     @temperature_set.setter
     def temperature_set(self, newval):
         # the set temperature is always in celsius
-        newval = convert_temperature(newval, pq.degC).magnitude
-        if newval < 20.0 or newval > self.max_temperature:
+        newval = convert_temperature(newval, u.degC)
+        if newval < u.Quantity(20.0, u.degC) or newval > self.max_temperature:
             raise ValueError("Temperature set is out of range.")
-        out_query = "tset={}".format(newval)
+        out_query = "tset={}".format(newval.magnitude)
         self.sendcmd(out_query)
 
     @property
@@ -285,23 +281,23 @@ class TC200(Instrument):
         Gets/sets the units of the temperature measurement.
 
         :return: The temperature units (degC/F/K) the TC200 is measuring in
-        :type: `~quantities.unitquantity.UnitTemperature`
+        :type: `~pint.Unit`
         """
         response = self.status
         if (response >> 4) % 2 and (response >> 5) % 2:
-            return pq.degC
+            return u.degC
         elif (response >> 5) % 2:
-            return pq.degK
+            return u.degK
 
-        return pq.degF
+        return u.degF
 
     @degrees.setter
     def degrees(self, newval):
-        if newval is pq.degC:
+        if newval == u.degC:
             self.sendcmd("unit=c")
-        elif newval is pq.degF:
+        elif newval == u.degF:
             self.sendcmd("unit=f")
-        elif newval is pq.degK:
+        elif newval == u.degK:
             self.sendcmd("unit=k")
         else:
             raise TypeError("Invalid temperature type")
@@ -337,15 +333,15 @@ class TC200(Instrument):
 
     max_power = unitful_property(
         "pmax",
-        units=pq.W,
+        units=u.W,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(0.1*pq.W, 18.0*pq.W),
+        valid_range=(0.1*u.W, 18.0*u.W),
         doc="""
         Gets/sets the maximum power
 
         :return: The maximum power
         :units: Watts (linear units)
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
     )

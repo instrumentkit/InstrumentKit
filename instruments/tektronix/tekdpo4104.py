@@ -6,20 +6,16 @@ Provides support for the Tektronix DPO 4104 oscilloscope
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 from time import sleep
-from builtins import range, map
-
 from enum import Enum
-import numpy as np
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
     OscilloscopeDataSource,
     Oscilloscope,
 )
+from instruments.optional_dep_finder import numpy
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList
 
@@ -37,7 +33,7 @@ def _parent_property(prop_name, doc=""):
     def setter(self, newval):
         with self:
             # pylint: disable=protected-access
-            setattr(self._tek, prop_name, doc)
+            setattr(self._tek, prop_name, newval)
 
     return property(getter, setter, doc=doc)
 
@@ -99,6 +95,8 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
 
         :param bool bin_format: If `True`, data is transfered
             in a binary format. Otherwise, data is transferred in ASCII.
+        :rtype: `tuple`[`tuple`[`~pint.Quantity`, ...], `tuple`[`~pint.Quantity`, ...]]
+            or if numpy is installed, `tuple` of two `~pint.Quantity` with `numpy.array` data
         """
 
         # Set the acquisition channel
@@ -114,8 +112,10 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
                 sleep(0.02)  # Work around issue with 2.48 firmware.
                 raw = self._tek.query("CURVE?")
                 raw = raw.split(",")  # Break up comma delimited string
-                raw = map(float, raw)  # Convert each list element to int
-                raw = np.array(raw)  # Convert into numpy array
+                if numpy:
+                    raw = numpy.array(raw, dtype=numpy.float)  # Convert to numpy array
+                else:
+                    raw = map(float, raw)
             else:
                 # Set encoding to signed, big-endian
                 self._tek.sendcmd("DAT:ENC RIB")
@@ -124,19 +124,24 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
                 self._tek.sendcmd("CURVE?")
                 # Read in the binary block, data width of 2 bytes.
                 raw = self._tek.binblockread(data_width)
+                # Read the new line character that is sent
+                self._tek._file.read_raw(1)  # pylint: disable=protected-access
 
             yoffs = self._tek.y_offset  # Retrieve Y offset
             ymult = self._tek.query("WFMP:YMU?")  # Retrieve Y multiplier
             yzero = self._tek.query("WFMP:YZE?")  # Retrieve Y zero
-
-            y = ((raw - yoffs) * float(ymult)) + float(yzero)
 
             xzero = self._tek.query("WFMP:XZE?")  # Retrieve X zero
             xincr = self._tek.query("WFMP:XIN?")  # Retrieve X incr
             # Retrieve number of data points
             ptcnt = self._tek.query("WFMP:NR_P?")
 
-            x = np.arange(float(ptcnt)) * float(xincr) + float(xzero)
+            if numpy:
+                x = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
+                y = ((raw - yoffs) * float(ymult)) + float(yzero)
+            else:
+                x = tuple([float(val) * float(xincr) + float(xzero) for val in range(int(ptcnt))])
+                y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
 
             self._tek.sendcmd("DAT:STOP {}".format(old_dat_stop))
 

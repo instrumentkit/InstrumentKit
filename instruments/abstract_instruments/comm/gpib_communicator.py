@@ -7,17 +7,12 @@ Industries or Prologix GPIB adapter.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
+from enum import Enum
 import io
 import time
 
-from enum import Enum
-
-from builtins import chr, str, bytes
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -49,7 +44,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         self._terminator = None
         self.terminator = "\n"
         self._eoi = True
-        self._timeout = 1000 * pq.millisecond
+        self._timeout = 1000 * u.millisecond
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             self._eos = 10
         else:
@@ -103,22 +98,22 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         Gets/sets the timeeout of both the GPIB bus and the connection
         channel between the PC and the GPIB adapter.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified, or assumed to be of units ``seconds``
         """
         return self._timeout
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second)
+        newval = assume_units(newval, u.second)
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
-            newval = newval.rescale(pq.second)
+            newval = newval.to(u.second)
             self._file.sendcmd('+t:{}'.format(int(newval.magnitude)))
         else:
-            newval = newval.rescale(pq.millisecond)
+            newval = newval.to(u.millisecond)
             self._file.sendcmd("++read_tmo_ms {}".format(int(newval.magnitude)))
-        self._file.timeout = newval.rescale(pq.second)
-        self._timeout = newval.rescale(pq.second)
+        self._file.timeout = newval.to(u.second)
+        self._timeout = newval.to(u.second)
 
     @property
     def terminator(self):
@@ -326,9 +321,9 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if msg == '':
             return
         if self._model == GPIBCommunicator.Model.gi:
-            self._file.sendcmd('+a:' + str(self._gpib_address))
+            self._file.sendcmd("+a:{0}".format(str(self._gpib_address)))
         else:
-            self._file.sendcmd('++addr ' + str(self._gpib_address))
+            self._file.sendcmd("++addr {0}".format(str(self._gpib_address)))
         time.sleep(sleep_time)
         self.eoi = self.eoi
         time.sleep(sleep_time)

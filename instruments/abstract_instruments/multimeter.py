@@ -6,19 +6,15 @@ Provides an abstract base class for multimeter instruments
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import abc
-
-from future.utils import with_metaclass
 
 from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
 
-class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
+class Multimeter(Instrument, metaclass=abc.ABCMeta):
 
     """
     Abstract base class for multimeter instruments.
@@ -38,7 +34,6 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @mode.setter
     @abc.abstractmethod
@@ -54,7 +49,6 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @trigger_mode.setter
     @abc.abstractmethod
@@ -70,7 +64,6 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `bool`
         """
-        pass
 
     @relative.setter
     @abc.abstractmethod
@@ -84,9 +77,8 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
         Gets/sets the current input range setting of the multimeter.
         This is an abstract method.
 
-        :type: `~quantities.quantity.Quantity` or `~enum.Enum`
+        :type: `~pint.Quantity` or `~enum.Enum`
         """
-        pass
 
     @input_range.setter
     @abc.abstractmethod
@@ -100,4 +92,3 @@ class Multimeter(with_metaclass(abc.ABCMeta, Instrument)):
         """
         Perform a measurement as specified by mode parameter.
         """
-        pass

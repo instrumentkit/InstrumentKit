@@ -34,3 +34,10 @@ Hewlett-Packard
 .. autoclass:: HP6652a
     :members:
     :undoc-members:
+
+:class:`HPe3631a` Power Supply
+==============================
+
+.. autoclass:: HPe3631a
+    :members:
+    :undoc-members:

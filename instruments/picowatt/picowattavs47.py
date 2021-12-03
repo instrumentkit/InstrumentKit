@@ -6,15 +6,10 @@ Provides support for the Picowatt AVS 47 resistance bridge
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-
-from builtins import range
 from enum import IntEnum
 
-import quantities as pq
-
 from instruments.generic_scpi import SCPIInstrument
+from instruments.units import ureg as u
 from instruments.util_fns import (enum_property, bool_property, int_property,
                                   ProxyList)
 
@@ -40,7 +35,7 @@ class PicowattAVS47(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Sensor(object):
+    class Sensor:
 
         """
         Class representing a sensor on the PicowattAVS47
@@ -60,7 +55,7 @@ class PicowattAVS47(SCPIInstrument):
             reading is up to date by first sending the "ADC" command.
 
             :units: :math:`\\Omega` (ohms)
-            :rtype: `~quantities.Quantity`
+            :rtype: `~pint.Quantity`
             """
             # First make sure the mux is on the correct channel
             if self._parent.mux_channel != self._idx:
@@ -69,7 +64,7 @@ class PicowattAVS47(SCPIInstrument):
                 self._parent.input_source = self._parent.InputSource.actual
             # Next, prep a measurement with the ADC command
             self._parent.sendcmd("ADC")
-            return float(self._parent.query("RES?")) * pq.ohm
+            return float(self._parent.query("RES?")) * u.ohm
 
     # ENUMS #
 

@@ -6,12 +6,11 @@ Unit tests for the socket communication layer
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import socket
 
 import pytest
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.comm import SocketCommunicator
 from instruments.tests import unit_eq
@@ -73,13 +72,13 @@ def test_socketcomm_timeout():
     comm._conn = mock.MagicMock()
     comm._conn.gettimeout.return_value = 1.234
 
-    unit_eq(comm.timeout, 1.234 * pq.second)
+    unit_eq(comm.timeout, 1.234 * u.second)
     comm._conn.gettimeout.assert_called_with()
 
     comm.timeout = 10
     comm._conn.settimeout.assert_called_with(10)
 
-    comm.timeout = 1000 * pq.millisecond
+    comm.timeout = 1000 * u.millisecond
     comm._conn.settimeout.assert_called_with(1)
 
 

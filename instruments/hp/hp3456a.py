@@ -32,16 +32,11 @@ Kit project.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 import time
-from builtins import range
-
 from enum import Enum, IntEnum
 
-import quantities as pq
-
 from instruments.abstract_instruments import Multimeter
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units, bool_property, enum_property
 
 # CLASSES #####################################################################
@@ -67,7 +62,7 @@ class HP3456a(Multimeter):
         communication.
         """
         super(HP3456a, self).__init__(filelike)
-        self.timeout = 15 * pq.second
+        self.timeout = 15 * u.second
         self.terminator = "\r"
         self.sendcmd("HO0T4SO1")
         self._null = False
@@ -298,11 +293,11 @@ class HP3456a(Multimeter):
         :rtype: `~quantaties.Quantity.s`
 
         """
-        return self._register_read(HP3456a.Register.delay) * pq.s
+        return self._register_read(HP3456a.Register.delay) * u.s
 
     @delay.setter
     def delay(self, value):
-        delay = assume_units(value, pq.s).rescale(pq.s).magnitude
+        delay = assume_units(value, u.s).to(u.s).magnitude
         self._register_write(HP3456a.Register.delay, delay)
 
     @property
@@ -417,11 +412,11 @@ class HP3456a(Multimeter):
     def input_range(self):
         """Set the input range to be used.
 
-        The `HP3456a` has separate ranges for `~quantities.ohm` and for
-        `~quantities.volt`. The range value sent to the instrument depends on
+        The `HP3456a` has separate ranges for `ohm` and for
+        `volt`. The range value sent to the instrument depends on
         the unit set on the input range value. `auto` selects auto ranging.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         raise NotImplementedError
 
@@ -434,18 +429,18 @@ class HP3456a(Multimeter):
                 raise ValueError("Only 'auto' is acceptable when specifying "
                                  "the input range as a string.")
 
-        elif isinstance(value, pq.quantity.Quantity):
-            if value.units == pq.volt:
+        elif isinstance(value, u.Quantity):
+            if value.units == u.volt:
                 valid = HP3456a.ValidRange.voltage.value
-                value = value.rescale(pq.volt)
-            elif value.units == pq.ohm:
+                value = value.to(u.volt)
+            elif value.units == u.ohm:
                 valid = HP3456a.ValidRange.resistance.value
-                value = value.rescale(pq.ohm)
+                value = value.to(u.ohm)
             else:
                 raise ValueError("Value {} not quantity.volt or quantity.ohm"
                                  "".format(value))
 
-            value = float(value)
+            value = float(value.magnitude)
             if value not in valid:
                 raise ValueError("Value {} outside valid ranges "
                                  "{}".format(value, valid))
@@ -513,7 +508,7 @@ class HP3456a(Multimeter):
         :type mode: `HP3456a.Mode`
 
         :return: A series of measurements from the multimeter.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         if mode is not None:
             units = UNITS[mode]
@@ -547,7 +542,7 @@ class HP3456a(Multimeter):
         :type mode: `HP3456a.Mode`
 
         :return: A measurement from the multimeter.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
 
         """
         if mode is not None:
@@ -579,8 +574,7 @@ class HP3456a(Multimeter):
                             "HP3456a.Register, got {} "
                             "instead.".format(name))
         self.sendcmd("RE{}".format(name.value))
-        if not self._testing:  # pragma: no cover
-            time.sleep(.1)
+        time.sleep(.1)
         return float(self.query("", size=-1))
 
     def _register_write(self, name, value):
@@ -606,8 +600,7 @@ class HP3456a(Multimeter):
         ]:
             raise ValueError("register {} is read only".format(name))
         self.sendcmd("W{}ST{}".format(value, name.value))
-        if not self._testing:  # pragma: no cover
-            time.sleep(.1)
+        time.sleep(.1)
 
     def trigger(self):
         """
@@ -619,14 +612,14 @@ class HP3456a(Multimeter):
 
 UNITS = {
     None: 1,
-    HP3456a.Mode.dcv: pq.volt,
-    HP3456a.Mode.acv: pq.volt,
-    HP3456a.Mode.acvdcv: pq.volt,
-    HP3456a.Mode.resistance_2wire: pq.ohm,
-    HP3456a.Mode.resistance_4wire: pq.ohm,
+    HP3456a.Mode.dcv: u.volt,
+    HP3456a.Mode.acv: u.volt,
+    HP3456a.Mode.acvdcv: u.volt,
+    HP3456a.Mode.resistance_2wire: u.ohm,
+    HP3456a.Mode.resistance_4wire: u.ohm,
     HP3456a.Mode.ratio_dcv_dcv: 1,
     HP3456a.Mode.ratio_acv_dcv: 1,
     HP3456a.Mode.ratio_acvdcv_dcv: 1,
-    HP3456a.Mode.oc_resistence_2wire: pq.ohm,
-    HP3456a.Mode.oc_resistence_4wire: pq.ohm,
+    HP3456a.Mode.oc_resistence_2wire: u.ohm,
+    HP3456a.Mode.oc_resistence_4wire: u.ohm,
 }

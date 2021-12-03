@@ -1,7 +1,7 @@
 attrs>=19.2.0
 mock
-pytest>=4.6.6
+pytest==6.1.1
 pytest-mock
-hypothesis
-pylint==1.7.1
-astroid==1.5.3
+hypothesis==4.28.2
+pylint==2.4.4
+pyvisa-sim

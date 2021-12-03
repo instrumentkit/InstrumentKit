@@ -33,14 +33,10 @@ Kit project.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-
 from enum import Enum
 
-import quantities as pq
-
 from instruments.generic_scpi import SCPIInstrument
+from instruments.units import ureg as u
 from instruments.util_fns import bool_property, enum_property
 
 # CLASSES #####################################################################
@@ -57,10 +53,10 @@ class Keithley6485(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> dmm = ik.keithley.Keithley6485.open_serial('/dev/ttyUSB0', baud=9600)
     >>> dmm.measure()
-    array(0.000123) * pq.amp
+    <Quantity(0.000123, 'ampere')>
     """
 
     def __init__(self, filelike):
@@ -93,7 +89,7 @@ class Keithley6485(SCPIInstrument):
 
     @property
     def unit(self):
-        return pq.amp
+        return u.amp
 
     @property
     def auto_range(self):
@@ -116,16 +112,16 @@ class Keithley6485(SCPIInstrument):
         """
         Gets/sets the upper limit of the current range.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         # pylint: disable=no-member
         out = self.query('RANG?')
-        return float(out) * pq.amp
+        return float(out) * u.amp
 
     @input_range.setter
     def input_range(self, newval):
         # pylint: disable=no-member
-        val = newval.rescale(pq.amp).item()
+        val = newval.to(u.amp).magnitude
         if val not in self._valid_range():
             raise ValueError(
                 'Unexpected range limit for currently selected mode.')
@@ -164,6 +160,6 @@ class Keithley6485(SCPIInstrument):
         # Split the string in three comma-separated parts (value, time, number of triggers)
         vals = ascii.split(',')
         reading = float(vals[0][:-1]) * self.unit
-        timestamp = float(vals[1]) * pq.second
+        timestamp = float(vals[1]) * u.second
         trigger_count = int(float(vals[2]))
         return reading, timestamp, trigger_count

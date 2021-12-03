@@ -6,7 +6,6 @@ Module containing tests for named structures.
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import, unicode_literals
 
 from unittest import TestCase
 
@@ -16,6 +15,7 @@ import hypothesis.strategies as st
 from instruments.named_struct import (
     Field, StringField, Padding, NamedStruct
 )
+
 
 # TESTS ######################################################################
 
@@ -33,7 +33,6 @@ class TestNamedStruct(TestCase):
         foo = Foo(a=var1, b=var2)
         assert Foo.unpack(foo.pack()) == foo
 
-
     def test_str(self):
         class Foo(NamedStruct):
             a = StringField(8, strip_null=False)
@@ -47,7 +46,6 @@ class TestNamedStruct(TestCase):
         self.assertEqual(foo.a, '0123456\x00')
         self.assertEqual(foo.b, 'abc')
         self.assertEqual(foo.c, u'α')
-
 
     def test_negative_len(self):
         """

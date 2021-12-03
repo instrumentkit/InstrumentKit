@@ -6,13 +6,14 @@ Unit tests for the HP 6624a power supply
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-
-import quantities as pq
 import pytest
 
 import instruments as ik
-from instruments.tests import expected_protocol
+from instruments.tests import (
+    expected_protocol,
+    iterable_eq,
+)
+from instruments.units import ureg as u
 from .. import mock
 
 # TESTS #######################################################################
@@ -22,10 +23,10 @@ from .. import mock
 
 def test_channel_returns_inner_class():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [],
-        [],
-        sep="\n"
+            ik.hp.HP6624a,
+            [],
+            [],
+            sep="\n"
     ) as hp:
         channel = hp.channel[0]
         assert isinstance(channel, hp.Channel) is True
@@ -58,93 +59,108 @@ def test_channel_query():
     assert value == "FOO"
 
 
+def test_mode():
+    """Raise NotImplementedError when mode is called."""
+    with expected_protocol(
+            ik.hp.HP6624a,
+            [],
+            [],
+            sep="\n"
+    ) as hp:
+        channel = hp.channel[0]
+        with pytest.raises(NotImplementedError):
+            _ = channel.mode
+        with pytest.raises(NotImplementedError):
+            channel.mode = 42
+
+
 def test_channel_voltage():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "VSET? 1",
-            "VSET 1,{:.1f}".format(5)
-        ],
-        [
-            "2"
-        ],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "VSET? 1",
+                "VSET 1,{:.1f}".format(5)
+            ],
+            [
+                "2"
+            ],
+            sep="\n"
     ) as hp:
-        assert hp.channel[0].voltage == 2 * pq.V
-        hp.channel[0].voltage = 5 * pq.V
+        assert hp.channel[0].voltage == 2 * u.V
+        hp.channel[0].voltage = 5 * u.V
 
 
 def test_channel_current():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "ISET? 1",
-            "ISET 1,{:.1f}".format(5)
-        ],
-        [
-            "2"
-        ],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "ISET? 1",
+                "ISET 1,{:.1f}".format(5)
+            ],
+            [
+                "2"
+            ],
+            sep="\n"
     ) as hp:
-        assert hp.channel[0].current == 2 * pq.amp
-        hp.channel[0].current = 5 * pq.amp
+        assert hp.channel[0].current == 2 * u.amp
+        hp.channel[0].current = 5 * u.amp
 
 
 def test_channel_voltage_sense():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "VOUT? 1"
-        ],
-        [
-            "2"
-        ],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "VOUT? 1"
+            ],
+            [
+                "2"
+            ],
+            sep="\n"
     ) as hp:
-        assert hp.channel[0].voltage_sense == 2 * pq.V
+        assert hp.channel[0].voltage_sense == 2 * u.V
 
 
 def test_channel_current_sense():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "IOUT? 1",
-        ],
-        [
-            "2"
-        ],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "IOUT? 1",
+            ],
+            [
+                "2"
+            ],
+            sep="\n"
     ) as hp:
-        assert hp.channel[0].current_sense == 2 * pq.A
+        assert hp.channel[0].current_sense == 2 * u.A
 
 
 def test_channel_overvoltage():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "OVSET? 1",
-            "OVSET 1,{:.1f}".format(5)
-        ],
-        [
-            "2"
-        ],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "OVSET? 1",
+                f"OVSET 1,{5:.1f}"
+            ],
+            [
+                "2"
+            ],
+            sep="\n"
     ) as hp:
-        assert hp.channel[0].overvoltage == 2 * pq.V
-        hp.channel[0].overvoltage = 5 * pq.V
+        assert hp.channel[0].overvoltage == 2 * u.V
+        hp.channel[0].overvoltage = 5 * u.V
 
 
 def test_channel_overcurrent():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "OVP? 1",
-            "OVP 1,1"
-        ],
-        [
-            "1"
-        ],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "OVP? 1",
+                "OVP 1,1"
+            ],
+            [
+                "1"
+            ],
+            sep="\n"
     ) as hp:
         assert hp.channel[0].overcurrent is True
         hp.channel[0].overcurrent = True
@@ -152,15 +168,15 @@ def test_channel_overcurrent():
 
 def test_channel_output():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "OUT? 1",
-            "OUT 1,1"
-        ],
-        [
-            "1"
-        ],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "OUT? 1",
+                "OUT 1,1"
+            ],
+            [
+                "1"
+            ],
+            sep="\n"
     ) as hp:
         assert hp.channel[0].output is True
         hp.channel[0].output = True
@@ -176,170 +192,170 @@ def test_channel_reset():
 
 def test_all_voltage():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "VSET? 1",
-            "VSET? 2",
-            "VSET? 3",
-            "VSET? 4",
+            ik.hp.HP6624a,
+            [
+                "VSET? 1",
+                "VSET? 2",
+                "VSET? 3",
+                "VSET? 4",
 
-            "VSET 1,{:.1f}".format(5),
-            "VSET 2,{:.1f}".format(5),
-            "VSET 3,{:.1f}".format(5),
-            "VSET 4,{:.1f}".format(5),
+                "VSET 1,{:.1f}".format(5),
+                "VSET 2,{:.1f}".format(5),
+                "VSET 3,{:.1f}".format(5),
+                "VSET 4,{:.1f}".format(5),
 
-            "VSET 1,{:.1f}".format(1),
-            "VSET 2,{:.1f}".format(2),
-            "VSET 3,{:.1f}".format(3),
-            "VSET 4,{:.1f}".format(4)
-        ],
-        [
-            "2",
-            "3",
-            "4",
-            "5"
-        ],
-        sep="\n"
+                "VSET 1,{:.1f}".format(1),
+                "VSET 2,{:.1f}".format(2),
+                "VSET 3,{:.1f}".format(3),
+                "VSET 4,{:.1f}".format(4)
+            ],
+            [
+                "2",
+                "3",
+                "4",
+                "5"
+            ],
+            sep="\n"
     ) as hp:
-        assert sorted(hp.voltage) == sorted((2, 3, 4, 5) * pq.V)
-        hp.voltage = 5 * pq.V
-        hp.voltage = (1 * pq.V, 2 * pq.V, 3 * pq.V, 4 * pq.V)
+        expected = (2 * u.V, 3 * u.V, 4 * u.V, 5 * u.V)
+        iterable_eq(hp.voltage, expected)
+        hp.voltage = 5 * u.V
+        hp.voltage = (1 * u.V, 2 * u.V, 3 * u.V, 4 * u.V)
 
 
 def test_all_voltage_wrong_length():
-    with pytest.raises(ValueError):
-        with expected_protocol(
+    with pytest.raises(ValueError), expected_protocol(
             ik.hp.HP6624a,
             [],
             [],
             sep="\n"
-        ) as hp:
-            hp.voltage = (1 * pq.volt, 2 * pq.volt)
+    ) as hp:
+        hp.voltage = (1 * u.volt, 2 * u.volt)
 
 
 def test_all_current():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "ISET? 1",
-            "ISET? 2",
-            "ISET? 3",
-            "ISET? 4",
+            ik.hp.HP6624a,
+            [
+                "ISET? 1",
+                "ISET? 2",
+                "ISET? 3",
+                "ISET? 4",
 
-            "ISET 1,{:.1f}".format(5),
-            "ISET 2,{:.1f}".format(5),
-            "ISET 3,{:.1f}".format(5),
-            "ISET 4,{:.1f}".format(5),
+                "ISET 1,{:.1f}".format(5),
+                "ISET 2,{:.1f}".format(5),
+                "ISET 3,{:.1f}".format(5),
+                "ISET 4,{:.1f}".format(5),
 
-            "ISET 1,{:.1f}".format(1),
-            "ISET 2,{:.1f}".format(2),
-            "ISET 3,{:.1f}".format(3),
-            "ISET 4,{:.1f}".format(4)
-        ],
-        [
-            "2",
-            "3",
-            "4",
-            "5"
-        ],
-        sep="\n"
+                "ISET 1,{:.1f}".format(1),
+                "ISET 2,{:.1f}".format(2),
+                "ISET 3,{:.1f}".format(3),
+                "ISET 4,{:.1f}".format(4)
+            ],
+            [
+                "2",
+                "3",
+                "4",
+                "5"
+            ],
+            sep="\n"
     ) as hp:
-        assert sorted(hp.current) == sorted((2, 3, 4, 5) * pq.A)
-        hp.current = 5 * pq.A
-        hp.current = (1 * pq.A, 2 * pq.A, 3 * pq.A, 4 * pq.A)
+        expected = (2 * u.A, 3 * u.A, 4 * u.A, 5 * u.A)
+        iterable_eq(hp.current, expected)
+        hp.current = 5 * u.A
+        hp.current = (1 * u.A, 2 * u.A, 3 * u.A, 4 * u.A)
 
 
 def test_all_current_wrong_length():
-    with pytest.raises(ValueError):
-        with expected_protocol(
+    with pytest.raises(ValueError), expected_protocol(
             ik.hp.HP6624a,
             [],
             [],
             sep="\n"
-        ) as hp:
-            hp.current = (1 * pq.amp, 2 * pq.amp)
+    ) as hp:
+        hp.current = (1 * u.amp, 2 * u.amp)
 
 
 def test_all_voltage_sense():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "VOUT? 1",
-            "VOUT? 2",
-            "VOUT? 3",
-            "VOUT? 4"
-        ],
-        [
-            "2",
-            "3",
-            "4",
-            "5"
-        ],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "VOUT? 1",
+                "VOUT? 2",
+                "VOUT? 3",
+                "VOUT? 4"
+            ],
+            [
+                "2",
+                "3",
+                "4",
+                "5"
+            ],
+            sep="\n"
     ) as hp:
-        assert sorted(hp.voltage_sense) == sorted((2, 3, 4, 5) * pq.V)
+        expected = (2 * u.V, 3 * u.V, 4 * u.V, 5 * u.V)
+        iterable_eq(hp.voltage_sense, expected)
 
 
 def test_all_current_sense():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "IOUT? 1",
-            "IOUT? 2",
-            "IOUT? 3",
-            "IOUT? 4"
-        ],
-        [
-            "2",
-            "3",
-            "4",
-            "5"
-        ],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "IOUT? 1",
+                "IOUT? 2",
+                "IOUT? 3",
+                "IOUT? 4"
+            ],
+            [
+                "2",
+                "3",
+                "4",
+                "5"
+            ],
+            sep="\n"
     ) as hp:
-        assert sorted(hp.current_sense) == sorted((2, 3, 4, 5) * pq.A)
+        expected = (2 * u.A, 3 * u.A, 4 * u.A, 5 * u.A)
+        iterable_eq(hp.current_sense, expected)
 
 
 def test_clear():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [
-            "CLR"
-        ],
-        [],
-        sep="\n"
+            ik.hp.HP6624a,
+            [
+                "CLR"
+            ],
+            [],
+            sep="\n"
     ) as hp:
         hp.clear()
 
 
 def test_channel_count():
     with expected_protocol(
-        ik.hp.HP6624a,
-        [],
-        [],
-        sep="\n"
+            ik.hp.HP6624a,
+            [],
+            [],
+            sep="\n"
     ) as hp:
         assert hp.channel_count == 4
         hp.channel_count = 3
 
 
 def test_channel_count_wrong_type():
-    with pytest.raises(TypeError):
-        with expected_protocol(
+    with pytest.raises(TypeError), expected_protocol(
             ik.hp.HP6624a,
             [],
             [],
             sep="\n"
-        ) as hp:
-            hp.channel_count = "foobar"
+    ) as hp:
+        hp.channel_count = "foobar"
 
 
 def test_channel_count_too_small():
-    with pytest.raises(ValueError):
-        with expected_protocol(
+    with pytest.raises(ValueError), expected_protocol(
             ik.hp.HP6624a,
             [],
             [],
             sep="\n"
-        ) as hp:
-            hp.channel_count = 0
+    ) as hp:
+        hp.channel_count = 0

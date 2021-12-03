@@ -6,15 +6,10 @@ Provides support for SCPI compliant instruments
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-
-from builtins import map
-
 from enum import IntEnum
-import quantities as pq
 
 from instruments.abstract_instruments import Instrument
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
@@ -149,9 +144,9 @@ class SCPIInstrument(Instrument):
 
         :return: The power line frequency
         :units: Hertz
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
-        return pq.Quantity(
+        return u.Quantity(
             float(self.query("SYST:LFR?")),
             "Hz"
         )
@@ -159,7 +154,7 @@ class SCPIInstrument(Instrument):
     @line_frequency.setter
     def line_frequency(self, newval):
         self.sendcmd("SYST:LFR {}".format(
-            assume_units(newval, "Hz").rescale("Hz").magnitude
+            assume_units(newval, "Hz").to("Hz").magnitude
         ))
 
     # ERROR QUEUE HANDLING ##
@@ -292,6 +287,6 @@ class SCPIInstrument(Instrument):
     @display_contrast.setter
     def display_contrast(self, newval):
         if newval < 0 or newval > 1:
-            raise ValueError("Display brightness must be a number between 0"
+            raise ValueError("Display contrast must be a number between 0"
                              " and 1.")
         self.sendcmd("DISP:CONT {}".format(newval))

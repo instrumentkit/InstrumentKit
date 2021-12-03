@@ -6,16 +6,13 @@ Driver for the Keithley 195 digital multimeter
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import time
 import struct
 from enum import Enum, IntEnum
 
-import quantities as pq
-
 from instruments.abstract_instruments import Multimeter
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -29,7 +26,7 @@ class Keithley195(Multimeter):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
     >>> print dmm.measure(dmm.Mode.resistance)
 
@@ -190,7 +187,7 @@ class Keithley195(Multimeter):
         All modes will also accept the string ``auto`` which will set the 195
         into auto ranging mode.
 
-        :rtype: `~quantities.quantity.Quantity` or `str`
+        :rtype: `~pint.Quantity` or `str`
         """
         index = self.parse_status_word(self.get_status_word())['range']
         if index == 0:
@@ -210,8 +207,8 @@ class Keithley195(Multimeter):
             else:
                 raise ValueError('Only "auto" is acceptable when specifying '
                                  'the input range as a string.')
-        if isinstance(newval, pq.quantity.Quantity):
-            newval = float(newval)
+        if isinstance(newval, u.Quantity):
+            newval = float(newval.magnitude)
 
         mode = self.mode
         valid = Keithley195.ValidRange[mode.name].value
@@ -246,7 +243,7 @@ class Keithley195(Multimeter):
         Example usage:
 
         >>> import instruments as ik
-        >>> import quantities as pq
+        >>> import instruments.units as u
         >>> dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 12)
         >>> print(dmm.measure(dmm.Mode.resistance))
 
@@ -255,14 +252,13 @@ class Keithley195(Multimeter):
         :type mode: `Keithley195.Mode`
 
         :return: A measurement from the multimeter.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         """
         if mode is not None:
             current_mode = self.mode
             if mode != current_mode:
                 self.mode = mode
-                if not self._testing:
-                    time.sleep(2)  # Gives the instrument a moment to settle
+                time.sleep(2)  # Gives the instrument a moment to settle
         else:
             mode = self.mode
         value = self.query('')
@@ -279,7 +275,8 @@ class Keithley195(Multimeter):
         :return: String containing setting information of the instrument
         :rtype: `str`
         """
-        return self.query('U0DX')
+        self.sendcmd('U0DX')
+        return self._file.read_raw()
 
     @staticmethod
     def parse_status_word(statusword):  # pylint: disable=too-many-locals
@@ -297,7 +294,7 @@ class Keithley195(Multimeter):
         :return: A parsed version of the status word as a Python dictionary
         :rtype: `dict`
         """
-        if statusword[:3] != '195':
+        if statusword[:3] != b'195':
             raise ValueError('Status word starts with wrong prefix, expected '
                              '195, got {}'.format(statusword))
 
@@ -308,13 +305,13 @@ class Keithley195(Multimeter):
         return {'trigger': Keithley195.TriggerMode(int(trigger)),
                 'mode': Keithley195.Mode(int(function)),
                 'range': int(input_range),
-                'eoi': (eoi == '1'),
+                'eoi': (eoi == b'1'),
                 'buffer': buf,
                 'rate': rate,
                 'srqmode': srqmode,
-                'relative': (relative == '1'),
+                'relative': (relative == b'1'),
                 'delay': delay,
-                'multiplex': (multiplex == '1'),
+                'multiplex': (multiplex == b'1'),
                 'selftest': selftest,
                 'dataformat': data_fmt,
                 'datacontrol': data_ctrl,
@@ -341,17 +338,17 @@ class Keithley195(Multimeter):
 # UNITS #######################################################################
 
 UNITS = {
-    'DCV':  pq.volt,
-    'ACV':  pq.volt,
-    'ACA':  pq.amp,
-    'DCA':  pq.amp,
-    'OHM':  pq.ohm,
+    'DCV':  u.volt,
+    'ACV':  u.volt,
+    'ACA':  u.amp,
+    'DCA':  u.amp,
+    'OHM':  u.ohm,
 }
 
 UNITS2 = {
-    Keithley195.Mode.voltage_dc:  pq.volt,
-    Keithley195.Mode.voltage_ac:  pq.volt,
-    Keithley195.Mode.current_dc:  pq.amp,
-    Keithley195.Mode.current_ac:  pq.amp,
-    Keithley195.Mode.resistance:  pq.ohm,
+    Keithley195.Mode.voltage_dc:  u.volt,
+    Keithley195.Mode.voltage_ac:  u.volt,
+    Keithley195.Mode.current_dc:  u.amp,
+    Keithley195.Mode.current_ac:  u.amp,
+    Keithley195.Mode.resistance:  u.ohm,
 }

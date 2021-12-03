@@ -7,27 +7,14 @@ library.
 
 # IMPORTS #####################################################################
 
-# pylint: disable=wrong-import-position
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import io
-from builtins import str
 
-import quantities as pq
+import pyvisa
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
-
-if not getattr(__builtins__, "WindowsError", None):
-    class WindowsError(OSError):
-        pass
-try:
-    import visa
-except (ImportError, WindowsError, OSError):
-    visa = None
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -42,13 +29,10 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, conn):
         super(VisaCommunicator, self).__init__(self)
 
-        if visa is None:
-            raise ImportError("PyVISA required for accessing VISA instruments.")
-
-        version = int(visa.__version__.replace(".", "").ljust(3, "0"))
+        version = int(pyvisa.__version__.replace(".", "").ljust(3, "0"))
         # pylint: disable=no-member
-        if (version < 160 and isinstance(conn, visa.Instrument)) or \
-                (version >= 160 and isinstance(conn, visa.Resource)):
+        if (version < 160 and isinstance(conn, pyvisa.Instrument)) or \
+                (version >= 160 and isinstance(conn, pyvisa.Resource)):
             self._conn = conn
             self._terminator = "\n"
         else:
@@ -95,11 +79,11 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
 
     @property
     def timeout(self):
-        return self._conn.timeout * pq.second
+        return self._conn.timeout * u.second
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
+        newval = assume_units(newval, u.second).to(u.second).magnitude
         self._conn.timeout = newval
 
     # FILE-LIKE METHODS #
@@ -131,7 +115,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
 
         elif size == -1:
             # Read the whole contents, appending the buffer we've already read.
-            msg = self._buf + self._conn.read()
+            msg = self._buf + self._conn.read_raw()
             # Reset the contents of the buffer.
             self._buf = bytearray()
         else:
@@ -149,10 +133,10 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         self._conn.write_raw(msg)
 
     def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
-        return NotImplemented
+        raise NotImplementedError
 
     def tell(self):  # pylint: disable=no-self-use
-        return NotImplemented
+        raise NotImplementedError
 
     def flush_input(self):
         """
@@ -160,7 +144,6 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         entirety of its contents.
         """
         # TODO: Find out how to flush with pyvisa
-        pass
 
     # METHODS #
 

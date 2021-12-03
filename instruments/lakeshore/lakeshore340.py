@@ -6,13 +6,8 @@ Provides support for the Lakeshore 340 cryogenic temperature controller.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from builtins import range
-
-import quantities as pq
-
 from instruments.generic_scpi import SCPIInstrument
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -26,7 +21,7 @@ class Lakeshore340(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> inst = ik.lakeshore.Lakeshore340.open_gpibusb('/dev/ttyUSB0', 1)
     >>> print(inst.sensor[0].temperature)
     >>> print(inst.sensor[1].temperature)
@@ -34,7 +29,7 @@ class Lakeshore340(SCPIInstrument):
 
     # INNER CLASSES ##
 
-    class Sensor(object):
+    class Sensor:
 
         """
         Class representing a sensor attached to the Lakeshore 340.
@@ -55,10 +50,10 @@ class Lakeshore340(SCPIInstrument):
             Gets the temperature of the specified sensor.
 
             :units: Kelvin
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
             value = self._parent.query('KRDG?{}'.format(self._idx))
-            return pq.Quantity(float(value), pq.Kelvin)
+            return u.Quantity(float(value), u.kelvin)
 
     # PROPERTIES ##
 

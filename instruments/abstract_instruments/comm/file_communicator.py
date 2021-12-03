@@ -6,16 +6,11 @@ Provides a communication layer for an instrument with a file on the filesystem
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import errno
 import io
 import time
 import logging
-
-from builtins import str, bytes
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 

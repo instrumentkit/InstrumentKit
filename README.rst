@@ -111,7 +111,7 @@ send, one can use the following functions to do so:
 Python Version Compatibility
 ----------------------------
 
-At this time, Python 2.7, 3.5, 3.6, and 3.7 are supported. Should you encounter
+At this time, Python 3.6, 3.7, 3.8, and 3.9 are supported. Should you encounter
 any problems with this library that occur in one version or another, please
 do not hesitate to let us know.
 
@@ -131,10 +131,8 @@ existing classes which are similar to your work to learn more about the
 structure of this project.
 
 To run the tests against all supported version of Python, you will need to
-have the binary for each installed, as well as any requirements needed to
-install ``numpy`` under each Python version. On Debian/Ubuntu systems this means
-you will need to install the ``python-dev`` package for each version of Python
-supported (``python2.7-dev``, ``python3.7-dev``, etc).
+have the binary for each installed. The easiest way to accomplish this is
+to use the tool `pyenv<https://github.com/pyenv/pyenv>_`.
 
 With the required system packages installed, all tests can be run with ``tox``:
 

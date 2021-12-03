@@ -33,15 +33,11 @@ Kit project.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-
 from enum import Enum
-
-import quantities as pq
 
 from instruments.abstract_instruments import Electrometer
 from instruments.generic_scpi import SCPIInstrument
+from instruments.units import ureg as u
 from instruments.util_fns import bool_property, enum_property
 
 # CLASSES #####################################################################
@@ -56,10 +52,10 @@ class Keithley6517b(SCPIInstrument, Electrometer):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> dmm = ik.keithley.Keithley6517b.open_serial('/dev/ttyUSB0', baud=115200)
     >>> dmm.measure(dmm.Mode.current)
-    array(0.123) * pq.amp
+    <Quantity(0.123, 'ampere')>
     """
 
     def __init__(self, filelike):
@@ -184,7 +180,7 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         """
         Gets/sets the upper limit of the current range.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         # pylint: disable=no-member
         mode = self.mode
@@ -195,7 +191,7 @@ class Keithley6517b(SCPIInstrument, Electrometer):
     def input_range(self, newval):
         # pylint: disable=no-member
         mode = self.mode
-        val = newval.rescale(UNITS[mode]).item()
+        val = newval.to(UNITS[mode]).magnitude
         if val not in self._valid_range(mode).value:
             raise ValueError(
                 'Unexpected range limit for currently selected mode.')
@@ -263,15 +259,15 @@ class Keithley6517b(SCPIInstrument, Electrometer):
         # Split the string in three comma-separated parts (value, time, number of triggers)
         vals = ascii.split(',')
         reading = float(vals[0].split('N')[0]) * self.unit
-        timestamp = float(vals[1].split('s')[0]) * pq.second
+        timestamp = float(vals[1].split('s')[0]) * u.second
         trigger_count = int(vals[2][:-5].split('R')[0])
         return reading, timestamp, trigger_count
 
 # UNITS #######################################################################
 
 UNITS = {
-    Keithley6517b.Mode.voltage_dc:  pq.volt,
-    Keithley6517b.Mode.current_dc:  pq.amp,
-    Keithley6517b.Mode.resistance:  pq.ohm,
-    Keithley6517b.Mode.charge:      pq.coulomb
+    Keithley6517b.Mode.voltage_dc:  u.volt,
+    Keithley6517b.Mode.current_dc:  u.amp,
+    Keithley6517b.Mode.resistance:  u.ohm,
+    Keithley6517b.Mode.charge:      u.coulomb
 }

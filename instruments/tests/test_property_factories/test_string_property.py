@@ -6,7 +6,6 @@ Module containing tests for the string property factories
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 from instruments.util_fns import string_property
 from . import MockInstrument

@@ -6,22 +6,17 @@ Provides support for the SRS DG645 digital delay generator.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from builtins import map
-
 from enum import IntEnum
 
-import quantities as pq
-
-from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.comm import GPIBCommunicator
+from instruments.generic_scpi import SCPIInstrument
+from instruments.units import ureg as u
 from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
 
 
-class _SRSDG645Channel(object):
+class _SRSDG645Channel:
 
     """
     Class representing a sensor attached to the SRS DG645.
@@ -59,18 +54,21 @@ class _SRSDG645Channel(object):
         """
         Gets/sets the delay of this channel.
         Formatted as a two-tuple of the reference and the delay time.
-        For example, ``(SRSDG645.Channels.A, pq.Quantity(10, "ps"))``
+        For example, ``(SRSDG645.Channels.A, u.Quantity(10, "ps"))``
         indicates a delay of 10 picoseconds from delay channel A.
+
+        :units: Assume seconds if no units given.
         """
         resp = self._ddg.query("DLAY?{}".format(int(self._chan))).split(",")
-        return SRSDG645.Channels(int(resp[0])), pq.Quantity(float(resp[1]), "s")
+        return SRSDG645.Channels(int(resp[0])), u.Quantity(float(resp[1]), "s")
 
     @delay.setter
     def delay(self, newval):
+        newval = (newval[0], assume_units(newval[1], u.s))
         self._ddg.sendcmd("DLAY {},{},{}".format(
             int(self._chan),
             int(newval[0].idx),
-            newval[1].rescale("s").magnitude
+            newval[1].to("s").magnitude
         ))
 
 
@@ -83,10 +81,10 @@ class SRSDG645(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> srs = ik.srs.SRSDG645.open_gpibusb('/dev/ttyUSB0', 1)
-    >>> srs.channel["B"].delay = (srs.channel["A"], pq.Quantity(10, 'ns'))
-    >>> srs.output["AB"].level_amplitude = pq.Quantity(4.0, "V")
+    >>> srs.channel["B"].delay = (srs.channel["A"], u.Quantity(10, 'ns'))
+    >>> srs.output["AB"].level_amplitude = u.Quantity(4.0, "V")
 
     .. _user's guide: http://www.thinksrs.com/downloads/PDFs/Manuals/DG645m.pdf
     """
@@ -171,7 +169,7 @@ class SRSDG645(SCPIInstrument):
 
     # INNER CLASSES #
 
-    class Output(object):
+    class Output:
 
         """
         An output from the DDG.
@@ -207,10 +205,10 @@ class SRSDG645(SCPIInstrument):
             """
             Amplitude (in voltage) of the output level for this output.
 
-            :type: `float` or :class:`~quantities.Quantity`
+            :type: `float` or :class:`~pint.Quantity`
             :units: As specified, or :math:`\\text{V}` by default.
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._parent.query('LAMP? {}'.format(self._idx))),
                 'V'
             )
@@ -219,6 +217,24 @@ class SRSDG645(SCPIInstrument):
         def level_amplitude(self, newval):
             newval = assume_units(newval, 'V').magnitude
             self._parent.sendcmd("LAMP {},{}".format(self._idx, newval))
+
+        @property
+        def level_offset(self):
+            """
+            Amplitude offset (in voltage) of the output level for this output.
+
+            :type: `float` or :class:`~pint.Quantity`
+            :units: As specified, or :math:`\\text{V}` by default.
+            """
+            return u.Quantity(
+                float(self._parent.query('LOFF? {}'.format(self._idx))),
+                'V'
+            )
+
+        @level_offset.setter
+        def level_offset(self, newval):
+            newval = assume_units(newval, 'V').magnitude
+            self._parent.sendcmd("LOFF {},{}".format(self._idx, newval))
 
     # PROPERTIES #
 
@@ -283,15 +299,15 @@ class SRSDG645(SCPIInstrument):
         """
         Gets/sets the rate of the internal trigger.
 
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         :units: As passed or Hz if not specified.
         """
-        return pq.Quantity(float(self.query("TRAT?")), pq.Hz)
+        return u.Quantity(float(self.query("TRAT?")), u.Hz)
 
     @trigger_rate.setter
     def trigger_rate(self, newval):
-        newval = assume_units(newval, pq.Hz)
-        self.sendcmd("TRAT {}".format(newval.rescale(pq.Hz).magnitude))
+        newval = assume_units(newval, u.Hz)
+        self.sendcmd("TRAT {}".format(newval.to(u.Hz).magnitude))
 
     @property
     def trigger_source(self):
@@ -311,11 +327,87 @@ class SRSDG645(SCPIInstrument):
         """
         Gets/sets the trigger holdoff time.
 
-        :type: `~quantities.Quantity` or `float`
+        :type: `~pint.Quantity` or `float`
         :units: As passed, or s if not specified.
         """
-        return pq.Quantity(float(self.query("HOLD?")), pq.s)
+        return u.Quantity(float(self.query("HOLD?")), u.s)
 
     @holdoff.setter
     def holdoff(self, newval):
-        self.sendcmd("HOLD {}".format(newval.rescale(pq.s).magnitude))
+        newval = assume_units(newval, u.s)
+        self.sendcmd("HOLD {}".format(newval.to(u.s).magnitude))
+
+    @property
+    def enable_burst_mode(self):
+        """
+        Gets/sets whether burst mode is enabled.
+
+        :type: `bool`
+        """
+        return bool(int(self.query("BURM?")))
+
+    @enable_burst_mode.setter
+    def enable_burst_mode(self, newval):
+        self.sendcmd("BURM {}".format(1 if newval else 0))
+
+    @property
+    def enable_burst_t0_first(self):
+        """
+        Gets/sets whether T0 output in burst mode is on first. If
+        enabled, the T0 output is enabled for first delay cycle of the
+        burst only. If disabled, the T0 output is enabled for all delay
+        cycles of the burst.
+
+        :type: `bool`
+        """
+        return bool(int(self.query("BURT?")))
+
+    @enable_burst_t0_first.setter
+    def enable_burst_t0_first(self, newval):
+        self.sendcmd("BURT {}".format(1 if newval else 0))
+
+    @property
+    def burst_count(self):
+        """
+        Gets/sets the burst count. When burst mode is enabled, the
+        DG645 outputs burst count delay cycles per trigger.
+        Valid numbers for burst count are between 1 and 2**32 - 1
+        """
+        return int(self.query("BURC?"))
+
+    @burst_count.setter
+    def burst_count(self, newval):
+        self.sendcmd("BURC {}".format(int(newval)))
+
+    @property
+    def burst_period(self):
+        """
+        Gets/sets the burst period. The burst period sets the time
+        between delay cycles during a burst. The burst period may
+        range from 100 ns to 2000 – 10 ns in 10 ns steps.
+
+        :units: Assume seconds if no units given.
+        """
+        return u.Quantity(float(self.query("BURP?")), u.s)
+
+    @burst_period.setter
+    def burst_period(self, newval):
+        newval = assume_units(newval, u.sec)
+        self.sendcmd("BURP {}".format(newval.to(u.sec).magnitude))
+
+    @property
+    def burst_delay(self):
+        """
+        Gets/sets the burst delay. When burst mode is enabled the DG645
+        delays the first burst pulse relative to the trigger by the
+        burst delay. The burst delay may range from 0 ps to < 2000 s
+        with a resolution of 5 ps.
+
+        :units: Assume seconds if no units given.
+        """
+        return u.Quantity(float(self.query("BURD?")), u.s)
+
+    @burst_delay.setter
+    def burst_delay(self, newval):
+        newval = assume_units(newval, u.s)
+        self.sendcmd("BURD {}".format(newval.to(u.sec).magnitude))

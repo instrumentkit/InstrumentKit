@@ -10,8 +10,6 @@ pyserial connections can be open at the same time to the same serial port.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import weakref
 import serial

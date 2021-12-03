@@ -8,17 +8,12 @@ Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
-
-from builtins import range, map
 from enum import IntEnum
-import quantities as pq
 
+from instruments.abstract_instruments import Instrument
 from instruments.toptica.toptica_utils import convert_toptica_boolean as ctbool
 from instruments.toptica.toptica_utils import convert_toptica_datetime as ctdate
-from instruments.abstract_instruments import Instrument
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -65,7 +60,7 @@ class TopMode(Instrument):
 
     # INNER CLASSES #
 
-    class Laser(object):
+    class Laser:
 
         """
         Class representing a laser on the Toptica Topmode.
@@ -107,9 +102,9 @@ class TopMode(Instrument):
 
             :return: The wavelength of the specified laser
             :units: Nanometers (nm)
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
-            return float(self.parent.reference(self.name + ":wavelength")) * pq.nm
+            return float(self.parent.reference(self.name + ":wavelength")) * u.nm
 
         @property
         def production_date(self):
@@ -161,9 +156,9 @@ class TopMode(Instrument):
 
             :return: The 'on time' value for the specified laser
             :units: Seconds (s)
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             """
-            return float(self.parent.reference(self.name + ":ontime")) * pq.s
+            return float(self.parent.reference(self.name + ":ontime")) * u.s
 
         @property
         def charm_status(self):
@@ -364,7 +359,7 @@ class TopMode(Instrument):
         For example, the following would print the wavelength from laser 1:
 
         >>> import instruments as ik
-        >>> import quantities as pq
+        >>> import instruments.units as u
         >>> tm = ik.toptica.TopMode.open_serial('/dev/ttyUSB0', 115200)
         >>> print(tm.laser[0].wavelength)
 

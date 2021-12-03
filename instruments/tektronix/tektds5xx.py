@@ -33,20 +33,13 @@ Based off of tektds224.py written by Steven Casagrande.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from functools import reduce
-
-import time
-from time import sleep
 from datetime import datetime
+from enum import Enum
+from functools import reduce
 import operator
 import struct
+import time
 
-from builtins import range, map, round
-from enum import Enum
-
-import numpy as np
 
 from instruments.abstract_instruments import (
     OscilloscopeChannel,
@@ -54,12 +47,13 @@ from instruments.abstract_instruments import (
     Oscilloscope,
 )
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
 
 
-class _TekTDS5xxMeasurement(object):
+class _TekTDS5xxMeasurement:
 
     """
     Class representing a measurement channel on the Tektronix TDS5xx
@@ -75,7 +69,7 @@ class _TekTDS5xxMeasurement(object):
     def read(self):
         """
         Gets the current measurement value of the channel, and returns a dict
-        of all relevent information
+        of all relevant information
 
         :rtype: `dict` of measurement parameters
         """
@@ -122,7 +116,8 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
         :param bool bin_format: If `True`, data is transfered
             in a binary format. Otherwise, data is transferred in ASCII.
 
-        :rtype: two item `tuple` of `numpy.ndarray`
+        :rtype: `tuple`[`tuple`[`float`, ...], `tuple`[`float`, ...]]
+            or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
         """
         with self:
 
@@ -131,8 +126,10 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
                 self._parent.sendcmd('DAT:ENC ASCI')
                 raw = self._parent.query('CURVE?')
                 raw = raw.split(',')  # Break up comma delimited string
-                raw = map(float, raw)  # Convert each list element to int
-                raw = np.array(raw)  # Convert into numpy array
+                if numpy:
+                    raw = numpy.array(raw, dtype=numpy.float)  # Convert to numpy array
+                else:
+                    raw = map(float, raw)
             else:
                 # Set encoding to signed, big-endian
                 self._parent.sendcmd('DAT:ENC RIB')
@@ -142,25 +139,29 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
                 raw = self._parent.binblockread(data_width)
 
                 # pylint: disable=protected-access
-                self._parent._file.flush_input()  # Flush input buffer
+                # read line separation character
+                self._parent._file.read_raw(1)
 
             # Retrieve Y offset
-            yoffs = self._parent.query('WFMP:{}:YOF?'.format(self.name))
+            yoffs = float(self._parent.query('WFMP:{}:YOF?'.format(self.name)))
             # Retrieve Y multiply
-            ymult = self._parent.query('WFMP:{}:YMU?'.format(self.name))
+            ymult = float(self._parent.query('WFMP:{}:YMU?'.format(self.name)))
             # Retrieve Y zero
-            yzero = self._parent.query('WFMP:{}:YZE?'.format(self.name))
-
-            y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
+            yzero = float(self._parent.query('WFMP:{}:YZE?'.format(self.name)))
 
             # Retrieve X incr
-            xincr = self._parent.query('WFMP:{}:XIN?'.format(self.name))
+            xincr = float(self._parent.query('WFMP:{}:XIN?'.format(self.name)))
             # Retrieve number of data points
-            ptcnt = self._parent.query('WFMP:{}:NR_P?'.format(self.name))
+            ptcnt = int(self._parent.query('WFMP:{}:NR_P?'.format(self.name)))
 
-            x = np.arange(float(ptcnt)) * float(xincr)
+            if numpy:
+                x = numpy.arange(float(ptcnt)) * float(xincr)
+                y = ((raw - yoffs) * float(ymult)) + float(yzero)
+            else:
+                x = tuple([float(val) * float(xincr) for val in range(ptcnt)])
+                y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
 
-            return (x, y)
+            return x, y
 
 
 class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
@@ -249,7 +250,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
         """
         Gets/sets the scale setting for this channel.
 
-        :type: `TekTDS5xx.Impedance`
+        :type: `float`
         """
         return float(self._parent.query("CH{}:SCA?".format(self._idx)))
 
@@ -406,7 +407,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         :rtype: `list`
         """
         active = []
-        channels = map(int, self.query('SEL?').split(';')[0:11])
+        channels = list(map(int, self.query('SEL?').split(';')[0:11]))
         for idx in range(0, 4):
             if channels[idx]:
                 active.append(_TekTDS5xxChannel(self, idx))
@@ -437,7 +438,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
     @data_source.setter
     def data_source(self, newval):
         if isinstance(newval, _TekTDS5xxDataSource):
-            newval = TekTDS5xx.Source[newval.name]
+            newval = TekTDS5xx.Source(newval.name)
         if not isinstance(newval, TekTDS5xx.Source):
             raise TypeError("Source setting must be a `TekTDS5xx.Source`"
                             " value, got {} instead.".format(type(newval)))
@@ -461,7 +462,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
 
         self.sendcmd("DATA:WIDTH {}".format(newval))
 
-    @property
     def force_trigger(self):
         raise NotImplementedError
 
@@ -506,7 +506,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
 
         :type: `TekTDS5xx.Coupling`
         """
-        return TekTDS5xx.Coupling[self.query("TRIG:MAI:EDGE:COUP?")]
+        return TekTDS5xx.Coupling(self.query("TRIG:MAI:EDGE:COUP?"))
 
     @trigger_coupling.setter
     def trigger_coupling(self, newval):
@@ -545,8 +545,9 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
     @trigger_source.setter
     def trigger_source(self, newval):
         if not isinstance(newval, TekTDS5xx.Trigger):
-            raise TypeError("Trigger source setting must be a"
-                            "`TekTDS5xx.source` value, got {} instead.".format(type(newval)))
+            raise TypeError("Trigger source setting must be a "
+                            "`TekTDS5xx.Trigger` value, got {} "
+                            "instead.".format(type(newval)))
 
         self.sendcmd("TRIG:MAI:EDGE:SOU {}".format(newval.value))
 
@@ -563,7 +564,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
     @clock.setter
     def clock(self, newval):
         if not isinstance(newval, datetime):
-            raise ValueError("Expected datetime.datetime"
+            raise ValueError("Expected datetime.datetime "
                              "but got {} instead".format(type(newval)))
         self.sendcmd(newval.strftime('DATE "%Y-%m-%d";:TIME "%H:%M:%S"'))
 
@@ -579,7 +580,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
     @display_clock.setter
     def display_clock(self, newval):
         if not isinstance(newval, bool):
-            raise ValueError("Expected bool but got"
+            raise ValueError("Expected bool but got "
                              "{} instead".format(type(newval)))
         self.sendcmd('DISPLAY:CLOCK {}'.format(int(newval)))
 
@@ -591,13 +592,13 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         self.sendcmd('HARDC:PORT GPI;HARDC:LAY PORT;:HARDC:FORM BMP')
         self.sendcmd('HARDC START')
-        sleep(1)
-        header = self.query("", size=54)
+        time.sleep(1)
+        header = self._file.read_raw(size=54)
         # Get BMP Length  in kilobytes from DIB header, because file header is
         # bad
         length = reduce(
             operator.mul, struct.unpack('<iihh', header[18:30])) / 8
         length = int(length) + 8  # Add 8 bytes for our monochrome colour table
-        data = header + self.query("", size=length)
+        data = header + self._file.read_raw(size=length)
         self._file.flush_input()  # Flush input buffer
         return data

@@ -4,7 +4,6 @@
 Module containing generic SCPI instruments
 """
 
-from __future__ import absolute_import
 
 from .scpi_instrument import SCPIInstrument
 from .scpi_multimeter import SCPIMultimeter

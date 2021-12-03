@@ -8,8 +8,6 @@ Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from enum import IntEnum
 
 # CLASSES #####################################################################
@@ -264,3 +262,12 @@ class ThorLabsCommands(IntEnum):
     LA_REQ_STATUSUPDATE = 0x0820
     LA_GET_STATUSUPDATE = 0x0821
     LA_ACK_STATUSUPDATE = 0x0822
+
+    # Additional messages for TIM101 and KIM101
+    PZMOT_SET_PARAMS = 0x08C0
+    PZMOT_REQ_PARAMS = 0x08C1
+    PZMOT_GET_PARAMS = 0x08C2
+    PZMOT_MOVE_ABSOLUTE = 0x08D4
+    PZMOT_MOVE_COMPLETED = 0x08D6
+    PZMOT_MOVE_JOG = 0x08D9
+    PZMOT_GET_STATUSUPDATE = 0x08E1

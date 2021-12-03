@@ -6,19 +6,14 @@ Provides an abstract base class for power supply instruments
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-
 import abc
-
-from future.utils import with_metaclass
 
 from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
 
-class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
+class PowerSupplyChannel(metaclass=abc.ABCMeta):
 
     """
     Abstract base class for power supply output channels.
@@ -38,7 +33,6 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @mode.setter
     @abc.abstractmethod
@@ -52,9 +46,8 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
         Gets/sets the output voltage for the power supply channel. This is an
         abstract method.
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
-        pass
 
     @voltage.setter
     @abc.abstractmethod
@@ -68,9 +61,8 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
         Gets/sets the output current for the power supply channel. This is an
         abstract method.
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
-        pass
 
     @current.setter
     @abc.abstractmethod
@@ -86,7 +78,6 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
 
         :type: `bool`
         """
-        pass
 
     @output.setter
     @abc.abstractmethod
@@ -94,7 +85,7 @@ class PowerSupplyChannel(with_metaclass(abc.ABCMeta, object)):
         pass
 
 
-class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
+class PowerSupply(Instrument, metaclass=abc.ABCMeta):
 
     """
     Abstract base class for power supply instruments.
@@ -125,9 +116,8 @@ class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
         Gets/sets the output voltage for all channel on the power supply.
         This is an abstract method.
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
-        pass
 
     @voltage.setter
     @abc.abstractmethod
@@ -141,9 +131,8 @@ class PowerSupply(with_metaclass(abc.ABCMeta, Instrument)):
         Gets/sets the output current for all channel on the power supply.
         This is an abstract method.
 
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
-        pass
 
     @current.setter
     @abc.abstractmethod

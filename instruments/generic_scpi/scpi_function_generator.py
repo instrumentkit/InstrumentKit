@@ -6,10 +6,8 @@ Provides support for SCPI compliant function generators
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import FunctionGenerator
 from instruments.generic_scpi import SCPIInstrument
@@ -27,9 +25,9 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> inst = ik.generic_scpi.SCPIFunctionGenerator.open_tcpip("192.168.1.1")
-    >>> inst.frequency = 1 * pq.kHz
+    >>> inst.frequency = 1 * u.kHz
     """
 
     # CONSTANTS #
@@ -76,12 +74,12 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
 
     frequency = unitful_property(
         command="FREQ",
-        units=pq.Hz,
+        units=u.Hz,
         doc="""
         Gets/sets the output frequency.
 
         :units: As specified, or assumed to be :math:`\\text{Hz}` otherwise.
-        :type: `float` or `~quantities.quantity.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -97,15 +95,15 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
 
     offset = unitful_property(
         command="VOLT:OFFS",
-        units=pq.volt,
+        units=u.volt,
         doc="""
         Gets/sets the offset voltage of the function generator.
 
         Set value should be within correct bounds of instrument.
 
-        :units: As specified  (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified  (if a `~pint.Quantity`) or assumed
             to be of units volts.
-        :type: `~quantities.quantity.Quantity` with units volts.
+        :type: `~pint.Quantity` with units volts.
         """
     )
 

@@ -8,10 +8,8 @@ Originally contributed by Wil Langford (wil.langford+instrumentkit@gmail.com)
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments import (PowerSupply, PowerSupplyChannel)
 from instruments.util_fns import unitful_property, bool_property
@@ -64,64 +62,64 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
     voltage = unitful_property(
         "VOLT",
-        pq.volt,
+        u.volt,
         doc="""
         Gets/sets the output voltage.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
     current = unitful_property(
         "CURR",
-        pq.amp,
+        u.amp,
         doc="""
         Gets/sets the output current.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
     voltage_sense = unitful_property(
         "MEAS:VOLT",
-        pq.volt,
+        u.volt,
         readonly=True,
         doc="""
         Gets the actual output voltage as measured by the sense wires.
 
         :units: :math:`\\text{V}` (volts)
-        :rtype: `~quantities.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
     current_sense = unitful_property(
         "MEAS:CURR",
-        pq.amp,
+        u.amp,
         readonly=True,
         doc="""
         Gets the actual output current as measured by the sense wires.
 
         :units: :math:`\\text{A}` (amps)
-        :rtype: `~quantities.Quantity`
+        :rtype: `~pint.Quantity`
         """
     )
 
     overvoltage = unitful_property(
         "VOLT:PROT",
-        pq.volt,
+        u.volt,
         doc="""
         Gets/sets the overvoltage protection setting in volts.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 

@@ -32,15 +32,11 @@ Kit project.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from builtins import range
-
 from enum import Enum, IntEnum
-import quantities as pq
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.hp.hp6652a import HP6652a
+from instruments.units import ureg as u
 from instruments.util_fns import (unitful_property, unitless_property,
                                   bool_property, enum_property, int_property)
 
@@ -259,27 +255,27 @@ class HP6632b(SCPIInstrument, HP6652a):
 
     voltage_trigger = unitful_property(
         "VOLT:TRIG",
-        pq.volt,
+        u.volt,
         doc="""
         Gets/sets the pending triggered output voltage.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
     current_trigger = unitful_property(
         "CURR:TRIG",
-        pq.amp,
+        u.amp,
         doc="""
         Gets/sets the pending triggered output current.
 
         Note there is no bounds checking on the value specified.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -299,7 +295,7 @@ class HP6632b(SCPIInstrument, HP6652a):
 
     current_sense_range = unitful_property(
         'SENS:CURR:RANGE',
-        pq.ampere,
+        u.ampere,
         doc="""
         Get/set the sense current range by the current max value.
 
@@ -308,7 +304,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         range increases the low current measurement sensitivity and accuracy.
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-        :type: `float` or `~quantities.quantity.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -379,13 +375,13 @@ class HP6632b(SCPIInstrument, HP6652a):
 
     sense_sweep_interval = unitful_property(
         "SENS:SWE:TINT",
-        pq.second,
+        u.second,
         doc="""
         Get/set the digitizer sample spacing. Can be set from 15.6 us to 31200
         seconds, the interval will be rounded to the nearest 15.6 us increment.
 
         :units: As specified, or assumed to be :math:`\\text{s}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 
@@ -401,7 +397,7 @@ class HP6632b(SCPIInstrument, HP6652a):
 
     output_protection_delay = unitful_property(
         "OUTP:PROT:DEL",
-        pq.second,
+        u.second,
         doc="""
         Get/set the time between programming of an output change that produces
         a constant current condition and the recording of that condigition in
@@ -409,7 +405,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         current protection, but not overvoltage protection.
 
         :units: As specified, or assumed to be :math:`\\text{s}` otherwise.
-        :type: `float` or `~quantities.Quantity`
+        :type: `float` or `~pint.Quantity`
         """
     )
 

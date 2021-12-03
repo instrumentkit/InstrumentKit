@@ -7,15 +7,11 @@ raw ethernet connections.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import io
 import socket
 
-from builtins import str, bytes
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -74,14 +70,14 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         """
         Gets/sets the connection timeout of the socket comm channel.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
-        return self._conn.gettimeout() * pq.second
+        return self._conn.gettimeout() * u.second
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
+        newval = assume_units(newval, u.second).to(u.second).magnitude
         self._conn.settimeout(newval)
 
     # FILE-LIKE METHODS #

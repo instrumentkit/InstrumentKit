@@ -6,15 +6,12 @@ Unit tests for the USBTMC communication layer
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 
-import quantities as pq
-from numpy import array
-
 from instruments.abstract_instruments.comm import USBTMCCommunicator
 from instruments.tests import unit_eq
+from instruments.units import ureg as u
 from .. import mock
 
 # TEST CASES #################################################################
@@ -70,14 +67,14 @@ def test_usbtmccomm_timeout(mock_usbtmc):
     timeout = mock.PropertyMock(return_value=1)
     type(comm._filelike).timeout = timeout
 
-    unit_eq(comm.timeout, 1 * pq.second)
+    unit_eq(comm.timeout, 1 * u.second)
     timeout.assert_called_with()
 
     comm.timeout = 10
-    timeout.assert_called_with(array(10.0))
+    timeout.assert_called_with(10.0)
 
-    comm.timeout = 1000 * pq.millisecond
-    timeout.assert_called_with(array(1.0))
+    comm.timeout = 1000 * u.millisecond
+    timeout.assert_called_with(1.0)
 
 
 @mock.patch(patch_path)

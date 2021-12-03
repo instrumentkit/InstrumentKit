@@ -6,11 +6,10 @@ Module containing tests for util_fns.py
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import, unicode_literals
 
 from io import StringIO
 
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments import Instrument
 from instruments.config import (
@@ -48,8 +47,8 @@ a:
     d: !Q 98
 """)
     data = yaml.load(yaml_data, Loader=yaml.Loader)
-    assert data['a']['b'] == pq.Quantity(37, 'tesla')
-    assert data['a']['c'] == pq.Quantity(41.2, 'inches')
+    assert data['a']['b'] == u.Quantity(37, 'tesla')
+    assert data['a']['c'] == u.Quantity(41.2, 'inches')
     assert data['a']['d'] == 98
 
 def test_load_test_instrument_setattr():
@@ -61,4 +60,4 @@ test:
         foo: !Q 111 GHz
 """)
     insts = load_instruments(config_data)
-    assert insts['test'].foo == pq.Quantity(111, 'GHz')
+    assert insts['test'].foo == u.Quantity(111, 'GHz')

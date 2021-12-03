@@ -4,10 +4,13 @@
 Module containing Thorlabs instruments
 """
 
-from __future__ import absolute_import
 
 from .thorlabsapt import (
-    ThorLabsAPT, APTPiezoStage, APTStrainGaugeReader, APTMotorController
+    ThorLabsAPT,
+    APTPiezoInertiaActuator,
+    APTPiezoStage,
+    APTStrainGaugeReader,
+    APTMotorController
 )
 from .pm100usb import PM100USB
 from .lcc25 import LCC25

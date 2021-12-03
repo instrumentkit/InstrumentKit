@@ -6,11 +6,10 @@ Unit tests for the serial communication layer
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
 import serial
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.comm import SerialCommunicator
 from instruments.tests import unit_eq
@@ -65,13 +64,13 @@ def test_serialcomm_timeout():
     timeout = mock.PropertyMock(return_value=30)
     type(comm._conn).timeout = timeout
 
-    unit_eq(comm.timeout, 30 * pq.second)
+    unit_eq(comm.timeout, 30 * u.second)
     timeout.assert_called_with()
 
     comm.timeout = 10
     timeout.assert_called_with(10)
 
-    comm.timeout = 1000 * pq.millisecond
+    comm.timeout = 1000 * u.millisecond
     timeout.assert_called_with(1)
 
 

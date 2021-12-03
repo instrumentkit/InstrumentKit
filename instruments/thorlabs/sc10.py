@@ -8,18 +8,14 @@ Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from builtins import range
-
 from enum import IntEnum
-import quantities as pq
 
 from instruments.abstract_instruments import Instrument
+from instruments.thorlabs.thorlabs_utils import check_cmd
+from instruments.units import ureg as u
 from instruments.util_fns import (
     bool_property, enum_property, int_property, unitful_property
 )
-from instruments.thorlabs.thorlabs_utils import check_cmd
 
 # CLASSES #####################################################################
 
@@ -35,7 +31,7 @@ class SC10(Instrument):
     def __init__(self, filelike):
         super(SC10, self).__init__(filelike)
         self.terminator = '\r'
-        self.prompt = '>'
+        self.prompt = '> '
 
     def _ack_expected(self, msg=""):
         return msg
@@ -133,31 +129,31 @@ class SC10(Instrument):
 
     open_time = unitful_property(
         "open",
-        pq.ms,
+        u.ms,
         format_code="{:.0f}",
         set_fmt="{}={}",
         valid_range=(0, 999999),
         doc="""
         Gets/sets the amount of time that the shutter is open, in ms
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units milliseconds.
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 
     shut_time = unitful_property(
         "shut",
-        pq.ms,
+        u.ms,
         format_code="{:.0f}",
         set_fmt="{}={}",
         valid_range=(0, 999999),
         doc="""
         Gets/sets the amount of time that the shutter is closed, in ms
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units milliseconds.
-        :type: `~quantities.quantity.Quantity`
+        :type: `~pint.Quantity`
         """
     )
 

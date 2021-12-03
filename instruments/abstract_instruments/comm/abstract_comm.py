@@ -6,21 +6,16 @@ Provides an abstract base class for file-like communication layer classes
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import abc
 import codecs
 import logging
 import struct
 
-from future.utils import with_metaclass
-
 # CLASSES ####################################################################
 
 
-class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
+class AbstractCommunicator(metaclass=abc.ABCMeta):
 
     """
     Abstract base class for electrometer instruments.
@@ -126,7 +121,6 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
         :return: The read bytes
         :rtype: `bytes`
         """
-        pass
 
     @abc.abstractmethod
     def write_raw(self, msg):
@@ -136,7 +130,6 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
         :param bytes msg: Bytes to be sent to the instrument over the
             connection.
         """
-        pass
 
     @abc.abstractmethod
     def _sendcmd(self, msg):
@@ -147,7 +140,6 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
         Note that this is called by :class:`AbstractCommunicator.sendcmd`,
         which also handles debug, event and capture support.
         """
-        pass
 
     @abc.abstractmethod
     def _query(self, msg, size=-1):
@@ -164,7 +156,6 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
         Note that this is called by :class:`AbstractCommunicator.query`,
         which also handles debug, event and capture support.
         """
-        pass
 
     @abc.abstractmethod
     def flush_input(self):
@@ -208,10 +199,10 @@ class AbstractCommunicator(with_metaclass(abc.ABCMeta, object)):
             codecs.lookup(encoding)
             return self.read_raw(size).decode(encoding)
         except LookupError:
-            if encoding == 'IEEE-754/64':
-                return struct.unpack('>d', self.read_raw(size))[0]
+            if encoding == "IEEE-754/64":
+                return struct.unpack(">d", self.read_raw(size))[0]
             else:
-                raise ValueError("Encoding {} is not currently supported.".format(encoding))
+                raise ValueError(f"Encoding {encoding} is not currently supported.")
 
     def sendcmd(self, msg):
         """

@@ -7,6 +7,17 @@
 Newport
 =======
 
+:class:`Agilis` Piezo Motor Controller
+======================================
+
+.. autoclass:: AGUC2
+    :members:
+    :undoc-members:
+
+.. autoclass:: _Axis
+    :members:
+    :undoc-members:
+
 :class:`NewportESP301` Motor Controller
 =======================================
 

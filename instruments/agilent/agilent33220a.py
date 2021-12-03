@@ -6,15 +6,11 @@ Provides support for the Agilent 33220a function generator.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from builtins import range
-
 from enum import Enum
 
-import quantities as pq
 
 from instruments.generic_scpi import SCPIFunctionGenerator
+from instruments.units import ureg as u
 from instruments.util_fns import (
     enum_property, int_property, bool_property, assume_units
 )
@@ -33,10 +29,10 @@ class Agilent33220a(SCPIFunctionGenerator):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> inst = ik.agilent.Agilent33220a.open_gpibusb('/dev/ttyUSB0', 1)
     >>> inst.function = inst.Function.sinusoid
-    >>> inst.frequency = 1 * pq.kHz
+    >>> inst.frequency = 1 * u.kHz
     >>> inst.output = True
 
     .. _Agilent/Keysight 33220a: http://www.keysight.com/en/pd-127539-pn-33220A
@@ -160,13 +156,13 @@ class Agilent33220a(SCPIFunctionGenerator):
         function allows the instrument to compensate of the voltage divider
         and accurately report the voltage across the attached load.
 
-        :units: As specified (if a `~quantities.quantity.Quantity`) or assumed
+        :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units :math:`\\Omega` (ohm).
-        :type: `~quantities.quantity.Quantity` or `Agilent33220a.LoadResistance`
+        :type: `~pint.Quantity` or `Agilent33220a.LoadResistance`
         """
         value = self.query("OUTP:LOAD?")
         try:
-            return int(value) * pq.ohm
+            return int(value) * u.ohm
         except ValueError:
             return self.LoadResistance(value.strip())
 
@@ -175,7 +171,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         if isinstance(newval, self.LoadResistance):
             newval = newval.value
         else:
-            newval = assume_units(newval, pq.ohm).rescale(pq.ohm).magnitude
+            newval = assume_units(newval, u.ohm).to(u.ohm).magnitude
             if (newval < 0) or (newval > 10000):
                 raise ValueError(
                     "Load resistance must be between 0 and 10,000")

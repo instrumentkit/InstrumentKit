@@ -6,25 +6,20 @@ Provides support for the SRS 830 lock-in amplifier.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import math
 import time
 import warnings
-
-from builtins import range, map
 from enum import Enum, IntEnum
 
-import numpy as np
-import quantities as pq
-
-from instruments.generic_scpi import SCPIInstrument
 from instruments.abstract_instruments.comm import (
     GPIBCommunicator,
     SerialCommunicator,
     LoopbackCommunicator
 )
+from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
+from instruments.units import ureg as u
 from instruments.util_fns import (
     bool_property, bounded_unitful_property, enum_property, unitful_property
 )
@@ -45,13 +40,13 @@ class SRS830(SCPIInstrument):
     Example usage:
 
     >>> import instruments as ik
-    >>> import quantities as pq
+    >>> import instruments.units as u
     >>> srs = ik.srs.SRS830.open_gpibusb('/dev/ttyUSB0', 1)
-    >>> srs.frequency = 1000 * pq.hertz # Lock-In frequency
+    >>> srs.frequency = 1000 * u.hertz # Lock-In frequency
     >>> data = srs.take_measurement(1, 10) # 1Hz sample rate, 10 samples total
     """
 
-    def __init__(self, filelike, outx_mode=None):  # pragma: no cover
+    def __init__(self, filelike, outx_mode=None):
         """
         Class initialization method.
 
@@ -74,7 +69,7 @@ class SRS830(SCPIInstrument):
                 pass
             else:
                 warnings.warn("OUTX command has not been set. Instrument "
-                              "behavour is unknown.", UserWarning)
+                              "behaviour is unknown.", UserWarning)
     # ENUMS #
 
     class FreqSource(IntEnum):
@@ -139,44 +134,44 @@ class SRS830(SCPIInstrument):
 
     frequency = unitful_property(
         "FREQ",
-        pq.hertz,
+        u.hertz,
         valid_range=(0, None),
         doc="""
         Gets/sets the lock-in amplifier reference frequency.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units Hertz.
-        :type: `~quantities.Quantity` with units Hertz.
+        :type: `~pint.Quantity` with units Hertz.
         """
     )
 
     phase, phase_min, phase_max = bounded_unitful_property(
         "PHAS",
-        pq.degrees,
-        valid_range=(-360 * pq.degrees, 730 * pq.degrees),
+        u.degrees,
+        valid_range=(-360 * u.degrees, 730 * u.degrees),
         doc="""
         Gets/set the phase of the internal reference signal.
 
         Set value should be -360deg <= newval < +730deg.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units degrees.
-        :type: `~quantities.Quantity` with units degrees.
+        :type: `~pint.Quantity` with units degrees.
         """
     )
 
     amplitude, amplitude_min, amplitude_max = bounded_unitful_property(
         "SLVL",
-        pq.volt,
-        valid_range=(0.004 * pq.volt, 5 * pq.volt),
+        u.volt,
+        valid_range=(0.004 * u.volt, 5 * u.volt),
         doc="""
         Gets/set the amplitude of the internal reference signal.
 
         Set value should be 0.004 <= newval <= 5.000
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units volts. Value should be specified as peak-to-peak.
-        :type: `~quantities.Quantity` with units volts peak-to-peak.
+        :type: `~pint.Quantity` with units volts peak-to-peak.
         """
     )
 
@@ -210,12 +205,12 @@ class SRS830(SCPIInstrument):
         Acceptable set values are :math:`2^n` where :math:`n \in \{-4...+9\}` or
         the string `trigger`.
 
-        :type: `~quantities.Quantity` with units Hertz.
+        :type: `~pint.Quantity` with units Hertz.
         """
         value = int(self.query('SRAT?'))
         if value == 14:
             return "trigger"
-        return pq.Quantity(VALID_SAMPLE_RATES[value], pq.Hz)
+        return u.Quantity(VALID_SAMPLE_RATES[value], u.Hz)
 
     @sample_rate.setter
     def sample_rate(self, newval):
@@ -255,7 +250,7 @@ class SRS830(SCPIInstrument):
         while not resp and i < 10:
             resp = self.query('SPTS?').strip()
             i += 1
-        if not resp:  # pragma: no cover
+        if not resp:
             raise IOError(
                 "Expected integer response from instrument, got {}".format(
                     repr(resp))
@@ -321,7 +316,7 @@ class SRS830(SCPIInstrument):
         :param sample_rate: The desired sampling
             rate. Acceptable set values are :math:`2^n` where
             :math:`n \in \{-4...+9\}` in units Hertz or the string `trigger`.
-        :type sample_rate: `~quantities.Quantity` or `str`
+        :type sample_rate: `~pint.Quantity` or `str`
 
         :param `SRS830.BufferMode` buffer_mode: This sets the behaviour of the
             instrument when the data storage buffer is full. Setting to
@@ -357,7 +352,8 @@ class SRS830(SCPIInstrument):
 
         :param `int` num_samples: Number of samples to take.
 
-        :rtype: `list`
+        :rtype: `tuple`[`tuple`[`float`, ...], `tuple`[`float`, ...]]
+            or if numpy is installed, `numpy.array`[`numpy.array`, `numpy.array`]
         """
         if num_samples > 16383:
             raise ValueError('Number of samples cannot exceed 16383.')
@@ -367,8 +363,7 @@ class SRS830(SCPIInstrument):
         self.init(sample_rate, SRS830.BufferMode['one_shot'])
         self.start_data_transfer()
 
-        if not self._testing:
-            time.sleep(sample_time + 0.1)
+        time.sleep(sample_time + 0.1)
 
         self.pause()
 
@@ -378,13 +373,15 @@ class SRS830(SCPIInstrument):
         # in future versions.
         try:
             self.num_data_points
-        except IOError:  # pragma: no cover
+        except IOError:
             pass
 
         ch1 = self.read_data_buffer('ch1')
         ch2 = self.read_data_buffer('ch2')
 
-        return np.array([ch1, ch2])
+        if numpy:
+            return numpy.array([ch1, ch2])
+        return ch1, ch2
 
     # OTHER METHODS #
 
@@ -505,7 +502,7 @@ class SRS830(SCPIInstrument):
             given by {CH1|CH2}.
         :type channel: `SRS830.Mode` or `str`
 
-        :rtype: `list`
+        :rtype: `tuple`[`float`, ...] or if numpy is installed, `numpy.array`
         """
         if isinstance(channel, str):
             channel = channel.lower()
@@ -521,10 +518,10 @@ class SRS830(SCPIInstrument):
         # Query device for entire buffer, returning in ASCII, then
         # converting to a list of floats before returning to the
         # calling method
-        return np.fromstring(
-            self.query('TRCA?{},0,{}'.format(channel, N)).strip(),
-            sep=','
-        )
+        data = self.query('TRCA?{},0,{}'.format(channel, N)).strip()
+        if numpy:
+            return numpy.fromstring(data, sep=',')
+        return tuple(map(float, data.split(",")))
 
     def clear_data_buffer(self):
         """

@@ -6,15 +6,12 @@ Driver for the Keithley 2182 nano-voltmeter
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from builtins import range, map
-
 from enum import Enum
-import quantities as pq
 
-from instruments.generic_scpi import SCPIMultimeter
 from instruments.abstract_instruments import Multimeter
+from instruments.generic_scpi import SCPIMultimeter
+from instruments.optional_dep_finder import numpy
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -30,7 +27,7 @@ class Keithley2182(SCPIMultimeter):
 
     >>> import instruments as ik
     >>> meter = ik.keithley.Keithley2182.open_gpibusb("/dev/ttyUSB0", 10)
-    >>> print meter.measure(meter.Mode.voltage_dc)
+    >>> print(meter.measure(meter.Mode.voltage_dc))
 
 
     """
@@ -94,7 +91,7 @@ class Keithley2182(SCPIMultimeter):
             :param mode: Mode that the measurement will be performed in
             :type mode: Keithley2182.Mode
             :return: The value of the measurement
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
             if mode is not None:
                 # self.mode = mode
@@ -102,7 +99,7 @@ class Keithley2182(SCPIMultimeter):
             self._parent.sendcmd('SENS:CHAN {}'.format(self._idx))
             value = float(self._parent.query('SENS:DATA:FRES?'))
             unit = self._parent.units
-            return value * unit
+            return u.Quantity(value, unit)
 
     # ENUMS #
 
@@ -186,18 +183,18 @@ class Keithley2182(SCPIMultimeter):
         """
         Gets the current measurement units of the instrument.
 
-        :rtype: `~quantities.unitquantity.UnitQuantity`
+        :rtype: `~pint.Unit`
         """
         mode = self.channel[0].mode
         if mode == Keithley2182.Mode.voltage_dc:
-            return pq.volt
+            return u.volt
         unit = self.query("UNIT:TEMP?")
         if unit == "C":
-            unit = pq.celsius
+            unit = u.celsius
         elif unit == "K":
-            unit = pq.kelvin
+            unit = u.kelvin
         elif unit == "F":
-            unit = pq.fahrenheit
+            unit = u.fahrenheit
         else:
             raise ValueError("Unknown temperature units.")
         return unit
@@ -216,9 +213,14 @@ class Keithley2182(SCPIMultimeter):
         recommended to transfer a large number of data points using GPIB.
 
         :return: Measurement readings from the instrument output buffer.
-        :rtype: `list` of `~quantities.quantity.Quantity` elements
+        :rtype: `tuple`[`~pint.Quantity`, ...]
+            or if numpy is installed, `~pint.Quantity` with `numpy.array` data
         """
-        return list(map(float, self.query("FETC?").split(","))) * self.units
+        data = list(map(float, self.query("FETC?").split(",")))
+        unit = self.units
+        if numpy:
+            return data * unit
+        return tuple(d * unit for d in data)
 
     def measure(self, mode=None):
         """
@@ -229,7 +231,7 @@ class Keithley2182(SCPIMultimeter):
         :type: `Keithley2182.Mode`
 
         :return: Returns a single shot measurement of the specified mode.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
         :units: Volts, Celsius, Kelvin, or Fahrenheit
         """
         if mode is None:

@@ -1,12 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, print_function
-
 import logging
 import time
 import instruments as ik
-import quantities as pq
+import instruments.units as u
 
 dmm = ik.hp.HP3456a.open_gpibusb('/dev/ttyUSB0', 22)
 logging.basicConfig(level=logging.DEBUG)
@@ -50,7 +48,7 @@ print(dmm.measure(dmm.Mode.ratio_dcv_dcv))
 print(dmm.measure(dmm.Mode.resistance_2wire))
 dmm.nplc = 1
 for i in range(-1, 4):
-    value = (10 ** i) * pq.volt
+    value = (10 ** i) * u.volt
     dmm.input_range = value
     print(dmm.measure(dmm.Mode.dcv))
 

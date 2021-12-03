@@ -4,7 +4,7 @@
 from sys import platform as _platform
 
 import instruments as ik
-import quantities
+import instruments.units as u
 
 
 if __name__ == "__main__":
@@ -15,13 +15,13 @@ if __name__ == "__main__":
     else:
         cc = ik.qubitekk.CC1.open_serial('COM8', 19200, timeout=1)
 
-    print "Initializing Coincidence Counter"
-    cc.dwell_time = 1.0*quantities.s
-    cc.delay = 0.0*quantities.ns
-    cc.window = 3.0*quantities.ns
+    print("Initializing Coincidence Counter")
+    cc.dwell_time = 1.0*u.s
+    cc.delay = 0.0*u.ns
+    cc.window = 3.0*u.ns
     cc.trigger = cc.TriggerMode.start_stop
-    print "ch1 counts: "+str(cc.channel[0].count)
-    print "ch2 counts: "+str(cc.channel[1].count)
-    print "counts counts: "+str(cc.channel[2].count)
+    print(f"ch1 counts: {str(cc.channel[0].count)}")
+    print(f"ch2 counts: {str(cc.channel[1].count)}")
+    print(f"counts counts: {str(cc.channel[2].count)}")
 
-    print "Finished Initializing Coincidence Counter"
+    print("Finished Initializing Coincidence Counter")

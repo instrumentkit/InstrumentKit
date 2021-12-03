@@ -6,8 +6,6 @@ Module containing common code for testing the property factories
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 from io import StringIO
 
@@ -16,7 +14,7 @@ from io import StringIO
 # pylint: disable=missing-docstring
 
 
-class MockInstrument(object):
+class MockInstrument:
 
     """
     Mock class that admits sendcmd/query but little else such that property

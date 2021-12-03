@@ -5,7 +5,6 @@
 Contains common utility functions for Toptica-brand instruments
 """
 
-from __future__ import absolute_import
 from datetime import datetime
 
 

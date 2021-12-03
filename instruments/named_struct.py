@@ -6,13 +6,9 @@ Class for quickly defining C-like structures with named fields.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import struct
 from collections import OrderedDict
-
-from future.utils import with_metaclass
 
 # DESIGN NOTES ################################################################
 
@@ -36,7 +32,7 @@ from future.utils import with_metaclass
 # CLASSES #####################################################################
 
 
-class Field(object):
+class Field:
     """
     A named field within a C-style structure.
 
@@ -66,12 +62,14 @@ class Field(object):
         if self._fmt[:-1] and int(self._fmt[:-1]) < 0:
             raise TypeError("Field is specified with negative length.")
 
-
     def is_significant(self):
         return not self._fmt.endswith('x')
 
     @property
     def fmt_char(self):
+        """
+        Gets the format character
+        """
         return self._fmt[-1]
 
     def __len__(self):
@@ -83,7 +81,7 @@ class Field(object):
         raise TypeError("Field is scalar and has no len().")
 
     def __repr__(self):
-        if self._owner_type:
+        if self._owner_type:  # pylint: disable=using-constant-test
             return "<Field {} of {}, fmt={}>".format(
                 self._name, self._owner_type, self._fmt
             )
@@ -132,6 +130,7 @@ class Field(object):
     def __set__(self, obj, value):
         obj._values[self._name] = value
 
+
 class StringField(Field):
     """
     Represents a field that is interpreted as a Python string.
@@ -178,7 +177,11 @@ class Padding(Field):
     def __init__(self, n_bytes=1):
         super(Padding, self).__init__('{}x'.format(n_bytes))
 
+
 class HasFields(type):
+    """
+    Metaclass used for NamedStruct
+    """
     def __new__(mcs, name, bases, attrs):
         # Since this is a metaclass, the __new__ method observes
         # creation of new *classes* and not new instances.
@@ -219,7 +222,7 @@ class HasFields(type):
         return cls
 
 
-class NamedStruct(with_metaclass(HasFields, object)):
+class NamedStruct(metaclass=HasFields):
     """
     Represents a C-style struct with one or more named fields,
     useful for packing and unpacking serialized data documented

@@ -6,8 +6,6 @@ Module containing support for loading instruments from configuration files.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import warnings
 
@@ -21,12 +19,9 @@ except ImportError:
     # a false positive from its import-error checker, so we locally disable
     # it here. Once the cause for the false positive has been identified,
     # the import-error check should be re-enabled.
-    import ruamel_yaml as yaml # pylint: disable=import-error
+    import ruamel_yaml as yaml  # pylint: disable=import-error
 
-import quantities as pq
-
-from future.builtins import str
-
+from instruments.units import ureg as u
 from instruments.util_fns import setattr_expression, split_unit_str
 
 # FUNCTIONS ###################################################################
@@ -62,12 +57,12 @@ def walk_dict(d, path):
 
 def quantity_constructor(loader, node):
     """
-    Constructs a `pq.Quantity` instance from a PyYAML
+    Constructs a `u.Quantity` instance from a PyYAML
     node tagged as ``!Q``.
     """
     # Follows the example of http://stackoverflow.com/a/43081967/267841.
     value = loader.construct_scalar(node)
-    return pq.Quantity(*split_unit_str(value))
+    return u.Quantity(*split_unit_str(value))
 
 # We avoid having to register !Q every time by doing as soon as the
 # relevant constructor is defined.
@@ -102,7 +97,7 @@ def load_instruments(conf_file_name, conf_path="/"):
                 channel[0].motor_model: PRM1-Z8
 
     Unitful attributes can be specified by using the ``!Q`` tag to quickly create
-    instances of `pq.Quantity`. In the example above, for instance, we can set a motion
+    instances of `u.Quantity`. In the example above, for instance, we can set a motion
     timeout as a unitful quantity::
 
         attrs:
@@ -170,6 +165,5 @@ def load_instruments(conf_file_name, conf_path="/"):
             warnings.warn("Exception occured loading device with URI "
                           "{}:\n\t{}.".format(value["uri"], ex), RuntimeWarning)
             inst_dict[name] = None
-
 
     return inst_dict

@@ -6,10 +6,9 @@ Module containing tests for the unitless property factory
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import pytest
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.util_fns import unitless_property
 from . import MockInstrument
@@ -38,7 +37,7 @@ def test_unitless_property_units():
 
         mock_inst = UnitlessMock({'MOCK?': '1'})
 
-        mock_inst.mock_property = 1 * pq.volt
+        mock_inst.mock_property = 1 * u.volt
 
 
 def test_unitless_property_format_code():

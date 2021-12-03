@@ -7,16 +7,11 @@ connections.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import io
-
-from builtins import bytes, str
 import serial
 
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.comm import AbstractCommunicator
 from instruments.util_fns import assume_units
@@ -85,14 +80,14 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
         """
         Gets/sets the communication timeout of the serial comm channel.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
-        return self._conn.timeout * pq.second
+        return self._conn.timeout * u.second
 
     @timeout.setter
     def timeout(self, newval):
-        newval = assume_units(newval, pq.second).rescale(pq.second).magnitude
+        newval = assume_units(newval, u.second).to(u.second).magnitude
         self._conn.timeout = newval
 
     # FILE-LIKE METHODS #

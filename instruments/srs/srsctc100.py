@@ -6,18 +6,12 @@ Provides support for the SRS CTC-100 cryogenic temperature controller.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 from contextlib import contextmanager
-from builtins import range
-
 from enum import Enum
 
-import quantities as pq
-import numpy as np
-
-
 from instruments.generic_scpi import SCPIInstrument
+from instruments.optional_dep_finder import numpy
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList
 
 # CLASSES #####################################################################
@@ -43,11 +37,11 @@ class SRSCTC100(SCPIInstrument):
 
     # Note that the SRS CTC-100 uses '\xb0' to represent '°'.
     _UNIT_NAMES = {
-        '\xb0C': pq.celsius,
-        'W':     pq.watt,
-        'V':     pq.volt,
-        '\xea':  pq.ohm,
-        '':      pq.dimensionless
+        '\xb0C': u.celsius,
+        'W':     u.watt,
+        'V':     u.volt,
+        '\xea':  u.ohm,
+        '':      u.dimensionless
     }
 
     # INNER CLASSES ##
@@ -61,7 +55,7 @@ class SRSCTC100(SCPIInstrument):
         diode = 'Diode'
         rox = 'ROX'
 
-    class Channel(object):
+    class Channel:
 
         """
         Represents an input or output channel on an SRS CTC-100 cryogenic
@@ -121,12 +115,12 @@ class SRSCTC100(SCPIInstrument):
             kind of sensor and/or channel you have specified. Units can be one
             of ``celsius``, ``watt``, ``volt``, ``ohm``, or ``dimensionless``.
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
             # WARNING: Queries all units all the time.
             # TODO: Make an OutputChannel that subclasses this class,
             #       and add a setter for value.
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._get('value')),
                 self.units
             )
@@ -139,7 +133,7 @@ class SRSCTC100(SCPIInstrument):
             Units can be one of ``celsius``, ``watt``, ``volt``, ``ohm``, or
             ``dimensionless``.
 
-            :type: `~quantities.UnitQuantity`
+            :type: `~pint.Unit`
             """
             # FIXME: does not respect "chan.d/dt" property.
             return self._ctc.channel_units()[self._chan_name]
@@ -195,9 +189,9 @@ class SRSCTC100(SCPIInstrument):
             Gets the average measurement for the specified channel as
             determined by the statistics gathering.
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._get('average')),
                 self.units
             )
@@ -208,9 +202,9 @@ class SRSCTC100(SCPIInstrument):
             Gets the standard deviation for the specified channel as determined
             by the statistics gathering.
 
-            :type: `~quantities.Quantity`
+            :type: `~pint.Quantity`
             """
-            return pq.Quantity(
+            return u.Quantity(
                 float(self._get('SD')),
                 self.units
             )
@@ -227,9 +221,9 @@ class SRSCTC100(SCPIInstrument):
             :param units: Units to attach to the returned data point. If left
                 with the value of `None` then the instrument will be queried
                 for the current units setting.
-            :type units: `~quantities.UnitQuantity`
+            :type units: `~pint.Unit`
             :return: The log data point with units
-            :rtype: `~quantities.Quantity`
+            :rtype: `~pint.Quantity`
             """
             if units is None:
                 units = self.units
@@ -240,7 +234,8 @@ class SRSCTC100(SCPIInstrument):
                     'getLog.xy {}, {}'.format(self._chan_name, which)
                 ).split(',')
             ]
-            return pq.Quantity(point[0], 'ms'), pq.Quantity(point[1], units)
+            return u.Quantity(float(point[0]), 'ms'), \
+                   u.Quantity(float(point[1]), units)
 
         def get_log(self):
             """
@@ -249,8 +244,9 @@ class SRSCTC100(SCPIInstrument):
 
             :return: Tuple of all the log data points. First value is time,
                 second is the measurement value.
-            :rtype: Tuple of 2x `~quantities.Quantity`, each comprised of
-                a numpy array (`numpy.dnarray`).
+            :rtype: If numpy is installed, tuple of 2x `~pint.Quantity`,
+                each comprised of a numpy array (`numpy.dnarray`).
+                Else, `tuple`[`tuple`[`~pint.Quantity`, ...], `tuple`[`~pint.Quantity`, ...]]
             """
             # Remember the current units.
             units = self.units
@@ -261,8 +257,12 @@ class SRSCTC100(SCPIInstrument):
 
             # Make an empty quantity that size for the times and for the channel
             # values.
-            ts = pq.Quantity(np.empty((n_points,)), 'ms')
-            temps = pq.Quantity(np.empty((n_points,)), units)
+            if numpy:
+                ts = u.Quantity(numpy.empty((n_points,)), u.ms)
+                temps = u.Quantity(numpy.empty((n_points,)), units)
+            else:
+                ts = [u.Quantity(0, u.ms)] * n_points
+                temps = [u.Quantity(0, units)] * n_points
 
             # Reset the position to the first point, then save it.
             # pylint: disable=protected-access
@@ -274,6 +274,10 @@ class SRSCTC100(SCPIInstrument):
             # Do an actual error check now.
             if self._ctc.error_check_toggle:
                 self._ctc.errcheck()
+
+            if not numpy:
+                ts = tuple(ts)
+                temps = tuple(temps)
 
             return ts, temps
 
@@ -309,7 +313,7 @@ class SRSCTC100(SCPIInstrument):
         Returns a dictionary from channel names to channel units, using the
         ``getOutput.units`` command. Unknown units and dimensionless quantities
         are presented the same way by the instrument, and so both are reported
-        using `pq.dimensionless`.
+        using `u.dimensionless`.
 
         :rtype: `dict` with channel names as keys and units as values
         """

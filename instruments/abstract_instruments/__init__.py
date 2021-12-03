@@ -4,7 +4,6 @@
 Module containing instrument abstract base classes and communication layers
 """
 
-from __future__ import absolute_import
 
 from .instrument import Instrument
 from .multimeter import Multimeter
@@ -18,4 +17,9 @@ from .oscilloscope import (
 from .power_supply import (
     PowerSupplyChannel,
     PowerSupply,
+)
+
+from .optical_spectrum_analyzer import (
+    OSAChannel,
+    OpticalSpectrumAnalyzer,
 )

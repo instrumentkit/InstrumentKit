@@ -6,18 +6,13 @@ Provides support for the HP6624a power supply
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-
-from builtins import range
 from enum import Enum
-
-import quantities as pq
 
 from instruments.abstract_instruments import (
     PowerSupply,
     PowerSupplyChannel
 )
+from instruments.units import ureg as u
 from instruments.util_fns import ProxyList, unitful_property, bool_property
 
 # CLASSES #####################################################################
@@ -111,7 +106,7 @@ class HP6624a(PowerSupply):
 
         voltage = unitful_property(
             "VSET",
-            pq.volt,
+            u.volt,
             set_fmt="{} {:.1f}",
             output_decoration=float,
             doc="""
@@ -121,13 +116,13 @@ class HP6624a(PowerSupply):
             Note there is no bounds checking on the value specified.
 
             :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-            :type: `float` or `~quantities.quantity.Quantity`
+            :type: `float` or `~pint.Quantity`
             """
         )
 
         current = unitful_property(
             "ISET",
-            pq.amp,
+            u.amp,
             set_fmt="{} {:.1f}",
             output_decoration=float,
             doc="""
@@ -137,39 +132,39 @@ class HP6624a(PowerSupply):
             Note there is no bounds checking on the value specified.
 
             :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
-            :type: `float` or `~quantities.quantity.Quantity`
+            :type: `float` or `~pint.Quantity`
             """
         )
 
         voltage_sense = unitful_property(
             "VOUT",
-            pq.volt,
+            u.volt,
             readonly=True,
             doc="""
             Gets the actual voltage as measured by the sense wires for the
             specified channel.
 
             :units: :math:`\\text{V}` (volts)
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
         )
 
         current_sense = unitful_property(
             "IOUT",
-            pq.amp,
+            u.amp,
             readonly=True,
             doc="""
             Gets the actual output current as measured by the instrument for
             the specified channel.
 
             :units: :math:`\\text{A}` (amps)
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
         )
 
         overvoltage = unitful_property(
             "OVSET",
-            pq.volt,
+            u.volt,
             set_fmt="{} {:.1f}",
             output_decoration=float,
             doc="""
@@ -178,7 +173,7 @@ class HP6624a(PowerSupply):
             Note there is no bounds checking on the value specified.
 
             :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
-            :type: `float` or `~quantities.quantity.Quantity`
+            :type: `float` or `~pint.Quantity`
             """
         )
 
@@ -251,13 +246,13 @@ class HP6624a(PowerSupply):
         """
         Gets/sets the voltage for all four channels.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units Volts.
-        :type: `list` of `~quantities.quantity.Quantity` with units Volt
+        :type: `tuple`[`~pint.Quantity`, ...] with units Volt
         """
-        return [
+        return tuple([
             self.channel[i].voltage for i in range(self.channel_count)
-        ]
+        ])
 
     @voltage.setter
     def voltage(self, newval):
@@ -277,13 +272,13 @@ class HP6624a(PowerSupply):
         """
         Gets/sets the current for all four channels.
 
-        :units: As specified (if a `~quantities.Quantity`) or assumed to be
+        :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units Amps.
-        :type: `list` of `~quantities.quantity.Quantity` with units Amp
+        :type: `tuple`[`~pint.Quantity`, ...] with units Amp
         """
-        return [
+        return tuple([
             self.channel[i].current for i in range(self.channel_count)
-        ]
+        ])
 
     @current.setter
     def current(self, newval):
@@ -304,9 +299,9 @@ class HP6624a(PowerSupply):
         Gets the actual voltage as measured by the sense wires for all channels.
 
         :units: :math:`\\text{V}` (volts)
-        :rtype: `tuple` of `~quantities.quantity.Quantity`
+        :rtype: `tuple`[`~pint.Quantity`, ...]
         """
-        return (
+        return tuple(
             self.channel[i].voltage_sense for i in range(self.channel_count)
         )
 
@@ -316,9 +311,9 @@ class HP6624a(PowerSupply):
         Gets the actual current as measured by the instrument for all channels.
 
         :units: :math:`\\text{A}` (amps)
-        :rtype: `tuple` of `~quantities.quantity.Quantity`
+        :rtype: `tuple`[`~pint.Quantity`, ...]
         """
-        return (
+        return tuple(
             self.channel[i].current_sense for i in range(self.channel_count)
         )
 

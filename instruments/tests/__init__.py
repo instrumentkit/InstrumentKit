@@ -9,18 +9,15 @@ unit tests.
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 import contextlib
 from io import BytesIO
+from unittest import mock
 
-from builtins import bytes, str
+import pytest
 
-try:
-    from unittest import mock  # from Python 3.3 onward, this is in the stdlib
-except ImportError:
-    import mock
+from instruments.optional_dep_finder import numpy
+from instruments.units import ureg as u
 
 # FUNCTIONS ##################################################################
 
@@ -104,16 +101,13 @@ Got:
     #     """Only read {} bytes out of {}""".format(current, end)
 
 
-def unit_eq(a, b, msg=None, thresh=1e-5):
+def unit_eq(a, b):
     """
     Asserts that two unitful quantites ``a`` and ``b``
     are equal up to a small numerical threshold.
     """
-    assert abs((a - b).magnitude) <= thresh, "{} - {} = {}.{}".format(
-        a, b, a - b,
-        "\n" + msg if msg is not None else ""
-    )
-    assert a.units == b.units, "{} and {} have different units".format(a, b)
+    assert a.magnitude == pytest.approx(b.magnitude)
+    assert a.units == b.units, f"{a} and {b} have different units"
 
 
 def make_name_test(ins_class, name_cmd="*IDN?"):
@@ -125,3 +119,18 @@ def make_name_test(ins_class, name_cmd="*IDN?"):
         with expected_protocol(ins_class, name_cmd + "\n", "NAME\n") as ins:
             assert ins.name == "NAME"
     return test
+
+
+def iterable_eq(a, b):
+    """
+    Asserts that the contents of two iterables are the same.
+    """
+    if numpy and (isinstance(a, numpy.ndarray) or isinstance(b, numpy.ndarray)):
+        # pylint: disable=unidiomatic-typecheck
+        assert type(a) == type(b), f"Expected two numpy arrays, got {type(a)}, {type(b)}"
+        assert len(a) == len(b), f"Length of iterables is not the same, got {len(a)} and {len(b)}"
+        assert (a == b).all()
+    elif isinstance(a, u.Quantity) and isinstance(b, u.Quantity):
+        unit_eq(a, b)
+    else:
+        assert a == b

@@ -8,14 +8,10 @@ MC1 Class originally contributed by Catherine Holloway.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import, division
-
-from builtins import range, map
 from enum import Enum
 
-import quantities as pq
-
 from instruments.abstract_instruments import Instrument
+from instruments.units import ureg as u
 from instruments.util_fns import (
     int_property, enum_property, unitful_property, assume_units
 )
@@ -31,9 +27,9 @@ class MC1(Instrument):
     def __init__(self, filelike):
         super(MC1, self).__init__(filelike)
         self.terminator = "\r"
-        self._increment = 1*pq.ms
-        self._lower_limit = -300*pq.ms
-        self._upper_limit = 300*pq.ms
+        self._increment = 1*u.ms
+        self._lower_limit = -300*u.ms
+        self._upper_limit = 300*u.ms
         self._firmware = None
         self._controller = None
 
@@ -54,13 +50,13 @@ class MC1(Instrument):
         Gets/sets the stepping increment value of the motor controller
 
         :units: As specified, or assumed to be of units milliseconds
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self._increment
 
     @increment.setter
     def increment(self, newval):
-        self._increment = assume_units(newval, pq.ms).rescale(pq.ms)
+        self._increment = assume_units(newval, u.ms).to(u.ms)
 
     @property
     def lower_limit(self):
@@ -68,13 +64,13 @@ class MC1(Instrument):
         Gets/sets the stepping lower limit value of the motor controller
 
         :units: As specified, or assumed to be of units milliseconds
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self._lower_limit
 
     @lower_limit.setter
     def lower_limit(self, newval):
-        self._lower_limit = assume_units(newval, pq.ms).rescale(pq.ms)
+        self._lower_limit = assume_units(newval, u.ms).to(u.ms)
 
     @property
     def upper_limit(self):
@@ -82,13 +78,13 @@ class MC1(Instrument):
         Gets/sets the stepping upper limit value of the motor controller
 
         :units: As specified, or assumed to be of units milliseconds
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         """
         return self._upper_limit
 
     @upper_limit.setter
     def upper_limit(self, newval):
-        self._upper_limit = assume_units(newval, pq.ms).rescale(pq.ms)
+        self._upper_limit = assume_units(newval, u.ms).to(u.ms)
 
     direction = unitful_property(
         command="DIRE",
@@ -96,10 +92,10 @@ class MC1(Instrument):
         Get the internal direction variable, which is a function of how far
         the motor needs to go.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """,
-        units=pq.ms,
+        units=u.ms,
         readonly=True
     )
 
@@ -109,12 +105,12 @@ class MC1(Instrument):
         Gets/Sets the amount of force required to overcome static inertia. Must
          be between 0 and 100 milliseconds.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """,
         format_code='{:.0f}',
-        units=pq.ms,
-        valid_range=(0*pq.ms, 100*pq.ms),
+        units=u.ms,
+        valid_range=(0*u.ms, 100*u.ms),
         set_fmt=":{} {}"
     )
 
@@ -126,7 +122,7 @@ class MC1(Instrument):
          the positive direction minus the number of milliseconds that voltage
          has been applied to the motor in the negative direction.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """
         response = int(self.query("POSI?"))*self.step_size
@@ -137,10 +133,10 @@ class MC1(Instrument):
         doc="""
         Get the estimated motor position, in millimeters.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: millimeters
         """,
-        units=pq.mm,
+        units=u.mm,
         readonly=True
     )
 
@@ -163,12 +159,12 @@ class MC1(Instrument):
         Gets/Sets the number of milliseconds per step. Must be between 1
         and 100 milliseconds.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """,
         format_code='{:.0f}',
-        units=pq.ms,
-        valid_range=(1*pq.ms, 100*pq.ms),
+        units=u.ms,
+        valid_range=(1*u.ms, 100*u.ms),
         set_fmt=":{} {}"
     )
 
@@ -208,7 +204,7 @@ class MC1(Instrument):
         Get the motor's timeout value, which indicates the number of
         milliseconds before the motor can start moving again.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: milliseconds
         """
         response = int(self.query("TIME?"))
@@ -244,12 +240,12 @@ class MC1(Instrument):
         the number of motor steps. It varies between motors.
 
         :param new_position: the location
-        :type new_position: `~quantities.Quantity`
+        :type new_position: `~pint.Quantity`
         """
+        new_position = assume_units(new_position, u.ms).to(u.ms)
         if self.lower_limit <= new_position <= self.upper_limit:
-            new_position = assume_units(new_position, pq.ms).rescale(pq.ms)
             clock_cycles = new_position/self.step_size
-            cmd = ":MOVE "+str(int(clock_cycles))
+            cmd = f":MOVE {int(clock_cycles)}"
             self.sendcmd(cmd)
         else:
             raise ValueError("Location out of range")

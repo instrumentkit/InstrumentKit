@@ -6,10 +6,8 @@ Provides support for the Holzworth HS9000
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
-import quantities as pq
+from instruments.units import ureg as u
 
 from instruments.abstract_instruments.signal_generator import (
     SignalGenerator,
@@ -18,7 +16,6 @@ from instruments.abstract_instruments.signal_generator import (
 from instruments.util_fns import (
     ProxyList, split_unit_str, bounded_unitful_property, bool_property
 )
-from instruments.units import dBm
 
 # CLASSES #####################################################################
 
@@ -123,15 +120,15 @@ class HS9000(SignalGenerator):
             Gets the current temperature of the specified channel.
 
             :units: As specified by the instrument.
-            :rtype: `~quantities.quantity.Quantity`
+            :rtype: `~pint.Quantity`
             """
             val, units = split_unit_str(self.query("TEMP?"))
             units = "deg{}".format(units)
-            return pq.Quantity(val, units)
+            return u.Quantity(val, units)
 
         frequency, frequency_min, frequency_max = bounded_unitful_property(
             "FREQ",
-            units=pq.GHz,
+            units=u.GHz,
             doc="""
             Gets/sets the frequency of the specified channel. When setting,
             values are bounded between what is returned by `frequency_min`
@@ -144,13 +141,13 @@ class HS9000(SignalGenerator):
             >>> print(hs.channel[0].frequency_min)
             >>> print(hs.channel[0].frequency_max)
 
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             :units: As specified or assumed to be of units GHz
             """
         )
         power, power_min, power_max = bounded_unitful_property(
             "PWR",
-            units=dBm,
+            units=u.dBm,
             doc="""
             Gets/sets the output power of the specified channel. When setting,
             values are bounded between what is returned by `power_min`
@@ -163,13 +160,13 @@ class HS9000(SignalGenerator):
             >>> print(hs.channel[0].power_min)
             >>> print(hs.channel[0].power_max)
 
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             :units: `instruments.units.dBm`
             """
         )
         phase, phase_min, phase_max = bounded_unitful_property(
             "PHASE",
-            units=pq.degree,
+            units=u.degree,
             doc="""
             Gets/sets the output phase of the specified channel. When setting,
             values are bounded between what is returned by `phase_min`
@@ -182,7 +179,7 @@ class HS9000(SignalGenerator):
             >>> print(hs.channel[0].phase_min)
             >>> print(hs.channel[0].phase_max)
 
-            :type: `~quantities.quantity.Quantity`
+            :type: `~pint.Quantity`
             :units: As specified or assumed to be of units degrees
             """
         )

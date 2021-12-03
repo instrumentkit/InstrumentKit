@@ -6,18 +6,15 @@ Provides an abstract base class for electrometer instruments
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 
 import abc
-from future.utils import with_metaclass
 
 from instruments.abstract_instruments import Instrument
 
 # CLASSES #####################################################################
 
 
-class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
+class Electrometer(Instrument, metaclass=abc.ABCMeta):
 
     """
     Abstract base class for electrometer instruments.
@@ -37,7 +34,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @mode.setter
     @abc.abstractmethod
@@ -51,9 +47,8 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
         Gets/sets the measurement mode for the electrometer. This is an
         abstract method.
 
-        :type: `~quantities.UnitQuantity`
+        :type: `~pint.Unit`
         """
-        pass
 
     @property
     @abc.abstractmethod
@@ -64,7 +59,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @trigger_mode.setter
     @abc.abstractmethod
@@ -80,7 +74,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `~enum.Enum`
         """
-        pass
 
     @input_range.setter
     @abc.abstractmethod
@@ -96,7 +89,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `bool`
         """
-        pass
 
     @zero_check.setter
     @abc.abstractmethod
@@ -112,7 +104,6 @@ class Electrometer(with_metaclass(abc.ABCMeta, Instrument)):
 
         :type: `bool`
         """
-        pass
 
     @zero_correct.setter
     @abc.abstractmethod

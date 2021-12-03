@@ -6,43 +6,26 @@ Provides the base Instrument class for all instruments.
 
 # IMPORTS #####################################################################
 
-# pylint: disable=wrong-import-position
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import os
 import collections
 import socket
+import struct
+import urllib.parse as parse
 
-from builtins import map
 from serial import SerialException
 from serial.tools.list_ports import comports
-
-from future.standard_library import install_aliases
-import numpy as np
-
+import pyvisa
 import usb
 import usb.core
 import usb.util
-
-install_aliases()
-import urllib.parse as parse  # pylint: disable=wrong-import-order,import-error
-
-if not getattr(__builtins__, "WindowsError", None):
-    class WindowsError(OSError):
-        pass
-try:
-    import visa
-except (ImportError, WindowsError, OSError):
-    visa = None
 
 from instruments.abstract_instruments.comm import (
     SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
     LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,
     USBTMCCommunicator, VXI11Communicator, serial_manager
 )
+from instruments.optional_dep_finder import numpy
 from instruments.errors import AcknowledgementError, PromptError
 
 # CONSTANTS ###################################################################
@@ -57,7 +40,7 @@ _DEFAULT_FORMATS.update({
 # CLASSES #####################################################################
 
 
-class Instrument(object):
+class Instrument:
 
     """
     This is the base instrument class from which all others are derived from.
@@ -94,7 +77,7 @@ class Instrument(object):
             be sent.
         """
         self._file.sendcmd(str(cmd))
-        ack_expected_list = self._ack_expected(cmd)
+        ack_expected_list = self._ack_expected(cmd)  # pylint: disable=assignment-from-none
         if not isinstance(ack_expected_list, (list, tuple)):
             ack_expected_list = [ack_expected_list]
         for ack_expected in ack_expected_list:
@@ -126,7 +109,7 @@ class Instrument(object):
             connected instrument.
         :rtype: `str`
         """
-        ack_expected_list = self._ack_expected(cmd)
+        ack_expected_list = self._ack_expected(cmd)  # pylint: disable=assignment-from-none
         if not isinstance(ack_expected_list, (list, tuple)):
             ack_expected_list = [ack_expected_list]
 
@@ -138,16 +121,14 @@ class Instrument(object):
                 ack = self.read()
                 if ack != ack_expected:
                     raise AcknowledgementError(
-                        "Incorrect ACK message received: got {} "
-                        "expected {}".format(ack, ack_expected)
+                        f"Incorrect ACK message received: got {ack} expected {ack_expected}"
                     )
             value = self.read(size)  # Now read in our return data
         if self.prompt is not None:
             prompt = self.read(len(self.prompt))
             if prompt != self.prompt:
                 raise PromptError(
-                    "Incorrect prompt message received: got {} "
-                    "expected {}".format(prompt, self.prompt)
+                    f"Incorrect prompt message received: got {prompt} expected {self.prompt}"
                 )
         return value
 
@@ -305,7 +286,9 @@ class Instrument(object):
                     raise IOError("Did not read in the required number of bytes"
                                   "during binblock read. Got {}, expected "
                                   "{}".format(len(data), num_of_bytes))
-            return np.frombuffer(data, dtype=fmt)
+            if numpy:
+                return numpy.frombuffer(data, dtype=fmt)
+            return struct.unpack(f"{fmt[0]}{int(len(data)/data_width)}{fmt[-1]}", data)
 
     # CLASS METHODS #
 
@@ -544,6 +527,8 @@ class Instrument(object):
             instrument before timing out.
         :param float write_timeout: Number of seconds to wait when writing to the
             instrument before timing out.
+        :param str model: The brand of adapter to be connected to. Currently supported
+            is "gi" for Galvant Industries, and "pl" for Prologix LLC.
 
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
@@ -562,11 +547,19 @@ class Instrument(object):
         return cls(GPIBCommunicator(ser, gpib_address, model))
 
     @classmethod
-    def open_gpibethernet(cls, host, port, gpib_address, model="gi"):
+    def open_gpibethernet(cls, host, port, gpib_address, model="pl"):
         """
-        .. warning:: The GPIB-Ethernet adapter that this connection would
-            use does not actually exist, and thus this class method should
-            not be used.
+        Opens an instrument, connecting via a Prologix GPIBETHERNET adapter.
+
+        :param str host: Name or IP address of the instrument.
+        :param int port: TCP port on which the insturment is listening.
+        :param int gpib_address: Address on the connected GPIB bus assigned to
+            the instrument.
+        :param str model: The brand of adapter to be connected to. Currently supported
+            is "gi" for Galvant Industries, and "pl" for Prologix LLC.
+
+        .. warning:: This function has been setup for use with the Prologix
+            GPIBETHERNET adapter but has not been tested as confirmed working.
         """
         conn = socket.socket()
         conn.connect((host, port))
@@ -591,16 +584,13 @@ class Instrument(object):
 
         .. _PyVISA: http://pyvisa.sourceforge.net/
         """
-        if visa is None:
-            raise ImportError("PyVISA is required for loading VISA "
-                              "instruments.")
-        version = list(map(int, visa.__version__.split(".")))
+        version = list(map(int, pyvisa.__version__.split(".")))
         while len(version) < 3:
             version += [0]
         if version[0] >= 1 and version[1] >= 6:
-            ins = visa.ResourceManager().open_resource(resource_name)
+            ins = pyvisa.ResourceManager().open_resource(resource_name)
         else:
-            ins = visa.instrument(resource_name)  #pylint: disable=no-member
+            ins = pyvisa.instrument(resource_name)  #pylint: disable=no-member
         return cls(VisaCommunicator(ins))
 
     @classmethod
@@ -678,10 +668,6 @@ class Instrument(object):
         :return: Object representing the connected instrument.
         """
         # pylint: disable=no-member
-        if usb is None:
-            raise ImportError("USB support not imported. Do you have PyUSB "
-                              "version 1.0 or later?")
-
         dev = usb.core.find(idVendor=vid, idProduct=pid)
         if dev is None:
             raise IOError("No such device found.")

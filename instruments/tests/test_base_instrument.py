@@ -6,19 +6,17 @@ Module containing tests for the base Instrument class
 
 # IMPORTS ####################################################################
 
-from __future__ import absolute_import
 
 import socket
 import io
-
-from builtins import bytes
 import serial
+import usb.core
 from serial.tools.list_ports_common import ListPortInfo
 
 import pytest
-import numpy as np
 
 import instruments as ik
+from instruments.optional_dep_finder import numpy
 from instruments.tests import expected_protocol
 # pylint: disable=unused-import
 from instruments.abstract_instruments.comm import (
@@ -27,6 +25,7 @@ from instruments.abstract_instruments.comm import (
     USBTMCCommunicator, VXI11Communicator, serial_manager, SerialCommunicator
 )
 from instruments.errors import AcknowledgementError, PromptError
+from instruments.tests import iterable_eq
 
 from . import mock
 
@@ -39,14 +38,18 @@ from . import mock
 
 def test_instrument_binblockread():
     with expected_protocol(
-        ik.Instrument,
-        [],
-        [
-            b"#210" + bytes.fromhex("00000001000200030004") + b"0",
-        ],
-        sep="\n"
+            ik.Instrument,
+            [],
+            [
+                b"#210" + bytes.fromhex("00000001000200030004") + b"0",
+            ],
+            sep="\n"
     ) as inst:
-        np.testing.assert_array_equal(inst.binblockread(2), [0, 1, 2, 3, 4])
+        actual_data = inst.binblockread(2)
+        expected = (0, 1, 2, 3, 4)
+        if numpy:
+            expected = numpy.array(expected)
+        iterable_eq(actual_data, expected)
 
 
 def test_instrument_binblockread_two_reads():
@@ -56,11 +59,14 @@ def test_instrument_binblockread_two_reads():
         side_effect=[b"#", b"2", b"10", data[:6], data[6:]]
     )
 
-    np.testing.assert_array_equal(inst.binblockread(2), [0, 1, 2, 3, 4])
+    expected = (0, 1, 2, 3, 4)
+    if numpy:
+        expected = numpy.array((0, 1, 2, 3, 4))
+    iterable_eq(inst.binblockread(2), expected)
 
     calls_expected = [1, 1, 2, 10, 4]
     calls_actual = [call[0][0] for call in inst._file.read_raw.call_args_list]
-    np.testing.assert_array_equal(calls_expected, calls_actual)
+    iterable_eq(calls_actual, calls_expected)
 
 
 def test_instrument_binblockread_too_many_reads():
@@ -114,7 +120,7 @@ def test_instrument_open_serial(mock_serial_manager):
     )
 
 
-class fake_serial(object):
+class fake_serial:
     """
     Create a fake serial.Serial() object so that tests can be run without
     accessing a non-existant port.
@@ -136,17 +142,15 @@ def fake_comports():
     """
     Generate a fake list of comports to compare against.
     """
-    fake_device = ListPortInfo()
+    fake_device = ListPortInfo(device='COM1')
     fake_device.vid = 0
     fake_device.pid = 1000
     fake_device.serial_number = 'a1'
-    fake_device.device = 'COM1'
 
-    fake_device2 = ListPortInfo()
+    fake_device2 = ListPortInfo(device='COM2')
     fake_device2.vid = 1
     fake_device2.pid = 1010
     fake_device2.serial_number = 'c0'
-    fake_device2.device = 'COM2'
     return [fake_device, fake_device2]
 
 
@@ -184,17 +188,15 @@ def test_instrument_open_serial_by_usb_ids_and_serial_number(mock_serial_manager
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial_by_usb_ids_multiple_matches(_, mock_comports):
     with pytest.raises(serial.SerialException):
-        fake_device = ListPortInfo()
+        fake_device = ListPortInfo(device='COM1')
         fake_device.vid = 0
         fake_device.pid = 1000
         fake_device.serial_number = 'a1'
-        fake_device.device = 'COM1'
 
-        fake_device2 = ListPortInfo()
+        fake_device2 = ListPortInfo(device='COM2')
         fake_device2.vid = 0
         fake_device2.pid = 1000
         fake_device2.serial_number = 'b2'
-        fake_device2.device = 'COM2'
 
         mock_comports.return_value = [fake_device, fake_device2]
 
@@ -275,14 +277,25 @@ def test_instrument_open_gpibusb(mock_serial_manager, mock_gpib_comm):
     )
 
 
-@mock.patch("instruments.abstract_instruments.instrument.visa", new=None)
-def test_instrument_open_visa_import_error():
-    with pytest.raises(ImportError):
-        _ = ik.Instrument.open_visa("abc123")
+@mock.patch("instruments.abstract_instruments.instrument.GPIBCommunicator")
+@mock.patch("instruments.abstract_instruments.instrument.socket")
+def test_instrument_open_gpibethernet(mock_socket_manager, mock_gpib_comm):
+    mock_gpib_comm.return_value.__class__ = GPIBCommunicator
+
+    host = "192.168.1.13"
+    port = 1818
+
+    inst = ik.Instrument.open_gpibethernet(
+        host, port, gpib_address=1, model="pl"
+    )
+
+    mock_socket_manager.socket.assert_called()
+    mock_socket_manager.socket().connect.assert_called_with((host, port))
+    assert isinstance(inst._file, GPIBCommunicator) is True
 
 
 @mock.patch("instruments.abstract_instruments.instrument.VisaCommunicator")
-@mock.patch("instruments.abstract_instruments.instrument.visa")
+@mock.patch("instruments.abstract_instruments.instrument.pyvisa")
 def test_instrument_open_visa_new_version(mock_visa, mock_visa_comm):
     mock_visa_comm.return_value.__class__ = VisaCommunicator
     mock_visa.__version__ = "1.8"
@@ -297,7 +310,7 @@ def test_instrument_open_visa_new_version(mock_visa, mock_visa_comm):
 
 
 @mock.patch("instruments.abstract_instruments.instrument.VisaCommunicator")
-@mock.patch("instruments.abstract_instruments.instrument.visa")
+@mock.patch("instruments.abstract_instruments.instrument.pyvisa")
 def test_instrument_open_visa_old_version(mock_visa, mock_visa_comm):
     mock_visa_comm.return_value.__class__ = VisaCommunicator
     mock_visa.__version__ = "1.5"
@@ -331,6 +344,69 @@ def test_instrument_open_vxi11(mock_vxi11_comm):
     assert isinstance(inst._file, VXI11Communicator) is True
 
     mock_vxi11_comm.assert_called_with("string", 1, key1="value")
+
+
+@mock.patch("instruments.abstract_instruments.instrument.usb")
+def test_instrument_open_usb(mock_usb):
+    """Open USB device."""
+    # mock some behavior
+    mock_usb.core.find.return_value.__class__ = usb.core.Device  # dev
+    mock_usb.core.find().get_active_configuration.return_value.__class__ = (
+        usb.core.Configuration
+    )
+
+    # shortcuts for asserting calls
+    dev = mock_usb.core.find()
+    cfg = dev.get_active_configuration()
+    interface_number = cfg[(0, 0)].bInterfaceNumber
+    alternate_setting = mock_usb.control.get_interface(
+        dev, cfg[(0, 0)].bInterfaceNumber
+    )
+
+    # call instrument
+    inst = ik.Instrument.open_usb("0x1000", 0x1000)
+
+    # assert calls according to manual
+    dev.set_configuration.assert_called()  # check default configuration
+    dev.get_active_configuration.assert_called()  # get active configuration
+    mock_usb.control.get_interface.assert_called_with(dev, interface_number)
+    mock_usb.util.find_descriptor.assert_any_call(
+        cfg,
+        bInterfaceNumber=interface_number,
+        bAlternateSetting=alternate_setting
+    )
+    # check the first argument of the `ep =` call
+    assert mock_usb.util.find_descriptor.call_args_list[1][0][0] == (
+        mock_usb.util.find_descriptor(
+            cfg,
+            bInterfaceNumber=interface_number,
+            bAlternateSetting=alternate_setting
+        )
+    )
+
+    # assert instrument of correct class
+    assert isinstance(inst._file, USBCommunicator)
+
+
+@mock.patch("instruments.abstract_instruments.instrument.usb")
+def test_instrument_open_usb_no_device(mock_usb):
+    """Open USB, no device found."""
+    mock_usb.core.find.return_value = None  # mock no instrument found
+    with pytest.raises(IOError) as err:
+        _ = ik.Instrument.open_usb(0x1000, 0x1000)
+    err_msg = err.value.args[0]
+    assert err_msg == "No such device found."
+
+
+@mock.patch("instruments.abstract_instruments.instrument.usb")
+def test_instrument_open_usb_ep_none(mock_usb):
+    """Raise IOError if endpoint matching returns None."""
+    mock_usb.util.find_descriptor.return_value = None
+
+    with pytest.raises(IOError) as err:
+        _ = ik.Instrument.open_usb(0x1000, 0x1000)
+    err_msg = err.value.args[0]
+    assert err_msg == "USB descriptor not found."
 
 
 @mock.patch("instruments.abstract_instruments.instrument.USBTMCCommunicator")

@@ -7,14 +7,9 @@ VXI11 devices.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
 
 import io
 import logging
-
-from builtins import str, bytes
 
 import vxi11
 
@@ -94,7 +89,7 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
         """
         Gets/sets the communication timeout of the vxi11 comm channel.
 
-        :type: `~quantities.Quantity`
+        :type: `~pint.Quantity`
         :units: As specified or assumed to be of units ``seconds``
         """
         return self._inst.timeout

@@ -33,16 +33,11 @@ Kit project.
 
 # IMPORTS #####################################################################
 
-from __future__ import absolute_import
-from __future__ import division
 import time
-from builtins import range
-
 from enum import Enum
 
-import quantities as pq
-
 from instruments.abstract_instruments import Multimeter
+from instruments.units import ureg as u
 
 # CLASSES #####################################################################
 
@@ -80,7 +75,7 @@ class Fluke3000(Multimeter):
     Example usage:
 
     >>> import instruments as ik
-    >>> mult = ik.fluke.fluke3000.open_serial("/dev/ttyUSB0", 115200)
+    >>> mult = ik.fluke.Fluke3000.open_serial("/dev/ttyUSB0", 115200)
     >>> mult.measure(mult.Mode.voltage_dc) # Measures the DC voltage
     array(12.345) * V
 
@@ -105,7 +100,7 @@ class Fluke3000(Multimeter):
         Initialize the instrument, and set the properties needed for communication.
         """
         super(Fluke3000, self).__init__(filelike)
-        self.timeout = 3 * pq.second
+        self.timeout = 3 * u.second
         self.terminator = "\r"
         self.positions = {}
         self.connect()
@@ -156,11 +151,11 @@ class Fluke3000(Multimeter):
 
         :rtype: `Fluke3000.Mode`
         """
-        if self.Module.m3000 not in self.positions.keys():
+        if self.Module.m3000 not in self.positions:
             raise KeyError("No `Fluke3000` FC multimeter is bound")
         port_id = self.positions[self.Module.m3000]
-        value = self.query_lines("rfemd 0{} 1".format(port_id), 2)[-1]
-        self.query("rfemd 0{} 2".format(port_id))
+        value = self.query_lines(f"rfemd 0{port_id} 1", 2)[-1]
+        self.query(f"rfemd 0{port_id} 2")
         data = value.split("PH=")[-1]
         return self.Mode(self._parse_mode(data))
 
@@ -198,50 +193,50 @@ class Fluke3000(Multimeter):
 
         :rtype: `str`
         """
-        return AttributeError('The `Fluke3000` FC is an autoranging only multimeter')
+        raise AttributeError('The `Fluke3000` FC is an autoranging only multimeter')
 
-    # METHODS ##
+    # METHODS #
 
     def connect(self):
         """
         Connect to available modules and returns a dictionary
         of the modules found and their port ID.
         """
-        self.scan()                       # Look for connected devices
+        self.scan()                        # Look for connected devices
         if not self.positions:
-            self.reset()                  # Reset the PC3000 dongle
-            timeout = self.timeout        # Store default timeout
-            self.timeout = 30 * pq.second # PC 3000 can take a while to bind with wireless devices
-            self.query_lines("rfdis", 3)  # Discover available modules and bind them
-            self.timeout = timeout        # Restore default timeout
-            self.scan()                   # Look for connected devices
+            self.reset()                   # Reset the PC3000 dongle
+            timeout = self.timeout         # Store default timeout
+            self.timeout = 30 * u.second   # PC 3000 can take a while to bind with wireless devices
+            self.query_lines("rfdis", 3)   # Discover available modules and bind them
+            self.timeout = timeout         # Restore default timeout
+            self.scan()                    # Look for connected devices
 
         if not self.positions:
             raise ValueError("No `Fluke3000` modules available")
 
     def scan(self):
         """
-        Search for available modules and reformatturns a dictionary
+        Search for available modules and reformat. Returns a dictionary
         of the modules found and their port ID.
         """
         # Loop over possible channels, store device locations
         positions = {}
         for port_id in range(1, 7):
             # Check if a device is connected to port port_id
-            output = self.query("rfebd 0{} 0".format(port_id))
+            output = self.query(f"rfebd 0{port_id} 0")
             if "RFEBD" not in output:
                 continue
 
             # If it is, identify the device
             self.read()
-            output = self.query_lines('rfgus 0{}'.format(port_id), 2)[-1]
+            output = self.query_lines(f"rfgus 0{port_id}", 2)[-1]
             module_id = int(output.split("PH=")[-1])
             if module_id == self.Module.m3000.value:
                 positions[self.Module.m3000] = port_id
             elif module_id == self.Module.t3000.value:
                 positions[self.Module.t3000] = port_id
             else:
-                raise NotImplementedError("Module ID {} not implemented".format(module_id))
+                raise NotImplementedError(f"Module ID {module_id} not implemented")
 
         self.positions = positions
 
@@ -295,7 +290,7 @@ class Fluke3000(Multimeter):
         until a terminator is not found.
         """
         timeout = self.timeout
-        self.timeout = 0.1 * pq.second
+        self.timeout = 0.1 * u.second
         init_time = time.time()
         while time.time() - init_time < 1.:
             try:
@@ -312,17 +307,17 @@ class Fluke3000(Multimeter):
         :type mode: `Fluke3000.Mode`
 
         :return: A measurement from the multimeter.
-        :rtype: `~quantities.quantity.Quantity`
+        :rtype: `~pint.Quantity`
 
         """
         # Check that the mode is supported
         if not isinstance(mode, self.Mode):
-            raise ValueError("Mode {} is not supported".format(mode))
+            raise ValueError(f"Mode {mode} is not supported")
 
         # Check that the module associated with this mode is available
         module = self._get_module(mode)
-        if module not in self.positions.keys():
-            raise ValueError("Device necessary to measure {} is not available".format(mode))
+        if module not in self.positions:
+            raise ValueError(f"Device necessary to measure {mode} is not available")
 
         # Query the module
         value = ''
@@ -332,19 +327,19 @@ class Fluke3000(Multimeter):
             # Read out
             if mode == self.Mode.temperature:
                 # The temperature module supports single readout
-                value = self.query_lines("rfemd 0{} 0".format(port_id), 2)[-1]
+                value = self.query_lines(f"rfemd 0{port_id} 0", 2)[-1]
             else:
                 # The multimeter does not support single readout,
                 # have to open continuous readout, read, then close it
-                value = self.query_lines("rfemd 0{} 1".format(port_id), 2)[-1]
-                self.query("rfemd 0{} 2".format(port_id))
+                value = self.query_lines(f"rfemd 0{port_id} 1", 2)[-1]
+                self.query(f"rfemd 0{port_id} 2")
 
             # Check that value is consistent with the request, break
             if "PH" in value:
                 data = value.split("PH=")[-1]
                 if self._parse_mode(data) != mode.value:
                     if self.Module.m3000 in self.positions.keys():
-                        self.query("rfemd 0{} 2".format(self.positions[self.Module.m3000]))
+                        self.query(f"rfemd 0{self.positions[self.Module.m3000]} 2")
                     self.flush()
                 else:
                     break
@@ -354,7 +349,7 @@ class Fluke3000(Multimeter):
 
         # Return with the appropriate units
         units = UNITS[mode]
-        return value * units
+        return u.Quantity(value, units)
 
     def _get_module(self, mode):
         """Gets the module associated with this measurement mode.
@@ -394,9 +389,8 @@ class Fluke3000(Multimeter):
 
         # Check that the multimeter is in the right mode (fifth byte)
         if self._parse_mode(data) != mode.value:
-            error = ("Mode {} was requested but the Fluke 3000FC Multimeter "
-                     "is in mode {} instead. Could not read the requested "
-                     "quantity.").format(mode.name, self.Mode(data[8:10]).name)
+            error = (f"Mode {mode.name} was requested but the Fluke 3000FC Multimeter is in "
+                     f"mode {self.Mode(data[8:10]).name} instead. Could not read the requested quantity.")
             raise ValueError(error)
 
         # Extract the value from the first two bytes
@@ -451,15 +445,15 @@ class Fluke3000(Multimeter):
 
         """
         # Convert the fourth dual hex byte to an 8 bits string
-        byte = format(int(data[6:8], 16), '08b')
+        byte = format(int(data[6:8], 16), "08b")
 
         # The first bit encodes the sign (0 positive, 1 negative)
-        sign = 1 if byte[0] == '0' else -1
+        sign = 1 if byte[0] == "0" else -1
 
         # The second to fourth bits encode the metric prefix
         code = int(byte[1:4], 2)
-        if code not in PREFIXES.keys():
-            raise ValueError("Metric prefix not recognized: {}".format(code))
+        if code not in PREFIXES:
+            raise ValueError(f"Metric prefix not recognized: {code}")
         prefix = PREFIXES[code]
 
         # The sixth and seventh bit encode the decimal place
@@ -468,18 +462,19 @@ class Fluke3000(Multimeter):
         # Return the combination
         return sign*prefix*scale
 
+
 # UNITS #######################################################################
 
 UNITS = {
     None: 1,
-    Fluke3000.Mode.voltage_ac:  pq.volt,
-    Fluke3000.Mode.voltage_dc:  pq.volt,
-    Fluke3000.Mode.current_ac:  pq.amp,
-    Fluke3000.Mode.current_dc:  pq.amp,
-    Fluke3000.Mode.frequency:   pq.hertz,
-    Fluke3000.Mode.temperature: pq.celsius,
-    Fluke3000.Mode.resistance:  pq.ohm,
-    Fluke3000.Mode.capacitance: pq.farad
+    Fluke3000.Mode.voltage_ac:  u.volt,
+    Fluke3000.Mode.voltage_dc:  u.volt,
+    Fluke3000.Mode.current_ac:  u.amp,
+    Fluke3000.Mode.current_dc:  u.amp,
+    Fluke3000.Mode.frequency:   u.hertz,
+    Fluke3000.Mode.temperature: u.degC,
+    Fluke3000.Mode.resistance:  u.ohm,
+    Fluke3000.Mode.capacitance: u.farad
 }
 
 # METRIC PREFIXES #############################################################
