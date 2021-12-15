@@ -119,7 +119,7 @@ class NewportError(IOError):
                                                self._timestamp)
                 super(NewportError, self).__init__(error)
             else:
-                error_message = self.get_message('x{0}'.format(self._errcode))
+                error_message = self.get_message('x{0:02d}'.format(self._errcode))
                 error = "Newport Error: {0}. Axis: {1}. " \
                         "Error Message: {2}. " \
                         "At time : {3}".format(str(self._errcode),
