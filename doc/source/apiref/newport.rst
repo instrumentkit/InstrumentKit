@@ -40,3 +40,9 @@ Newport
     :members:
     :undoc-members:
 
+:class:`PicoMotorController8742`
+================================
+
+.. autoclass:: PicoMotorController8742
+    :members:
+    :undoc-members:
