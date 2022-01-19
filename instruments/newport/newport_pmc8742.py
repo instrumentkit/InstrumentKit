@@ -1156,7 +1156,6 @@ class PicoMotorController8742(Instrument):
         try:
             retval = retval.decode("utf-8")
         except UnicodeDecodeError:
-            print(retval)
             retval = retval[6:].decode("utf-8")
 
         return retval
