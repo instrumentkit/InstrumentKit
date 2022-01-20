@@ -1,0 +1,61 @@
+name: Testing
+
+on:
+  push:
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: pip install --upgrade pip setuptools virtualenv tox
+    - name: Test with tox
+      run: tox -e pylint
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - python-version: 3.6
+            TOXENV: "py36"
+          - python-version: 3.7
+            TOXENV: "py37"
+          - python-version: 3.8
+            TOXENV: "py38"
+          - python-version: 3.9
+            TOXENV: "py39"
+          - python-version: 3.9
+            TOXENV: "py39-numpy"
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: pip install --upgrade pip setuptools wheel virtualenv tox
+    - name: Test with tox
+      env:
+        TOXENV: ${{ matrix.TOXENV }}
+      run: tox
+    - name: Submit to coveralls
+      uses: AndreMiras/coveralls-python-action@develop
+      with:
+        parallel: true
+        flag-name: Unit Test
+
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
