@@ -1,6 +1,9 @@
 name: Testing
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
 
 jobs:
   static-checks:
