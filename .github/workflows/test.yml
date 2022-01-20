@@ -50,7 +50,7 @@ jobs:
         parallel: true
         flag-name: Unit Test
 
-  finish:
+  coverage:
     needs: test
     runs-on: ubuntu-latest
     steps:
