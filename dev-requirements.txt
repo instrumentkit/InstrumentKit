@@ -3,3 +3,4 @@ pytest==6.1.1
 pytest-mock
 hypothesis==4.28.2
 pyvisa-sim
+six
