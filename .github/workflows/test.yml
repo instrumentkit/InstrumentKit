@@ -15,9 +15,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: pip install --upgrade pip setuptools virtualenv tox
-    - name: Test with tox
-      run: tox -e pylint
+      run: pip install --upgrade pre-commit
+    - name: Run static checks via pre-commit
+      run: pre-commit run --all
   test:
     runs-on: ubuntu-latest
     strategy:
