@@ -22,11 +22,9 @@ def test_lakeshore340_sensor_init():
     Test initialization of sensor class.
     """
     with expected_protocol(
-            ik.lakeshore.Lakeshore340,
-            [
-            ],
-            [
-            ],
+        ik.lakeshore.Lakeshore340,
+        [],
+        [],
     ) as cryo:
         sensor = cryo.sensor[0]
         assert sensor._parent is cryo
@@ -38,12 +36,8 @@ def test_lakeshore340_sensor_temperature():
     Receive a unitful temperature from a sensor.
     """
     with expected_protocol(
-            ik.lakeshore.Lakeshore340,
-            [
-                "KRDG?1"
-            ],
-            [
-                "77"
-            ],
+        ik.lakeshore.Lakeshore340,
+        ["KRDG?1"],
+        ["77"],
     ) as cryo:
         assert cryo.sensor[0].temperature == u.Quantity(77, u.K)

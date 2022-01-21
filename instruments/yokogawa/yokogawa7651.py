@@ -63,15 +63,18 @@ class Yokogawa7651(PowerSupply, Instrument):
 
             :type: `Yokogawa7651.Mode`
             """
-            raise NotImplementedError('This instrument does not support '
-                                      'querying the operation mode.')
+            raise NotImplementedError(
+                "This instrument does not support " "querying the operation mode."
+            )
 
         @mode.setter
         def mode(self, newval):
             if not isinstance(newval, Yokogawa7651.Mode):
-                raise TypeError("Mode setting must be a `Yokogawa7651.Mode` "
-                                "value, got {} instead.".format(type(newval)))
-            self._parent.sendcmd('F{};'.format(newval.value))
+                raise TypeError(
+                    "Mode setting must be a `Yokogawa7651.Mode` "
+                    "value, got {} instead.".format(type(newval))
+                )
+            self._parent.sendcmd("F{};".format(newval.value))
             self._parent.trigger()
 
         @property
@@ -86,14 +89,16 @@ class Yokogawa7651(PowerSupply, Instrument):
                 assumed to be of units Volts.
             :type: `~pint.Quantity` with units Volt
             """
-            raise NotImplementedError('This instrument does not support '
-                                      'querying the output voltage setting.')
+            raise NotImplementedError(
+                "This instrument does not support "
+                "querying the output voltage setting."
+            )
 
         @voltage.setter
         def voltage(self, newval):
             newval = assume_units(newval, u.volt).to(u.volt).magnitude
             self.mode = self._parent.Mode.voltage
-            self._parent.sendcmd('SA{};'.format(newval))
+            self._parent.sendcmd("SA{};".format(newval))
             self._parent.trigger()
 
         @property
@@ -108,14 +113,16 @@ class Yokogawa7651(PowerSupply, Instrument):
                 assumed to be of units Amps.
             :type: `~pint.Quantity` with units Amp
             """
-            raise NotImplementedError('This instrument does not support '
-                                      'querying the output current setting.')
+            raise NotImplementedError(
+                "This instrument does not support "
+                "querying the output current setting."
+            )
 
         @current.setter
         def current(self, newval):
             newval = assume_units(newval, u.amp).to(u.amp).magnitude
             self.mode = self._parent.Mode.current
-            self._parent.sendcmd('SA{};'.format(newval))
+            self._parent.sendcmd("SA{};".format(newval))
             self._parent.trigger()
 
         @property
@@ -128,16 +135,17 @@ class Yokogawa7651(PowerSupply, Instrument):
 
             :type: `bool`
             """
-            raise NotImplementedError('This instrument does not support '
-                                      'querying the output status.')
+            raise NotImplementedError(
+                "This instrument does not support " "querying the output status."
+            )
 
         @output.setter
         def output(self, newval):
             if newval is True:
-                self._parent.sendcmd('O1;')
+                self._parent.sendcmd("O1;")
                 self._parent.trigger()
             else:
-                self._parent.sendcmd('O0;')
+                self._parent.sendcmd("O0;")
                 self._parent.trigger()
 
     # ENUMS #
@@ -146,6 +154,7 @@ class Yokogawa7651(PowerSupply, Instrument):
         """
         Enum containing valid output modes for the Yokogawa 7651
         """
+
         voltage = 1
         current = 5
 
@@ -179,8 +188,9 @@ class Yokogawa7651(PowerSupply, Instrument):
             to be of units Volts.
         :type: `~pint.Quantity` with units Volt
         """
-        raise NotImplementedError('This instrument does not support querying '
-                                  'the output voltage setting.')
+        raise NotImplementedError(
+            "This instrument does not support querying " "the output voltage setting."
+        )
 
     @voltage.setter
     def voltage(self, newval):
@@ -197,8 +207,9 @@ class Yokogawa7651(PowerSupply, Instrument):
             to be of units Amps.
         :type: `~pint.Quantity` with units Amp
         """
-        raise NotImplementedError('This instrument does not support querying '
-                                  'the output current setting.')
+        raise NotImplementedError(
+            "This instrument does not support querying " "the output current setting."
+        )
 
     @current.setter
     def current(self, newval):
@@ -213,4 +224,4 @@ class Yokogawa7651(PowerSupply, Instrument):
         After changing any parameters of the instrument (for example, output
         voltage), the device needs to be triggered before it will update.
         """
-        self.sendcmd('E;')
+        self.sendcmd("E;")

@@ -89,7 +89,7 @@ def test_serialcomm_read_raw():
     comm._conn.read = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
     assert comm.read_raw() == b"abc"
-    comm._conn.read.assert_has_calls([mock.call(1)]*4)
+    comm._conn.read.assert_has_calls([mock.call(1)] * 4)
     assert comm._conn.read.call_count == 4
 
     comm._conn.read = mock.MagicMock()

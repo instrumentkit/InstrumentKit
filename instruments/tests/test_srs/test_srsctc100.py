@@ -46,15 +46,7 @@ ch_names_str = ",".join(ch_names)
 @pytest.mark.parametrize("channel", ch_names)
 def test_srsctc100_channel_init(channel):
     """Initialize a channel."""
-    with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query
-            ],
-            [
-                ch_names_str
-            ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, [ch_names_query], [ch_names_str]) as inst:
         with inst._error_checking_disabled():
             ch = inst.channel[channel]
             assert ch._ctc is inst
@@ -67,14 +59,9 @@ def test_srsctc100_channel_name():
     old_name = ch_names[0]
     new_name = "New channel"
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"{old_name.replace(' ', '')}.name = \"{new_name}\""
-            ],
-            [
-                ch_names_str
-            ]
+        ik.srs.SRSCTC100,
+        [ch_names_query, f"{old_name.replace(' ', '')}.name = \"{new_name}\""],
+        [ch_names_str],
     ) as inst:
         with inst._error_checking_disabled():
             ch = inst.channel[ch_names[0]]
@@ -95,15 +82,9 @@ def test_srsctc100_channel_get(channel):
     cmd = "COMMAND"
     answ = "ANSWER"
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"{channel.replace(' ', '')}.{cmd}?"
-            ],
-            [
-                ch_names_str,
-                answ
-            ]
+        ik.srs.SRSCTC100,
+        [ch_names_query, f"{channel.replace(' ', '')}.{cmd}?"],
+        [ch_names_str, answ],
     ) as inst:
         with inst._error_checking_disabled():
             assert inst.channel[channel]._get(cmd) == answ
@@ -118,14 +99,9 @@ def test_srsctc100_channel_set(channel):
     cmd = "COMMAND"
     newval = "NEWVAL"
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"{channel.replace(' ', '')}.{cmd} = \"{newval}\""
-            ],
-            [
-                ch_names_str
-            ]
+        ik.srs.SRSCTC100,
+        [ch_names_query, f"{channel.replace(' ', '')}.{cmd} = \"{newval}\""],
+        [ch_names_str],
     ) as inst:
         with inst._error_checking_disabled():
             inst.channel[channel]._set(cmd, newval)
@@ -138,19 +114,19 @@ def test_srsctc100_channel_value():
     value = 42
 
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"{channel.replace(' ', '')}.value?",
-                "getOutput.units?",
-                ch_names_query
-            ],
-            [
-                ch_names_str,
-                f"{value}",
-                ",".join(ch_units),
-                ch_names_str,
-            ]
+        ik.srs.SRSCTC100,
+        [
+            ch_names_query,
+            f"{channel.replace(' ', '')}.value?",
+            "getOutput.units?",
+            ch_names_query,
+        ],
+        [
+            ch_names_str,
+            f"{value}",
+            ",".join(ch_units),
+            ch_names_str,
+        ],
     ) as inst:
         with inst._error_checking_disabled():
             assert inst.channel[channel].value == u.Quantity(value, unit)
@@ -161,17 +137,13 @@ def test_srsctc100_channel_units_single():
     channel = ch_names[0]
     unit = ik.srs.SRSCTC100._UNIT_NAMES[ch_units[0]]
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                "getOutput.units?",
-                ch_names_query
-            ],
-            [
-                ch_names_str,
-                ",".join(ch_units),
-                ch_names_str,
-            ]
+        ik.srs.SRSCTC100,
+        [ch_names_query, "getOutput.units?", ch_names_query],
+        [
+            ch_names_str,
+            ",".join(ch_units),
+            ch_names_str,
+        ],
     ) as inst:
         with inst._error_checking_disabled():
             ch = inst.channel[channel]
@@ -183,15 +155,12 @@ def test_srsctc100_channel_sensor_type(sensor):
     """Get type of sensor attached to specified channel."""
     channel = ch_names[0]
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"{channel.replace(' ', '')}.sensor?",
-            ],
-            [
-                ch_names_str,
-                f"{sensor.value}"
-            ]
+        ik.srs.SRSCTC100,
+        [
+            ch_names_query,
+            f"{channel.replace(' ', '')}.sensor?",
+        ],
+        [ch_names_str, f"{sensor.value}"],
     ) as inst:
         with inst._error_checking_disabled():
             assert inst.channel[channel].sensor_type == sensor
@@ -203,16 +172,13 @@ def test_srsctc100_channel_stats_enabled(newval):
     channel = ch_names[0]
     value_inst = "On" if newval else "Off"
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"{channel.replace(' ', '')}.stats = \"{value_inst}\"",
-                f"{channel.replace(' ', '')}.stats?"
-            ],
-            [
-                ch_names_str,
-                f"{value_inst}"
-            ]
+        ik.srs.SRSCTC100,
+        [
+            ch_names_query,
+            f"{channel.replace(' ', '')}.stats = \"{value_inst}\"",
+            f"{channel.replace(' ', '')}.stats?",
+        ],
+        [ch_names_str, f"{value_inst}"],
     ) as inst:
         with inst._error_checking_disabled():
             ch = inst.channel[channel]
@@ -225,16 +191,13 @@ def test_srsctc100_channel_stats_points(points):
     """Get / set stats points in valid range."""
     channel = ch_names[0]
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"{channel.replace(' ', '')}.points = \"{points}\"",
-                f"{channel.replace(' ', '')}.points?"
-            ],
-            [
-                ch_names_str,
-                f"{points}"
-            ]
+        ik.srs.SRSCTC100,
+        [
+            ch_names_query,
+            f"{channel.replace(' ', '')}.points = \"{points}\"",
+            f"{channel.replace(' ', '')}.points?",
+        ],
+        [ch_names_str, f"{points}"],
     ) as inst:
         with inst._error_checking_disabled():
             ch = inst.channel[channel]
@@ -248,19 +211,19 @@ def test_srsctc100_channel_average():
     unit = ik.srs.SRSCTC100._UNIT_NAMES[ch_units[0]]
     value = 42
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"{channel.replace(' ', '')}.average?",
-                "getOutput.units?",
-                ch_names_query
-            ],
-            [
-                ch_names_str,
-                f"{value}",
-                ",".join(ch_units),
-                ch_names_str,
-            ]
+        ik.srs.SRSCTC100,
+        [
+            ch_names_query,
+            f"{channel.replace(' ', '')}.average?",
+            "getOutput.units?",
+            ch_names_query,
+        ],
+        [
+            ch_names_str,
+            f"{value}",
+            ",".join(ch_units),
+            ch_names_str,
+        ],
     ) as inst:
         with inst._error_checking_disabled():
             assert inst.channel[channel].average == u.Quantity(value, unit)
@@ -272,19 +235,19 @@ def test_srsctc100_channel_std_dev():
     unit = ik.srs.SRSCTC100._UNIT_NAMES[ch_units[0]]
     value = 42
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"{channel.replace(' ', '')}.SD?",
-                "getOutput.units?",
-                ch_names_query
-            ],
-            [
-                ch_names_str,
-                f"{value}",
-                ",".join(ch_units),
-                ch_names_str,
-            ]
+        ik.srs.SRSCTC100,
+        [
+            ch_names_query,
+            f"{channel.replace(' ', '')}.SD?",
+            "getOutput.units?",
+            ch_names_query,
+        ],
+        [
+            ch_names_str,
+            f"{value}",
+            ",".join(ch_units),
+            ch_names_str,
+        ],
     ) as inst:
         with inst._error_checking_disabled():
             assert inst.channel[channel].std_dev == u.Quantity(value, unit)
@@ -297,26 +260,22 @@ def test_get_log_point(channel):
     unit = ik.srs.SRSCTC100._UNIT_NAMES[ch_name_unit_dict[channel]]
     values = (13, 42)
     which = "first"
-    values_out = (u.Quantity(float(values[0]), u.ms),
-                  u.Quantity(float(values[1]), unit))
+    values_out = (
+        u.Quantity(float(values[0]), u.ms),
+        u.Quantity(float(values[1]), unit),
+    )
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                "getOutput.units?",
-                ch_names_query,
-                f"getLog.xy {channel}, {which}"
-            ],
-            [
-                ch_names_str,
-                ",".join(ch_units),
-                ch_names_str,
-                f"{values[0]},{values[1]}"
-            ]
+        ik.srs.SRSCTC100,
+        [
+            ch_names_query,
+            "getOutput.units?",
+            ch_names_query,
+            f"getLog.xy {channel}, {which}",
+        ],
+        [ch_names_str, ",".join(ch_units), ch_names_str, f"{values[0]},{values[1]}"],
     ) as inst:
         with inst._error_checking_disabled():
-            assert (inst.channel[channel].get_log_point(which=which) ==
-                    values_out)
+            assert inst.channel[channel].get_log_point(which=which) == values_out
 
 
 def test_get_log_point_with_unit():
@@ -325,23 +284,20 @@ def test_get_log_point_with_unit():
     unit = ik.srs.SRSCTC100._UNIT_NAMES[ch_units[0]]
     values = (13, 42)
     which = "first"
-    values_out = (u.Quantity(float(values[0]), u.ms),
-                  u.Quantity(float(values[1]), unit))
+    values_out = (
+        u.Quantity(float(values[0]), u.ms),
+        u.Quantity(float(values[1]), unit),
+    )
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                f"getLog.xy {channel}, {which}"
-            ],
-            [
-                ch_names_str,
-                f"{values[0]},{values[1]}"
-            ]
+        ik.srs.SRSCTC100,
+        [ch_names_query, f"getLog.xy {channel}, {which}"],
+        [ch_names_str, f"{values[0]},{values[1]}"],
     ) as inst:
         with inst._error_checking_disabled():
-            assert (inst.channel[channel].get_log_point(which=which,
-                                                        units=unit) ==
-                    values_out)
+            assert (
+                inst.channel[channel].get_log_point(which=which, units=unit)
+                == values_out
+            )
 
 
 @pytest.mark.parametrize("channel", ch_names)
@@ -363,10 +319,12 @@ def test_channel_get_log(channel):
     err_check_reci = "0,NO ERROR"
 
     # stich together strings to read all the values
-    str_log_next_send = "\n".join([f"getLog.xy {channel}, next" for
-                                   it in range(1, n_points)])
-    str_log_next_reci = "\n".join([f"{times[it]},{values[it]}" for
-                                   it in range(1, n_points)])
+    str_log_next_send = "\n".join(
+        [f"getLog.xy {channel}, next" for it in range(1, n_points)]
+    )
+    str_log_next_reci = "\n".join(
+        [f"{times[it]},{values[it]}" for it in range(1, n_points)]
+    )
 
     # make data to compare with
     if numpy:
@@ -384,33 +342,33 @@ def test_channel_get_log(channel):
         temps = tuple(temps)
 
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query,
-                err_check_send,
-                "getOutput.units?",
-                err_check_send,
-                ch_names_query,
-                err_check_send,
-                f"getLog.xy? {channel}",
-                err_check_send,
-                f"getLog.xy {channel}, first",  # query first point
-                str_log_next_send,
-                err_check_send
-            ],
-            [
-                ch_names_str,
-                err_check_reci,
-                ",".join(ch_units),
-                err_check_reci,
-                ch_names_str,
-                err_check_reci,
-                f"{n_points}",
-                err_check_reci,
-                f"{times[0]},{values[0]}",
-                str_log_next_reci,
-                err_check_reci
-            ]
+        ik.srs.SRSCTC100,
+        [
+            ch_names_query,
+            err_check_send,
+            "getOutput.units?",
+            err_check_send,
+            ch_names_query,
+            err_check_send,
+            f"getLog.xy? {channel}",
+            err_check_send,
+            f"getLog.xy {channel}, first",  # query first point
+            str_log_next_send,
+            err_check_send,
+        ],
+        [
+            ch_names_str,
+            err_check_reci,
+            ",".join(ch_units),
+            err_check_reci,
+            ch_names_str,
+            err_check_reci,
+            f"{n_points}",
+            err_check_reci,
+            f"{times[0]},{values[0]}",
+            str_log_next_reci,
+            err_check_reci,
+        ],
     ) as inst:
         ch = inst.channel[channel]
         ts_read, temps_read = ch.get_log()
@@ -424,27 +382,13 @@ def test_channel_get_log(channel):
 
 def test_srsctc100_init():
     """Initialize the SRS CTC-100 instrument."""
-    with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-            ],
-            [
-            ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, [], []) as inst:
         assert inst._do_errcheck
 
 
 def test_srsctc100_channel_names():
     """Get current channel names from instrument."""
-    with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                ch_names_query
-            ],
-            [
-                ch_names_str
-            ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, [ch_names_query], [ch_names_str]) as inst:
         with inst._error_checking_disabled():
             assert inst._channel_names() == ch_names
 
@@ -452,15 +396,9 @@ def test_srsctc100_channel_names():
 def test_srsctc100_channel_units_all():
     """Get units for all channels."""
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                "getOutput.units?",
-                ch_names_query
-            ],
-            [
-                ",".join(ch_units),
-                ch_names_str
-            ]
+        ik.srs.SRSCTC100,
+        ["getOutput.units?", ch_names_query],
+        [",".join(ch_units), ch_names_str],
     ) as inst:
         with inst._error_checking_disabled():
             # create a unit dictionary to compare the return to
@@ -473,29 +411,13 @@ def test_srsctc100_channel_units_all():
 
 def test_srsctc100_errcheck():
     """Error check - no error returned."""
-    with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                "geterror?"
-            ],
-            [
-                "0,NO ERROR"
-            ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, ["geterror?"], ["0,NO ERROR"]) as inst:
         assert inst.errcheck() == 0
 
 
 def test_srsctc100_errcheck_error_raised():
     """Error check - error raises."""
-    with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                "geterror?"
-            ],
-            [
-                "42,THE ANSWER"
-            ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, ["geterror?"], ["42,THE ANSWER"]) as inst:
         with pytest.raises(IOError) as exc_info:
             inst.errcheck()
         exc_msg = exc_info.value.args[0]
@@ -504,13 +426,7 @@ def test_srsctc100_errcheck_error_raised():
 
 def test_srsctc100_error_checking_disabled_context():
     """Context dialogue to disable error checking."""
-    with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-            ],
-            [
-            ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, [], []) as inst:
         # by default, error checking enabled
         with inst._error_checking_disabled():
             assert not inst._do_errcheck
@@ -523,14 +439,9 @@ def test_srsctc100_error_checking_disabled_context():
 def test_srsctc100_display_figures(figures):
     """Get / set significant figures of display."""
     with expected_protocol(
-                ik.srs.SRSCTC100,
-                [
-                    f"system.display.figures = {figures}",
-                    "system.display.figures?"
-                ],
-                [
-                    f"{figures}"
-                ]
+        ik.srs.SRSCTC100,
+        [f"system.display.figures = {figures}", "system.display.figures?"],
+        [f"{figures}"],
     ) as inst:
         with inst._error_checking_disabled():
             inst.display_figures = figures
@@ -540,31 +451,21 @@ def test_srsctc100_display_figures(figures):
 @given(figures=st.integers().filter(lambda x: x < 0 or x > 6))
 def test_srsctc100_display_figures_value_error(figures):
     """Raise ValueError when setting an invalid number of figures."""
-    with expected_protocol(
-                ik.srs.SRSCTC100,
-                [
-                ],
-                [
-                ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, [], []) as inst:
         with inst._error_checking_disabled():
             with pytest.raises(ValueError) as exc_info:
                 inst.display_figures = figures
             exc_msg = exc_info.value.args[0]
-            assert exc_msg == "Number of display figures must be an " \
-                              "integer from 0 to 6, inclusive."
+            assert (
+                exc_msg == "Number of display figures must be an "
+                "integer from 0 to 6, inclusive."
+            )
 
 
 @pytest.mark.parametrize("newval", (True, False))
 def test_srsctc100_error_check_toggle(newval):
     """Get / set error check bool."""
-    with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-            ],
-            [
-            ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, [], []) as inst:
         inst.error_check_toggle = newval
         assert inst.error_check_toggle == newval
 
@@ -572,13 +473,7 @@ def test_srsctc100_error_check_toggle(newval):
 def test_srsctc100_error_check_toggle_type_error():
     """Raise type error when error check toggle set with non-bool."""
     newval = 42
-    with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-            ],
-            [
-            ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, [], []) as inst:
         with pytest.raises(TypeError):
             inst.error_check_toggle = newval
 
@@ -587,14 +482,7 @@ def test_srsctc100_sendcmd():
     """Send a command and error check."""
     cmd = "COMMAND"
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                cmd,
-                "geterror?"
-            ],
-            [
-                "0,NO ERROR"
-            ]
+        ik.srs.SRSCTC100, [cmd, "geterror?"], ["0,NO ERROR"]
     ) as inst:
         inst.sendcmd("COMMAND")
 
@@ -604,28 +492,13 @@ def test_srsctc100_query():
     cmd = "COMMAND"
     answ = "ANSWER"
     with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                cmd,
-                "geterror?"
-            ],
-            [
-                answ,
-                "0,NO ERROR"
-            ]
+        ik.srs.SRSCTC100, [cmd, "geterror?"], [answ, "0,NO ERROR"]
     ) as inst:
         assert inst.query("COMMAND") == answ
 
 
 def test_srsctc100_clear_log():
     """Clear the log."""
-    with expected_protocol(
-            ik.srs.SRSCTC100,
-            [
-                "System.Log.Clear yes"
-            ],
-            [
-            ]
-    ) as inst:
+    with expected_protocol(ik.srs.SRSCTC100, ["System.Log.Clear yes"], []) as inst:
         with inst._error_checking_disabled():
             inst.clear_log()

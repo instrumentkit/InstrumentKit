@@ -29,7 +29,7 @@ class Lakeshore370(SCPIInstrument):
     def __init__(self, filelike):
         super(Lakeshore370, self).__init__(filelike)
         # Disable termination characters and enable EOI
-        self.sendcmd('IEEE 3,0')
+        self.sendcmd("IEEE 3,0")
 
     # INNER CLASSES ##
 
@@ -56,7 +56,7 @@ class Lakeshore370(SCPIInstrument):
             :units: Ohm
             :rtype: `~pint.Quantity`
             """
-            value = self._parent.query('RDGR? {}'.format(self._idx))
+            value = self._parent.query("RDGR? {}".format(self._idx))
             return u.Quantity(float(value), u.ohm)
 
     # PROPERTIES ##

@@ -29,7 +29,7 @@ class OxfordITC503(Instrument):
     def __init__(self, filelike):
         super(OxfordITC503, self).__init__(filelike)
         self.terminator = "\r"
-        self.sendcmd('C3')  # Enable remote commands
+        self.sendcmd("C3")  # Enable remote commands
 
     # INNER CLASSES #
 
@@ -56,7 +56,7 @@ class OxfordITC503(Instrument):
             :units: Kelvin
             :type: `~pint.Quantity`
             """
-            value = float(self._parent.query('R{}'.format(self._idx))[1:])
+            value = float(self._parent.query("R{}".format(self._idx))[1:])
             return u.Quantity(value, u.kelvin)
 
     # PROPERTIES #

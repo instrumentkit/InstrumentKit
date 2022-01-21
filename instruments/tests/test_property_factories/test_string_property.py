@@ -17,47 +17,47 @@ from . import MockInstrument
 
 def test_string_property_basics():
     class StringMock(MockInstrument):
-        mock_property = string_property('MOCK')
+        mock_property = string_property("MOCK")
 
-    mock_inst = StringMock({'MOCK?': '"foobar"'})
+    mock_inst = StringMock({"MOCK?": '"foobar"'})
 
-    assert mock_inst.mock_property == 'foobar'
+    assert mock_inst.mock_property == "foobar"
 
-    mock_inst.mock_property = 'foo'
+    mock_inst.mock_property = "foo"
     assert mock_inst.value == 'MOCK?\nMOCK "foo"\n'
 
 
 def test_string_property_different_bookmark_symbol():
     class StringMock(MockInstrument):
-        mock_property = string_property('MOCK', bookmark_symbol='%^')
+        mock_property = string_property("MOCK", bookmark_symbol="%^")
 
-    mock_inst = StringMock({'MOCK?': '%^foobar%^'})
+    mock_inst = StringMock({"MOCK?": "%^foobar%^"})
 
-    assert mock_inst.mock_property == 'foobar'
+    assert mock_inst.mock_property == "foobar"
 
-    mock_inst.mock_property = 'foo'
-    assert mock_inst.value == 'MOCK?\nMOCK %^foo%^\n'
+    mock_inst.mock_property = "foo"
+    assert mock_inst.value == "MOCK?\nMOCK %^foo%^\n"
 
 
 def test_string_property_no_bookmark_symbol():
     class StringMock(MockInstrument):
-        mock_property = string_property('MOCK', bookmark_symbol='')
+        mock_property = string_property("MOCK", bookmark_symbol="")
 
-    mock_inst = StringMock({'MOCK?': 'foobar'})
+    mock_inst = StringMock({"MOCK?": "foobar"})
 
-    assert mock_inst.mock_property == 'foobar'
+    assert mock_inst.mock_property == "foobar"
 
-    mock_inst.mock_property = 'foo'
-    assert mock_inst.value == 'MOCK?\nMOCK foo\n'
+    mock_inst.mock_property = "foo"
+    assert mock_inst.value == "MOCK?\nMOCK foo\n"
 
 
 def test_string_property_set_cmd():
     class StringMock(MockInstrument):
-        mock_property = string_property('MOCK', set_cmd='FOOBAR')
+        mock_property = string_property("MOCK", set_cmd="FOOBAR")
 
-    mock_inst = StringMock({'MOCK?': '"derp"'})
+    mock_inst = StringMock({"MOCK?": '"derp"'})
 
-    assert mock_inst.mock_property == 'derp'
+    assert mock_inst.mock_property == "derp"
 
-    mock_inst.mock_property = 'qwerty'
+    mock_inst.mock_property = "qwerty"
     assert mock_inst.value == 'MOCK?\nFOOBAR "qwerty"\n'

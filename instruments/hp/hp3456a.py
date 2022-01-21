@@ -74,6 +74,7 @@ class HP3456a(Multimeter):
         """
         Enum with the supported math modes
         """
+
         off = 0
         pass_fail = 1
         statistic = 2
@@ -90,6 +91,7 @@ class HP3456a(Multimeter):
         """
         Enum containing the supported mode codes
         """
+
         #: DC voltage
         dcv = "S0F1"
         #: AC voltage
@@ -116,6 +118,7 @@ class HP3456a(Multimeter):
         """
         Enum with the register names for all `HP3456a` internal registers.
         """
+
         number_of_readings = "N"
         number_of_digits = "G"
         nplc = "I"
@@ -134,6 +137,7 @@ class HP3456a(Multimeter):
         """
         Enum with valid trigger modes.
         """
+
         internal = 1
         external = 2
         single = 3
@@ -146,6 +150,7 @@ class HP3456a(Multimeter):
         powerline cycles to integrate over.
 
         """
+
         voltage = (1e-1, 1e0, 1e1, 1e2, 1e3)
         resistance = (1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9)
         nplc = (1e-1, 1e0, 1e1, 1e2)
@@ -160,7 +165,8 @@ class HP3456a(Multimeter):
         :type: `HP3456a.Mode`
         """,
         writeonly=True,
-        set_fmt="{}{}")
+        set_fmt="{}{}",
+    )
 
     autozero = bool_property(
         "Z",
@@ -179,7 +185,8 @@ class HP3456a(Multimeter):
         suitable for high impendance measurements since no input switching is
         done.""",
         writeonly=True,
-        set_fmt="{}{}")
+        set_fmt="{}{}",
+    )
 
     filter = bool_property(
         "FL",
@@ -194,7 +201,8 @@ class HP3456a(Multimeter):
         ac converter and input amplifier. In these modes select the filter for
         measurements below 400Hz.""",
         writeonly=True,
-        set_fmt="{}{}")
+        set_fmt="{}{}",
+    )
 
     math_mode = enum_property(
         "M",
@@ -209,7 +217,8 @@ class HP3456a(Multimeter):
         :type: `HP3456a.MathMode`
         """,
         writeonly=True,
-        set_fmt="{}{}")
+        set_fmt="{}{}",
+    )
 
     trigger_mode = enum_property(
         "T",
@@ -223,7 +232,8 @@ class HP3456a(Multimeter):
 
         """,
         writeonly=True,
-        set_fmt="{}{}")
+        set_fmt="{}{}",
+    )
 
     @property
     def number_of_readings(self):
@@ -256,8 +266,9 @@ class HP3456a(Multimeter):
     def number_of_digits(self, newval):
         newval = int(newval)
         if newval not in range(3, 7):
-            raise ValueError("Valid number_of_digits are: "
-                             "{}".format(list(range(3, 7))))
+            raise ValueError(
+                "Valid number_of_digits are: " "{}".format(list(range(3, 7)))
+            )
 
         self._register_write(HP3456a.Register.number_of_digits, newval)
 
@@ -281,8 +292,7 @@ class HP3456a(Multimeter):
         if newval in valid:
             self._register_write(HP3456a.Register.nplc, newval)
         else:
-            raise ValueError("Valid nplc settings are: "
-                             "{}".format(valid))
+            raise ValueError("Valid nplc settings are: " "{}".format(valid))
 
     @property
     def delay(self):
@@ -426,8 +436,10 @@ class HP3456a(Multimeter):
             if value.lower() == "auto":
                 self.sendcmd("R1W")
             else:
-                raise ValueError("Only 'auto' is acceptable when specifying "
-                                 "the input range as a string.")
+                raise ValueError(
+                    "Only 'auto' is acceptable when specifying "
+                    "the input range as a string."
+                )
 
         elif isinstance(value, u.Quantity):
             if value.units == u.volt:
@@ -437,18 +449,22 @@ class HP3456a(Multimeter):
                 valid = HP3456a.ValidRange.resistance.value
                 value = value.to(u.ohm)
             else:
-                raise ValueError("Value {} not quantity.volt or quantity.ohm"
-                                 "".format(value))
+                raise ValueError(
+                    "Value {} not quantity.volt or quantity.ohm" "".format(value)
+                )
 
             value = float(value.magnitude)
             if value not in valid:
-                raise ValueError("Value {} outside valid ranges "
-                                 "{}".format(value, valid))
+                raise ValueError(
+                    "Value {} outside valid ranges " "{}".format(value, valid)
+                )
             value = valid.index(value) + 2
             self.sendcmd("R{}W".format(value))
         else:
-            raise TypeError("Range setting must be specified as a float, int, "
-                            "or the string 'auto', got {}".format(type(value)))
+            raise TypeError(
+                "Range setting must be specified as a float, int, "
+                "or the string 'auto', got {}".format(type(value))
+            )
 
     @property
     def relative(self):
@@ -468,8 +484,10 @@ class HP3456a(Multimeter):
             self._null = False
             self.sendcmd("M{}".format(HP3456a.MathMode.off.value))
         else:
-            raise TypeError("Relative setting must be specified as a bool, "
-                            "got {}".format(type(value)))
+            raise TypeError(
+                "Relative setting must be specified as a bool, "
+                "got {}".format(type(value))
+            )
 
     # METHODS ##
 
@@ -570,11 +588,13 @@ class HP3456a(Multimeter):
         except KeyError:
             pass
         if not isinstance(name, HP3456a.Register):
-            raise TypeError("register must be specified as a "
-                            "HP3456a.Register, got {} "
-                            "instead.".format(name))
+            raise TypeError(
+                "register must be specified as a "
+                "HP3456a.Register, got {} "
+                "instead.".format(name)
+            )
         self.sendcmd("RE{}".format(name.value))
-        time.sleep(.1)
+        time.sleep(0.1)
         return float(self.query("", size=-1))
 
     def _register_write(self, name, value):
@@ -590,23 +610,26 @@ class HP3456a(Multimeter):
         except KeyError:
             pass
         if not isinstance(name, HP3456a.Register):
-            raise TypeError("register must be specified as a "
-                            "HP3456a.Register, got {} "
-                            "instead.".format(name))
+            raise TypeError(
+                "register must be specified as a "
+                "HP3456a.Register, got {} "
+                "instead.".format(name)
+            )
         if name in [
-                HP3456a.Register.mean,
-                HP3456a.Register.variance,
-                HP3456a.Register.count
+            HP3456a.Register.mean,
+            HP3456a.Register.variance,
+            HP3456a.Register.count,
         ]:
             raise ValueError("register {} is read only".format(name))
         self.sendcmd("W{}ST{}".format(value, name.value))
-        time.sleep(.1)
+        time.sleep(0.1)
 
     def trigger(self):
         """
         Signal a single manual trigger event to the `HP3456a`.
         """
         self.sendcmd("T3")
+
 
 # UNITS #######################################################################
 

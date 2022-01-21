@@ -55,6 +55,7 @@ def walk_dict(d, path):
     # Otherwise, resolve that segment and recurse.
     return walk_dict(d[path[0]], path[1:])
 
+
 def quantity_constructor(loader, node):
     """
     Constructs a `u.Quantity` instance from a PyYAML
@@ -64,9 +65,11 @@ def quantity_constructor(loader, node):
     value = loader.construct_scalar(node)
     return u.Quantity(*split_unit_str(value))
 
+
 # We avoid having to register !Q every time by doing as soon as the
 # relevant constructor is defined.
-yaml.add_constructor(u'!Q', quantity_constructor)
+yaml.add_constructor(u"!Q", quantity_constructor)
+
 
 def load_instruments(conf_file_name, conf_path="/"):
     """
@@ -138,11 +141,12 @@ def load_instruments(conf_file_name, conf_path="/"):
     """
 
     if yaml is None:
-        raise ImportError("Could not import ruamel.yaml, which is required "
-                          "for this function.")
+        raise ImportError(
+            "Could not import ruamel.yaml, which is required " "for this function."
+        )
 
     if isinstance(conf_file_name, str):
-        with open(conf_file_name, 'r') as f:
+        with open(conf_file_name, "r") as f:
             conf_dict = yaml.load(f, Loader=yaml.Loader)
     else:
         conf_dict = yaml.load(conf_file_name, Loader=yaml.Loader)
@@ -154,16 +158,19 @@ def load_instruments(conf_file_name, conf_path="/"):
         try:
             inst_dict[name] = value["class"].open_from_uri(value["uri"])
 
-            if 'attrs' in value:
+            if "attrs" in value:
                 # We have some attrs we can set on the newly created instrument.
-                for attr_name, attr_value in value['attrs'].items():
+                for attr_name, attr_value in value["attrs"].items():
                     setattr_expression(inst_dict[name], attr_name, attr_value)
 
         except IOError as ex:
             # FIXME: need to subclass Warning so that repeated warnings
             #        aren't ignored.
-            warnings.warn("Exception occured loading device with URI "
-                          "{}:\n\t{}.".format(value["uri"], ex), RuntimeWarning)
+            warnings.warn(
+                "Exception occured loading device with URI "
+                "{}:\n\t{}.".format(value["uri"], ex),
+                RuntimeWarning,
+            )
             inst_dict[name] = None
 
     return inst_dict

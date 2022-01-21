@@ -11,13 +11,12 @@ from hypothesis import (
 import pytest
 
 from instruments.optional_dep_finder import numpy
-from instruments.tests import (
-    iterable_eq
-)
+from instruments.tests import iterable_eq
 from instruments.units import ureg as u
 
 
 # TESTS #######################################################################
+
 
 @given(a=st.lists(st.floats()))
 def test_iterable_eq_passes_basic(a):
@@ -52,7 +51,7 @@ def test_iterable_eq_passes_sequence_quantity():
     """
     Test passes on equal sequences with unitful values
     """
-    a = (1*u.V, 2*u.A)
+    a = (1 * u.V, 2 * u.A)
     iterable_eq(a, a[:])
 
 
@@ -60,8 +59,8 @@ def test_iterable_eq_fails_sequence_quantity():
     """
     Test failure on unitful sequences with wrong units, and wrong magnitudes
     """
-    a = (1*u.V, 2*u.A)
-    b = (1*u.A, 2*u.A)  # Different units
+    a = (1 * u.V, 2 * u.A)
+    b = (1 * u.A, 2 * u.A)  # Different units
     with pytest.raises(AssertionError):
         iterable_eq(a, b)
 
@@ -74,15 +73,15 @@ def test_iterable_eq_passes_singular_quantity():
     """
     Test passes on singular unitful quantity
     """
-    iterable_eq(1*u.V, 1*u.V)
+    iterable_eq(1 * u.V, 1 * u.V)
 
 
 def test_iterable_eq_fails_singular_quantity():
     """
     Test failure on singular unitful quantity with wrong units
     """
-    a = 1*u.V
-    b = 1*u.A
+    a = 1 * u.V
+    b = 1 * u.A
     with pytest.raises(AssertionError):
         iterable_eq(a, b)
 

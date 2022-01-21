@@ -62,8 +62,9 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n", repeat=1):
             item.encode("utf-8") if isinstance(item, str) else item
             for item in ins_to_host
         ]
-        ins_to_host = sep.encode("utf-8").join(ins_to_host) + \
-                      (sep.encode("utf-8") if ins_to_host else b"")
+        ins_to_host = sep.encode("utf-8").join(ins_to_host) + (
+            sep.encode("utf-8") if ins_to_host else b""
+        )
     elif isinstance(ins_to_host, str):
         ins_to_host = ins_to_host.encode("utf-8")
     ins_to_host *= repeat
@@ -73,8 +74,9 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n", repeat=1):
             item.encode("utf-8") if isinstance(item, str) else item
             for item in host_to_ins
         ]
-        host_to_ins = sep.encode("utf-8").join(host_to_ins) + \
-                      (sep.encode("utf-8") if host_to_ins else b"")
+        host_to_ins = sep.encode("utf-8").join(host_to_ins) + (
+            sep.encode("utf-8") if host_to_ins else b""
+        )
     elif isinstance(host_to_ins, str):
         host_to_ins = host_to_ins.encode("utf-8")
     host_to_ins *= repeat
@@ -84,14 +86,17 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n", repeat=1):
 
     yield ins_class.open_test(stdin, stdout)
 
-    assert stdout.getvalue() == host_to_ins, \
-        """Expected:
+    assert (
+        stdout.getvalue() == host_to_ins
+    ), """Expected:
 
 {}
 
 Got:
 
-{}""".format(repr(host_to_ins), repr(stdout.getvalue()))
+{}""".format(
+        repr(host_to_ins), repr(stdout.getvalue())
+    )
 
     # current = stdin.tell()
     # stdin.seek(0, 2)
@@ -115,9 +120,11 @@ def make_name_test(ins_class, name_cmd="*IDN?"):
     Given an instrument class, produces a test which asserts that the instrument
     correctly reports its name in response to a standard command.
     """
+
     def test():
         with expected_protocol(ins_class, name_cmd + "\n", "NAME\n") as ins:
             assert ins.name == "NAME"
+
     return test
 
 
@@ -127,8 +134,12 @@ def iterable_eq(a, b):
     """
     if numpy and (isinstance(a, numpy.ndarray) or isinstance(b, numpy.ndarray)):
         # pylint: disable=unidiomatic-typecheck
-        assert type(a) == type(b), f"Expected two numpy arrays, got {type(a)}, {type(b)}"
-        assert len(a) == len(b), f"Length of iterables is not the same, got {len(a)} and {len(b)}"
+        assert type(a) == type(
+            b
+        ), f"Expected two numpy arrays, got {type(a)}, {type(b)}"
+        assert len(a) == len(
+            b
+        ), f"Length of iterables is not the same, got {len(a)} and {len(b)}"
         assert (a == b).all()
     elif isinstance(a, u.Quantity) and isinstance(b, u.Quantity):
         unit_eq(a, b)

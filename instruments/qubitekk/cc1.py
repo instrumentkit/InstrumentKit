@@ -12,9 +12,7 @@ from enum import Enum
 
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.units import ureg as u
-from instruments.util_fns import (
-    ProxyList, assume_units, split_unit_str
-)
+from instruments.util_fns import ProxyList, assume_units, split_unit_str
 
 # CLASSES #####################################################################
 
@@ -65,8 +63,11 @@ class CC1(SCPIInstrument):
             self.TriggerMode = self._TriggerModeOld
 
     def _ack_expected(self, msg=""):
-        return msg if self._ack_on and self.firmware[0] >= 2 and \
-                      self.firmware[1] > 1 else None
+        return (
+            msg
+            if self._ack_on and self.firmware[0] >= 2 and self.firmware[1] > 1
+            else None
+        )
 
     # ENUMS #
 
@@ -74,6 +75,7 @@ class CC1(SCPIInstrument):
         """
         Enum containing valid trigger modes for the CC1
         """
+
         continuous = "MODE CONT"
         start_stop = "MODE STOP"
 
@@ -81,6 +83,7 @@ class CC1(SCPIInstrument):
         """
         Enum containing valid trigger modes for the CC1
         """
+
         continuous = "0"
         start_stop = "1"
 
@@ -92,11 +95,7 @@ class CC1(SCPIInstrument):
         Class representing a channel on the Qubitekk CC1.
         """
 
-        __CHANNEL_NAMES = {
-            1: 'C1',
-            2: 'C2',
-            3: 'CO'
-        }
+        __CHANNEL_NAMES = {1: "C1", 2: "C2", 3: "CO"}
 
         def __init__(self, cc1, idx):
             self._cc1 = cc1
@@ -130,8 +129,7 @@ class CC1(SCPIInstrument):
                         tries -= 1
 
             if tries == 0:
-                raise IOError(f"Could not read the count of channel "
-                              f"{self._chan}.")
+                raise IOError(f"Could not read the count of channel " f"{self._chan}.")
 
             self._count = count
             return self._count
@@ -161,8 +159,9 @@ class CC1(SCPIInstrument):
                 self.sendcmd(":ACKN ON")
                 self._ack_on = True
         else:
-            raise NotImplementedError("Acknowledge message not implemented in "
-                                      "this version.")
+            raise NotImplementedError(
+                "Acknowledge message not implemented in " "this version."
+            )
 
     @property
     def gate(self):
@@ -176,8 +175,7 @@ class CC1(SCPIInstrument):
     @gate.setter
     def gate(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError("Bool properties must be specified with a "
-                            "boolean value")
+            raise TypeError("Bool properties must be specified with a " "boolean value")
         self.sendcmd(
             self._set_fmt.format("GATE", self._bool[0] if newval else self._bool[1])
         )
@@ -194,8 +192,7 @@ class CC1(SCPIInstrument):
     @subtract.setter
     def subtract(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError("Bool properties must be specified with a "
-                            "boolean value")
+            raise TypeError("Bool properties must be specified with a " "boolean value")
         self.sendcmd(
             self._set_fmt.format("SUBT", self._bool[0] if newval else self._bool[1])
         )
@@ -255,11 +252,11 @@ class CC1(SCPIInstrument):
     @delay.setter
     def delay(self, new_val):
         new_val = assume_units(new_val, u.ns).to(u.ns)
-        if new_val < 0*u.ns or new_val > 14*u.ns:
+        if new_val < 0 * u.ns or new_val > 14 * u.ns:
             raise ValueError("New delay value is out of bounds.")
         if new_val.magnitude % 2 != 0:
             raise ValueError("New magnitude must be an even number")
-        self.sendcmd(":DELA "+str(int(new_val.magnitude)))
+        self.sendcmd(":DELA " + str(int(new_val.magnitude)))
 
     @property
     def dwell_time(self):
@@ -275,7 +272,7 @@ class CC1(SCPIInstrument):
         # dwell time as being seconds rather than ms
         dwell_time = u.Quantity(*split_unit_str(self.query("DWEL?"), "s"))
         if self.firmware[0] <= 2 and self.firmware[1] <= 1:
-            return dwell_time/1000.0
+            return dwell_time / 1000.0
 
         return dwell_time
 
@@ -304,7 +301,7 @@ class CC1(SCPIInstrument):
                 else:
                     value = self._firmware.replace("Firmware v", "").split(".")
                     if len(value) < 3:
-                        for _ in range(3-len(value)):
+                        for _ in range(3 - len(value)):
                             value.append(0)
                     value = tuple(map(int, value))
                     self._firmware = value

@@ -37,8 +37,13 @@ from enum import Enum, IntEnum
 from instruments.generic_scpi.scpi_instrument import SCPIInstrument
 from instruments.hp.hp6652a import HP6652a
 from instruments.units import ureg as u
-from instruments.util_fns import (unitful_property, unitless_property,
-                                  bool_property, enum_property, int_property)
+from instruments.util_fns import (
+    unitful_property,
+    unitless_property,
+    bool_property,
+    enum_property,
+    int_property,
+)
 
 # CLASSES #####################################################################
 
@@ -79,6 +84,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         """
         Enum containing valid ALC bandwidth modes for the hp6632b
         """
+
         normal = 1.5e4
         fast = 6e4
 
@@ -86,24 +92,27 @@ class HP6632b(SCPIInstrument, HP6652a):
         """
         Enum containing valid digital function modes for the hp6632b
         """
-        remote_inhibit = 'RIDF'
-        data = 'DIG'
+
+        remote_inhibit = "RIDF"
+        data = "DIG"
 
     class DFISource(Enum):
         """
         Enum containing valid DFI sources for the hp6632b
         """
-        questionable = 'QUES'
-        operation = 'OPER'
-        event_status_bit = 'ESB'
-        request_service_bit = 'RQS'
-        off = 'OFF'
+
+        questionable = "QUES"
+        operation = "OPER"
+        event_status_bit = "ESB"
+        request_service_bit = "RQS"
+        off = "OFF"
 
     class ErrorCodes(IntEnum):
         """
         Enum containing generic-SCPI error codes along with codes specific
         to the HP6632b.
         """
+
         no_error = 0
 
         # -100 BLOCK: COMMAND ERRORS ##
@@ -226,16 +235,18 @@ class HP6632b(SCPIInstrument, HP6652a):
         """
         Enum containing vlaid remote inhibit modes for the hp6632b.
         """
-        latching = 'LATC'
-        live = 'LIVE'
-        off = 'OFF'
+
+        latching = "LATC"
+        live = "LIVE"
+        off = "OFF"
 
     class SenseWindow(Enum):
         """
         Enum containing valid sense window modes for the hp6632b.
         """
-        hanning = 'HANN'
-        rectangular = 'RECT'
+
+        hanning = "HANN"
+        rectangular = "RECT"
 
     # PROPERTIES ##
 
@@ -250,7 +261,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         denotes that it is, and `Fast` denotes that it is not.
 
         :type: `~HP6632b.ALCBandwidth`
-        """
+        """,
     )
 
     voltage_trigger = unitful_property(
@@ -263,7 +274,7 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     current_trigger = unitful_property(
@@ -276,7 +287,7 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     init_output_continuous = bool_property(
@@ -290,11 +301,11 @@ class HP6632b(SCPIInstrument, HP6652a):
         levels.
 
         :type: `bool`
-        """
+        """,
     )
 
     current_sense_range = unitful_property(
-        'SENS:CURR:RANGE',
+        "SENS:CURR:RANGE",
         u.ampere,
         doc="""
         Get/set the sense current range by the current max value.
@@ -305,13 +316,13 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     output_dfi = bool_property(
-        'OUTP:DFI',
-        '1',
-        '0',
+        "OUTP:DFI",
+        "1",
+        "0",
         doc="""
         Get/set the discrete fault indicator (DFI) output from the dc
         source. The DFI is an open-collector logic signal connected to the read
@@ -319,7 +330,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         a fault is detected.
 
         :type: `bool`
-        """
+        """,
     )
 
     output_dfi_source = enum_property(
@@ -329,7 +340,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         Get/set the source for discrete fault indicator (DFI) events.
 
         :type: `~HP6632b.DFISource`
-        """
+        """,
     )
 
     output_remote_inhibit = enum_property(
@@ -341,7 +352,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         connection, which allows an external device to signal a fault.
 
         :type: `~HP6632b.RemoteInhibit`
-        """
+        """,
     )
 
     digital_function = enum_property(
@@ -351,7 +362,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         Get/set the inhibit+fault port to digital in+out or vice-versa.
 
         :type: `~HP6632b.DigitalFunction`
-        """
+        """,
     )
 
     digital_data = int_property(
@@ -361,7 +372,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         Get/set digital in+out port to data. Data can be an integer from 0-7.
 
         :type: `int`
-        """
+        """,
     )
 
     sense_sweep_points = unitless_property(
@@ -370,7 +381,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         Get/set the number of points in a measurement sweep.
 
         :type: `int`
-        """
+        """,
     )
 
     sense_sweep_interval = unitful_property(
@@ -382,7 +393,7 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :units: As specified, or assumed to be :math:`\\text{s}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     sense_window = enum_property(
@@ -392,7 +403,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         Get/set the measurement window function.
 
         :type: `~HP6632b.SenseWindow`
-        """
+        """,
     )
 
     output_protection_delay = unitful_property(
@@ -406,7 +417,7 @@ class HP6632b(SCPIInstrument, HP6652a):
 
         :units: As specified, or assumed to be :math:`\\text{s}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     # FUNCTIONS ##
@@ -416,13 +427,13 @@ class HP6632b(SCPIInstrument, HP6652a):
         Set the output trigger system to the initiated state. In this state,
         the power supply will respond to the next output trigger command.
         """
-        self.sendcmd('INIT:NAME TRAN')
+        self.sendcmd("INIT:NAME TRAN")
 
     def abort_output_trigger(self):
         """
         Set the output trigger system to the idle state.
         """
-        self.sendcmd('ABORT')
+        self.sendcmd("ABORT")
 
     # SCPIInstrument commands that need local overrides
 
@@ -459,7 +470,7 @@ class HP6632b(SCPIInstrument, HP6652a):
         done = False
         result = []
         while not done:
-            err = int(self.query('SYST:ERR?').split(',')[0])
+            err = int(self.query("SYST:ERR?").split(",")[0])
             if err == self.ErrorCodes.no_error:
                 done = True
             else:

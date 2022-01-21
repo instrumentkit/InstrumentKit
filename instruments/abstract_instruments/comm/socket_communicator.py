@@ -35,9 +35,11 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
             self._conn = conn
             self._terminator = "\n"
         else:
-            raise TypeError("SocketCommunicator must wrap a "
-                            ":class:`socket.socket` object, instead got "
-                            "{}".format(type(conn)))
+            raise TypeError(
+                "SocketCommunicator must wrap a "
+                ":class:`socket.socket` object, instead got "
+                "{}".format(type(conn))
+            )
 
     # PROPERTIES #
 
@@ -61,8 +63,10 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
         if not isinstance(newval, str):
-            raise TypeError("Terminator for socket communicator must be "
-                            "specified as a byte or unicode string.")
+            raise TypeError(
+                "Terminator for socket communicator must be "
+                "specified as a byte or unicode string."
+            )
         self._terminator = newval
 
     @property
@@ -106,11 +110,13 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
             result = bytes()
             while result.endswith(self._terminator.encode("utf-8")) is False:
                 c = self._conn.recv(1)
-                if c == b'':
-                    raise IOError("Socket connection timed out before reading "
-                                  "a termination character.")
+                if c == b"":
+                    raise IOError(
+                        "Socket connection timed out before reading "
+                        "a termination character."
+                    )
                 result += c
-            return result[:-len(self._terminator)]
+            return result[: -len(self._terminator)]
         else:
             raise ValueError("Must read a positive value of characters.")
 

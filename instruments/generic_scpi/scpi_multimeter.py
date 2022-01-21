@@ -17,15 +17,15 @@ from instruments.util_fns import assume_units, enum_property, unitful_property
 
 # CONSTANTS ###################################################################
 
-VALID_FRES_NAMES = ['4res', '4 res', 'four res', 'f res']
+VALID_FRES_NAMES = ["4res", "4 res", "four res", "f res"]
 
-UNITS_CAPACITANCE = ['cap']
-UNITS_VOLTAGE = ['volt:dc', 'volt:ac', 'diod']
-UNITS_CURRENT = ['curr:dc', 'curr:ac']
-UNITS_RESISTANCE = ['res', 'fres'] + VALID_FRES_NAMES
-UNITS_FREQUENCY = ['freq']
-UNITS_TIME = ['per']
-UNITS_TEMPERATURE = ['temp']
+UNITS_CAPACITANCE = ["cap"]
+UNITS_VOLTAGE = ["volt:dc", "volt:ac", "diod"]
+UNITS_CURRENT = ["curr:dc", "curr:ac"]
+UNITS_RESISTANCE = ["res", "fres"] + VALID_FRES_NAMES
+UNITS_FREQUENCY = ["freq"]
+UNITS_TIME = ["per"]
+UNITS_TEMPERATURE = ["temp"]
 
 # CLASSES #####################################################################
 
@@ -50,6 +50,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         """
         Enum of valid measurement modes for (most) SCPI compliant multimeters
         """
+
         capacitance = "CAP"
         continuity = "CONT"
         current_ac = "CURR:AC"
@@ -77,6 +78,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         "Bus": Causes the instrument to trigger when a ``*TRG`` command is
         sent by software. This means calling the trigger() function.
         """
+
         immediate = "IMM"
         external = "EXT"
         bus = "BUS"
@@ -86,6 +88,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         """
         Valid device range parameters outside of directly specifying the range.
         """
+
         minimum = "MIN"
         maximum = "MAX"
         default = "DEF"
@@ -97,6 +100,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         Valid measurement resolution parameters outside of directly the
         resolution.
         """
+
         minimum = "MIN"
         maximum = "MAX"
         default = "DEF"
@@ -106,6 +110,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         """
         Valid trigger count parameters outside of directly the value.
         """
+
         minimum = "MIN"
         maximum = "MAX"
         default = "DEF"
@@ -116,6 +121,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         """
         Valid sample count parameters outside of directly the value.
         """
+
         minimum = "MIN"
         maximum = "MAX"
         default = "DEF"
@@ -132,6 +138,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         #. "timer": Successive samples start one sample interval after the
             START of the previous sample.
         """
+
         immediate = "IMM"
         timer = "TIM"
 
@@ -151,7 +158,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         :type: `~SCPIMultimeter.Mode`
         """,
         input_decoration=lambda x: SCPIMultimeter._mode_parse(x),
-        set_fmt="{}:{}"
+        set_fmt="{}:{}",
     )
 
     trigger_mode = enum_property(
@@ -165,7 +172,8 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
             >>> dmm.trigger_mode = dmm.TriggerMode.external
 
             :type: `~SCPIMultimeter.TriggerMode`
-        """)
+        """,
+    )
 
     @property
     def input_range(self):
@@ -181,7 +189,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         :units: As appropriate for the current mode setting.
         :type: `~pint.Quantity`, or `~SCPIMultimeter.InputRange`
         """
-        value = self.query('CONF?')
+        value = self.query("CONF?")
         mode = self.Mode(self._mode_parse(value))
         value = value.split(" ")[1].split(",")[0]  # Extract device range
         try:
@@ -214,7 +222,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
         :type: `int`, `float` or `~SCPIMultimeter.Resolution`
         """
-        value = self.query('CONF?')
+        value = self.query("CONF?")
         value = value.split(" ")[1].split(",")[1]  # Extract resolution
         try:
             return float(value)
@@ -229,8 +237,10 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         if isinstance(newval, self.Resolution):
             newval = newval.value
         elif not isinstance(newval, (float, int)):
-            raise TypeError("Resolution must be specified as an int, float, "
-                            "or SCPIMultimeter.Resolution value.")
+            raise TypeError(
+                "Resolution must be specified as an int, float, "
+                "or SCPIMultimeter.Resolution value."
+            )
         self.sendcmd("CONF:{} {},{}".format(mode.value, input_range, newval))
 
     @property
@@ -258,7 +268,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
         :type: `int` or `~SCPIMultimeter.TriggerCount`
         """
-        value = self.query('TRIG:COUN?')
+        value = self.query("TRIG:COUN?")
         try:
             return int(value)
         except ValueError:
@@ -269,8 +279,10 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         if isinstance(newval, self.TriggerCount):
             newval = newval.value
         elif not isinstance(newval, int):
-            raise TypeError("Trigger count must be specified as an int "
-                            "or SCPIMultimeter.TriggerCount value.")
+            raise TypeError(
+                "Trigger count must be specified as an int "
+                "or SCPIMultimeter.TriggerCount value."
+            )
         self.sendcmd("TRIG:COUN {}".format(newval))
 
     @property
@@ -299,7 +311,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
         :type: `int` or `~SCPIMultimeter.SampleCount`
         """
-        value = self.query('SAMP:COUN?')
+        value = self.query("SAMP:COUN?")
         try:
             return int(value)
         except ValueError:
@@ -310,8 +322,10 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         if isinstance(newval, self.SampleCount):
             newval = newval.value
         elif not isinstance(newval, int):
-            raise TypeError("Sample count must be specified as an int "
-                            "or SCPIMultimeter.SampleCount value.")
+            raise TypeError(
+                "Sample count must be specified as an int "
+                "or SCPIMultimeter.SampleCount value."
+            )
         self.sendcmd("SAMP:COUN {}".format(newval))
 
     trigger_delay = unitful_property(
@@ -323,7 +337,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
         :units: As specified, or assumed to be of units seconds otherwise.
         :type: `~pint.Quantity`
-        """
+        """,
     )
 
     sample_source = enum_property(
@@ -338,7 +352,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         after the trigger event. After that, it depends on which mode is used.
 
         :type: `SCPIMultimeter.SampleSource`
-        """
+        """,
     )
 
     sample_timer = unitful_property(
@@ -355,7 +369,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
 
         :units: As specified, or assumed to be of units seconds otherwise.
         :type: `~pint.Quantity`
-        """
+        """,
     )
 
     @property
@@ -386,10 +400,12 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         if mode is None:
             mode = self.mode
         if not isinstance(mode, SCPIMultimeter.Mode):
-            raise TypeError("Mode must be specified as a SCPIMultimeter.Mode "
-                            "value, got {} instead.".format(type(mode)))
+            raise TypeError(
+                "Mode must be specified as a SCPIMultimeter.Mode "
+                "value, got {} instead.".format(type(mode))
+            )
         # pylint: disable=no-member
-        value = float(self.query('MEAS:{}?'.format(mode.value)))
+        value = float(self.query("MEAS:{}?".format(mode.value)))
         return value * UNITS[mode]
 
     # INTERNAL FUNCTIONS ##
@@ -413,19 +429,20 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
             val = "VOLT:DC"
         return val
 
+
 # UNITS #######################################################################
 
 UNITS = {
     SCPIMultimeter.Mode.capacitance: u.farad,
-    SCPIMultimeter.Mode.voltage_dc:  u.volt,
-    SCPIMultimeter.Mode.voltage_ac:  u.volt,
-    SCPIMultimeter.Mode.diode:       u.volt,
-    SCPIMultimeter.Mode.current_ac:  u.amp,
-    SCPIMultimeter.Mode.current_dc:  u.amp,
-    SCPIMultimeter.Mode.resistance:  u.ohm,
+    SCPIMultimeter.Mode.voltage_dc: u.volt,
+    SCPIMultimeter.Mode.voltage_ac: u.volt,
+    SCPIMultimeter.Mode.diode: u.volt,
+    SCPIMultimeter.Mode.current_ac: u.amp,
+    SCPIMultimeter.Mode.current_dc: u.amp,
+    SCPIMultimeter.Mode.resistance: u.ohm,
     SCPIMultimeter.Mode.fourpt_resistance: u.ohm,
-    SCPIMultimeter.Mode.frequency:   u.hertz,
-    SCPIMultimeter.Mode.period:      u.second,
+    SCPIMultimeter.Mode.frequency: u.hertz,
+    SCPIMultimeter.Mode.period: u.second,
     SCPIMultimeter.Mode.temperature: u.kelvin,
-    SCPIMultimeter.Mode.continuity:  1,
+    SCPIMultimeter.Mode.continuity: 1,
 }

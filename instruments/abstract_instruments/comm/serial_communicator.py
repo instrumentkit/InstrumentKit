@@ -34,8 +34,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
             self._terminator = "\n"
             self._debug = False
         else:
-            raise TypeError("SerialCommunicator must wrap a serial.Serial "
-                            "object.")
+            raise TypeError("SerialCommunicator must wrap a serial.Serial " "object.")
 
     # PROPERTIES #
 
@@ -71,8 +70,10 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
         if not isinstance(newval, str):
-            raise TypeError("Terminator for serial communicator must be "
-                            "specified as a byte or unicode string.")
+            raise TypeError(
+                "Terminator for serial communicator must be "
+                "specified as a byte or unicode string."
+            )
         self._terminator = newval
 
     @property
@@ -118,18 +119,16 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
             # On the other hand, if terminator is nonempty, we can check
             # that the tail end of the buffer matches it.
             c = None
-            term = self._terminator.encode('utf-8') if self._terminator else None
-            while not (
-                    result.endswith(term)
-                    if term is not None else
-                    c == b''
-            ):
+            term = self._terminator.encode("utf-8") if self._terminator else None
+            while not (result.endswith(term) if term is not None else c == b""):
                 c = self._conn.read(1)
-                if c == b'' and term is not None:
-                    raise IOError("Serial connection timed out before reading "
-                                  "a termination character.")
+                if c == b"" and term is not None:
+                    raise IOError(
+                        "Serial connection timed out before reading "
+                        "a termination character."
+                    )
                 result += c
-            return result[:-len(term)] if term is not None else result
+            return result[: -len(term)] if term is not None else result
         else:
             raise ValueError("Must read a positive value of characters.")
 

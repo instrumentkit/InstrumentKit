@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments
-    
+
 =======================
 Instrument Base Classes
 =======================
@@ -13,7 +13,7 @@ Instrument Base Classes
 .. autoclass:: Instrument
     :members:
     :undoc-members:
-    
+
 :class:`Multimeter` - Abstract class for multimeter instruments
 ===============================================================
 
@@ -48,4 +48,3 @@ Instrument Base Classes
 .. autoclass:: instruments.abstract_instruments.signal_generator.SGChannel
     :members:
     :undoc-members:
-

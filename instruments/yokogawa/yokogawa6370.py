@@ -16,12 +16,16 @@ from instruments.abstract_instruments import (
     OSAChannel,
 )
 from instruments.util_fns import (
-    enum_property, unitful_property, unitless_property,
-    bounded_unitful_property, ProxyList
+    enum_property,
+    unitful_property,
+    unitless_property,
+    bounded_unitful_property,
+    ProxyList,
 )
 
 
 # CLASSES #####################################################################
+
 
 class Yokogawa6370(OpticalSpectrumAnalyzer):
 
@@ -53,6 +57,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         .. warning:: This class should NOT be manually created by the user. It
             is designed to be initialized by the `Yokogawa6370` class.
         """
+
         def __init__(self, parent, idx):
             self._parent = parent
             self._name = idx
@@ -79,6 +84,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         Enum containing valid output modes for the Yokogawa 6370
         """
+
         SINGLE = 1
         REPEAT = 2
         AUTO = 3
@@ -87,6 +93,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         Enum containing valid Traces for the Yokogawa 6370
         """
+
         A = "TRA"
         B = "TRB"
         C = "TRC"
@@ -117,7 +124,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         doc="""
         The start wavelength in m.
         """,
-        valid_range=(600e-9, 1700e-9)
+        valid_range=(600e-9, 1700e-9),
     )
 
     stop_wl, stop_wl_min, stop_wl_max = bounded_unitful_property(
@@ -126,7 +133,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         doc="""
         The stop wavelength in m.
         """,
-        valid_range=(600e-9, 1700e-9)
+        valid_range=(600e-9, 1700e-9),
     )
 
     bandwidth = unitful_property(
@@ -134,7 +141,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         u.meter,
         doc="""
         The bandwidth in m.
-        """
+        """,
     )
 
     span = unitful_property(
@@ -142,7 +149,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         u.meter,
         doc="""
         A floating point property that controls the wavelength span in m.
-        """
+        """,
     )
 
     center_wl = unitful_property(
@@ -150,14 +157,14 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         u.meter,
         doc="""
          A floating point property that controls the center wavelength m.
-        """
+        """,
     )
 
     points = unitless_property(
         ":SENS:SWE:POIN",
         doc="""
         An integer property that controls the number of points in a trace.
-        """
+        """,
     )
 
     sweep_mode = enum_property(
@@ -165,16 +172,16 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         SweepModes,
         input_decoration=int,
         doc="""
-        A property to control the Sweep Mode as one of Yokogawa6370.SweepMode. 
-        Effective only after a self.start_sweep()."""
+        A property to control the Sweep Mode as one of Yokogawa6370.SweepMode.
+        Effective only after a self.start_sweep().""",
     )
 
     active_trace = enum_property(
         ":TRAC:ACTIVE",
         Traces,
         doc="""
-        The active trace of the OSA of enum Yokogawa6370.Traces. Determines the 
-        result of Yokogawa6370.data() and Yokogawa6370.wavelength()."""
+        The active trace of the OSA of enum Yokogawa6370.Traces. Determines the
+        result of Yokogawa6370.data() and Yokogawa6370.wavelength().""",
     )
 
     # METHODS #

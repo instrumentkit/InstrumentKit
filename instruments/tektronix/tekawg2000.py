@@ -64,16 +64,16 @@ class TekAWG2000(SCPIInstrument):
             :type: `~pint.Quantity` with units Volts peak-to-peak.
             """
             return u.Quantity(
-                float(self._tek.query("FG:{}:AMPL?".format(self._name)).strip()),
-                u.V
+                float(self._tek.query("FG:{}:AMPL?".format(self._name)).strip()), u.V
             )
 
         @amplitude.setter
         def amplitude(self, newval):
-            self._tek.sendcmd("FG:{}:AMPL {}".format(
-                self._name,
-                assume_units(newval, u.V).to(u.V).magnitude
-            ))
+            self._tek.sendcmd(
+                "FG:{}:AMPL {}".format(
+                    self._name, assume_units(newval, u.V).to(u.V).magnitude
+                )
+            )
 
         @property
         def offset(self):
@@ -85,16 +85,16 @@ class TekAWG2000(SCPIInstrument):
             :type: `~pint.Quantity` with units Volts.
             """
             return u.Quantity(
-                float(self._tek.query("FG:{}:OFFS?".format(self._name)).strip()),
-                u.V
+                float(self._tek.query("FG:{}:OFFS?".format(self._name)).strip()), u.V
             )
 
         @offset.setter
         def offset(self, newval):
-            self._tek.sendcmd("FG:{}:OFFS {}".format(
-                self._name,
-                assume_units(newval, u.V).to(u.V).magnitude
-            ))
+            self._tek.sendcmd(
+                "FG:{}:OFFS {}".format(
+                    self._name, assume_units(newval, u.V).to(u.V).magnitude
+                )
+            )
 
         @property
         def frequency(self):
@@ -106,16 +106,13 @@ class TekAWG2000(SCPIInstrument):
                 of units Hertz.
             :type: `~pint.Quantity` with units Hertz.
             """
-            return u.Quantity(
-                float(self._tek.query("FG:FREQ?").strip()),
-                u.Hz
-            )
+            return u.Quantity(float(self._tek.query("FG:FREQ?").strip()), u.Hz)
 
         @frequency.setter
         def frequency(self, newval):
-            self._tek.sendcmd("FG:FREQ {}HZ".format(
-                assume_units(newval, u.Hz).to(u.Hz).magnitude
-            ))
+            self._tek.sendcmd(
+                "FG:FREQ {}HZ".format(assume_units(newval, u.Hz).to(u.Hz).magnitude)
+            )
 
         @property
         def polarity(self):
@@ -124,15 +121,18 @@ class TekAWG2000(SCPIInstrument):
 
             :type: `TekAWG2000.Polarity`
             """
-            return TekAWG2000.Polarity(self._tek.query("FG:{}:POL?".format(
-                self._name)).strip())
+            return TekAWG2000.Polarity(
+                self._tek.query("FG:{}:POL?".format(self._name)).strip()
+            )
 
         @polarity.setter
         def polarity(self, newval):
             if not isinstance(newval, TekAWG2000.Polarity):
-                raise TypeError("Polarity settings must be a "
-                                "`TekAWG2000.Polarity` value, got {} "
-                                "instead.".format(type(newval)))
+                raise TypeError(
+                    "Polarity settings must be a "
+                    "`TekAWG2000.Polarity` value, got {} "
+                    "instead.".format(type(newval))
+                )
 
             self._tek.sendcmd("FG:{}:POL {}".format(self._name, newval.value))
 
@@ -144,14 +144,17 @@ class TekAWG2000(SCPIInstrument):
 
             :type: `TekAWG2000.Shape`
             """
-            return TekAWG2000.Shape(self._tek.query("FG:{}:SHAP?".format(
-                self._name)).strip().split(',')[0])
+            return TekAWG2000.Shape(
+                self._tek.query("FG:{}:SHAP?".format(self._name)).strip().split(",")[0]
+            )
 
         @shape.setter
         def shape(self, newval):
             if not isinstance(newval, TekAWG2000.Shape):
-                raise TypeError("Shape settings must be a `TekAWG2000.Shape` "
-                                "value, got {} instead.".format(type(newval)))
+                raise TypeError(
+                    "Shape settings must be a `TekAWG2000.Shape` "
+                    "value, got {} instead.".format(type(newval))
+                )
             self._tek.sendcmd("FG:{}:SHAP {}".format(self._name, newval.value))
 
     # ENUMS #
@@ -160,6 +163,7 @@ class TekAWG2000(SCPIInstrument):
         """
         Enum containing valid polarity modes for the AWG2000
         """
+
         normal = "NORMAL"
         inverted = "INVERTED"
 
@@ -167,6 +171,7 @@ class TekAWG2000(SCPIInstrument):
         """
         Enum containing valid waveform shape modes for hte AWG2000
         """
+
         sine = "SINUSOID"
         pulse = "PULSE"
         ramp = "RAMP"
@@ -231,8 +236,10 @@ class TekAWG2000(SCPIInstrument):
             exceed 1.
         """
         if numpy is None:
-            raise ImportError("Missing optional dependency numpy, which is required"
-                              "for uploading waveforms.")
+            raise ImportError(
+                "Missing optional dependency numpy, which is required"
+                "for uploading waveforms."
+            )
 
         if not isinstance(yzero, float) and not isinstance(yzero, int):
             raise TypeError("yzero must be specified as a float or int")
@@ -253,7 +260,7 @@ class TekAWG2000(SCPIInstrument):
         self.sendcmd("WFMP:YMULT {}".format(ymult))
         self.sendcmd("WFMP:XINCR {}".format(xincr))
 
-        waveform *= (2**12 - 1)
+        waveform *= 2 ** 12 - 1
         waveform = waveform.astype("<u2").tobytes()
         wfm_header_2 = str(len(waveform))
         wfm_header_1 = len(wfm_header_2)

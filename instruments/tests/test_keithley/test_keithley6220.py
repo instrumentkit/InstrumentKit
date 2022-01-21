@@ -24,35 +24,24 @@ def test_channel():
 
 def test_voltage():
     """Raise NotImplementedError when getting / setting voltage."""
-    with expected_protocol(
-            ik.keithley.Keithley6220,
-            [
-            ],
-            [
-            ]
-    ) as inst:
+    with expected_protocol(ik.keithley.Keithley6220, [], []) as inst:
         with pytest.raises(NotImplementedError) as err_info:
             _ = inst.voltage
         err_msg = err_info.value.args[0]
-        assert err_msg == "The Keithley 6220 does not support voltage " \
-                          "settings."
+        assert err_msg == "The Keithley 6220 does not support voltage " "settings."
         with pytest.raises(NotImplementedError) as err_info:
             inst.voltage = 42
         err_msg = err_info.value.args[0]
-        assert err_msg == "The Keithley 6220 does not support voltage " \
-                          "settings."
+        assert err_msg == "The Keithley 6220 does not support voltage " "settings."
 
 
 def test_current():
     with expected_protocol(
-            ik.keithley.Keithley6220,
-            [
-                "SOUR:CURR?",
-                "SOUR:CURR {:e}".format(0.05)
-            ],
-            [
-                "0.1",
-            ]
+        ik.keithley.Keithley6220,
+        ["SOUR:CURR?", "SOUR:CURR {:e}".format(0.05)],
+        [
+            "0.1",
+        ],
     ) as inst:
         assert inst.current == 100 * u.milliamp
         assert inst.current_min == -105 * u.milliamp
@@ -61,11 +50,5 @@ def test_current():
 
 
 def test_disable():
-    with expected_protocol(
-            ik.keithley.Keithley6220,
-            [
-                "SOUR:CLE:IMM"
-            ],
-            []
-    ) as inst:
+    with expected_protocol(ik.keithley.Keithley6220, ["SOUR:CLE:IMM"], []) as inst:
         inst.disable()

@@ -42,7 +42,7 @@ class SCPIInstrument(Instrument):
 
         :rtype: `str`
         """
-        return self.query('*IDN?')
+        return self.query("*IDN?")
 
     @property
     def scpi_version(self):
@@ -60,7 +60,7 @@ class SCPIInstrument(Instrument):
 
         :rtype: `bool`
         """
-        result = self.query('*OPC?')
+        result = self.query("*OPC?")
         return bool(int(result))
 
     @property
@@ -70,19 +70,19 @@ class SCPIInstrument(Instrument):
 
         :type: `bool`
         """
-        result = self.query('*PSC?')
+        result = self.query("*PSC?")
         return bool(int(result))
 
     @power_on_status.setter
     def power_on_status(self, newval):
-        on = ['on', '1', 1, True]
-        off = ['off', '0', 0, False]
+        on = ["on", "1", 1, True]
+        off = ["off", "0", 0, False]
         if isinstance(newval, str):
             newval = newval.lower()
         if newval in on:
-            self.sendcmd('*PSC 1')
+            self.sendcmd("*PSC 1")
         elif newval in off:
-            self.sendcmd('*PSC 0')
+            self.sendcmd("*PSC 0")
         else:
             raise ValueError
 
@@ -94,7 +94,7 @@ class SCPIInstrument(Instrument):
 
         :rtype: `bool`
         """
-        result = self.query('*TST?')
+        result = self.query("*TST?")
         try:
             result = int(result)
             return result == 0
@@ -108,14 +108,14 @@ class SCPIInstrument(Instrument):
         Reset instrument. On many instruments this is a factory reset and will
         revert all settings to default.
         """
-        self.sendcmd('*RST')
+        self.sendcmd("*RST")
 
     def clear(self):
         """
         Clear instrument. Consult manual for specifics related to that
         instrument.
         """
-        self.sendcmd('*CLS')
+        self.sendcmd("*CLS")
 
     def trigger(self):
         """
@@ -126,14 +126,14 @@ class SCPIInstrument(Instrument):
         This software trigger usually performs the same action as a hardware
         trigger to your instrument.
         """
-        self.sendcmd('*TRG')
+        self.sendcmd("*TRG")
 
     def wait_to_continue(self):
         """
         Instruct the instrument to wait until it has completed all received
         commands before continuing.
         """
-        self.sendcmd('*WAI')
+        self.sendcmd("*WAI")
 
     # SYSTEM COMMANDS ##
 
@@ -146,16 +146,13 @@ class SCPIInstrument(Instrument):
         :units: Hertz
         :type: `~pint.Quantity`
         """
-        return u.Quantity(
-            float(self.query("SYST:LFR?")),
-            "Hz"
-        )
+        return u.Quantity(float(self.query("SYST:LFR?")), "Hz")
 
     @line_frequency.setter
     def line_frequency(self, newval):
-        self.sendcmd("SYST:LFR {}".format(
-            assume_units(newval, "Hz").to("Hz").magnitude
-        ))
+        self.sendcmd(
+            "SYST:LFR {}".format(assume_units(newval, "Hz").to("Hz").magnitude)
+        )
 
     # ERROR QUEUE HANDLING ##
     # NOTE: This functionality is still quite incomplete, and could be fleshed
@@ -170,6 +167,7 @@ class SCPIInstrument(Instrument):
         Enumeration describing error codes as defined by SCPI 1999.0.
         Error codes that are equal to 0 mod 100 are defined to be *generic*.
         """
+
         # NOTE: this class may be overriden by subclasses, since the only access
         #       to this enumeration from within SCPIInstrument is by "self,"
         #       not by explicit name. Thus, if an instrument supports additional
@@ -270,8 +268,7 @@ class SCPIInstrument(Instrument):
     @display_brightness.setter
     def display_brightness(self, newval):
         if newval < 0 or newval > 1:
-            raise ValueError("Display brightness must be a number between 0"
-                             " and 1.")
+            raise ValueError("Display brightness must be a number between 0" " and 1.")
         self.sendcmd("DISP:BRIG {}".format(newval))
 
     @property
@@ -287,6 +284,5 @@ class SCPIInstrument(Instrument):
     @display_contrast.setter
     def display_contrast(self, newval):
         if newval < 0 or newval > 1:
-            raise ValueError("Display contrast must be a number between 0"
-                             " and 1.")
+            raise ValueError("Display contrast must be a number between 0" " and 1.")
         self.sendcmd("DISP:CONT {}".format(newval))

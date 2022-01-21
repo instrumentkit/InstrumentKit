@@ -13,7 +13,10 @@ from enum import Enum
 from instruments.abstract_instruments import Instrument
 from instruments.units import ureg as u
 from instruments.util_fns import (
-    int_property, enum_property, unitful_property, assume_units
+    int_property,
+    enum_property,
+    unitful_property,
+    assume_units,
 )
 
 # CLASSES #####################################################################
@@ -24,12 +27,13 @@ class MC1(Instrument):
     The MC1 is a controller for the qubitekk motor controller. Used with a
     linear actuator to perform a HOM dip.
     """
+
     def __init__(self, filelike):
         super(MC1, self).__init__(filelike)
         self.terminator = "\r"
-        self._increment = 1*u.ms
-        self._lower_limit = -300*u.ms
-        self._upper_limit = 300*u.ms
+        self._increment = 1 * u.ms
+        self._lower_limit = -300 * u.ms
+        self._upper_limit = 300 * u.ms
         self._firmware = None
         self._controller = None
 
@@ -39,6 +43,7 @@ class MC1(Instrument):
         """
         Enum for the motor types for the MC1
         """
+
         radio = "Radio"
         relay = "Relay"
 
@@ -96,7 +101,7 @@ class MC1(Instrument):
         :units: milliseconds
         """,
         units=u.ms,
-        readonly=True
+        readonly=True,
     )
 
     inertia = unitful_property(
@@ -108,10 +113,10 @@ class MC1(Instrument):
         :type: `~pint.Quantity`
         :units: milliseconds
         """,
-        format_code='{:.0f}',
+        format_code="{:.0f}",
         units=u.ms,
-        valid_range=(0*u.ms, 100*u.ms),
-        set_fmt=":{} {}"
+        valid_range=(0 * u.ms, 100 * u.ms),
+        set_fmt=":{} {}",
     )
 
     @property
@@ -125,7 +130,7 @@ class MC1(Instrument):
         :type: `~pint.Quantity`
         :units: milliseconds
         """
-        response = int(self.query("POSI?"))*self.step_size
+        response = int(self.query("POSI?")) * self.step_size
         return response
 
     metric_position = unitful_property(
@@ -137,7 +142,7 @@ class MC1(Instrument):
         :units: millimeters
         """,
         units=u.mm,
-        readonly=True
+        readonly=True,
     )
 
     setting = int_property(
@@ -150,7 +155,7 @@ class MC1(Instrument):
         :type: `int`
         """,
         valid_set=range(2),
-        set_fmt=":{} {}"
+        set_fmt=":{} {}",
     )
 
     step_size = unitful_property(
@@ -162,10 +167,10 @@ class MC1(Instrument):
         :type: `~pint.Quantity`
         :units: milliseconds
         """,
-        format_code='{:.0f}',
+        format_code="{:.0f}",
         units=u.ms,
-        valid_range=(1*u.ms, 100*u.ms),
-        set_fmt=":{} {}"
+        valid_range=(1 * u.ms, 100 * u.ms),
+        set_fmt=":{} {}",
     )
 
     @property
@@ -183,19 +188,19 @@ class MC1(Instrument):
                 self._firmware = self.query("FIRM?")
                 value = self._firmware.split(".")
                 if len(value) < 3:
-                    for _ in range(3-len(value)):
+                    for _ in range(3 - len(value)):
                         value.append(0)
                 value = tuple(map(int, value))
                 self._firmware = value
         return self._firmware
 
     controller = enum_property(
-        'MOTO',
+        "MOTO",
         MotorType,
         doc="""
         Get the motor controller type.
         """,
-        readonly=True
+        readonly=True,
     )
 
     @property
@@ -208,7 +213,7 @@ class MC1(Instrument):
         :units: milliseconds
         """
         response = int(self.query("TIME?"))
-        return response*self.step_size
+        return response * self.step_size
 
     # METHODS #
 
@@ -244,7 +249,7 @@ class MC1(Instrument):
         """
         new_position = assume_units(new_position, u.ms).to(u.ms)
         if self.lower_limit <= new_position <= self.upper_limit:
-            clock_cycles = new_position/self.step_size
+            clock_cycles = new_position / self.step_size
             cmd = f":MOVE {int(clock_cycles)}"
             self.sendcmd(cmd)
         else:

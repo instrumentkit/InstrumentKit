@@ -61,7 +61,7 @@ class Keithley580(Instrument):
         Initialise the instrument and remove CRLF line termination
         """
         super(Keithley580, self).__init__(filelike)
-        self.sendcmd('Y:X')  # Removes the termination CRLF characters
+        self.sendcmd("Y:X")  # Removes the termination CRLF characters
 
     # ENUMS #
 
@@ -69,6 +69,7 @@ class Keithley580(Instrument):
         """
         Enum containing valid polarity modes for the Keithley 580
         """
+
         positive = 0
         negative = 1
 
@@ -76,6 +77,7 @@ class Keithley580(Instrument):
         """
         Enum containing valid drive modes for the Keithley 580
         """
+
         pulsed = 0
         dc = 1
 
@@ -83,6 +85,7 @@ class Keithley580(Instrument):
         """
         Enum containing valid trigger modes for the Keithley 580
         """
+
         talk_continuous = 0
         talk_one_shot = 1
         get_continuous = 2
@@ -105,8 +108,8 @@ class Keithley580(Instrument):
 
         :type: `Keithley580.Polarity`
         """
-        value = self.parse_status_word(self.get_status_word())['polarity']
-        if value == '+':
+        value = self.parse_status_word(self.get_status_word())["polarity"]
+        if value == "+":
             return Keithley580.Polarity.positive
         else:
             return Keithley580.Polarity.negative
@@ -116,11 +119,13 @@ class Keithley580(Instrument):
         if isinstance(newval, str):
             newval = Keithley580.Polarity[newval]
         if not isinstance(newval, Keithley580.Polarity):
-            raise TypeError('Polarity must be specified as a '
-                            'Keithley580.Polarity, got {} '
-                            'instead.'.format(newval))
+            raise TypeError(
+                "Polarity must be specified as a "
+                "Keithley580.Polarity, got {} "
+                "instead.".format(newval)
+            )
 
-        self.sendcmd('P{}X'.format(newval.value))
+        self.sendcmd("P{}X".format(newval.value))
 
     @property
     def drive(self):
@@ -135,7 +140,7 @@ class Keithley580(Instrument):
 
         :type: `Keithley580.Drive`
         """
-        value = self.parse_status_word(self.get_status_word())['drive']
+        value = self.parse_status_word(self.get_status_word())["drive"]
         return Keithley580.Drive[value]
 
     @drive.setter
@@ -143,11 +148,13 @@ class Keithley580(Instrument):
         if isinstance(newval, str):
             newval = Keithley580.Drive[newval]
         if not isinstance(newval, Keithley580.Drive):
-            raise TypeError('Drive must be specified as a '
-                            'Keithley580.Drive, got {} '
-                            'instead.'.format(newval))
+            raise TypeError(
+                "Drive must be specified as a "
+                "Keithley580.Drive, got {} "
+                "instead.".format(newval)
+            )
 
-        self.sendcmd('D{}X'.format(newval.value))
+        self.sendcmd("D{}X".format(newval.value))
 
     @property
     def dry_circuit_test(self):
@@ -164,13 +171,13 @@ class Keithley580(Instrument):
 
         :type: `bool`
         """
-        return self.parse_status_word(self.get_status_word())['drycircuit']
+        return self.parse_status_word(self.get_status_word())["drycircuit"]
 
     @dry_circuit_test.setter
     def dry_circuit_test(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('DryCircuitTest mode must be a boolean.')
-        self.sendcmd('C{}X'.format(int(newval)))
+            raise TypeError("DryCircuitTest mode must be a boolean.")
+        self.sendcmd("C{}X".format(int(newval)))
 
     @property
     def operate(self):
@@ -181,13 +188,13 @@ class Keithley580(Instrument):
 
         :type: `bool`
         """
-        return self.parse_status_word(self.get_status_word())['operate']
+        return self.parse_status_word(self.get_status_word())["operate"]
 
     @operate.setter
     def operate(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('Operate mode must be a boolean.')
-        self.sendcmd('O{}X'.format(int(newval)))
+            raise TypeError("Operate mode must be a boolean.")
+        self.sendcmd("O{}X".format(int(newval)))
 
     @property
     def relative(self):
@@ -209,13 +216,13 @@ class Keithley580(Instrument):
 
         :type: `bool`
         """
-        return self.parse_status_word(self.get_status_word())['relative']
+        return self.parse_status_word(self.get_status_word())["relative"]
 
     @relative.setter
     def relative(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('Relative mode must be a boolean.')
-        self.sendcmd('Z{}X'.format(int(newval)))
+            raise TypeError("Relative mode must be a boolean.")
+        self.sendcmd("Z{}X".format(int(newval)))
 
     @property
     def trigger_mode(self):
@@ -246,10 +253,12 @@ class Keithley580(Instrument):
         if isinstance(newval, str):
             newval = Keithley580.TriggerMode[newval]
         if not isinstance(newval, Keithley580.TriggerMode):
-            raise TypeError('Drive must be specified as a '
-                            'Keithley580.TriggerMode, got {} '
-                            'instead.'.format(newval))
-        self.sendcmd('T{}X'.format(newval.value))
+            raise TypeError(
+                "Drive must be specified as a "
+                "Keithley580.TriggerMode, got {} "
+                "instead.".format(newval)
+            )
+        self.sendcmd("T{}X".format(newval.value))
 
     @property
     def input_range(self):
@@ -259,7 +268,7 @@ class Keithley580(Instrument):
 
         :type: `~pint.Quantity` or `str`
         """
-        value = self.parse_status_word(self.get_status_word())['range']
+        value = self.parse_status_word(self.get_status_word())["range"]
         if isinstance(value, str):  # if range is 'auto'
             return value
         else:
@@ -267,15 +276,17 @@ class Keithley580(Instrument):
 
     @input_range.setter
     def input_range(self, newval):
-        valid = ('auto', 2e-1, 2e0, 2e1, 2e2, 2e3, 2e4, 2e5)
+        valid = ("auto", 2e-1, 2e0, 2e1, 2e2, 2e3, 2e4, 2e5)
         if isinstance(newval, str):
             newval = newval.lower()
-            if newval == 'auto':
-                self.sendcmd('R0X')
+            if newval == "auto":
+                self.sendcmd("R0X")
                 return
             else:
-                raise ValueError('Only "auto" is acceptable when specifying '
-                                 'the input range as a string.')
+                raise ValueError(
+                    'Only "auto" is acceptable when specifying '
+                    "the input range as a string."
+                )
         if isinstance(newval, u.Quantity):
             newval = float(newval.magnitude)
 
@@ -283,11 +294,13 @@ class Keithley580(Instrument):
             if newval in valid:
                 newval = valid.index(newval)
             else:
-                raise ValueError('Valid range settings are: {}'.format(valid))
+                raise ValueError("Valid range settings are: {}".format(valid))
         else:
-            raise TypeError('Range setting must be specified as a float, int, '
-                            'or the string "auto", got {}'.format(type(newval)))
-        self.sendcmd('R{}X'.format(newval))
+            raise TypeError(
+                "Range setting must be specified as a float, int, "
+                'or the string "auto", got {}'.format(type(newval))
+            )
+        self.sendcmd("R{}X".format(newval))
 
     # METHODS #
 
@@ -298,7 +311,7 @@ class Keithley580(Instrument):
         Do note that this is different from the standard SCPI ``*TRG`` command
         (which is not supported by the 580 anyways).
         """
-        self.sendcmd('X')
+        self.sendcmd("X")
 
     def auto_range(self):
         """
@@ -307,7 +320,7 @@ class Keithley580(Instrument):
         This is the same as calling the `Keithley580.set_resistance_range`
         method and setting the parameter to "AUTO".
         """
-        self.sendcmd('R0X')
+        self.sendcmd("R0X")
 
     def set_calibration_value(self, value):
         """
@@ -316,7 +329,7 @@ class Keithley580(Instrument):
         :param value: Calibration value to write
         """
         # self.write('V+n.nnnnE+nn')
-        raise NotImplementedError('setCalibrationValue not implemented')
+        raise NotImplementedError("setCalibrationValue not implemented")
 
     def store_calibration_constants(self):
         """
@@ -324,7 +337,7 @@ class Keithley580(Instrument):
         not currently implemented.
         """
         # self.write('L0X')
-        raise NotImplementedError('storeCalibrationConstants not implemented')
+        raise NotImplementedError("storeCalibrationConstants not implemented")
 
     def get_status_word(self):
         """
@@ -335,16 +348,16 @@ class Keithley580(Instrument):
         :rtype: `str`
         """
         tries = 5
-        statusword = ''
-        while statusword[:3] != b'580' and tries != 0:
+        statusword = ""
+        while statusword[:3] != b"580" and tries != 0:
             tries -= 1
-            self.sendcmd('U0X')
+            self.sendcmd("U0X")
             time.sleep(1)
-            self.sendcmd('')
+            self.sendcmd("")
             statusword = self._file.read_raw()
 
         if tries == 0:
-            raise IOError('could not retrieve status word')
+            raise IOError("could not retrieve status word")
 
         return statusword[:-1]
 
@@ -362,50 +375,63 @@ class Keithley580(Instrument):
 
         :rtype: `dict`
         """
-        if statusword[:3] != b'580':
-            raise ValueError('Status word starts with wrong '
-                             'prefix: {}'.format(statusword))
+        if statusword[:3] != b"580":
+            raise ValueError(
+                "Status word starts with wrong " "prefix: {}".format(statusword)
+            )
 
-        (drive, polarity, drycircuit, operate, rng,
-         relative, eoi, trigger, sqrondata, sqronerror,
-         linefreq) = struct.unpack('@8c2s2sc', statusword[3:16])
+        (
+            drive,
+            polarity,
+            drycircuit,
+            operate,
+            rng,
+            relative,
+            eoi,
+            trigger,
+            sqrondata,
+            sqronerror,
+            linefreq,
+        ) = struct.unpack("@8c2s2sc", statusword[3:16])
 
-        valid = {'drive': {b'0': 'pulsed',
-                           b'1': 'dc'},
-                 'polarity': {b'0': '+',
-                              b'1': '-'},
-                 'range': {b'0': 'auto',
-                           b'1': 0.2,
-                           b'2': 2,
-                           b'3': 20,
-                           b'4': 2e2,
-                           b'5': 2e3,
-                           b'6': 2e4,
-                           b'7': 2e5},
-                 'linefreq': {b'0': '60Hz',
-                              b'1': '50Hz'}}
+        valid = {
+            "drive": {b"0": "pulsed", b"1": "dc"},
+            "polarity": {b"0": "+", b"1": "-"},
+            "range": {
+                b"0": "auto",
+                b"1": 0.2,
+                b"2": 2,
+                b"3": 20,
+                b"4": 2e2,
+                b"5": 2e3,
+                b"6": 2e4,
+                b"7": 2e5,
+            },
+            "linefreq": {b"0": "60Hz", b"1": "50Hz"},
+        }
 
         try:
-            drive = valid['drive'][drive]
-            polarity = valid['polarity'][polarity]
-            rng = valid['range'][rng]
-            linefreq = valid['linefreq'][linefreq]
+            drive = valid["drive"][drive]
+            polarity = valid["polarity"][polarity]
+            rng = valid["range"][rng]
+            linefreq = valid["linefreq"][linefreq]
         except:
-            raise RuntimeError('Cannot parse status '
-                               'word: {}'.format(statusword))
+            raise RuntimeError("Cannot parse status " "word: {}".format(statusword))
 
-        return {'drive': drive,
-                'polarity': polarity,
-                'drycircuit': (drycircuit == b'1'),
-                'operate': (operate == b'1'),
-                'range': rng,
-                'relative': (relative == b'1'),
-                'eoi': eoi,
-                'trigger': (trigger == b'1'),
-                'sqrondata': sqrondata,
-                'sqronerror': sqronerror,
-                'linefreq': linefreq,
-                'terminator': self.terminator}
+        return {
+            "drive": drive,
+            "polarity": polarity,
+            "drycircuit": (drycircuit == b"1"),
+            "operate": (operate == b"1"),
+            "range": rng,
+            "relative": (relative == b"1"),
+            "eoi": eoi,
+            "trigger": (trigger == b"1"),
+            "sqrondata": sqrondata,
+            "sqronerror": sqronerror,
+            "linefreq": linefreq,
+            "terminator": self.terminator,
+        }
 
     def measure(self):
         """
@@ -417,8 +443,8 @@ class Keithley580(Instrument):
         :rtype: `~pint.Quantity`
         """
         self.trigger()
-        self.sendcmd('')
-        return self.parse_measurement(self._file.read_raw()[:-1])['resistance']
+        self.sendcmd("")
+        return self.parse_measurement(self._file.read_raw()[:-1])["resistance"]
 
     @staticmethod
     def parse_measurement(measurement):
@@ -433,38 +459,42 @@ class Keithley580(Instrument):
 
         :rtype: `dict`
         """
-        (status, polarity, drycircuit, drive, resistance) = \
-            struct.unpack('@4c11s', measurement)
+        (status, polarity, drycircuit, drive, resistance) = struct.unpack(
+            "@4c11s", measurement
+        )
 
-        valid = {'status': {b'S': 'standby',
-                            b'N': 'normal',
-                            b'O': 'overflow',
-                            b'Z': 'relative'},
-                 'polarity': {b'+': '+',
-                              b'-': '-'},
-                 'drycircuit': {b'N': False,
-                                b'D': True},
-                 'drive': {b'P': 'pulsed',
-                           b'D': 'dc'}}
+        valid = {
+            "status": {
+                b"S": "standby",
+                b"N": "normal",
+                b"O": "overflow",
+                b"Z": "relative",
+            },
+            "polarity": {b"+": "+", b"-": "-"},
+            "drycircuit": {b"N": False, b"D": True},
+            "drive": {b"P": "pulsed", b"D": "dc"},
+        }
         try:
-            status = valid['status'][status]
-            polarity = valid['polarity'][polarity]
-            drycircuit = valid['drycircuit'][drycircuit]
-            drive = valid['drive'][drive]
+            status = valid["status"][status]
+            polarity = valid["polarity"][polarity]
+            drycircuit = valid["drycircuit"][drycircuit]
+            drive = valid["drive"][drive]
             resistance = float(resistance) * u.ohm
         except:
-            raise Exception('Cannot parse measurement: {}'.format(measurement))
+            raise Exception("Cannot parse measurement: {}".format(measurement))
 
-        return {'status': status,
-                'polarity': polarity,
-                'drycircuit': drycircuit,
-                'drive': drive,
-                'resistance': resistance}
+        return {
+            "status": status,
+            "polarity": polarity,
+            "drycircuit": drycircuit,
+            "drive": drive,
+            "resistance": resistance,
+        }
 
     # COMMUNICATOR METHODS #
 
     def sendcmd(self, cmd):
-        super(Keithley580, self).sendcmd(cmd + ':')
+        super(Keithley580, self).sendcmd(cmd + ":")
 
     def query(self, cmd, size=-1):
-        return super(Keithley580, self).query(cmd + ':', size)[:-1]
+        return super(Keithley580, self).query(cmd + ":", size)[:-1]

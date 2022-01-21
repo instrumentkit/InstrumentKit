@@ -14,7 +14,7 @@ from instruments.units import ureg as u
 
 # CONSTANTS ###################################################################
 
-_IDX_REGEX = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*)\[(-?[0-9]*)\]')
+_IDX_REGEX = re.compile(r"([a-zA-Z_][a-zA-Z0-9_]*)\[(-?[0-9]*)\]")
 
 # FUNCTIONS ###################################################################
 
@@ -47,9 +47,9 @@ def setattr_expression(target, name_expr, value):
     """
     # Allow "." in attribute names so that we can set attributes
     # recursively.
-    if '.' in name_expr:
+    if "." in name_expr:
         # Recursion: We have to strip off a level of getattr.
-        head, name_expr = name_expr.split('.', 1)
+        head, name_expr = name_expr.split(".", 1)
         match = _IDX_REGEX.match(head)
         if match:
             head_name, head_idx = match.groups()
@@ -121,7 +121,7 @@ def split_unit_str(s, default_units=u.dimensionless, lookup=None):
         if match.groups()[1] is None:
             val, _, units = match.groups()
         else:
-            val = float(match.groups()[0]) * 10**float(match.groups()[1][1:])
+            val = float(match.groups()[0]) * 10 ** float(match.groups()[1][1:])
             units = match.groups()[2]
 
         if units is None:
@@ -157,8 +157,16 @@ def rproperty(fget=None, fset=None, doc=None, readonly=False, writeonly=False):
     return property(fget=fget, fset=fset, doc=doc)
 
 
-def bool_property(command, set_cmd=None, inst_true="ON", inst_false="OFF",
-                  doc=None, readonly=False, writeonly=False, set_fmt="{} {}"):
+def bool_property(
+    command,
+    set_cmd=None,
+    inst_true="ON",
+    inst_false="OFF",
+    doc=None,
+    readonly=False,
+    writeonly=False,
+    set_fmt="{} {}",
+):
     """
     Called inside of SCPI classes to instantiate boolean properties
     of the device cleanly.
@@ -200,20 +208,30 @@ def bool_property(command, set_cmd=None, inst_true="ON", inst_false="OFF",
 
     def _setter(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError("Bool properties must be specified with a "
-                            "boolean value")
-        self.sendcmd(set_fmt.format(
-            command if set_cmd is None else set_cmd,
-            inst_true if newval else inst_false
-        ))
+            raise TypeError("Bool properties must be specified with a " "boolean value")
+        self.sendcmd(
+            set_fmt.format(
+                command if set_cmd is None else set_cmd,
+                inst_true if newval else inst_false,
+            )
+        )
 
-    return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
-                     writeonly=writeonly)
+    return rproperty(
+        fget=_getter, fset=_setter, doc=doc, readonly=readonly, writeonly=writeonly
+    )
 
 
-def enum_property(command, enum, set_cmd=None, doc=None, input_decoration=None,
-                  output_decoration=None, readonly=False, writeonly=False,
-                  set_fmt="{} {}"):
+def enum_property(
+    command,
+    enum,
+    set_cmd=None,
+    doc=None,
+    input_decoration=None,
+    output_decoration=None,
+    readonly=False,
+    writeonly=False,
+    set_fmt="{} {}",
+):
     """
     Called inside of SCPI classes to instantiate Enum properties
     of the device cleanly.
@@ -249,6 +267,7 @@ def enum_property(command, enum, set_cmd=None, doc=None, input_decoration=None,
         parameter is still used to set the command for pure-write commands to
         the instrument.
     """
+
     def _in_decor_fcn(val):
         if input_decoration is None:
             return val
@@ -274,17 +293,27 @@ def enum_property(command, enum, set_cmd=None, doc=None, input_decoration=None,
                 newval = enum(newval)
             except ValueError:
                 raise ValueError("Enum property new value not in enum.")
-        self.sendcmd(set_fmt.format(
-            command if set_cmd is None else set_cmd,
-            _out_decor_fcn(enum(newval).value)
-        ))
+        self.sendcmd(
+            set_fmt.format(
+                command if set_cmd is None else set_cmd,
+                _out_decor_fcn(enum(newval).value),
+            )
+        )
 
-    return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
-                     writeonly=writeonly)
+    return rproperty(
+        fget=_getter, fset=_setter, doc=doc, readonly=readonly, writeonly=writeonly
+    )
 
 
-def unitless_property(command, set_cmd=None, format_code='{:e}', doc=None,
-                      readonly=False, writeonly=False, set_fmt="{} {}"):
+def unitless_property(
+    command,
+    set_cmd=None,
+    format_code="{:e}",
+    doc=None,
+    readonly=False,
+    writeonly=False,
+    set_fmt="{} {}",
+):
     """
     Called inside of SCPI classes to instantiate properties with unitless
     numeric values.
@@ -320,18 +349,23 @@ def unitless_property(command, set_cmd=None, format_code='{:e}', doc=None,
             else:
                 raise ValueError
         strval = format_code.format(newval)
-        self.sendcmd(set_fmt.format(
-            command if set_cmd is None else set_cmd,
-            strval
-        ))
+        self.sendcmd(set_fmt.format(command if set_cmd is None else set_cmd, strval))
 
-    return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
-                     writeonly=writeonly)
+    return rproperty(
+        fget=_getter, fset=_setter, doc=doc, readonly=readonly, writeonly=writeonly
+    )
 
 
-def int_property(command, set_cmd=None, format_code='{:d}', doc=None,
-                 readonly=False, writeonly=False, valid_set=None,
-                 set_fmt="{} {}"):
+def int_property(
+    command,
+    set_cmd=None,
+    format_code="{:d}",
+    doc=None,
+    readonly=False,
+    writeonly=False,
+    valid_set=None,
+    set_fmt="{} {}",
+):
     """
     Called inside of SCPI classes to instantiate properties with unitless
     numeric values.
@@ -361,14 +395,17 @@ def int_property(command, set_cmd=None, format_code='{:d}', doc=None,
     def _getter(self):
         raw = self.query("{}?".format(command))
         return int(raw)
+
     if valid_set is None:
+
         def _setter(self, newval):
             strval = format_code.format(newval)
-            self.sendcmd(set_fmt.format(
-                command if set_cmd is None else set_cmd,
-                strval
-            ))
+            self.sendcmd(
+                set_fmt.format(command if set_cmd is None else set_cmd, strval)
+            )
+
     else:
+
         def _setter(self, newval):
             if newval not in valid_set:
                 raise ValueError(
@@ -376,19 +413,28 @@ def int_property(command, set_cmd=None, format_code='{:d}', doc=None,
                     "must be one of {}.".format(newval, valid_set)
                 )
             strval = format_code.format(newval)
-            self.sendcmd(set_fmt.format(
-                command if set_cmd is None else set_cmd,
-                strval
-            ))
+            self.sendcmd(
+                set_fmt.format(command if set_cmd is None else set_cmd, strval)
+            )
 
-    return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
-                     writeonly=writeonly)
+    return rproperty(
+        fget=_getter, fset=_setter, doc=doc, readonly=readonly, writeonly=writeonly
+    )
 
 
-def unitful_property(command, units, set_cmd=None, format_code='{:e}', doc=None,
-                     input_decoration=None, output_decoration=None,
-                     readonly=False, writeonly=False, set_fmt="{} {}",
-                     valid_range=(None, None)):
+def unitful_property(
+    command,
+    units,
+    set_cmd=None,
+    format_code="{:e}",
+    doc=None,
+    input_decoration=None,
+    output_decoration=None,
+    readonly=False,
+    writeonly=False,
+    set_fmt="{} {}",
+    valid_range=(None, None),
+):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
     values. This function assumes that the instrument only accepts
@@ -428,6 +474,7 @@ def unitful_property(command, units, set_cmd=None, format_code='{:e}', doc=None,
         The valid set is inclusive of the values provided.
     :type valid_range: `tuple` or `list` of `int` or `float`
     """
+
     def _in_decor_fcn(val):
         if input_decoration is None:
             return val
@@ -452,30 +499,40 @@ def unitful_property(command, units, set_cmd=None, format_code='{:e}', doc=None,
             if callable(min_value):
                 min_value = min_value(self)  # pylint: disable=not-callable
             if newval < min_value:
-                raise ValueError(f"Unitful quantity is too low. Got {newval}, "
-                                 f"minimum value is {min_value}")
+                raise ValueError(
+                    f"Unitful quantity is too low. Got {newval}, "
+                    f"minimum value is {min_value}"
+                )
         if max_value is not None:
             if callable(max_value):
                 max_value = max_value(self)  # pylint: disable=not-callable
             if newval > max_value:
-                raise ValueError(f"Unitful quantity is too high. Got {newval}, "
-                                 f"maximum value is {max_value}")
+                raise ValueError(
+                    f"Unitful quantity is too high. Got {newval}, "
+                    f"maximum value is {max_value}"
+                )
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
-        strval = format_code.format(
-            assume_units(newval, units).to(units).magnitude)
-        self.sendcmd(set_fmt.format(
-            command if set_cmd is None else set_cmd,
-            _out_decor_fcn(strval)
-        ))
+        strval = format_code.format(assume_units(newval, units).to(units).magnitude)
+        self.sendcmd(
+            set_fmt.format(
+                command if set_cmd is None else set_cmd, _out_decor_fcn(strval)
+            )
+        )
 
-    return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
-                     writeonly=writeonly)
+    return rproperty(
+        fget=_getter, fset=_setter, doc=doc, readonly=readonly, writeonly=writeonly
+    )
 
 
-def bounded_unitful_property(command, units, min_fmt_str="{}:MIN?",
-                             max_fmt_str="{}:MAX?",
-                             valid_range=("query", "query"), **kwargs):
+def bounded_unitful_property(
+    command,
+    units,
+    min_fmt_str="{}:MIN?",
+    max_fmt_str="{}:MAX?",
+    valid_range=("query", "query"),
+    **kwargs,
+):
     """
     Called inside of SCPI classes to instantiate properties with unitful numeric
     values which have upper and lower bounds. This function in turn calls
@@ -519,30 +576,41 @@ def bounded_unitful_property(command, units, min_fmt_str="{}:MIN?",
 
     def _min_getter(self):
         if valid_range[0] == "query":
-            return u.Quantity(*split_unit_str(self.query(min_fmt_str.format(command)), units))
+            return u.Quantity(
+                *split_unit_str(self.query(min_fmt_str.format(command)), units)
+            )
 
         return assume_units(valid_range[0], units).to(units)
 
     def _max_getter(self):
         if valid_range[1] == "query":
-            return u.Quantity(*split_unit_str(self.query(max_fmt_str.format(command)), units))
+            return u.Quantity(
+                *split_unit_str(self.query(max_fmt_str.format(command)), units)
+            )
 
         return assume_units(valid_range[1], units).to(units)
 
     new_range = (
         None if valid_range[0] is None else _min_getter,
-        None if valid_range[1] is None else _max_getter
+        None if valid_range[1] is None else _max_getter,
     )
 
     return (
         unitful_property(command, units, valid_range=new_range, **kwargs),
         property(_min_getter) if valid_range[0] is not None else None,
-        property(_max_getter) if valid_range[1] is not None else None
+        property(_max_getter) if valid_range[1] is not None else None,
     )
 
 
-def string_property(command, set_cmd=None, bookmark_symbol='"', doc=None,
-                    readonly=False, writeonly=False, set_fmt="{} {}{}{}"):
+def string_property(
+    command,
+    set_cmd=None,
+    bookmark_symbol='"',
+    doc=None,
+    readonly=False,
+    writeonly=False,
+    set_fmt="{} {}{}{}",
+):
     """
     Called inside of SCPI classes to instantiate properties with a string value.
 
@@ -569,18 +637,25 @@ def string_property(command, set_cmd=None, bookmark_symbol='"', doc=None,
 
     def _getter(self):
         string = self.query("{}?".format(command))
-        string = string[
-            bookmark_length:-bookmark_length] if bookmark_length > 0 else string
+        string = (
+            string[bookmark_length:-bookmark_length] if bookmark_length > 0 else string
+        )
         return string
 
     def _setter(self, newval):
-        self.sendcmd(set_fmt.format(
-            command if set_cmd is None else set_cmd,
-            bookmark_symbol, newval, bookmark_symbol
-        ))
+        self.sendcmd(
+            set_fmt.format(
+                command if set_cmd is None else set_cmd,
+                bookmark_symbol,
+                newval,
+                bookmark_symbol,
+            )
+        )
 
-    return rproperty(fget=_getter, fset=_setter, doc=doc, readonly=readonly,
-                     writeonly=writeonly)
+    return rproperty(
+        fget=_getter, fset=_setter, doc=doc, readonly=readonly, writeonly=writeonly
+    )
+
 
 # CLASSES #####################################################################
 
@@ -613,9 +688,10 @@ class ProxyList:
         self._valid_set = valid_set
 
         # FIXME: This only checks the next level up the chain!
-        if hasattr(valid_set, '__bases__'):
+        if hasattr(valid_set, "__bases__"):
             self._isenum = (Enum in valid_set.__bases__) or (
-                IntEnum in valid_set.__bases__)
+                IntEnum in valid_set.__bases__
+            )
         else:
             self._isenum = False
 
@@ -635,13 +711,15 @@ class ProxyList:
                 except ValueError:
                     pass
             if not isinstance(idx, self._valid_set):
-                raise IndexError("Index out of range. Must be "
-                                 "in {}.".format(self._valid_set))
+                raise IndexError(
+                    "Index out of range. Must be " "in {}.".format(self._valid_set)
+                )
             idx = idx.value
         else:
             if idx not in self._valid_set:
-                raise IndexError("Index out of range. Must be "
-                                 "in {}.".format(self._valid_set))
+                raise IndexError(
+                    "Index out of range. Must be " "in {}.".format(self._valid_set)
+                )
         return self._proxy_cls(self._parent, idx)
 
     def __len__(self):

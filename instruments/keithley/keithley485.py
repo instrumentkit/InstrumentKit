@@ -66,6 +66,7 @@ class Keithley485(Instrument):
         """
         Enum containing valid trigger modes for the Keithley 485
         """
+
         #: Continuously measures current, returns on talk
         continuous_ontalk = 0
         #: Measures current once and returns on talk
@@ -83,6 +84,7 @@ class Keithley485(Instrument):
         """
         Enum containing valid SRQ data masks for the Keithley 485
         """
+
         #: Service request (SRQ) disabled
         srq_disabled = 0
         #: Read overflow
@@ -104,6 +106,7 @@ class Keithley485(Instrument):
         """
         Enum containing valid SRQ error masks for the Keithley 485
         """
+
         #: Service request (SRQ) disabled
         srq_disabled = 0
         #: Illegal Device-Dependent Command Option (IDDCO)
@@ -125,6 +128,7 @@ class Keithley485(Instrument):
         """
         Enum containing valid status keys in the measurement string
         """
+
         #: Measurement normal
         normal = b"N"
         #: Measurement zero-check
@@ -198,8 +202,10 @@ class Keithley485(Instrument):
                 self.sendcmd("R0X")
                 return
             else:
-                raise ValueError("Only `auto` is acceptable when specifying "
-                                 "the range as a string.")
+                raise ValueError(
+                    "Only `auto` is acceptable when specifying "
+                    "the range as a string."
+                )
         if isinstance(newval, u.Quantity):
             newval = float(newval.magnitude)
 
@@ -209,8 +215,10 @@ class Keithley485(Instrument):
             else:
                 raise ValueError("Valid range settings are: {}".format(valid))
         else:
-            raise TypeError("Range setting must be specified as a float, int, "
-                            "or the string `auto`, got {}".format(type(newval)))
+            raise TypeError(
+                "Range setting must be specified as a float, int, "
+                "or the string `auto`, got {}".format(type(newval))
+            )
         self.sendcmd("R{}X".format(newval))
 
     @property
@@ -293,9 +301,11 @@ class Keithley485(Instrument):
         if isinstance(newval, str):
             newval = Keithley485.TriggerMode[newval]
         if not isinstance(newval, Keithley485.TriggerMode):
-            raise TypeError("Drive must be specified as a "
-                            "Keithley485.TriggerMode, got {} "
-                            "instead.".format(newval))
+            raise TypeError(
+                "Drive must be specified as a "
+                "Keithley485.TriggerMode, got {} "
+                "instead.".format(newval)
+            )
         self.sendcmd("T{}X".format(newval.value))
 
     # METHODS #
@@ -354,21 +364,31 @@ class Keithley485(Instrument):
         :rtype: `dict`
         """
         if statusword[:3] != "485":
-            raise ValueError("Status word starts with wrong "
-                             "prefix: {}".format(statusword))
+            raise ValueError(
+                "Status word starts with wrong " "prefix: {}".format(statusword)
+            )
 
-        (zerocheck, log, device_range, relative, eoi_mode,
-         trigger, datamask, errormask) = \
-            unpack("@6c2s2s", bytes(statusword[3:], "utf-8"))
+        (
+            zerocheck,
+            log,
+            device_range,
+            relative,
+            eoi_mode,
+            trigger,
+            datamask,
+            errormask,
+        ) = unpack("@6c2s2s", bytes(statusword[3:], "utf-8"))
 
-        valid_range = {b"0": "auto",
-                       b"1": 2e-9,
-                       b"2": 2e-8,
-                       b"3": 2e-7,
-                       b"4": 2e-6,
-                       b"5": 2e-5,
-                       b"6": 2e-4,
-                       b"7": 2e-3}
+        valid_range = {
+            b"0": "auto",
+            b"1": 2e-9,
+            b"2": 2e-8,
+            b"3": 2e-7,
+            b"4": 2e-6,
+            b"5": 2e-5,
+            b"6": 2e-4,
+            b"7": 2e-3,
+        }
 
         try:
             device_range = valid_range[device_range]
@@ -376,18 +396,19 @@ class Keithley485(Instrument):
             datamask = self.SRQDataMask(int(datamask)).name
             errormask = self.SRQErrorMask(int(errormask)).name
         except:
-            raise RuntimeError("Cannot parse status "
-                               "word: {}".format(statusword))
+            raise RuntimeError("Cannot parse status " "word: {}".format(statusword))
 
-        return {"zerocheck": zerocheck == b"1",
-                "log": log == b"1",
-                "range": device_range,
-                "relative": relative == b"1",
-                "eoi_mode": eoi_mode == b"0",
-                "trigger": trigger,
-                "datamask": datamask,
-                "errormask": errormask,
-                "terminator": self.terminator}
+        return {
+            "zerocheck": zerocheck == b"1",
+            "log": log == b"1",
+            "range": device_range,
+            "relative": relative == b"1",
+            "eoi_mode": eoi_mode == b"0",
+            "trigger": trigger,
+            "datamask": datamask,
+            "errormask": errormask,
+            "terminator": self.terminator,
+        }
 
     def measure(self):
         """
@@ -408,8 +429,9 @@ class Keithley485(Instrument):
 
         :rtype: `~pint.Quantity`
         """
-        (status, function, base, current) = \
-            unpack("@1c2s1c10s", bytes(measurement, "utf-8"))
+        (status, function, base, current) = unpack(
+            "@1c2s1c10s", bytes(measurement, "utf-8")
+        )
 
         try:
             status = self.Status(status)
@@ -420,10 +442,16 @@ class Keithley485(Instrument):
             raise ValueError("Instrument not in normal mode: {}".format(status.name))
 
         if function != b"DC":
-            raise ValueError("Instrument not returning DC function: {}".format(function))
+            raise ValueError(
+                "Instrument not returning DC function: {}".format(function)
+            )
 
         try:
-            current = float(current) * u.amp if base == b"A" else 10 ** (float(current)) * u.amp
+            current = (
+                float(current) * u.amp
+                if base == b"A"
+                else 10 ** (float(current)) * u.amp
+            )
         except:
             raise Exception("Cannot parse measurement: {}".format(measurement))
 

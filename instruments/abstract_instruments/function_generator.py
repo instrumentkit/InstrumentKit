@@ -47,6 +47,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
         abstract methods. Instruments with 1 channel have their concrete
         implementations at the parent instrument level.
         """
+
         def __init__(self, parent, name):
             self._parent = parent
             self._name = name
@@ -203,14 +204,16 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
         """
         Enum containing valid voltage modes for many function generators
         """
-        peak_to_peak = 'VPP'
-        rms = 'VRMS'
-        dBm = 'DBM'
+
+        peak_to_peak = "VPP"
+        rms = "VRMS"
+        dBm = "DBM"
 
     class Function(Enum):
         """
         Enum containg valid output function modes for many function generators
         """
+
         sinusoid = "SIN"
         square = "SQU"
         triangle = "TRI"

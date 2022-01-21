@@ -69,13 +69,11 @@ class _Axis:
         """
         Returns the status of the current axis.
         """
-        resp = self._cont.ag_query("{} TS".format(
-            int(self._ax)
-        ))
-        if resp.find('TS') == -1:
+        resp = self._cont.ag_query("{} TS".format(int(self._ax)))
+        if resp.find("TS") == -1:
             return "Status code query failed."
 
-        resp = int(resp.replace(str(int(self._ax)) + 'TS', ''))
+        resp = int(resp.replace(str(int(self._ax)) + "TS", ""))
         status_message = agilis_status_message(resp)
         return status_message
 
@@ -100,22 +98,16 @@ class _Axis:
         :return: Jog motion set
         :rtype: `int`
         """
-        resp = self._cont.ag_query("{} JA?".format(
-            int(self._ax)
-        ))
+        resp = self._cont.ag_query("{} JA?".format(int(self._ax)))
         return int(resp.split("JA")[1])
 
     @jog.setter
     def jog(self, mode):
         mode = int(mode)
         if mode < -4 or mode > 4:
-            raise ValueError("Jog mode out of range. Must be between -4 and "
-                             "4.")
+            raise ValueError("Jog mode out of range. Must be between -4 and " "4.")
 
-        self._cont.ag_sendcmd("{} JA {}".format(
-            int(self._ax),
-            mode
-        ))
+        self._cont.ag_sendcmd("{} JA {}".format(int(self._ax), mode))
 
     @property
     def number_of_steps(self):
@@ -137,9 +129,7 @@ class _Axis:
         :return: Number of steps
         :rtype: int
         """
-        resp = self._cont.ag_query("{} TP".format(
-            int(self._ax)
-        ))
+        resp = self._cont.ag_query("{} TP".format(int(self._ax)))
         return int(resp.split("TP")[1])
 
     @property
@@ -151,22 +141,19 @@ class _Axis:
         If queried, command returns the current target position. At least this
         is the expected behaviour, never worked with the rotation stage.
         """
-        resp = self._cont.ag_query("{} PR?".format(
-            int(self._ax)
-        ))
+        resp = self._cont.ag_query("{} PR?".format(int(self._ax)))
         return int(resp.split("PR")[1])
 
     @move_relative.setter
     def move_relative(self, steps):
         steps = int(steps)
         if steps < -2147483648 or steps > 2147483647:
-            raise ValueError("Number of steps are out of range. They must be "
-                             "between -2,147,483,648 and 2,147,483,647")
+            raise ValueError(
+                "Number of steps are out of range. They must be "
+                "between -2,147,483,648 and 2,147,483,647"
+            )
 
-        self._cont.ag_sendcmd("{} PR {}".format(
-            int(self._ax),
-            steps
-        ))
+        self._cont.ag_sendcmd("{} PR {}".format(int(self._ax), steps))
 
     @property
     def move_to_limit(self):
@@ -183,22 +170,16 @@ class _Axis:
         Returns the distance of the current position to the limit in
         1/1000th of the total travel.
         """
-        resp = self._cont.ag_query("{} MA?".format(
-            int(self._ax)
-        ))
+        resp = self._cont.ag_query("{} MA?".format(int(self._ax)))
         return int(resp.split("MA")[1])
 
     @move_to_limit.setter
     def move_to_limit(self, mode):
         mode = int(mode)
         if mode < -4 or mode > 4:
-            raise ValueError("Jog mode out of range. Must be between -4 and "
-                             "4.")
+            raise ValueError("Jog mode out of range. Must be between -4 and " "4.")
 
-        self._cont.ag_sendcmd("{} MA {}".format(
-            int(self._ax),
-            mode
-        ))
+        self._cont.ag_sendcmd("{} MA {}".format(int(self._ax), mode))
 
     @property
     def step_amplitude(self):
@@ -217,12 +198,8 @@ class _Axis:
             response.
         :rtype: (`int`, `int`)
         """
-        resp_neg = self._cont.ag_query("{} SU-?".format(
-            int(self._ax)
-        ))
-        resp_pos = self._cont.ag_query("{} SU+?".format(
-            int(self._ax)
-        ))
+        resp_neg = self._cont.ag_query("{} SU-?".format(int(self._ax)))
+        resp_pos = self._cont.ag_query("{} SU+?".format(int(self._ax)))
         return int(resp_neg.split("SU")[1]), int(resp_pos.split("SU")[1])
 
     @step_amplitude.setter
@@ -234,15 +211,14 @@ class _Axis:
         for nn in nns:
             nn = int(nn)
             if nn < -50 or nn > 50 or nn == 0:
-                raise ValueError("Step amplitude {} outside the valid range. "
-                                 "It must be between -50 and -1 or between "
-                                 "1 and 50.".format(nn))
+                raise ValueError(
+                    "Step amplitude {} outside the valid range. "
+                    "It must be between -50 and -1 or between "
+                    "1 and 50.".format(nn)
+                )
 
         for nn in nns:
-            self._cont.ag_sendcmd("{} SU {}".format(
-                int(self._ax),
-                int(nn)
-            ))
+            self._cont.ag_sendcmd("{} SU {}".format(int(self._ax), int(nn)))
 
     @property
     def step_delay(self):
@@ -258,22 +234,18 @@ class _Axis:
         :return: Step delay
         :rtype: `int`
         """
-        resp = self._cont.ag_query("{} DL?".format(
-            int(self._ax)
-        ))
+        resp = self._cont.ag_query("{} DL?".format(int(self._ax)))
         return int(resp.split("DL")[1])
 
     @step_delay.setter
     def step_delay(self, nn):
         nn = int(nn)
         if nn < 0 or nn > 200000:
-            raise ValueError("Step delay is out of range. It must be between "
-                             "0 and 200000.")
+            raise ValueError(
+                "Step delay is out of range. It must be between " "0 and 200000."
+            )
 
-        self._cont.ag_sendcmd("{} DL {}".format(
-            int(self._ax),
-            nn
-        ))
+        self._cont.ag_sendcmd("{} DL {}".format(int(self._ax), nn))
 
     # MODES #
 
@@ -298,31 +270,31 @@ class _Axis:
             status = self.axis_status
             if status == agilis_status_message(0):
                 return True
-            elif status == agilis_status_message(1) or \
-                status == agilis_status_message(2) or \
-                status == agilis_status_message(3):
+            elif (
+                status == agilis_status_message(1)
+                or status == agilis_status_message(2)
+                or status == agilis_status_message(3)
+            ):
                 return False
             else:
                 retries += 1
 
-        raise IOError("The function `am_i_still` ran out of maximum retries. "
-                      "Could not query the status of the axis.")
+        raise IOError(
+            "The function `am_i_still` ran out of maximum retries. "
+            "Could not query the status of the axis."
+        )
 
     def stop(self):
         """
         Stops the axis. This is useful to interrupt a jogging motion.
         """
-        self._cont.ag_sendcmd("{} ST".format(
-            int(self._ax)
-        ))
+        self._cont.ag_sendcmd("{} ST".format(int(self._ax)))
 
     def zero_position(self):
         """
         Resets the step counter to zero. See `number_of_steps` for details.
         """
-        self._cont.ag_sendcmd("{} ZP".format(
-            int(self._ax)
-        ))
+        self._cont.ag_sendcmd("{} ZP".format(int(self._ax)))
 
 
 class AGUC2(Instrument):
@@ -374,7 +346,7 @@ class AGUC2(Instrument):
         super(AGUC2, self).__init__(filelike)
 
         # Instrument requires '\r\n' line termination
-        self.terminator = '\r\n'
+        self.terminator = "\r\n"
 
         # Some local variables
         self._remote_mode = False
@@ -386,6 +358,7 @@ class AGUC2(Instrument):
         """
         Enumeration of valid delay channels for the AG-UC2 controller.
         """
+
         X = 1
         Y = 2
 
@@ -423,10 +396,10 @@ class AGUC2(Instrument):
     def enable_remote_mode(self, newval):
         if newval and not self._remote_mode:
             self._remote_mode = True
-            self.ag_sendcmd('MR')
+            self.ag_sendcmd("MR")
         elif not newval and self._remote_mode:
             self._remote_mode = False
-            self.ag_sendcmd('ML')
+            self.ag_sendcmd("ML")
 
     @property
     def error_previous_command(self):
@@ -434,12 +407,12 @@ class AGUC2(Instrument):
         Retrieves the error of the previous command and translates it into a
         string. The string is returned
         """
-        resp = self.ag_query('TE')
+        resp = self.ag_query("TE")
 
-        if resp.find('TE') == -1:
+        if resp.find("TE") == -1:
             return "Error code query failed."
 
-        resp = int(resp.replace('TE', ''))
+        resp = int(resp.replace("TE", ""))
         error_message = agilis_error_message(resp)
         return error_message
 
@@ -448,7 +421,7 @@ class AGUC2(Instrument):
         """
         Returns the firmware version of the controller
         """
-        resp = self.ag_query('VE')
+        resp = self.ag_query("VE")
         return resp
 
     @property
@@ -545,7 +518,7 @@ def agilis_error_message(error_code):
         -3: "Wrong format for parameter nn (or must not be specified)",
         -4: "Parameter nn out of range",
         -5: "Not allowed in local mode",
-        -6: "Not allowed in current state"
+        -6: "Not allowed in current state",
     }
 
     if error_code in error_dict.keys():
@@ -556,14 +529,14 @@ def agilis_error_message(error_code):
 
 def agilis_status_message(status_code):
     """
-        Returns a string with the status message for a given Agilis status
-        code.
+    Returns a string with the status message for a given Agilis status
+    code.
 
-        :param int status_code: status code as returned
+    :param int status_code: status code as returned
 
-        :return: status message
-        :rtype: string
-        """
+    :return: status message
+    :rtype: string
+    """
     if not isinstance(status_code, int):
         return "Status code is not an integer."
 
@@ -571,9 +544,9 @@ def agilis_status_message(status_code):
         0: "Ready (not moving).",
         1: "Stepping (currently executing a `move_relative` command).",
         2: "Jogging (currently executing a `jog` command with command"
-           "parameter different than 0).",
+        "parameter different than 0).",
         3: "Moving to limit (currently executing `measure_current_position`, "
-           "`move_to_limit`, or `move_absolute` command).",
+        "`move_to_limit`, or `move_absolute` command).",
     }
 
     if status_code in status_dict.keys():

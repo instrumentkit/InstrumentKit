@@ -30,18 +30,15 @@ class SRSCTC100(SCPIInstrument):
 
     # DICTIONARIES #
 
-    _BOOL_NAMES = {
-        'On': True,
-        'Off': False
-    }
+    _BOOL_NAMES = {"On": True, "Off": False}
 
     # Note that the SRS CTC-100 uses '\xb0' to represent '°'.
     _UNIT_NAMES = {
-        '\xb0C': u.celsius,
-        'W':     u.watt,
-        'V':     u.volt,
-        '\xea':  u.ohm,
-        '':      u.dimensionless
+        "\xb0C": u.celsius,
+        "W": u.watt,
+        "V": u.volt,
+        "\xea": u.ohm,
+        "": u.dimensionless,
     }
 
     # INNER CLASSES ##
@@ -50,10 +47,11 @@ class SRSCTC100(SCPIInstrument):
         """
         Enum containing valid sensor types for the SRS CTC-100
         """
-        rtd = 'RTD'
-        thermistor = 'Thermistor'
-        diode = 'Diode'
-        rox = 'ROX'
+
+        rtd = "RTD"
+        thermistor = "Thermistor"
+        diode = "Diode"
+        rox = "ROX"
 
     class Channel:
 
@@ -75,14 +73,10 @@ class SRSCTC100(SCPIInstrument):
         # PRIVATE METHODS #
 
         def _get(self, prop_name):
-            return self._ctc.query("{}.{}?".format(
-                self._rem_name,
-                prop_name
-            )).strip()
+            return self._ctc.query("{}.{}?".format(self._rem_name, prop_name)).strip()
 
         def _set(self, prop_name, newval):
-            self._ctc.sendcmd(
-                '{}.{} = "{}"'.format(self._rem_name, prop_name, newval))
+            self._ctc.sendcmd('{}.{} = "{}"'.format(self._rem_name, prop_name, newval))
 
         # DISPLAY AND PROGRAMMING #
         # These properties control how the channel is identified in scripts
@@ -101,7 +95,7 @@ class SRSCTC100(SCPIInstrument):
 
         @name.setter
         def name(self, newval):
-            self._set('name', newval)
+            self._set("name", newval)
             # TODO: check for errors!
             self._chan_name = newval
             self._rem_name = newval.replace(" ", "")
@@ -120,10 +114,7 @@ class SRSCTC100(SCPIInstrument):
             # WARNING: Queries all units all the time.
             # TODO: Make an OutputChannel that subclasses this class,
             #       and add a setter for value.
-            return u.Quantity(
-                float(self._get('value')),
-                self.units
-            )
+            return u.Quantity(float(self._get("value")), self.units)
 
         @property
         def units(self):
@@ -149,7 +140,7 @@ class SRSCTC100(SCPIInstrument):
 
             :type: `SRSCTC100.SensorType`
             """
-            return self._ctc.SensorType(self._get('sensor'))
+            return self._ctc.SensorType(self._get("sensor"))
 
         # STATS #
         # The following properties control and query the statistics of the
@@ -162,12 +153,12 @@ class SRSCTC100(SCPIInstrument):
 
             :type: `bool`
             """
-            return True if self._get('stats') == 'On' else False
+            return True if self._get("stats") == "On" else False
 
         @stats_enabled.setter
         def stats_enabled(self, newval):
             # FIXME: replace with bool_property factory
-            self._set('stats', 'On' if newval else 'Off')
+            self._set("stats", "On" if newval else "Off")
 
         @property
         def stats_points(self):
@@ -177,11 +168,11 @@ class SRSCTC100(SCPIInstrument):
 
             :type: `int`
             """
-            return int(self._get('points'))
+            return int(self._get("points"))
 
         @stats_points.setter
         def stats_points(self, newval):
-            self._set('points', int(newval))
+            self._set("points", int(newval))
 
         @property
         def average(self):
@@ -191,10 +182,7 @@ class SRSCTC100(SCPIInstrument):
 
             :type: `~pint.Quantity`
             """
-            return u.Quantity(
-                float(self._get('average')),
-                self.units
-            )
+            return u.Quantity(float(self._get("average")), self.units)
 
         @property
         def std_dev(self):
@@ -204,14 +192,11 @@ class SRSCTC100(SCPIInstrument):
 
             :type: `~pint.Quantity`
             """
-            return u.Quantity(
-                float(self._get('SD')),
-                self.units
-            )
+            return u.Quantity(float(self._get("SD")), self.units)
 
         # LOGGING #
 
-        def get_log_point(self, which='next', units=None):
+        def get_log_point(self, which="next", units=None):
             """
             Get a log data point from the instrument.
 
@@ -229,13 +214,12 @@ class SRSCTC100(SCPIInstrument):
                 units = self.units
 
             point = [
-                s.strip() for s in
-                self._ctc.query(
-                    'getLog.xy {}, {}'.format(self._chan_name, which)
-                ).split(',')
+                s.strip()
+                for s in self._ctc.query(
+                    "getLog.xy {}, {}".format(self._chan_name, which)
+                ).split(",")
             ]
-            return u.Quantity(float(point[0]), 'ms'), \
-                   u.Quantity(float(point[1]), units)
+            return u.Quantity(float(point[0]), "ms"), u.Quantity(float(point[1]), units)
 
         def get_log(self):
             """
@@ -252,8 +236,7 @@ class SRSCTC100(SCPIInstrument):
             units = self.units
 
             # Find out how many points there are.
-            n_points = int(
-                self._ctc.query('getLog.xy? {}'.format(self._chan_name)))
+            n_points = int(self._ctc.query("getLog.xy? {}".format(self._chan_name)))
 
             # Make an empty quantity that size for the times and for the channel
             # values.
@@ -267,9 +250,9 @@ class SRSCTC100(SCPIInstrument):
             # Reset the position to the first point, then save it.
             # pylint: disable=protected-access
             with self._ctc._error_checking_disabled():
-                ts[0], temps[0] = self.get_log_point('first', units)
+                ts[0], temps[0] = self.get_log_point("first", units)
                 for idx in range(1, n_points):
-                    ts[idx], temps[idx] = self.get_log_point('next', units)
+                    ts[idx], temps[idx] = self.get_log_point("next", units)
 
             # Do an actual error check now.
             if self._ctc.error_check_toggle:
@@ -302,10 +285,7 @@ class SRSCTC100(SCPIInstrument):
         # As a consequence, users of this instrument MUST use spaces
         # matching the pretty name and not the remote-programming name.
         # CG could not think of a good way around this.
-        names = [
-            name.strip()
-            for name in self.query('getOutput.names?').split(',')
-        ]
+        names = [name.strip() for name in self.query("getOutput.names?").split(",")]
         return names
 
     def channel_units(self):
@@ -318,8 +298,7 @@ class SRSCTC100(SCPIInstrument):
         :rtype: `dict` with channel names as keys and units as values
         """
         unit_strings = [
-            unit_str.strip()
-            for unit_str in self.query('getOutput.units?').split(',')
+            unit_str.strip() for unit_str in self.query("getOutput.units?").split(",")
         ]
         return dict(
             (chan_name, self._UNIT_NAMES[unit_str])
@@ -334,8 +313,8 @@ class SRSCTC100(SCPIInstrument):
 
         :return: Nothing
         """
-        errs = super(SRSCTC100, self).query('geterror?').strip()
-        err_code, err_descript = errs.split(',')
+        errs = super(SRSCTC100, self).query("geterror?").strip()
+        err_code, err_descript = errs.split(",")
         err_code = int(err_code)
         if err_code == 0:
             return err_code
@@ -376,14 +355,16 @@ class SRSCTC100(SCPIInstrument):
 
         :type: `int`
         """
-        return int(self.query('system.display.figures?'))
+        return int(self.query("system.display.figures?"))
 
     @display_figures.setter
     def display_figures(self, newval):
         if newval not in range(7):
-            raise ValueError("Number of display figures must be an integer "
-                             "from 0 to 6, inclusive.")
-        self.sendcmd('system.display.figures = {}'.format(newval))
+            raise ValueError(
+                "Number of display figures must be an integer "
+                "from 0 to 6, inclusive."
+            )
+        self.sendcmd("system.display.figures = {}".format(newval))
 
     @property
     def error_check_toggle(self):
@@ -423,4 +404,4 @@ class SRSCTC100(SCPIInstrument):
 
         Not sure if this works.
         """
-        self.sendcmd('System.Log.Clear yes')
+        self.sendcmd("System.Log.Clear yes")

@@ -8,10 +8,7 @@ Provides support for the HP6624a power supply
 
 from enum import Enum
 
-from instruments.abstract_instruments import (
-    PowerSupply,
-    PowerSupplyChannel
-)
+from instruments.abstract_instruments import PowerSupply, PowerSupplyChannel
 from instruments.units import ureg as u
 from instruments.util_fns import ProxyList, unitful_property, bool_property
 
@@ -61,9 +58,7 @@ class HP6624a(PowerSupply):
                 cmd = "{cmd} {idx}".format(cmd=cmd[0], idx=self._idx)
             else:
                 cmd = "{cmd} {idx},{value}".format(
-                    cmd=cmd[0],
-                    idx=self._idx,
-                    value=cmd[1]
+                    cmd=cmd[0], idx=self._idx, value=cmd[1]
                 )
             return cmd
 
@@ -117,7 +112,7 @@ class HP6624a(PowerSupply):
 
             :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
             :type: `float` or `~pint.Quantity`
-            """
+            """,
         )
 
         current = unitful_property(
@@ -133,7 +128,7 @@ class HP6624a(PowerSupply):
 
             :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
             :type: `float` or `~pint.Quantity`
-            """
+            """,
         )
 
         voltage_sense = unitful_property(
@@ -146,7 +141,7 @@ class HP6624a(PowerSupply):
 
             :units: :math:`\\text{V}` (volts)
             :rtype: `~pint.Quantity`
-            """
+            """,
         )
 
         current_sense = unitful_property(
@@ -159,7 +154,7 @@ class HP6624a(PowerSupply):
 
             :units: :math:`\\text{A}` (amps)
             :rtype: `~pint.Quantity`
-            """
+            """,
         )
 
         overvoltage = unitful_property(
@@ -174,7 +169,7 @@ class HP6624a(PowerSupply):
 
             :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
             :type: `float` or `~pint.Quantity`
-            """
+            """,
         )
 
         overcurrent = bool_property(
@@ -187,7 +182,7 @@ class HP6624a(PowerSupply):
             This is a toggle setting. It is either on or off.
 
             :type: `bool`
-            """
+            """,
         )
 
         output = bool_property(
@@ -201,7 +196,7 @@ class HP6624a(PowerSupply):
             while False will turn it off.
 
             :type: `bool`
-            """
+            """,
         )
 
         # METHODS ##
@@ -210,8 +205,8 @@ class HP6624a(PowerSupply):
             """
             Reset overvoltage and overcurrent errors to resume operation.
             """
-            self.sendcmd('OVRST')
-            self.sendcmd('OCRST')
+            self.sendcmd("OVRST")
+            self.sendcmd("OCRST")
 
     # ENUMS #
 
@@ -223,6 +218,7 @@ class HP6624a(PowerSupply):
         constant-voltage output, so this class current does not do anything
         and is just a placeholder.
         """
+
         voltage = 0
         current = 0
 
@@ -250,17 +246,17 @@ class HP6624a(PowerSupply):
             of units Volts.
         :type: `tuple`[`~pint.Quantity`, ...] with units Volt
         """
-        return tuple([
-            self.channel[i].voltage for i in range(self.channel_count)
-        ])
+        return tuple([self.channel[i].voltage for i in range(self.channel_count)])
 
     @voltage.setter
     def voltage(self, newval):
         if isinstance(newval, (list, tuple)):
             if len(newval) is not self.channel_count:
-                raise ValueError('When specifying the voltage for all channels '
-                                 'as a list or tuple, it must be of '
-                                 'length {}.'.format(self.channel_count))
+                raise ValueError(
+                    "When specifying the voltage for all channels "
+                    "as a list or tuple, it must be of "
+                    "length {}.".format(self.channel_count)
+                )
             for i in range(self.channel_count):
                 self.channel[i].voltage = newval[i]
         else:
@@ -276,17 +272,17 @@ class HP6624a(PowerSupply):
             of units Amps.
         :type: `tuple`[`~pint.Quantity`, ...] with units Amp
         """
-        return tuple([
-            self.channel[i].current for i in range(self.channel_count)
-        ])
+        return tuple([self.channel[i].current for i in range(self.channel_count)])
 
     @current.setter
     def current(self, newval):
         if isinstance(newval, (list, tuple)):
             if len(newval) is not self.channel_count:
-                raise ValueError('When specifying the current for all channels '
-                                 'as a list or tuple, it must be of '
-                                 'length {}.'.format(self.channel_count))
+                raise ValueError(
+                    "When specifying the current for all channels "
+                    "as a list or tuple, it must be of "
+                    "length {}.".format(self.channel_count)
+                )
             for i in range(self.channel_count):
                 self.channel[i].current = newval[i]
         else:
@@ -301,9 +297,7 @@ class HP6624a(PowerSupply):
         :units: :math:`\\text{V}` (volts)
         :rtype: `tuple`[`~pint.Quantity`, ...]
         """
-        return tuple(
-            self.channel[i].voltage_sense for i in range(self.channel_count)
-        )
+        return tuple(self.channel[i].voltage_sense for i in range(self.channel_count))
 
     @property
     def current_sense(self):
@@ -313,9 +307,7 @@ class HP6624a(PowerSupply):
         :units: :math:`\\text{A}` (amps)
         :rtype: `tuple`[`~pint.Quantity`, ...]
         """
-        return tuple(
-            self.channel[i].current_sense for i in range(self.channel_count)
-        )
+        return tuple(self.channel[i].current_sense for i in range(self.channel_count))
 
     @property
     def channel_count(self):
@@ -330,9 +322,9 @@ class HP6624a(PowerSupply):
     @channel_count.setter
     def channel_count(self, newval):
         if not isinstance(newval, int):
-            raise TypeError('Channel count must be specified as an integer.')
+            raise TypeError("Channel count must be specified as an integer.")
         if newval < 1:
-            raise ValueError('Channel count must be >=1')
+            raise ValueError("Channel count must be >=1")
         self._channel_count = newval
 
     # METHODS ##
@@ -348,4 +340,4 @@ class HP6624a(PowerSupply):
         #) The power supply remains addressed to listen.
         #) The PON bit in the serial poll register is cleared.
         """
-        self.sendcmd('CLR')
+        self.sendcmd("CLR")

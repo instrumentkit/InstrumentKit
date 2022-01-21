@@ -19,7 +19,7 @@ import instruments as ik
 def sgc(monkeypatch):
     """Patch and return SGChannel for direct access of metaclass."""
     inst = ik.abstract_instruments.signal_generator.SGChannel
-    monkeypatch.setattr(inst, '__abstractmethods__', set())
+    monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
 

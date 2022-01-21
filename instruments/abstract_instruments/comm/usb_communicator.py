@@ -56,11 +56,14 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError("Terminator for USBCommunicator must be specified "
-                            "as a single character string.")
+            raise TypeError(
+                "Terminator for USBCommunicator must be specified "
+                "as a single character string."
+            )
         if len(newval) > 1:
-            raise ValueError("Terminator for USBCommunicator must only be 1 "
-                             "character long.")
+            raise ValueError(
+                "Terminator for USBCommunicator must only be 1 " "character long."
+            )
         self._terminator = newval
 
     @property

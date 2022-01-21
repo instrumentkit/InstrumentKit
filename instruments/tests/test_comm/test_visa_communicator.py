@@ -49,15 +49,13 @@ def test_visacomm_address(visa_inst):
     with pytest.raises(NotImplementedError) as err:
         comm.address = "new address"
     err_msg = err.value.args[0]
-    assert err_msg == (
-        "Changing addresses of a VISA Instrument is not supported."
-    )
+    assert err_msg == ("Changing addresses of a VISA Instrument is not supported.")
 
 
 def test_visacomm_terminator(visa_inst):
     """Get / Set terminator."""
     comm = VisaCommunicator(visa_inst)
-    comm.terminator = ("\r")
+    comm.terminator = "\r"
     assert comm.terminator == "\r"
 
 
@@ -79,9 +77,7 @@ def test_visacomm_terminator_not_single_char(visa_inst):
     with pytest.raises(ValueError) as err:
         comm.terminator = "\r\n"
     err_msg = err.value.args[0]
-    assert err_msg == (
-        "Terminator for VisaCommunicator must only be 1 character long."
-    )
+    assert err_msg == ("Terminator for VisaCommunicator must only be 1 character long.")
 
 
 def test_visacomm_timeout(visa_inst):
@@ -97,7 +93,7 @@ def test_visacomm_close(visa_inst, mocker):
     """Raise an IOError if comms cannot be closed."""
     io_error_mock = mocker.Mock()
     io_error_mock.side_effect = IOError
-    mock_close = mocker.patch.object(visa_inst, 'close', io_error_mock)
+    mock_close = mocker.patch.object(visa_inst, "close", io_error_mock)
     comm = VisaCommunicator(visa_inst)
     comm.close()
     mock_close.assert_called()  # but error will just pass!
@@ -106,9 +102,7 @@ def test_visacomm_close(visa_inst, mocker):
 def test_visacomm_read_raw(visa_inst, mocker):
     """Read raw data from instrument without size specification."""
     comm = VisaCommunicator(visa_inst)
-    mock_read_raw = mocker.patch.object(
-        visa_inst, 'read_raw', return_value=b'asdf'
-    )
+    mock_read_raw = mocker.patch.object(visa_inst, "read_raw", return_value=b"asdf")
     comm.read_raw()
     mock_read_raw.assert_called()
     assert comm._buf == bytearray()
@@ -118,11 +112,9 @@ def test_visacomm_read_raw_size(visa_inst, mocker):
     """Read raw data from instrument with size specification."""
     comm = VisaCommunicator(visa_inst)
     size = 3
-    mock_read_bytes = mocker.patch.object(
-        visa_inst, 'read_bytes', return_value=b'123'
-    )
+    mock_read_bytes = mocker.patch.object(visa_inst, "read_bytes", return_value=b"123")
     ret_val = comm.read_raw(size=size)
-    assert ret_val == b'123'
+    assert ret_val == b"123"
     mock_read_bytes.assert_called()
     assert comm._buf == bytearray()
 
@@ -140,9 +132,9 @@ def test_visacomm_read_raw_wrong_size(visa_inst):
 
 def test_visacomm_write_raw(visa_inst, mocker):
     """Write raw message to instrument."""
-    mock_write = mocker.patch.object(visa_inst, 'write_raw')
+    mock_write = mocker.patch.object(visa_inst, "write_raw")
     comm = VisaCommunicator(visa_inst)
-    msg = b'12345'
+    msg = b"12345"
     comm.write_raw(msg)
     mock_write.assert_called_with(msg)
 
@@ -163,17 +155,17 @@ def test_visacomm_tell_not_implemented(visa_inst):
 
 def test_visacomm_sendcmd(visa_inst, mocker):
     """Write to device."""
-    mock_write = mocker.patch.object(VisaCommunicator, 'write')
+    mock_write = mocker.patch.object(VisaCommunicator, "write")
     comm = VisaCommunicator(visa_inst)
-    msg = 'asdf'
+    msg = "asdf"
     comm._sendcmd(msg)
     mock_write.assert_called_with(msg + comm.terminator)
 
 
 def test_visacomm_query(visa_inst, mocker):
     """Query device."""
-    mock_query = mocker.patch.object(visa_inst, 'query')
+    mock_query = mocker.patch.object(visa_inst, "query")
     comm = VisaCommunicator(visa_inst)
-    msg = 'asdf'
+    msg = "asdf"
     comm._query(msg)
     mock_query.assert_called_with(msg + comm.terminator)

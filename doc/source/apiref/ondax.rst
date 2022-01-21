@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.ondax
-    
+
 =====
 Ondax
 =====
@@ -13,4 +13,3 @@ Ondax
 .. autoclass:: LM
     :members:
     :undoc-members:
-

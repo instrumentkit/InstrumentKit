@@ -23,7 +23,6 @@ from instruments.util_fns import ProxyList
 
 
 def _parent_property(prop_name, doc=""):
-
     def getter(self):  # pylint: disable=missing-docstring
         with self:
             # pylint: disable=protected-access
@@ -36,6 +35,7 @@ def _parent_property(prop_name, doc=""):
             setattr(self._tek, prop_name, newval)
 
     return property(getter, setter, doc=doc)
+
 
 # CLASSES #####################################################################
 
@@ -104,7 +104,7 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
 
             # TODO: move this out somewhere more appropriate.
             old_dat_stop = self._tek.query("DAT:STOP?")
-            self._tek.sendcmd("DAT:STOP {}".format(10**7))
+            self._tek.sendcmd("DAT:STOP {}".format(10 ** 7))
 
             if not bin_format:
                 # Set data encoding format to ASCII
@@ -140,7 +140,12 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
                 x = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
                 y = ((raw - yoffs) * float(ymult)) + float(yzero)
             else:
-                x = tuple([float(val) * float(xincr) + float(xzero) for val in range(int(ptcnt))])
+                x = tuple(
+                    [
+                        float(val) * float(xincr) + float(xzero)
+                        for val in range(int(ptcnt))
+                    ]
+                )
                 y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
 
             self._tek.sendcmd("DAT:STOP {}".format(old_dat_stop))
@@ -162,8 +167,7 @@ class _TekDPO4104Channel(_TekDPO4104DataSource, OscilloscopeChannel):
     """
 
     def __init__(self, parent, idx):
-        super(_TekDPO4104Channel, self).__init__(
-            parent, "CH{}".format(idx + 1))
+        super(_TekDPO4104Channel, self).__init__(parent, "CH{}".format(idx + 1))
         self._idx = idx + 1
 
     @property
@@ -173,15 +177,15 @@ class _TekDPO4104Channel(_TekDPO4104DataSource, OscilloscopeChannel):
 
         :type: `TekDPO4104.Coupling`
         """
-        return TekDPO4104.Coupling(
-            self._tek.query("CH{}:COUPL?".format(self._idx))
-        )
+        return TekDPO4104.Coupling(self._tek.query("CH{}:COUPL?".format(self._idx)))
 
     @coupling.setter
     def coupling(self, newval):
         if not isinstance(newval, TekDPO4104.Coupling):
-            raise TypeError("Coupling setting must be a `TekDPO4104.Coupling`"
-                            " value, got {} instead.".format(type(newval)))
+            raise TypeError(
+                "Coupling setting must be a `TekDPO4104.Coupling`"
+                " value, got {} instead.".format(type(newval))
+            )
 
         self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
 
@@ -208,6 +212,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         Enum containing valid coupling modes for the channels on the
         Tektronix DPO 4104
         """
+
         ac = "AC"
         dc = "DC"
         ground = "GND"
@@ -246,7 +251,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         return ProxyList(
             self,
             lambda s, idx: _TekDPO4104DataSource(s, "REF{}".format(idx + 1)),
-            range(4)
+            range(4),
         )
 
     @property

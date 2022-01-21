@@ -1,6 +1,6 @@
 ..
     TODO: put documentation license header here.
-    
+
 ============
 Introduction
 ============
@@ -111,8 +111,7 @@ For instance, to add a Tektronix DPO 4104 oscilloscope with world-writable
 permissions, add the following to rules.d::
 
     ATTRS{idVendor}=="0699", ATTRS{idProduct}=="0401", SYMLINK+="tekdpo4104", MODE="0666"
-    
+
 .. warning::
     This configuration causes the USB device to be world-writable. Do not do
     this on a multi-user system with untrusted users.
-

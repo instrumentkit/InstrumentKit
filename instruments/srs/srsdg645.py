@@ -65,11 +65,11 @@ class _SRSDG645Channel:
     @delay.setter
     def delay(self, newval):
         newval = (newval[0], assume_units(newval[1], u.s))
-        self._ddg.sendcmd("DLAY {},{},{}".format(
-            int(self._chan),
-            int(newval[0].idx),
-            newval[1].to("s").magnitude
-        ))
+        self._ddg.sendcmd(
+            "DLAY {},{},{}".format(
+                int(self._chan), int(newval[0].idx), newval[1].to("s").magnitude
+            )
+        )
 
 
 class SRSDG645(SCPIInstrument):
@@ -103,6 +103,7 @@ class SRSDG645(SCPIInstrument):
         """
         Polarities for output levels.
         """
+
         positive = 1
         negative = 0
 
@@ -111,6 +112,7 @@ class SRSDG645(SCPIInstrument):
         """
         Enumeration of valid outputs from the DDG.
         """
+
         T0 = 0
         AB = 1
         CD = 2
@@ -122,6 +124,7 @@ class SRSDG645(SCPIInstrument):
         """
         Enumeration of valid delay channels for the DDG.
         """
+
         T0 = 0
         T1 = 1
         A = 2
@@ -138,6 +141,7 @@ class SRSDG645(SCPIInstrument):
         """
         Enumeration of possible modes for the physical front-panel display.
         """
+
         trigger_rate = 0
         trigger_threshold = 1
         trigger_single_shot = 2
@@ -159,6 +163,7 @@ class SRSDG645(SCPIInstrument):
         """
         Enumeration of the different allowed trigger sources and modes.
         """
+
         internal = 0
         external_rising = 1
         external_falling = 2
@@ -193,12 +198,12 @@ class SRSDG645(SCPIInstrument):
         @polarity.setter
         def polarity(self, newval):
             if not isinstance(newval, self._parent.LevelPolarity):
-                raise TypeError("Mode must be specified as a "
-                                "SRSDG645.LevelPolarity value, got {} "
-                                "instead.".format(type(newval)))
-            self._parent.sendcmd("LPOL {},{}".format(
-                self._idx, int(newval.value)
-            ))
+                raise TypeError(
+                    "Mode must be specified as a "
+                    "SRSDG645.LevelPolarity value, got {} "
+                    "instead.".format(type(newval))
+                )
+            self._parent.sendcmd("LPOL {},{}".format(self._idx, int(newval.value)))
 
         @property
         def level_amplitude(self):
@@ -209,13 +214,12 @@ class SRSDG645(SCPIInstrument):
             :units: As specified, or :math:`\\text{V}` by default.
             """
             return u.Quantity(
-                float(self._parent.query('LAMP? {}'.format(self._idx))),
-                'V'
+                float(self._parent.query("LAMP? {}".format(self._idx))), "V"
             )
 
         @level_amplitude.setter
         def level_amplitude(self, newval):
-            newval = assume_units(newval, 'V').magnitude
+            newval = assume_units(newval, "V").magnitude
             self._parent.sendcmd("LAMP {},{}".format(self._idx, newval))
 
         @property
@@ -227,13 +231,12 @@ class SRSDG645(SCPIInstrument):
             :units: As specified, or :math:`\\text{V}` by default.
             """
             return u.Quantity(
-                float(self._parent.query('LOFF? {}'.format(self._idx))),
-                'V'
+                float(self._parent.query("LOFF? {}".format(self._idx))), "V"
             )
 
         @level_offset.setter
         def level_offset(self, newval):
-            newval = assume_units(newval, 'V').magnitude
+            newval = assume_units(newval, "V").magnitude
             self._parent.sendcmd("LOFF {},{}".format(self._idx, newval))
 
     # PROPERTIES #

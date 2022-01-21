@@ -42,6 +42,7 @@ class LM(Instrument):
         """
         Enum containing the valid states of the laser
         """
+
         normal = 1
         inner_modulation = 2
         power_scan = 3
@@ -61,6 +62,7 @@ class LM(Instrument):
         .. warning:: This class is not designed to be accessed directly. It
             should be interfaced via `LM.acc`
         """
+
         def __init__(self, parent):
             self._parent = parent
             self._enabled = False
@@ -83,7 +85,7 @@ class LM(Instrument):
             :type: `~pint.Quantity`
             """
             response = float(self._parent.query("rstli?"))
-            return response*u.mA
+            return response * u.mA
 
         @property
         def enabled(self):
@@ -106,8 +108,10 @@ class LM(Instrument):
         @enabled.setter
         def enabled(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError("ACC driver enabled property must be specified"
-                                "with a boolean, got {}.".format(type(newval)))
+                raise TypeError(
+                    "ACC driver enabled property must be specified"
+                    "with a boolean, got {}.".format(type(newval))
+                )
             if newval:
                 self._parent.sendcmd("lcen")
             else:
@@ -150,6 +154,7 @@ class LM(Instrument):
         .. warning:: This class is not designed to be accessed directly. It
             should be interfaced via `LM.apc`
         """
+
         def __init__(self, parent):
             self._parent = parent
             self._enabled = False
@@ -172,7 +177,7 @@ class LM(Instrument):
             :type: `~pint.Quantity`
             """
             response = self._parent.query("rslp?")
-            return float(response)*u.mW
+            return float(response) * u.mW
 
         @property
         def enabled(self):
@@ -195,8 +200,10 @@ class LM(Instrument):
         @enabled.setter
         def enabled(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError("APC driver enabled property must be specified "
-                                "with a boolean, got {}.".format(type(newval)))
+                raise TypeError(
+                    "APC driver enabled property must be specified "
+                    "with a boolean, got {}.".format(type(newval))
+                )
             if newval:
                 self._parent.sendcmd("len")
             else:
@@ -238,6 +245,7 @@ class LM(Instrument):
         .. warning:: This class is not designed to be accessed directly. It
             should be interfaced via `LM.modulation`
         """
+
         def __init__(self, parent):
             self._parent = parent
             self._enabled = False
@@ -263,12 +271,12 @@ class LM(Instrument):
             :type: `~pint.Quantity`
             """
             response = self._parent.query("stsont?")
-            return float(response)*u.ms
+            return float(response) * u.ms
 
         @on_time.setter
         def on_time(self, newval):
             newval = assume_units(newval, u.ms).to(u.ms).magnitude
-            self._parent.sendcmd("stsont:"+str(newval))
+            self._parent.sendcmd("stsont:" + str(newval))
 
         @property
         def off_time(self):
@@ -291,12 +299,12 @@ class LM(Instrument):
             :type: `~pint.Quantity`
             """
             response = self._parent.query("stsofft?")
-            return float(response)*u.ms
+            return float(response) * u.ms
 
         @off_time.setter
         def off_time(self, newval):
             newval = assume_units(newval, u.ms).to(u.ms).magnitude
-            self._parent.sendcmd("stsofft:"+str(newval))
+            self._parent.sendcmd("stsofft:" + str(newval))
 
         @property
         def enabled(self):
@@ -319,8 +327,10 @@ class LM(Instrument):
         @enabled.setter
         def enabled(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError("Modulation enabled property must be specified "
-                                "with a boolean, got {}.".format(type(newval)))
+                raise TypeError(
+                    "Modulation enabled property must be specified "
+                    "with a boolean, got {}.".format(type(newval))
+                )
             if newval:
                 self._parent.sendcmd("stm")
             else:
@@ -335,6 +345,7 @@ class LM(Instrument):
         .. warning:: This class is not designed to be accessed directly. It
             should be interfaced via `LM.tec`
         """
+
         def __init__(self, parent):
             self._parent = parent
             self._enabled = False
@@ -356,7 +367,7 @@ class LM(Instrument):
             :type: `~pint.Quantity`
             """
             response = self._parent.query("rti?")
-            return float(response)*u.mA
+            return float(response) * u.mA
 
         @property
         def target(self):
@@ -398,8 +409,10 @@ class LM(Instrument):
         @enabled.setter
         def enabled(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError("TEC enabled property must be specified with "
-                                "a boolean, got {}.".format(type(newval)))
+                raise TypeError(
+                    "TEC enabled property must be specified with "
+                    "a boolean, got {}.".format(type(newval))
+                )
             if newval:
                 self._parent.sendcmd("tecon")
             else:
@@ -432,12 +445,12 @@ class LM(Instrument):
         :type: `~pint.Quantity`
         """
         response = self.query("rli?")
-        return float(response)*u.mA
+        return float(response) * u.mA
 
     @current.setter
     def current(self, newval):
         newval = assume_units(newval, u.mA).to(u.mA).magnitude
-        self.sendcmd("slc:"+str(newval))
+        self.sendcmd("slc:" + str(newval))
 
     @property
     def maximum_current(self):
@@ -450,11 +463,11 @@ class LM(Instrument):
         :type: `~pint.Quantity`
         """
         response = self.query("rlcm?")
-        return float(response)*u.mA
+        return float(response) * u.mA
 
     @maximum_current.setter
     def maximum_current(self, newval):
-        newval = assume_units(newval, u.mA).to('mA').magnitude
+        newval = assume_units(newval, u.mA).to("mA").magnitude
         self.sendcmd("smlc:" + str(newval))
 
     @property
@@ -467,12 +480,12 @@ class LM(Instrument):
         :rtype: `~pint.Quantity`
         """
         response = self.query("rlp?")
-        return float(response)*u.mW
+        return float(response) * u.mW
 
     @power.setter
     def power(self, newval):
         newval = assume_units(newval, u.mW).to(u.mW).magnitude
-        self.sendcmd("slp:"+str(newval))
+        self.sendcmd("slp:" + str(newval))
 
     @property
     def serial_number(self):
@@ -509,7 +522,7 @@ class LM(Instrument):
     @temperature.setter
     def temperature(self, newval):
         newval = convert_temperature(newval, u.degC).magnitude
-        self.sendcmd("stt:"+str(newval))
+        self.sendcmd("stt:" + str(newval))
 
     @property
     def enabled(self):
@@ -523,8 +536,10 @@ class LM(Instrument):
     @enabled.setter
     def enabled(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError("Laser module enabled property must be specified "
-                            "with a boolean, got {}.".format(type(newval)))
+            raise TypeError(
+                "Laser module enabled property must be specified "
+                "with a boolean, got {}.".format(type(newval))
+            )
         if newval:
             self.sendcmd("lon")
         else:

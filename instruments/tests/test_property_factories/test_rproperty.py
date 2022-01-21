@@ -20,7 +20,6 @@ from . import MockInstrument
 
 def test_rproperty_basic():
     class Mock(MockInstrument):
-
         def __init__(self):
             super(Mock, self).__init__()
             self._value = 0
@@ -30,6 +29,7 @@ def test_rproperty_basic():
 
         def mockset(self, newval):
             self._value = newval
+
         mockproperty = rproperty(fget=mockget, fset=mockset)
 
     mock_inst = Mock()
@@ -39,14 +39,15 @@ def test_rproperty_basic():
 
 def test_rproperty_readonly_writing_fails():
     with pytest.raises(AttributeError):
-        class Mock(MockInstrument):
 
+        class Mock(MockInstrument):
             def __init__(self):
                 super(Mock, self).__init__()
                 self._value = 0
 
             def mockset(self, newval):  # pragma: no cover
                 self._value = newval
+
             mockproperty = rproperty(fget=None, fset=mockset, readonly=True)
 
         mock_inst = Mock()
@@ -55,13 +56,13 @@ def test_rproperty_readonly_writing_fails():
 
 def test_rproperty_readonly_reading_passes():
     class Mock(MockInstrument):
-
         def __init__(self):
             super(Mock, self).__init__()
             self._value = 0
 
         def mockget(self):
             return self._value
+
         mockproperty = rproperty(fget=mockget, fset=None, readonly=True)
 
     mock_inst = Mock()
@@ -70,14 +71,15 @@ def test_rproperty_readonly_reading_passes():
 
 def test_rproperty_writeonly_reading_fails():
     with pytest.raises(AttributeError):
-        class Mock(MockInstrument):
 
+        class Mock(MockInstrument):
             def __init__(self):
                 super(Mock, self).__init__()
                 self._value = 0
 
             def mockget(self):  # pragma: no cover
                 return self._value
+
             mockproperty = rproperty(fget=mockget, fset=None, writeonly=True)
 
         mock_inst = Mock()
@@ -86,13 +88,13 @@ def test_rproperty_writeonly_reading_fails():
 
 def test_rproperty_writeonly_writing_passes():
     class Mock(MockInstrument):
-
         def __init__(self):
             super(Mock, self).__init__()
             self._value = 0
 
         def mockset(self, newval):
             self._value = newval
+
         mockproperty = rproperty(fget=None, fset=mockset, writeonly=True)
 
     mock_inst = Mock()

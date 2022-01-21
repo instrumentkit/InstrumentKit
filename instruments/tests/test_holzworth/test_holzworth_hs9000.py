@@ -20,44 +20,34 @@ from .. import mock
 
 def test_hs9000_name():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-                ":CH1:IDN?"
-            ],
-            [
-                ":CH1:CH2:FOO",
-                "Foobar name"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":ATTACH?", ":CH1:IDN?"],
+        [":CH1:CH2:FOO", "Foobar name"],
+        sep="\n",
     ) as hs:
         assert hs.name == "Foobar name"
 
 
 def test_channel_idx_list():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-            ],
-            [
-                ":CH1:CH2:FOO"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [
+            ":ATTACH?",
+        ],
+        [":CH1:CH2:FOO"],
+        sep="\n",
     ) as hs:
         assert hs._channel_idxs() == [0, 1, "FOO"]
 
 
 def test_channel_returns_inner_class():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-            ],
-            [
-                ":CH1:CH2:FOO"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [
+            ":ATTACH?",
+        ],
+        [":CH1:CH2:FOO"],
+        sep="\n",
     ) as hs:
         channel = hs.channel[0]
         assert isinstance(channel, hs.Channel) is True
@@ -105,16 +95,10 @@ def test_channel_save_state():
 
 def test_channel_temperature():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-                ":CH1:TEMP?"
-            ],
-            [
-                ":CH1:CH2:FOO",
-                "10 C"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":ATTACH?", ":CH1:TEMP?"],
+        [":CH1:CH2:FOO", "10 C"],
+        sep="\n",
     ) as hs:
         channel = hs.channel[0]
         assert channel.temperature == u.Quantity(10, u.degC)
@@ -122,20 +106,10 @@ def test_channel_temperature():
 
 def test_channel_frequency_getter():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-                ":CH1:FREQ?",
-                ":CH1:FREQ:MIN?",
-                ":CH1:FREQ:MAX?"
-            ],
-            [
-                ":CH1:CH2:FOO",
-                "1000 MHz",
-                "100 MHz",
-                "10 GHz"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":ATTACH?", ":CH1:FREQ?", ":CH1:FREQ:MIN?", ":CH1:FREQ:MAX?"],
+        [":CH1:CH2:FOO", "1000 MHz", "100 MHz", "10 GHz"],
+        sep="\n",
     ) as hs:
         channel = hs.channel[0]
         assert channel.frequency == 1 * u.GHz
@@ -145,19 +119,10 @@ def test_channel_frequency_getter():
 
 def test_channel_frequency_setter():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-                ":CH1:FREQ:MIN?",
-                ":CH1:FREQ:MAX?",
-                ":CH1:FREQ {:e}".format(1)
-            ],
-            [
-                ":CH1:CH2:FOO",
-                "100 MHz",
-                "10 GHz"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":ATTACH?", ":CH1:FREQ:MIN?", ":CH1:FREQ:MAX?", ":CH1:FREQ {:e}".format(1)],
+        [":CH1:CH2:FOO", "100 MHz", "10 GHz"],
+        sep="\n",
     ) as hs:
         channel = hs.channel[0]
         channel.frequency = 1 * u.GHz
@@ -165,20 +130,10 @@ def test_channel_frequency_setter():
 
 def test_channel_power_getter():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-                ":CH1:PWR?",
-                ":CH1:PWR:MIN?",
-                ":CH1:PWR:MAX?"
-            ],
-            [
-                ":CH1:CH2:FOO",
-                "0",
-                "-100",
-                "20"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":ATTACH?", ":CH1:PWR?", ":CH1:PWR:MIN?", ":CH1:PWR:MAX?"],
+        [":CH1:CH2:FOO", "0", "-100", "20"],
+        sep="\n",
     ) as hs:
         channel = hs.channel[0]
         assert channel.power == u.Quantity(0, u.dBm)
@@ -188,19 +143,10 @@ def test_channel_power_getter():
 
 def test_channel_power_setter():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-                ":CH1:PWR:MIN?",
-                ":CH1:PWR:MAX?",
-                ":CH1:PWR {:e}".format(0)
-            ],
-            [
-                ":CH1:CH2:FOO",
-                "-100",
-                "20"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":ATTACH?", ":CH1:PWR:MIN?", ":CH1:PWR:MAX?", ":CH1:PWR {:e}".format(0)],
+        [":CH1:CH2:FOO", "-100", "20"],
+        sep="\n",
     ) as hs:
         channel = hs.channel[0]
         channel.power = u.Quantity(0, u.dBm)
@@ -208,20 +154,10 @@ def test_channel_power_setter():
 
 def test_channel_phase_getter():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-                ":CH1:PHASE?",
-                ":CH1:PHASE:MIN?",
-                ":CH1:PHASE:MAX?"
-            ],
-            [
-                ":CH1:CH2:FOO",
-                "0",
-                "-180",
-                "+180"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":ATTACH?", ":CH1:PHASE?", ":CH1:PHASE:MIN?", ":CH1:PHASE:MAX?"],
+        [":CH1:CH2:FOO", "0", "-180", "+180"],
+        sep="\n",
     ) as hs:
         channel = hs.channel[0]
         assert channel.phase == 0 * u.degree
@@ -231,19 +167,10 @@ def test_channel_phase_getter():
 
 def test_channel_phase_setter():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-                ":CH1:PHASE:MIN?",
-                ":CH1:PHASE:MAX?",
-                ":CH1:PHASE {:e}".format(0)
-            ],
-            [
-                ":CH1:CH2:FOO",
-                "-180",
-                "+180"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":ATTACH?", ":CH1:PHASE:MIN?", ":CH1:PHASE:MAX?", ":CH1:PHASE {:e}".format(0)],
+        [":CH1:CH2:FOO", "-180", "+180"],
+        sep="\n",
     ) as hs:
         channel = hs.channel[0]
         channel.phase = 0 * u.degree
@@ -251,18 +178,10 @@ def test_channel_phase_setter():
 
 def test_channel_output():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":ATTACH?",
-                ":CH1:PWR:RF?",
-                ":CH1:PWR:RF:ON",
-                ":CH1:PWR:RF:OFF"
-            ],
-            [
-                ":CH1:CH2:FOO",
-                "OFF"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":ATTACH?", ":CH1:PWR:RF?", ":CH1:PWR:RF:ON", ":CH1:PWR:RF:OFF"],
+        [":CH1:CH2:FOO", "OFF"],
+        sep="\n",
     ) as hs:
         channel = hs.channel[0]
         assert channel.output is False
@@ -272,16 +191,10 @@ def test_channel_output():
 
 def test_hs9000_is_ready():
     with expected_protocol(
-            ik.holzworth.HS9000,
-            [
-                ":COMM:READY?",
-                ":COMM:READY?"
-            ],
-            [
-                "Ready",
-                "DANGER DANGER"
-            ],
-            sep="\n"
+        ik.holzworth.HS9000,
+        [":COMM:READY?", ":COMM:READY?"],
+        ["Ready", "DANGER DANGER"],
+        sep="\n",
     ) as hs:
         assert hs.ready is True
         assert hs.ready is False

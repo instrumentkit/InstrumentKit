@@ -71,7 +71,7 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
                 self._tek.sendcmd("DAT:ENC ASCI")
                 # Set the data encoding format to ASCII
                 raw = self._tek.query("CURVE?")
-                raw = raw.split(',')  # Break up comma delimited string
+                raw = raw.split(",")  # Break up comma delimited string
                 if numpy:
                     raw = numpy.array(raw, dtype=numpy.float)  # Convert to ndarray
                 else:
@@ -81,8 +81,7 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
                 # Set encoding to signed, big-endian
                 data_width = self._tek.data_width
                 self._tek.sendcmd("CURVE?")
-                raw = self._tek.binblockread(
-                    data_width)  # Read in the binary block,
+                raw = self._tek.binblockread(data_width)  # Read in the binary block,
                 # data width of 2 bytes
 
                 # pylint: disable=protected-access
@@ -94,14 +93,21 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
 
             xzero = self._tek.query("WFMP:XZE?")  # Retrieve X zero
             xincr = self._tek.query("WFMP:XIN?")  # Retrieve X incr
-            ptcnt = self._tek.query(f"WFMP:{self.name}:NR_P?")  # Retrieve number of data points
+            ptcnt = self._tek.query(
+                f"WFMP:{self.name}:NR_P?"
+            )  # Retrieve number of data points
 
             if numpy:
                 x = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
                 y = ((raw - float(yoffs)) * float(ymult)) + float(yzero)
             else:
-                x = tuple(float(val) * float(xincr) + float(xzero) for val in range(int(ptcnt)))
-                y = tuple(((x - float(yoffs)) * float(ymult)) + float(yzero) for x in raw)
+                x = tuple(
+                    float(val) * float(xincr) + float(xzero)
+                    for val in range(int(ptcnt))
+                )
+                y = tuple(
+                    ((x - float(yoffs)) * float(ymult)) + float(yzero) for x in raw
+                )
 
             return x, y
 
@@ -127,15 +133,15 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
 
         :type: `TekTDS224.Coupling`
         """
-        return TekTDS224.Coupling(
-            self._tek.query(f'CH{self._idx}:COUPL?')
-        )
+        return TekTDS224.Coupling(self._tek.query(f"CH{self._idx}:COUPL?"))
 
     @coupling.setter
     def coupling(self, newval):
         if not isinstance(newval, TekTDS224.Coupling):
-            raise TypeError(f"Coupling setting must be a `TekTDS224.Coupling` value,"
-                            f"got {type(newval)} instead.")
+            raise TypeError(
+                f"Coupling setting must be a `TekTDS224.Coupling` value,"
+                f"got {type(newval)} instead."
+            )
         self._tek.sendcmd(f"CH{self._idx}:COUPL {newval.value}")
 
 
@@ -163,6 +169,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         """
         Enum containing valid coupling modes for the Tek TDS224
         """
+
         ac = "AC"
         dc = "DC"
         ground = "GND"
@@ -199,7 +206,9 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
 
         :rtype: `_TekTDS224DataSource`
         """
-        return ProxyList(self, lambda s, idx: _TekTDS224DataSource(s, f"REF{idx + 1}"), range(4))
+        return ProxyList(
+            self, lambda s, idx: _TekTDS224DataSource(s, f"REF{idx + 1}"), range(4)
+        )
 
     @property
     def math(self):

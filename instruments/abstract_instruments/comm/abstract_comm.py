@@ -39,9 +39,9 @@ class AbstractCommunicator(metaclass=abc.ABCMeta):
     # FORMATTING METHODS #
 
     def __repr__(self):
-        return "<{} object at 0x{:X} "\
-            "connected to {}>".format(
-                type(self).__name__, id(self), repr(self.address))
+        return "<{} object at 0x{:X} " "connected to {}>".format(
+            type(self).__name__, id(self), repr(self.address)
+        )
 
     # CONCRETE PROPERTIES #
 

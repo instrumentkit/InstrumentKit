@@ -18,13 +18,13 @@ class.
 from enum import Enum
 
 from instruments.abstract_instruments import (
-    Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
+    Oscilloscope,
+    OscilloscopeChannel,
+    OscilloscopeDataSource,
 )
 from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
-from instruments.util_fns import (
-    assume_units, enum_property, bool_property, ProxyList
-)
+from instruments.util_fns import assume_units, enum_property, bool_property, ProxyList
 
 # CLASSES #####################################################################
 
@@ -94,6 +94,7 @@ class MAUI(Oscilloscope):
         one or more sources. Only single source parameters are currently
         implemented.
         """
+
         amplitude = "AMPL"
         area = "AREA"
         base = "BASE"
@@ -124,6 +125,7 @@ class MAUI(Oscilloscope):
         """
         Enum containing valid trigger state for the oscilloscope.
         """
+
         auto = "AUTO"
         normal = "NORM"
         single = "SINGLE"
@@ -138,6 +140,7 @@ class MAUI(Oscilloscope):
         .. warning:: Some of the trigger types are untested and might
             need further parameters in order to be appropriately set.
         """
+
         dropout = "DROPOUT"
         edge = "EDGE"
         glitch = "GLIT"
@@ -161,6 +164,7 @@ class MAUI(Oscilloscope):
             further channels available to you or remove channels that
             are not present in your setup.
         """
+
         c0 = "C1"
         c1 = "C2"
         c2 = "C3"
@@ -180,14 +184,14 @@ class MAUI(Oscilloscope):
         .. note:: Not all trigger sources are available on all scopes.
             Please consult the manual for your oscilloscope.
         """
-        names = ['ext', 'ext5', 'ext10', 'etm10', 'line']
-        values = ['EX', 'EX5', 'EX10', 'ETM10', 'LINE']
+        names = ["ext", "ext5", "ext10", "etm10", "line"]
+        values = ["EX", "EX5", "EX10", "ETM10", "LINE"]
         # now add the channels
         for it in range(self._number_channels):
             names.append("c{}".format(it))
-            values.append("C{}".format(it+1))  # to send to scope
+            values.append("C{}".format(it + 1))  # to send to scope
         # create and store the enum
-        self.TriggerSource = Enum('TriggerSource', zip(names, values))
+        self.TriggerSource = Enum("TriggerSource", zip(names, values))
 
     # CLASSES #
 
@@ -244,9 +248,11 @@ class MAUI(Oscilloscope):
                 >>> xdat, ydat = channel.read_waveform()  # read waveform
             """
             if bin_format:
-                raise NotImplementedError("Bin format reading is currently "
-                                          "not implemented for the MAUI "
-                                          "routine.")
+                raise NotImplementedError(
+                    "Bin format reading is currently "
+                    "not implemented for the MAUI "
+                    "routine."
+                )
 
             if single:
                 # get current trigger state (to reset after read)
@@ -266,31 +272,31 @@ class MAUI(Oscilloscope):
                 self._parent.trigger_state = trig_state
 
             # format the string to appropriate data
-            retval = retval.replace('"', '').split()
+            retval = retval.replace('"', "").split()
             if numpy:
                 dat_val = numpy.array(retval, dtype=numpy.float)  # Convert to ndarray
             else:
                 dat_val = tuple(map(float, retval))
 
             # format horizontal data into floats
-            horiz_off = float(horiz_off.replace('"', '').split(':')[1])
-            horiz_int = float(horiz_int.replace('"', '').split(':')[1])
+            horiz_off = float(horiz_off.replace('"', "").split(":")[1])
+            horiz_int = float(horiz_int.replace('"', "").split(":")[1])
 
             # create time base
             if numpy:
                 dat_time = numpy.arange(
-                    horiz_off,
-                    horiz_off + horiz_int * (len(dat_val)),
-                    horiz_int
+                    horiz_off, horiz_off + horiz_int * (len(dat_val)), horiz_int
                 )
             else:
-                dat_time = tuple(val * horiz_int + horiz_off for val in range(len(dat_val)))
+                dat_time = tuple(
+                    val * horiz_int + horiz_off for val in range(len(dat_val))
+                )
 
             # fix length bug, sometimes dat_time is longer than dat_signal
             if len(dat_time) > len(dat_val):
-                dat_time = dat_time[0:len(dat_val)]
+                dat_time = dat_time[0 : len(dat_val)]
             else:  # in case the opposite is the case
-                dat_val = dat_val[0:len(dat_time)]
+                dat_val = dat_val[0 : len(dat_time)]
 
             if numpy:
                 return numpy.stack((dat_time, dat_val))
@@ -301,15 +307,15 @@ class MAUI(Oscilloscope):
             command="TRA",
             doc="""
             Gets/Sets if a given trace is turned on or off.
-            
+
             Example usage:
-            
+
             >>> import instruments as ik
             >>> address = "TCPIP0::192.168.0.10::INSTR"
             >>> inst = inst = ik.teledyne.MAUI.open_visa(address)
             >>> channel = inst.channel[0]
             >>> channel.trace = False
-            """
+            """,
         )
 
     class Channel(DataSource, OscilloscopeChannel):
@@ -323,13 +329,10 @@ class MAUI(Oscilloscope):
 
         def __init__(self, parent, idx):
             self._parent = parent
-            self._idx = idx + 1   # 1-based
+            self._idx = idx + 1  # 1-based
 
             # Initialize as a data source with name C{}.
-            super(MAUI.Channel, self).__init__(
-                self._parent,
-                "C{}".format(self._idx)
-            )
+            super(MAUI.Channel, self).__init__(self._parent, "C{}".format(self._idx))
 
         # ENUMS #
 
@@ -338,6 +341,7 @@ class MAUI(Oscilloscope):
             Enum containing valid coupling modes for the oscilloscope
             channel. 1 MOhm and 50 Ohm are included.
             """
+
             ac1M = "A1M"
             dc1M = "D1M"
             dc50 = "D50"
@@ -356,7 +360,7 @@ class MAUI(Oscilloscope):
             >>> inst = inst = ik.teledyne.MAUI.open_visa(address)
             >>> channel = inst.channel[0]
             >>> channel.coupling = channel.Coupling.dc50
-            """
+            """,
         )
 
         # PROPERTIES #
@@ -374,14 +378,12 @@ class MAUI(Oscilloscope):
                 >>> channel = inst.channel[0]  # set up channel
                 >>> channel.offset = u.Quantity(-1, u.V)
             """
-            return u.Quantity(
-                float(self.query('OFST?')), u.V
-            )
+            return u.Quantity(float(self.query("OFST?")), u.V)
 
         @offset.setter
         def offset(self, newval):
-            newval = assume_units(newval, 'V').to(u.V).magnitude
-            self.sendcmd('OFST {}'.format(newval))
+            newval = assume_units(newval, "V").to(u.V).magnitude
+            self.sendcmd("OFST {}".format(newval))
 
         @property
         def scale(self):
@@ -395,14 +397,12 @@ class MAUI(Oscilloscope):
                 >>> channel = inst.channel[0]  # set up channel
                 >>> channel.scale = u.Quantity(20, u.mV)
             """
-            return u.Quantity(
-                float(self.query('VDIV?')), u.V
-            )
+            return u.Quantity(float(self.query("VDIV?")), u.V)
 
         @scale.setter
         def scale(self, newval):
-            newval = assume_units(newval, 'V').to(u.V).magnitude
-            self.sendcmd('VDIV {}'.format(newval))
+            newval = assume_units(newval, "V").to(u.V).magnitude
+            self.sendcmd("VDIV {}".format(newval))
 
         # METHODS #
 
@@ -429,8 +429,7 @@ class MAUI(Oscilloscope):
                 connected instrument.
             :rtype: `str`
             """
-            return self._parent.query("C{}:{}".format(self._idx, cmd),
-                                      size=size)
+            return self._parent.query("C{}:{}".format(self._idx, cmd), size=size)
 
     class Math(DataSource):
 
@@ -443,13 +442,10 @@ class MAUI(Oscilloscope):
 
         def __init__(self, parent, idx):
             self._parent = parent
-            self._idx = idx + 1   # 1-based
+            self._idx = idx + 1  # 1-based
 
             # Initialize as a data source with name C{}.
-            super(MAUI.Math, self).__init__(
-                self._parent,
-                "F{}".format(self._idx)
-            )
+            super(MAUI.Math, self).__init__(self._parent, "F{}".format(self._idx))
 
         # CLASSES #
 
@@ -485,7 +481,7 @@ class MAUI(Oscilloscope):
                 Gets the current setting and returns it as the full
                 command, as sent to the scope when setting an operator.
                 """
-                return self._parent.query('DEF?')
+                return self._parent.query("DEF?")
 
             # METHODS - OPERATORS #
 
@@ -499,7 +495,7 @@ class MAUI(Oscilloscope):
                 send_str = "'ABS({})'".format(src_str)
                 self._send_operator(send_str)
 
-            def average(self, src, average_type='summed', sweeps=1000):
+            def average(self, src, average_type="summed", sweeps=1000):
                 """
                 Average of wave form.
 
@@ -511,20 +507,17 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                avgtp_str = 'SUMMED'
-                if average_type == 'continuous':
-                    avgtp_str = 'CONTINUOUS'
+                avgtp_str = "SUMMED"
+                if average_type == "continuous":
+                    avgtp_str = "CONTINUOUS"
 
                 send_str = "'AVG({})',AVERAGETYPE,{},SWEEPS,{}".format(
-                    src_str,
-                    avgtp_str,
-                    sweeps
+                    src_str, avgtp_str, sweeps
                 )
 
                 self._send_operator(send_str)
 
-            def derivative(self, src, vscale=1e6, voffset=0,
-                           autoscale=True):
+            def derivative(self, src, vscale=1e6, voffset=0, autoscale=True):
                 """
                 Derivative of waveform using subtraction of adjacent
                 samples. If vscale and voffset are unitless, V/s are
@@ -537,24 +530,18 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                vscale = assume_units(vscale, u.V/u.s).to(
-                    u.V/u.s
-                ).magnitude
+                vscale = assume_units(vscale, u.V / u.s).to(u.V / u.s).magnitude
 
-                voffset = assume_units(voffset, u.V/u.s).to(
-                    u.V/u.s
-                ).magnitude
+                voffset = assume_units(voffset, u.V / u.s).to(u.V / u.s).magnitude
 
-                autoscale_str = 'OFF'
+                autoscale_str = "OFF"
                 if autoscale:
-                    autoscale_str = 'ON'
+                    autoscale_str = "ON"
 
-                send_str = "'DERI({})',VERSCALE,{},VEROFFSET,{}," \
-                           "ENABLEAUTOSCALE,{}".format(
-                               src_str,
-                               vscale,
-                               voffset,
-                               autoscale_str)
+                send_str = (
+                    "'DERI({})',VERSCALE,{},VEROFFSET,{},"
+                    "ENABLEAUTOSCALE,{}".format(src_str, vscale, voffset, autoscale_str)
+                )
 
                 self._send_operator(send_str)
 
@@ -572,14 +559,12 @@ class MAUI(Oscilloscope):
                 src1_str = _source(src1)
                 src2_str = _source(src2)
 
-                opt_str = 'FALSE'
+                opt_str = "FALSE"
                 if vscale_variable:
-                    opt_str = 'TRUE'
+                    opt_str = "TRUE"
 
                 send_str = "'{}-{}',VERSCALEVARIABLE,{}".format(
-                    src1_str,
-                    src2_str,
-                    opt_str
+                    src1_str, src2_str, opt_str
                 )
 
                 self._send_operator(send_str)
@@ -593,8 +578,9 @@ class MAUI(Oscilloscope):
                 :param bool limit_sweeps: Limit the number of sweeps?
                 """
                 src_str = _source(src)
-                send_str = "'EXTR({})',SWEEPS,{},LIMITNUMSWEEPS,{}".\
-                    format(src_str, sweeps, limit_sweeps)
+                send_str = "'EXTR({})',SWEEPS,{},LIMITNUMSWEEPS,{}".format(
+                    src_str, sweeps, limit_sweeps
+                )
                 self._send_operator(send_str)
 
             def eres(self, src, bits=0.5):
@@ -616,8 +602,9 @@ class MAUI(Oscilloscope):
 
                 self._send_operator(send_str)
 
-            def fft(self, src, type='powerspectrum', window='vonhann',
-                    suppress_dc=True):
+            def fft(
+                self, src, type="powerspectrum", window="vonhann", suppress_dc=True
+            ):
                 """
                 Fast Fourier Transform of signal.
 
@@ -633,26 +620,34 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                type_possible = ['real', 'imaginary', 'magnitude', 'phase',
-                                 'powerspectrum', 'powerdensity']
+                type_possible = [
+                    "real",
+                    "imaginary",
+                    "magnitude",
+                    "phase",
+                    "powerspectrum",
+                    "powerdensity",
+                ]
                 if type not in type_possible:
-                    type = 'powerspectrum'
+                    type = "powerspectrum"
 
-                window_possible = ['blackmanharris', 'flattop', 'hamming',
-                                   'rectangular', 'vonhann']
+                window_possible = [
+                    "blackmanharris",
+                    "flattop",
+                    "hamming",
+                    "rectangular",
+                    "vonhann",
+                ]
                 if window not in window_possible:
-                    window = 'vonhann'
+                    window = "vonhann"
 
                 if suppress_dc:
-                    opt = 'ON'
+                    opt = "ON"
                 else:
-                    opt = 'OFF'
+                    opt = "OFF"
 
                 send_str = "'FFT({})',TYPE,{},WINDOW,{},SUPPRESSDC,{}".format(
-                    src_str,
-                    type,
-                    window,
-                    opt
+                    src_str, type, window, opt
                 )
 
                 self._send_operator(send_str)
@@ -666,12 +661,12 @@ class MAUI(Oscilloscope):
                 :param bool limit_sweeps: Limit the number of sweeps?
                 """
                 src_str = _source(src)
-                send_str = "'FLOOR({})',SWEEPS,{},LIMITNUMSWEEPS,{}".\
-                    format(src_str, sweeps, limit_sweeps)
+                send_str = "'FLOOR({})',SWEEPS,{},LIMITNUMSWEEPS,{}".format(
+                    src_str, sweeps, limit_sweeps
+                )
                 self._send_operator(send_str)
 
-            def integral(self, src, multiplier=1, adder=0, vscale=1e-3,
-                         voffset=0):
+            def integral(self, src, multiplier=1, adder=0, vscale=1e-3, voffset=0):
                 """
                 Integral of waveform.
 
@@ -683,21 +678,14 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                vscale = assume_units(vscale, u.Wb).to(
-                    u.Wb
-                ).magnitude
+                vscale = assume_units(vscale, u.Wb).to(u.Wb).magnitude
 
-                voffset = assume_units(voffset, u.Wb).to(
-                    u.Wb
-                ).magnitude
+                voffset = assume_units(voffset, u.Wb).to(u.Wb).magnitude
 
-                send_str = "'INTG({}),MULTIPLIER,{},ADDER,{},VERSCALE,{}," \
-                           "VEROFFSET,{}".format(
-                               src_str,
-                               multiplier,
-                               adder,
-                               vscale,
-                               voffset)
+                send_str = (
+                    "'INTG({}),MULTIPLIER,{},ADDER,{},VERSCALE,{},"
+                    "VEROFFSET,{}".format(src_str, multiplier, adder, vscale, voffset)
+                )
 
                 self._send_operator(send_str)
 
@@ -720,10 +708,7 @@ class MAUI(Oscilloscope):
                 src1_str = _source(src1)
                 src2_str = _source(src2)
 
-                send_str = "'{}*{}'".format(
-                    src1_str,
-                    src2_str
-                )
+                send_str = "'{}*{}'".format(src1_str, src2_str)
 
                 self._send_operator(send_str)
 
@@ -737,10 +722,7 @@ class MAUI(Oscilloscope):
                 src1_str = _source(src1)
                 src2_str = _source(src2)
 
-                send_str = "'{}/{}'".format(
-                    src1_str,
-                    src2_str
-                )
+                send_str = "'{}/{}'".format(src1_str, src2_str)
 
                 self._send_operator(send_str)
 
@@ -764,14 +746,10 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                adder = assume_units(adder, u.V).to(
-                    u.V
-                ).magnitude
+                adder = assume_units(adder, u.V).to(u.V).magnitude
 
                 send_str = "'RESC({})',MULTIPLIER,{},ADDER,{}".format(
-                    src_str,
-                    multiplier,
-                    adder
+                    src_str, multiplier, adder
                 )
 
                 self._send_operator(send_str)
@@ -813,10 +791,7 @@ class MAUI(Oscilloscope):
                 src1_str = _source(src1)
                 src2_str = _source(src2)
 
-                send_str = "'{}+{}'".format(
-                    src1_str,
-                    src2_str
-                )
+                send_str = "'{}+{}'".format(src1_str, src2_str)
 
                 self._send_operator(send_str)
 
@@ -829,22 +804,19 @@ class MAUI(Oscilloscope):
                 """
                 src_str = _source(src)
 
-                vscale = assume_units(vscale, u.V).to(
-                    u.V
-                ).magnitude
+                vscale = assume_units(vscale, u.V).to(u.V).magnitude
 
-                center = assume_units(center, u.V).to(
-                    u.V
-                ).magnitude
+                center = assume_units(center, u.V).to(u.V).magnitude
 
                 if autoscale:
-                    auto_str = 'ON'
+                    auto_str = "ON"
                 else:
-                    auto_str = 'OFF'
+                    auto_str = "OFF"
 
-                send_str = "'TREND({})',VERSCALE,{},CENTER,{}," \
-                           "AUTOFINDSCALE,{}".format(src_str, vscale,
-                                                     center, auto_str)
+                send_str = (
+                    "'TREND({})',VERSCALE,{},CENTER,{},"
+                    "AUTOFINDSCALE,{}".format(src_str, vscale, center, auto_str)
+                )
 
                 self._send_operator(send_str)
 
@@ -857,17 +829,16 @@ class MAUI(Oscilloscope):
                 :param bool limit_sweeps: Limit the number of sweeps?
                 """
                 src_str = _source(src)
-                send_str = "'ROOF({})',SWEEPS,{},LIMITNUMSWEEPS,{}".\
-                    format(src_str, sweeps, limit_sweeps)
+                send_str = "'ROOF({})',SWEEPS,{},LIMITNUMSWEEPS,{}".format(
+                    src_str, sweeps, limit_sweeps
+                )
                 self._send_operator(send_str)
 
             def _send_operator(self, cmd):
                 """
                 Set the operator in the scope.
                 """
-                self._parent.sendcmd("{},{}".format(
-                    "DEFINE EQN",
-                    cmd))
+                self._parent.sendcmd("{},{}".format("DEFINE EQN", cmd))
 
         # PROPERTIES #
 
@@ -892,7 +863,7 @@ class MAUI(Oscilloscope):
 
         def clear_sweeps(self):
             """Clear the sweeps in a measurement."""
-            self._parent.clear_sweeps()   # re-implemented because handy
+            self._parent.clear_sweeps()  # re-implemented because handy
 
         def sendcmd(self, cmd):
             """
@@ -917,8 +888,7 @@ class MAUI(Oscilloscope):
                 connected instrument.
             :rtype: `str`
             """
-            return self._parent.query("F{}:{}".format(self._idx, cmd),
-                                      size=size)
+            return self._parent.query("F{}:{}".format(self._idx, cmd), size=size)
 
     class Measurement:
 
@@ -931,7 +901,7 @@ class MAUI(Oscilloscope):
 
         def __init__(self, parent, idx):
             self._parent = parent
-            self._idx = idx + 1   # 1-based
+            self._idx = idx + 1  # 1-based
 
         # CLASSES #
 
@@ -940,6 +910,7 @@ class MAUI(Oscilloscope):
             Enum class for Measurement Parameters. Required to turn it
             on or off.
             """
+
             statistics = "CUST,STAT"
             histogram_icon = "CUST,HISTICON"
             both = "CUST,BOTH"
@@ -953,14 +924,14 @@ class MAUI(Oscilloscope):
             doc="""
                 Sets / Gets the measurement state. Valid values are
                 'statistics', 'histogram_icon', 'both', 'off'.
-                
+
                 Example:
                     >>> import instruments as ik
                     >>> import instruments.units as u
                     >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
                     >>> msr1 = inst.measurement[0]  # set up first measurement
                     >>> msr1.measurement_state = msr1.State.both  # set to `both`
-                """
+                """,
         )
 
         @property
@@ -972,24 +943,28 @@ class MAUI(Oscilloscope):
             :return tuple: (average, low, high, sigma, sweeps)
             :return type: (float, float, float, float, float)
             """
-            ret_str = self.query("PAST? CUST, P{}".format(self._idx)).\
-                rstrip().split(',')
+            ret_str = (
+                self.query("PAST? CUST, P{}".format(self._idx)).rstrip().split(",")
+            )
             # parse the return string -> put into dictionary:
-            ret_dict = {ret_str[it]: ret_str[it+1] for it in
-                        range(0, len(ret_str), 2)}
+            ret_dict = {
+                ret_str[it]: ret_str[it + 1] for it in range(0, len(ret_str), 2)
+            }
             try:
                 stats = (
-                    float(ret_dict['AVG']),
-                    float(ret_dict['LOW']),
-                    float(ret_dict['HIGH']),
-                    float(ret_dict['SIGMA']),
-                    float(ret_dict['SWEEPS'])
+                    float(ret_dict["AVG"]),
+                    float(ret_dict["LOW"]),
+                    float(ret_dict["HIGH"]),
+                    float(ret_dict["SIGMA"]),
+                    float(ret_dict["SWEEPS"]),
                 )
             except ValueError:  # some statistics did not return
-                raise ValueError("Some statistics did not return useful "
-                                 "values. The return string is {}. Please "
-                                 "ensure that statistics is properly turned "
-                                 "on.".format(ret_str))
+                raise ValueError(
+                    "Some statistics did not return useful "
+                    "values. The return string is {}. Please "
+                    "ensure that statistics is properly turned "
+                    "on.".format(ret_str)
+                )
             return stats
 
         # METHODS #
@@ -1024,16 +999,13 @@ class MAUI(Oscilloscope):
                 >>> msr1.set_parameter(inst.MeasurementParameters.rise_time_10_90, 0)
             """
             if not isinstance(param, self._parent.MeasurementParameters):
-                raise AttributeError("Parameter must be selected from {}.".
-                                     format(self._parent.MeasurementParameters)
-                                     )
-
-            send_str = \
-                "PACU {},{},{}".format(
-                    self._idx,
-                    param.value,
-                    _source(src)
+                raise AttributeError(
+                    "Parameter must be selected from {}.".format(
+                        self._parent.MeasurementParameters
+                    )
                 )
+
+            send_str = "PACU {},{},{}".format(self._idx, param.value, _source(src))
 
             self.sendcmd(send_str)
 
@@ -1060,8 +1032,7 @@ class MAUI(Oscilloscope):
                 connected instrument.
             :rtype: `str`
             """
-            return self._parent.query(cmd,
-                                      size=size)
+            return self._parent.query(cmd, size=size)
 
     # PROPERTIES #
 
@@ -1105,8 +1076,7 @@ class MAUI(Oscilloscope):
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> msr = inst.measurement[0]  # get first measurement parameter
         """
-        return ProxyList(self, self.Measurement,
-                         range(self.number_measurements))
+        return ProxyList(self, self.Measurement, range(self.number_measurements))
 
     @property
     def ref(self):
@@ -1241,14 +1211,12 @@ class MAUI(Oscilloscope):
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.time_div = u.Quantity(200, u.ns)
         """
-        return u.Quantity(
-            float(self.query('TDIV?')), u.s
-        )
+        return u.Quantity(float(self.query("TDIV?")), u.s)
 
     @time_div.setter
     def time_div(self, newval):
-        newval = assume_units(newval, 's').to(u.s).magnitude
-        self.sendcmd('TDIV {}'.format(newval))
+        newval = assume_units(newval, "s").to(u.s).magnitude
+        self.sendcmd("TDIV {}".format(newval))
 
     # TRIGGER PROPERTIES
 
@@ -1258,13 +1226,13 @@ class MAUI(Oscilloscope):
         doc="""
             Sets / Gets the trigger state. Valid values are are defined
             in `TriggerState` enum class.
-            
+
             Example:
                 >>> import instruments as ik
                 >>> import instruments.units as u
                 >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
                 >>> inst.trigger_state = inst.TriggerState.normal
-            """
+            """,
     )
 
     @property
@@ -1280,14 +1248,12 @@ class MAUI(Oscilloscope):
             >>> inst.trigger_delay = u.Quantity(60, u.ns)
 
         """
-        return u.Quantity(
-            float(self.query('TRDL?')), u.s
-        )
+        return u.Quantity(float(self.query("TRDL?")), u.s)
 
     @trigger_delay.setter
     def trigger_delay(self, newval):
-        newval = assume_units(newval, 's').to(u.s).magnitude
-        self.sendcmd('TRDL {}'.format(newval))
+        newval = assume_units(newval, "s").to(u.s).magnitude
+        self.sendcmd("TRDL {}".format(newval))
 
     @property
     def trigger_source(self):
@@ -1314,14 +1280,13 @@ class MAUI(Oscilloscope):
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.trigger_source = inst.TriggerSource.ext  # external trigger
         """
-        retval = self.query('TRIG_SELECT?').split(',')[2]
+        retval = self.query("TRIG_SELECT?").split(",")[2]
         return self.TriggerSource(retval)
 
     @trigger_source.setter
     def trigger_source(self, newval):
         curr_trig_typ = self.trigger_type
-        cmd = 'TRIG_SELECT {},SR,{}'.format(curr_trig_typ.value,
-                                            newval.value)
+        cmd = "TRIG_SELECT {},SR,{}".format(curr_trig_typ.value, newval.value)
         self.sendcmd(cmd)
 
     @property
@@ -1344,14 +1309,13 @@ class MAUI(Oscilloscope):
             >>> inst = ik.teledyne.MAUI.open_visa("TCPIP0::192.168.0.10::INSTR")
             >>> inst.trigger_type = inst.TriggerType.edge  # trigger on edge
         """
-        retval = self.query('TRIG_SELECT?').split(',')[0]
+        retval = self.query("TRIG_SELECT?").split(",")[0]
         return self.TriggerType(retval)
 
     @trigger_type.setter
     def trigger_type(self, newval):
         curr_trig_src = self.trigger_source
-        cmd = 'TRIG_SELECT {},SR,{}'.format(newval.value,
-                                            curr_trig_src.value)
+        cmd = "TRIG_SELECT {},SR,{}".format(newval.value, curr_trig_src.value)
         self.sendcmd(cmd)
 
     # METHODS #
@@ -1390,7 +1354,7 @@ class MAUI(Oscilloscope):
         self.trigger_state = self.TriggerState.auto
 
     def stop(self):
-        """ Disables the trigger for the oscilloscope.
+        """Disables the trigger for the oscilloscope.
 
         Example:
             >>> import instruments as ik
@@ -1407,10 +1371,12 @@ class MAUI(Oscilloscope):
 def _source(src):
     """Stich the source together properly and return it."""
     if isinstance(src, int):
-        return 'C{}'.format(src + 1)
+        return "C{}".format(src + 1)
     elif isinstance(src, tuple) and len(src) == 2:
-        return '{}{}'.format(src[0].upper(), int(src[1]) + 1)
+        return "{}{}".format(src[0].upper(), int(src[1]) + 1)
     else:
-        raise ValueError('An invalid source was specified. '
-                         'Source must be an integer or a tuple of '
-                         'length 2.')
+        raise ValueError(
+            "An invalid source was specified. "
+            "Source must be an integer or a tuple of "
+            "length 2."
+        )

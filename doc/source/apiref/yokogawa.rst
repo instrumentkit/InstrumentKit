@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.yokogawa
-    
+
 ========
 Yokogawa
 ========
@@ -20,4 +20,3 @@ Yokogawa
 .. autoclass:: Yokogawa7651
     :members:
     :undoc-members:
-

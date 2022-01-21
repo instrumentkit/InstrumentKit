@@ -10,7 +10,7 @@ from .thorlabsapt import (
     APTPiezoInertiaActuator,
     APTPiezoStage,
     APTStrainGaugeReader,
-    APTMotorController
+    APTMotorController,
 )
 from .pm100usb import PM100USB
 from .lcc25 import LCC25

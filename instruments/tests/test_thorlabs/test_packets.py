@@ -23,7 +23,7 @@ from instruments.thorlabs import _packets
 # variable to parametrize parameters or data: param1, param2, data, has_data
 params_or_data = (
     (0x00, 0x00, None, False),
-    (None, None, struct.pack("<HH", 0x00, 0x01), True)
+    (None, None, struct.pack("<HH", 0x00, 0x01), True),
 )
 
 
@@ -93,8 +93,10 @@ def test_init_params_and_data():
             data=data,
         )
     err_msg = err_info.value.args[0]
-    assert err_msg == "A ThorLabs packet can either have parameters or " \
-                      "data, but not both."
+    assert (
+        err_msg == "A ThorLabs packet can either have parameters or "
+        "data, but not both."
+    )
 
 
 @pytest.mark.parametrize("params_or_data", params_or_data)
@@ -123,25 +125,20 @@ ThorLabs APT packet:
     Source          {4}
     Data            {5}
 """.format(
-    f"0x{message_id:x}",
-    f"0x{param1:x}" if not params_or_data[3] else "None",
-    f"0x{param2:x}" if not params_or_data[3] else "None",
-    f"0x{dest:x}",
-    f"0x{source:x}",
-    f"{data}" if params_or_data[3] else "None"
-)
+        f"0x{message_id:x}",
+        f"0x{param1:x}" if not params_or_data[3] else "None",
+        f"0x{param2:x}" if not params_or_data[3] else "None",
+        f"0x{dest:x}",
+        f"0x{source:x}",
+        f"{data}" if params_or_data[3] else "None",
+    )
     assert pkt.__str__() == string_expected
 
 
 def test_message_id():
     """Get / set message ID."""
     pkt = _packets.ThorLabsPacket(
-        message_id=0x000,
-        param1=0x01,
-        param2=0x02,
-        dest=0x50,
-        source=0x01,
-        data=None
+        message_id=0x000, param1=0x01, param2=0x02, dest=0x50, source=0x01, data=None
     )
     pkt.message_id = 0x002A
     assert pkt.message_id == 0x002A
@@ -150,12 +147,7 @@ def test_message_id():
 def test_parameters():
     """Get / set both parameters."""
     pkt = _packets.ThorLabsPacket(
-        message_id=0x000,
-        param1=0x01,
-        param2=0x02,
-        dest=0x50,
-        source=0x01,
-        data=None
+        message_id=0x000, param1=0x01, param2=0x02, dest=0x50, source=0x01, data=None
     )
     pkt.parameters = (0x0D, 0x2A)
     assert pkt.parameters == (0x0D, 0x2A)
@@ -164,12 +156,7 @@ def test_parameters():
 def test_destination():
     """Get / set destination."""
     pkt = _packets.ThorLabsPacket(
-        message_id=0x000,
-        param1=0x01,
-        param2=0x02,
-        dest=0x50,
-        source=0x01,
-        data=None
+        message_id=0x000, param1=0x01, param2=0x02, dest=0x50, source=0x01, data=None
     )
     pkt.destination = 0x2A
     assert pkt.destination == 0x2A
@@ -178,12 +165,7 @@ def test_destination():
 def test_source():
     """Get / set source."""
     pkt = _packets.ThorLabsPacket(
-        message_id=0x000,
-        param1=0x01,
-        param2=0x02,
-        dest=0x50,
-        source=0x01,
-        data=None
+        message_id=0x000, param1=0x01, param2=0x02, dest=0x50, source=0x01, data=None
     )
     pkt.source = 0x2A
     assert pkt.source == 0x2A
@@ -192,12 +174,7 @@ def test_source():
 def test_data():
     """Get / set data."""
     pkt = _packets.ThorLabsPacket(
-        message_id=0x000,
-        param1=None,
-        param2=None,
-        dest=0x50,
-        source=0x01,
-        data=0x00
+        message_id=0x000, param1=None, param2=None, dest=0x50, source=0x01, data=0x00
     )
     data = struct.pack("<H", 0x2A)
     pkt.data = data
@@ -224,14 +201,12 @@ def test_pack_with_data(params_or_data):
 
     if params_or_data[3]:
         message_header = struct.Struct("<HHBB")
-        pkt_expected = message_header.pack(
-            message_id, len(data), 0x80 | dest, source
-        ) + data
+        pkt_expected = (
+            message_header.pack(message_id, len(data), 0x80 | dest, source) + data
+        )
     else:
         message_header = struct.Struct("<HBBBB")
-        pkt_expected = message_header.pack(
-            message_id, param1, param2, dest, source
-        )
+        pkt_expected = message_header.pack(message_id, param1, param2, dest, source)
     assert pkt.pack() == pkt_expected
 
 
@@ -264,12 +239,7 @@ def test_unpack(params_or_data):
 def test_unpack_empty_packet():
     """Raise ValueError if trying to unpack empty string."""
     pkt = _packets.ThorLabsPacket(
-        message_id=0x000,
-        param1=0x01,
-        param2=0x02,
-        dest=0x50,
-        source=0x01,
-        data=None
+        message_id=0x000, param1=0x01, param2=0x02, dest=0x50, source=0x01, data=None
     )
     with pytest.raises(ValueError) as err_info:
         pkt.unpack("")
@@ -280,12 +250,7 @@ def test_unpack_empty_packet():
 def test_unpack_too_short():
     """Raise ValueError if trying to unpack to short value."""
     pkt = _packets.ThorLabsPacket(
-        message_id=0x000,
-        param1=0x01,
-        param2=0x02,
-        dest=0x50,
-        source=0x01,
-        data=None
+        message_id=0x000, param1=0x01, param2=0x02, dest=0x50, source=0x01, data=None
     )
     too_short_package = struct.pack("<HH", 0x01, 0x02)
     with pytest.raises(ValueError) as err_info:

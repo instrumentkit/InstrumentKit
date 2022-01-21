@@ -37,10 +37,7 @@ import time
 
 from instruments.units import ureg as u
 
-from instruments.abstract_instruments import (
-    PowerSupply,
-    PowerSupplyChannel
-)
+from instruments.abstract_instruments import PowerSupply, PowerSupplyChannel
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import (
     int_property,
@@ -48,7 +45,7 @@ from instruments.util_fns import (
     bounded_unitful_property,
     bool_property,
     split_unit_str,
-    assume_units
+    assume_units,
 )
 
 # CLASSES #####################################################################
@@ -150,7 +147,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         Gets/Sets the active channel ID.
 
         :type: `HPe3631a.ChannelType`
-        """
+        """,
     )
 
     @property
@@ -174,17 +171,21 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         """
         min_value, max_value = self.voltage_range
         if newval < min_value:
-            raise ValueError("Voltage quantity is too low. Got {}, minimum "
-                             "value is {}".format(newval, min_value))
+            raise ValueError(
+                "Voltage quantity is too low. Got {}, minimum "
+                "value is {}".format(newval, min_value)
+            )
 
         if newval > max_value:
-            raise ValueError("Voltage quantity is too high. Got {}, maximum "
-                             "value is {}".format(newval, max_value))
+            raise ValueError(
+                "Voltage quantity is too high. Got {}, maximum "
+                "value is {}".format(newval, max_value)
+            )
 
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
         strval = "{:e}".format(assume_units(newval, u.volt).to(u.volt).magnitude)
-        self.sendcmd('SOUR:VOLT {}'.format(strval))
+        self.sendcmd("SOUR:VOLT {}".format(strval))
 
     @property
     def voltage_min(self):
@@ -220,9 +221,9 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         :type: array of `~pint.Quantity`
         """
         value = u.Quantity(*split_unit_str(self.query("SOUR:VOLT? MAX"), u.volt))
-        if value < 0.:
-            return value, 0.
-        return 0., value
+        if value < 0.0:
+            return value, 0.0
+        return 0.0, value
 
     current, current_min, current_max = bounded_unitful_property(
         "SOUR:CURR",
@@ -234,7 +235,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     voltage_sense = unitful_property(
@@ -246,7 +247,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `~pint.Quantity`
-        """
+        """,
     )
 
     current_sense = unitful_property(
@@ -258,7 +259,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `~pint.Quantity`
-        """
+        """,
     )
 
     output = bool_property(
@@ -272,5 +273,5 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
         while OFF will turn it off.
 
         :type: `bool`
-        """
+        """,
     )

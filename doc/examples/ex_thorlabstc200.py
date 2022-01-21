@@ -1,10 +1,11 @@
-#Thorlabs Temperature Controller example
+# Thorlabs Temperature Controller example
 
 import instruments as ik
 import instruments.units as u
-tc = ik.thorlabs.TC200.open_serial('/dev/tc200', 115200)
 
-tc.temperature_set = 70*u.degF
+tc = ik.thorlabs.TC200.open_serial("/dev/tc200", 115200)
+
+tc.temperature_set = 70 * u.degF
 print("The current temperature is: ", tc.temperature)
 
 tc.mode = tc.Mode.normal
@@ -31,10 +32,8 @@ print("The current sensor setting is: ", tc.sensor)
 tc.beta = 3900
 print("The current beta settings is: ", tc.beta)
 
-tc.max_temperature = 150*u.degC
+tc.max_temperature = 150 * u.degC
 print("The current max temperature setting is: ", tc.max_temperature)
 
-tc.max_power = 1000*u.mW
+tc.max_power = 1000 * u.mW
 print("The current max power setting is: ", tc.max_power)
-
-

@@ -94,6 +94,7 @@ class PicoMotorController8742(Instrument):
 
     class Axis:
         """PicoMotorController8742 Axis class for individual motors."""
+
         def __init__(self, parent, idx):
             """Initialize the axis with the parent and the number.
 
@@ -105,10 +106,12 @@ class PicoMotorController8742(Instrument):
                 raise TypeError("Don't do that.")
 
             if idx > 3 and not parent.multiple_controllers:
-                raise IndexError("You requested an axis that is only "
-                                 "available in multi controller mode, "
-                                 "however, have not enabled it. See "
-                                 "`multi_controllers` routine.")
+                raise IndexError(
+                    "You requested an axis that is only "
+                    "available in multi controller mode, "
+                    "however, have not enabled it. See "
+                    "`multi_controllers` routine."
+                )
 
             # set controller
             self._parent = parent
@@ -129,6 +132,7 @@ class PicoMotorController8742(Instrument):
             unkown motor are connected. See also `motor_check` command to set
             these values per controller automatically.
             """
+
             none = 0
             unknown = 1
             tiny = 2
@@ -158,14 +162,16 @@ class PicoMotorController8742(Instrument):
                 >>> ax = inst.axis[0]
                 >>> ax.acceleration = u.Quantity(500, 1/u.s**-2)
             """
-            return assume_units(int(self.query("AC?")), u.s**-2)
+            return assume_units(int(self.query("AC?")), u.s ** -2)
 
         @acceleration.setter
         def acceleration(self, value):
-            value = int(assume_units(value, u.s**-2).to(u.s**-2).magnitude)
+            value = int(assume_units(value, u.s ** -2).to(u.s ** -2).magnitude)
             if not 1 <= value <= 200000:
-                raise ValueError(f"Acceleration must be between 1 and "
-                                 f"200,000 s^-2 but is {value}.")
+                raise ValueError(
+                    f"Acceleration must be between 1 and "
+                    f"200,000 s^-2 but is {value}."
+                )
             self.sendcmd(f"AC{value}")
 
         @property
@@ -194,8 +200,10 @@ class PicoMotorController8742(Instrument):
         @home_position.setter
         def home_position(self, value):
             if not -2147483648 <= value <= 2147483647:
-                raise ValueError(f"Home position must be between -2147483648 "
-                                 f"and 2147483647, but is {value}.")
+                raise ValueError(
+                    f"Home position must be between -2147483648 "
+                    f"and 2147483647, but is {value}."
+                )
             self.sendcmd(f"DH{int(value)}")
 
         @property
@@ -241,8 +249,10 @@ class PicoMotorController8742(Instrument):
         @motor_type.setter
         def motor_type(self, value):
             if not isinstance(value, self.MotorType):
-                raise TypeError(f"Set motor type must be of type `MotorType` "
-                                f"but is of type {type(value)}.")
+                raise TypeError(
+                    f"Set motor type must be of type `MotorType` "
+                    f"but is of type {type(value)}."
+                )
             self.sendcmd(f"QM{value.value}")
 
         @property
@@ -271,8 +281,10 @@ class PicoMotorController8742(Instrument):
         @move_absolute.setter
         def move_absolute(self, value):
             if not -2147483648 <= value <= 2147483647:
-                raise ValueError(f"Set position must be between -2147483648 "
-                                 f"and 2147483647, but is {value}.")
+                raise ValueError(
+                    f"Set position must be between -2147483648 "
+                    f"and 2147483647, but is {value}."
+                )
             self.sendcmd(f"PA{int(value)}")
 
         @property
@@ -301,8 +313,10 @@ class PicoMotorController8742(Instrument):
         @move_relative.setter
         def move_relative(self, value):
             if not -2147483648 <= value <= 2147483647:
-                raise ValueError(f"Set motion must be between -2147483648 "
-                                 f"and 2147483647, but is {value}.")
+                raise ValueError(
+                    f"Set motion must be between -2147483648 "
+                    f"and 2147483647, but is {value}."
+                )
             self.sendcmd(f"PR{int(value)}")
 
         @property
@@ -349,7 +363,7 @@ class PicoMotorController8742(Instrument):
                 >>> ax.velocity = u.Quantity(500, 1/u.s)
             """
             retval = int(self.query("VA?"))
-            return u.Quantity(retval, 1/u.s)
+            return u.Quantity(retval, 1 / u.s)
 
         @velocity.setter
         def velocity(self, value):
@@ -360,9 +374,11 @@ class PicoMotorController8742(Instrument):
 
             value = int(assume_units(value, 1 / u.s).to(1 / u.s).magnitude)
             if not 0 < value <= max_velocity:
-                raise ValueError(f"The maximum allowed velocity for the set "
-                                 f"motor is {max_velocity}. The requested "
-                                 f"velocity of {value} is out of range.")
+                raise ValueError(
+                    f"The maximum allowed velocity for the set "
+                    f"motor is {max_velocity}. The requested "
+                    f"velocity of {value} is out of range."
+                )
             self.sendcmd(f"VA{value}")
 
         # METHODS #
@@ -451,7 +467,7 @@ class PicoMotorController8742(Instrument):
             :return: Bitmask of the controller configuration.
             :rtype: str, binary configuration
             """
-            return self.query('ZZ?', axs=False)
+            return self.query("ZZ?", axs=False)
 
         @controller_configuration.setter
         def controller_configuration(self, value):
@@ -613,13 +629,15 @@ class PicoMotorController8742(Instrument):
 
             retval = self._parent.query(command, size=size)
 
-            if retval[:len(self._address)] != self._address:
-                raise IOError(f"Expected to hear back from secondary "
-                              f"controller {self._address}, instead "
-                              f"controller {retval[:len(self._address)]} "
-                              f"answered.")
+            if retval[: len(self._address)] != self._address:
+                raise IOError(
+                    f"Expected to hear back from secondary "
+                    f"controller {self._address}, instead "
+                    f"controller {retval[:len(self._address)]} "
+                    f"answered."
+                )
 
-            return retval[len(self._address):]
+            return retval[len(self._address) :]
 
     @property
     def axis(self):

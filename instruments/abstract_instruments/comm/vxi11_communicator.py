@@ -42,8 +42,9 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
     def __init__(self, *args, **kwargs):
         super(VXI11Communicator, self).__init__(self)
         if vxi11 is None:
-            raise ImportError("Package python-vxi11 is required for XVI11 "
-                              "connected instruments.")
+            raise ImportError(
+                "Package python-vxi11 is required for XVI11 " "connected instruments."
+            )
         AbstractCommunicator.__init__(self)
 
         self._inst = vxi11.Instrument(*args, **kwargs)
@@ -76,12 +77,16 @@ class VXI11Communicator(io.IOBase, AbstractCommunicator):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
         if not isinstance(newval, str):
-            raise TypeError("Terminator for VXI11 communicator must be "
-                            "specified as a byte or unicode string.")
+            raise TypeError(
+                "Terminator for VXI11 communicator must be "
+                "specified as a byte or unicode string."
+            )
         if len(newval) > 1:
-            logger.warning("VXI11 instruments only support termination"
-                           "characters of length 1. The first character"
-                           "specified will be used.")
+            logger.warning(
+                "VXI11 instruments only support termination"
+                "characters of length 1. The first character"
+                "specified will be used."
+            )
         self._inst.term_char = newval
 
     @property

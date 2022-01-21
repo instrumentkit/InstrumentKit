@@ -35,4 +35,4 @@ class SingleChannelSG(SignalGenerator, SGChannel):
 
     @property
     def channel(self):
-        return self,
+        return (self,)
