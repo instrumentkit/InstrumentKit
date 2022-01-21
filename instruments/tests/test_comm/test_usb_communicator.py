@@ -162,8 +162,12 @@ def test_read_raw_size(inst):
     msg = b"message\n"
     inst._ep_in.read.return_value = msg
 
+    # set max package size
+    max_size = 256
+    inst._max_packet_size = max_size
+
     _ = inst.read_raw(size=-1)
-    inst._ep_in.read.assert_called_with(1000)
+    inst._ep_in.read.assert_called_with(max_size)
 
 
 def test_read_raw_termination_char_not_found(inst):
@@ -171,6 +175,8 @@ def test_read_raw_termination_char_not_found(inst):
     msg = b"message"
     inst._ep_in.read.return_value = msg
     default_read_size = 1000
+
+    inst._max_packet_size = default_read_size
 
     with pytest.raises(IOError) as err:
         _ = inst.read_raw()
@@ -225,6 +231,6 @@ def test_query(inst):
     inst.sendcmd = mock.MagicMock()
     inst.read = mock.MagicMock()
 
-    inst._query(msg)
+    inst._query(msg, size=size)
     inst.sendcmd.assert_called_with(msg)
     inst.read.assert_called_with(size)

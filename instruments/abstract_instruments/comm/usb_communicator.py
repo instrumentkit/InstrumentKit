@@ -29,8 +29,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     communicators such as `FileCommunicator` (usbtmc on Linux),
     `VisaCommunicator`, or `USBTMCCommunicator`.
 
-    .. warning:: The operational status of this communicator is unknown,
-        and it is suggested that it is not relied on.
+    .. warning:: The operational status of this communicator is poorly tested.
     """
 
     def __init__(self, dev):
@@ -69,6 +68,9 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
 
         if (ep_in or ep_out) is None:
             raise IOError("USB endpoint not found.")
+
+        # read the maximum package size from the ENDPOINT_IN
+        self._max_packet_size = ep_in.wMaxPacketSize
 
         self._dev = dev
         self._ep_in = ep_in
@@ -124,7 +126,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         self._dev.reset()
         usb.util.dispose_resources(self._dev)
 
-    def read_raw(self, size=1000):
+    def read_raw(self, size=-1):
         """Read raw string back from device and return.
 
         String returned is most likely shorter than the size requested. Will
@@ -135,7 +137,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         :type size: int
         """
         if size == -1:
-            size = 1000
+            size = self._max_packet_size
         term = self._terminator.encode("utf-8")
         read_val = bytes(self._ep_in.read(size))
         if term not in read_val:
@@ -160,14 +162,9 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     def flush_input(self):
         """
         Instruct the communicator to flush the input buffer, discarding the
-        entirety of its contents. Read 1000 bytes at a time and be done
-        once a timeout error comes back (which means the buffer is empty).
+        entirety of its contents.
         """
-        while True:
-            try:
-                self._ep_in.read(1000, 10)  # read until any exception
-            except:  # pylint: disable=bare-except
-                break
+        self._ep_in.read(self._max_packet_size)
 
     # METHODS #
 
@@ -183,7 +180,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         msg += self._terminator
         self.write(msg)
 
-    def _query(self, msg, size=1000):
+    def _query(self, msg, size=-1):
         """
         This is the implementation of ``query`` for communicating with
         raw usb connections. This function is in turn wrapped by the concrete
