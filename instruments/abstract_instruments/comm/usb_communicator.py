@@ -10,7 +10,12 @@ connections.
 
 import io
 
+import usb.core
+import usb.util
+
 from instruments.abstract_instruments.comm import AbstractCommunicator
+from instruments.units import ureg as u
+from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
 
@@ -24,14 +29,48 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     communicators such as `FileCommunicator` (usbtmc on Linux),
     `VisaCommunicator`, or `USBTMCCommunicator`.
 
-    .. warning:: The operational status of this communicator is unknown,
-        and it is suggested that it is not relied on.
+    .. warning:: The operational status of this communicator is poorly tested.
     """
 
-    def __init__(self, conn):
+    def __init__(self, dev):
         super(USBCommunicator, self).__init__(self)
-        # TODO: Check to make sure this is a USB connection
-        self._conn = conn
+        if not isinstance(dev, usb.core.Device):
+            raise TypeError("USBCommunicator must wrap a usb.core.Device object.")
+
+        # follow (mostly) pyusb tutorial
+
+        # set the active configuration. With no arguments, the first
+        # configuration will be the active one
+        dev.set_configuration()
+
+        # get an endpoint instance
+        cfg = dev.get_active_configuration()
+        intf = cfg[(0, 0)]
+
+        # initialize in and out endpoints
+        ep_out = usb.util.find_descriptor(
+            intf,
+            # match the first OUT endpoint
+            custom_match=lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
+            == usb.util.ENDPOINT_OUT,
+        )
+
+        ep_in = usb.util.find_descriptor(
+            intf,
+            # match the first OUT endpoint
+            custom_match=lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
+            == usb.util.ENDPOINT_IN,
+        )
+
+        if (ep_in or ep_out) is None:
+            raise IOError("USB endpoint not found.")
+
+        # read the maximum package size from the ENDPOINT_IN
+        self._max_packet_size = ep_in.wMaxPacketSize
+
+        self._dev = dev
+        self._ep_in = ep_in
+        self._ep_out = ep_out
         self._terminator = "\n"
 
     # PROPERTIES #
@@ -58,21 +97,24 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         if not isinstance(newval, str):
             raise TypeError(
                 "Terminator for USBCommunicator must be specified "
-                "as a single character string."
-            )
-        if len(newval) > 1:
-            raise ValueError(
-                "Terminator for USBCommunicator must only be 1 " "character long."
+                "as a character string."
             )
         self._terminator = newval
 
     @property
     def timeout(self):
-        raise NotImplementedError
+        """
+        Gets/sets the communication timeout of the USB communicator.
+
+        :type: `~pint.Quantity`
+        :units: As specified or assumed to be of units ``seconds``
+        """
+        return assume_units(self._dev.default_timeout, u.ms).to(u.second)
 
     @timeout.setter
     def timeout(self, newval):
-        raise NotImplementedError
+        newval = assume_units(newval, u.second).to(u.ms).magnitude
+        self._dev.default_timeout = newval
 
     # FILE-LIKE METHODS #
 
@@ -80,40 +122,50 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         """
         Shutdown and close the USB connection
         """
-        try:
-            self._conn.shutdown()
-        finally:
-            self._conn.close()
+        self._dev.reset()
+        usb.util.dispose_resources(self._dev)
 
     def read_raw(self, size=-1):
-        raise NotImplementedError
+        """Read raw string back from device and return.
 
-    def read(self, size=-1, encoding="utf-8"):
-        raise NotImplementedError
+        String returned is most likely shorter than the size requested. Will
+        terminate by itself.
+        Read size of -1 will be transformed into 1000 bytes.
+
+        :param size: Size to read in bytes
+        :type size: int
+        """
+        if size == -1:
+            size = self._max_packet_size
+        term = self._terminator.encode("utf-8")
+        read_val = bytes(self._ep_in.read(size))
+        if term not in read_val:
+            raise IOError(
+                f"Did not find the terminator in the returned string. "
+                f"Total size of {size} might not be enough."
+            )
+        return read_val.rstrip(term)
 
     def write_raw(self, msg):
-        """
-        Write bytes to the raw usb connection object.
+        """Write bytes to the raw usb connection object.
 
         :param bytes msg: Bytes to be sent to the instrument over the usb
             connection.
         """
-        self._conn.write(msg)
+        self._ep_out.write(msg)
 
     def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
-        return NotImplemented
+        raise NotImplementedError
 
     def tell(self):  # pylint: disable=no-self-use
-        return NotImplemented
+        raise NotImplementedError
 
     def flush_input(self):
         """
         Instruct the communicator to flush the input buffer, discarding the
         entirety of its contents.
-
-        Not implemented for usb communicator
         """
-        raise NotImplementedError
+        self._ep_in.read(self._max_packet_size)
 
     # METHODS #
 
@@ -127,7 +179,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         :param str msg: The command message to send to the instrument
         """
         msg += self._terminator
-        self._conn.sendall(msg)
+        self.write(msg)
 
     def _query(self, msg, size=-1):
         """

@@ -13,10 +13,10 @@ import serial
 
 import instruments as ik
 from instruments.abstract_instruments.comm import (
+    FileCommunicator,
     GPIBCommunicator,
     LoopbackCommunicator,
     SerialCommunicator,
-    USBCommunicator,
 )
 from instruments.optional_dep_finder import numpy
 from instruments.tests import (
@@ -61,8 +61,8 @@ def test_init_mode_serial_comm(mocker):
 
 
 def test_init_mode_invalid():
-    """Test initialization with invalild communicator."""
-    comm = USBCommunicator(None)
+    """Test initialization with invalid communicator."""
+    comm = FileCommunicator(None)
     with pytest.warns(UserWarning) as wrn_info:
         ik.srs.SRS830(comm)
     wrn_msg = wrn_info[0].message.args[0]
