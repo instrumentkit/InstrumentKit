@@ -2,7 +2,7 @@ InstrumentKit
 =============
 
 .. image:: https://img.shields.io/travis/Galvant/InstrumentKit/master.svg?maxAge=2592000
-    :target: https://travis-ci.org/Galvant/InstrumentKit
+    :target: https://travis-ci.com/Galvant/InstrumentKit
     :alt: Travis-CI build status
 
 .. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/master.svg?maxAge=2592000
@@ -38,6 +38,7 @@ Supported means of communication are:
 - Read/write from unix files (``open_file``)
 - USBTMC (``open_usbtmc``)
 - VXI11 over Ethernet (``open_vxi11``)
+- Raw USB (``open_usb``)
 
 There is planned support for HiSLIP someday, but a good Python HiSLIP library will be needed first.
 
@@ -97,7 +98,7 @@ measurement reading:
 .. code-block:: python
 
     >>> reading = inst.measure(inst.Mode.voltage_dc)
-    >>> print("Value: {}, units: {}".format(reading.magnitude, reading.units))
+    >>> print(f"Value: {reading.magnitude}, units: {reading.units}")
 
 Due to the sheer number of commands most instruments support, not every single
 one is included in InstrumentKit. If there is a specific command you wish to
@@ -154,14 +155,14 @@ and then it'll manage everything for you.
     $ pre-commit install
 
 Afterwards, when you go to make a git commit, all the plugins (as specified
-by the configuration file `.pre-commit-config.yaml`) will be executed against
+by the configuration file ``.pre-commit-config.yaml``) will be executed against
 the files that have changed. If any plugins make changes to the files, the
 commit will abort, allowing you to add those changes to your changeset and
 try to commit again. This tool will gate CI, so be sure to let them run
 and pass!
 
 You can also run all the hooks against all the files by directly calling
-pre-commit, or though the `tox` environment:
+pre-commit, or though the ``tox`` environment:
 
 .. code-block:: console
 
@@ -173,7 +174,7 @@ or
 
     $ tox -e precommit
 
-See the `pre-commit` documentation for more information.
+See the ``pre-commit`` documentation for more information.
 
 License
 -------
