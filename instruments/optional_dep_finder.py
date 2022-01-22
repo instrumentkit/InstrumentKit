@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Small module to obtain handles to optional dependencies
 """

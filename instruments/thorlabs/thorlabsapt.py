@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides the support for the Thorlabs APT Controller.
 """
@@ -95,7 +94,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     _channel_type = APTChannel
 
     def __init__(self, filelike):
-        super(ThorLabsAPT, self).__init__(filelike)
+        super().__init__(filelike)
         self._dest = 0x50  # Generic USB device; make this configurable later.
 
         # Provide defaults in case an exception occurs below.
@@ -139,7 +138,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             elif hw_type_int == 44:
                 self._hw_type = "Brushless DC controller"
             else:
-                self._hw_type = "Unknown type: {}".format(hw_type_int)
+                self._hw_type = f"Unknown type: {hw_type_int}"
 
             # Note that the fourth byte is padding, so we strip out the first
             # three bytes and format them.
@@ -152,7 +151,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             self._hw_version = struct.unpack("<H", hw_info.data[78:80])[0]
             self._mod_state = struct.unpack("<H", hw_info.data[80:82])[0]
             self._n_channels = struct.unpack("<H", hw_info.data[82:84])[0]
-        except IOError as e:
+        except OSError as e:
             logger.error("Exception occured while fetching hardware info: %s", e)
 
         # Create a tuple of channels of length _n_channel_type
@@ -1295,10 +1294,10 @@ class APTMotorController(ThorLabsAPT):
             # ch_ident, position, enc_count, status_bits
             _, _, _, status_bits = struct.unpack("<HLLL", resp_data)
 
-            status_dict = dict(
-                (key, (status_bits & bit_mask > 0))
+            status_dict = {
+                key: (status_bits & bit_mask > 0)
                 for key, bit_mask in self.__STATUS_BIT_MASK.items()
-            )
+            }
 
             return status_dict
 

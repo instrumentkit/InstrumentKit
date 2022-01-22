@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides a USB communicator for connecting with instruments over raw usb
 connections.
@@ -33,7 +32,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, dev):
-        super(USBCommunicator, self).__init__(self)
+        super().__init__(self)
         if not isinstance(dev, usb.core.Device):
             raise TypeError("USBCommunicator must wrap a usb.core.Device object.")
 
@@ -63,7 +62,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         )
 
         if (ep_in or ep_out) is None:
-            raise IOError("USB endpoint not found.")
+            raise OSError("USB endpoint not found.")
 
         # read the maximum package size from the ENDPOINT_IN
         self._max_packet_size = ep_in.wMaxPacketSize
@@ -140,7 +139,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         term = self._terminator.encode("utf-8")
         read_val = bytes(self._ep_in.read(size))
         if term not in read_val:
-            raise IOError(
+            raise OSError(
                 f"Did not find the terminator in the returned string. "
                 f"Total size of {size} might not be enough."
             )

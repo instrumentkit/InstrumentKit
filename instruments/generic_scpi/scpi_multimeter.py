@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for SCPI compliant multimeters
 """
@@ -206,7 +205,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
             newval = newval.value
         else:
             newval = assume_units(newval, units).to(units).magnitude
-        self.sendcmd("CONF:{} {}".format(mode.value, newval))
+        self.sendcmd(f"CONF:{mode.value} {newval}")
 
     @property
     def resolution(self):
@@ -241,7 +240,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
                 "Resolution must be specified as an int, float, "
                 "or SCPIMultimeter.Resolution value."
             )
-        self.sendcmd("CONF:{} {},{}".format(mode.value, input_range, newval))
+        self.sendcmd(f"CONF:{mode.value} {input_range},{newval}")
 
     @property
     def trigger_count(self):
@@ -283,7 +282,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
                 "Trigger count must be specified as an int "
                 "or SCPIMultimeter.TriggerCount value."
             )
-        self.sendcmd("TRIG:COUN {}".format(newval))
+        self.sendcmd(f"TRIG:COUN {newval}")
 
     @property
     def sample_count(self):
@@ -326,7 +325,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
                 "Sample count must be specified as an int "
                 "or SCPIMultimeter.SampleCount value."
             )
-        self.sendcmd("SAMP:COUN {}".format(newval))
+        self.sendcmd(f"SAMP:COUN {newval}")
 
     trigger_delay = unitful_property(
         command="TRIG:DEL",
@@ -405,7 +404,7 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
                 "value, got {} instead.".format(type(mode))
             )
         # pylint: disable=no-member
-        value = float(self.query("MEAS:{}?".format(mode.value)))
+        value = float(self.query(f"MEAS:{mode.value}?"))
         return value * UNITS[mode]
 
     # INTERNAL FUNCTIONS ##

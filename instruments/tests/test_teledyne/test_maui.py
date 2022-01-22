@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for the Thorlabs TC200
 """
@@ -136,7 +135,7 @@ def test_maui_data_source_read_waveform_different_length(init):
         else:
             signal = tuple(faulty_dataset_int)
             timebase = tuple(
-                [float(val) * h_interval + h_offset for val in range(len(signal))]
+                float(val) * h_interval + h_offset for val in range(len(signal))
             )
             timebase = timebase[0 : len(signal)]
             dataset_return = timebase, signal

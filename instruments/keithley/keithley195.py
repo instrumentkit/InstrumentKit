@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Driver for the Keithley 195 digital multimeter
 """
@@ -34,7 +33,7 @@ class Keithley195(Multimeter):
     """
 
     def __init__(self, filelike):
-        super(Keithley195, self).__init__(filelike)
+        super().__init__(filelike)
         self.sendcmd("YX")  # Removes the termination CRLF
         self.sendcmd("G1DX")  # Disable returning prefix and suffix
 
@@ -105,7 +104,7 @@ class Keithley195(Multimeter):
                 "Mode must be specified as a Keithley195.Mode "
                 "value, got {} instead.".format(newval)
             )
-        self.sendcmd("F{}DX".format(newval.value))
+        self.sendcmd(f"F{newval.value}DX")
 
     @property
     def trigger_mode(self):
@@ -144,7 +143,7 @@ class Keithley195(Multimeter):
                 "Keithley195.TriggerMode, got {} "
                 "instead.".format(newval)
             )
-        self.sendcmd("T{}X".format(newval.value))
+        self.sendcmd(f"T{newval.value}X")
 
     @property
     def relative(self):
@@ -172,7 +171,7 @@ class Keithley195(Multimeter):
     def relative(self, newval):
         if not isinstance(newval, bool):
             raise TypeError("Relative mode must be a boolean.")
-        self.sendcmd("Z{}DX".format(int(newval)))
+        self.sendcmd(f"Z{int(newval)}DX")
 
     @property
     def input_range(self):
@@ -233,7 +232,7 @@ class Keithley195(Multimeter):
                 "Range setting must be specified as a float, int, "
                 'or the string "auto", got {}'.format(type(newval))
             )
-        self.sendcmd("R{}DX".format(newval))
+        self.sendcmd(f"R{newval}DX")
 
     # METHODS #
 

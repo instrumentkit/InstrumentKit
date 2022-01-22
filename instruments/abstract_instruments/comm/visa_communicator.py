@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides a VISA communicator for connecting with instruments via the VISA
 library.
@@ -27,7 +26,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        super(VisaCommunicator, self).__init__(self)
+        super().__init__(self)
 
         version = int(pyvisa.__version__.replace(".", "").ljust(3, "0"))
         # pylint: disable=no-member
@@ -99,7 +98,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         """
         try:
             self._conn.close()
-        except IOError:
+        except OSError:
             pass
 
     def read_raw(self, size=-1):

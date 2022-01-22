@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the Holzworth HS9000
 """
@@ -120,7 +119,7 @@ def test_channel_frequency_getter():
 def test_channel_frequency_setter():
     with expected_protocol(
         ik.holzworth.HS9000,
-        [":ATTACH?", ":CH1:FREQ:MIN?", ":CH1:FREQ:MAX?", ":CH1:FREQ {:e}".format(1)],
+        [":ATTACH?", ":CH1:FREQ:MIN?", ":CH1:FREQ:MAX?", f":CH1:FREQ {1:e}"],
         [":CH1:CH2:FOO", "100 MHz", "10 GHz"],
         sep="\n",
     ) as hs:
@@ -144,7 +143,7 @@ def test_channel_power_getter():
 def test_channel_power_setter():
     with expected_protocol(
         ik.holzworth.HS9000,
-        [":ATTACH?", ":CH1:PWR:MIN?", ":CH1:PWR:MAX?", ":CH1:PWR {:e}".format(0)],
+        [":ATTACH?", ":CH1:PWR:MIN?", ":CH1:PWR:MAX?", f":CH1:PWR {0:e}"],
         [":CH1:CH2:FOO", "-100", "20"],
         sep="\n",
     ) as hs:
@@ -168,7 +167,7 @@ def test_channel_phase_getter():
 def test_channel_phase_setter():
     with expected_protocol(
         ik.holzworth.HS9000,
-        [":ATTACH?", ":CH1:PHASE:MIN?", ":CH1:PHASE:MAX?", ":CH1:PHASE {:e}".format(0)],
+        [":ATTACH?", ":CH1:PHASE:MIN?", ":CH1:PHASE:MAX?", f":CH1:PHASE {0:e}"],
         [":CH1:CH2:FOO", "-180", "+180"],
         sep="\n",
     ) as hs:

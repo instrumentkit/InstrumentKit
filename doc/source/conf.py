@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # InstrumentKit Library documentation build configuration file, created by
 # sphinx-quickstart on Fri Apr  5 10:37:03 2013.
@@ -48,8 +47,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"InstrumentKit Library"
-copyright = u"2013-2020, Steven Casagrande"
+project = "InstrumentKit Library"
+copyright = "2013-2020, Steven Casagrande"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -192,8 +191,8 @@ latex_documents = [
     (
         "index",
         "InstrumentKitLibrary.tex",
-        u"InstrumentKit Library Documentation",
-        u"Steven Casagrande",
+        "InstrumentKit Library Documentation",
+        "Steven Casagrande",
         "manual",
     ),
 ]
@@ -227,8 +226,8 @@ man_pages = [
     (
         "index",
         "instrumentkitlibrary",
-        u"InstrumentKit Library Documentation",
-        [u"Steven Casagrande"],
+        "InstrumentKit Library Documentation",
+        ["Steven Casagrande"],
         1,
     )
 ]
@@ -246,8 +245,8 @@ texinfo_documents = [
     (
         "index",
         "InstrumentKitLibrary",
-        u"InstrumentKit Library Documentation",
-        u"Steven Casagrande",
+        "InstrumentKit Library Documentation",
+        "Steven Casagrande",
         "InstrumentKitLibrary",
         "One line description of project.",
         "Miscellaneous",

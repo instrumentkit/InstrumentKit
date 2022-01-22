@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the HP6624a power supply
 """
@@ -33,7 +32,7 @@ class HP6624a(PowerSupply):
     """
 
     def __init__(self, filelike):
-        super(HP6624a, self).__init__(filelike)
+        super().__init__(filelike)
         self._channel_count = 4
 
     # INNER CLASSES #
@@ -55,7 +54,7 @@ class HP6624a(PowerSupply):
         def _format_cmd(self, cmd):
             cmd = cmd.split(" ")
             if len(cmd) == 1:
-                cmd = "{cmd} {idx}".format(cmd=cmd[0], idx=self._idx)
+                cmd = f"{cmd[0]} {self._idx}"
             else:
                 cmd = "{cmd} {idx},{value}".format(
                     cmd=cmd[0], idx=self._idx, value=cmd[1]
@@ -246,7 +245,7 @@ class HP6624a(PowerSupply):
             of units Volts.
         :type: `tuple`[`~pint.Quantity`, ...] with units Volt
         """
-        return tuple([self.channel[i].voltage for i in range(self.channel_count)])
+        return tuple(self.channel[i].voltage for i in range(self.channel_count))
 
     @voltage.setter
     def voltage(self, newval):
@@ -272,7 +271,7 @@ class HP6624a(PowerSupply):
             of units Amps.
         :type: `tuple`[`~pint.Quantity`, ...] with units Amp
         """
-        return tuple([self.channel[i].current for i in range(self.channel_count)])
+        return tuple(self.channel[i].current for i in range(self.channel_count))
 
     @current.setter
     def current(self, newval):

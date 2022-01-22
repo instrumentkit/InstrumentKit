@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Yokogawa 7651 power supply.
 """
@@ -74,7 +73,7 @@ class Yokogawa7651(PowerSupply, Instrument):
                     "Mode setting must be a `Yokogawa7651.Mode` "
                     "value, got {} instead.".format(type(newval))
                 )
-            self._parent.sendcmd("F{};".format(newval.value))
+            self._parent.sendcmd(f"F{newval.value};")
             self._parent.trigger()
 
         @property
@@ -98,7 +97,7 @@ class Yokogawa7651(PowerSupply, Instrument):
         def voltage(self, newval):
             newval = assume_units(newval, u.volt).to(u.volt).magnitude
             self.mode = self._parent.Mode.voltage
-            self._parent.sendcmd("SA{};".format(newval))
+            self._parent.sendcmd(f"SA{newval};")
             self._parent.trigger()
 
         @property
@@ -122,7 +121,7 @@ class Yokogawa7651(PowerSupply, Instrument):
         def current(self, newval):
             newval = assume_units(newval, u.amp).to(u.amp).magnitude
             self.mode = self._parent.Mode.current
-            self._parent.sendcmd("SA{};".format(newval))
+            self._parent.sendcmd(f"SA{newval};")
             self._parent.trigger()
 
         @property

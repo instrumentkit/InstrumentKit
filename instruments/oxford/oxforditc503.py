@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Oxford ITC 503 temperature controller.
 """
@@ -27,7 +26,7 @@ class OxfordITC503(Instrument):
     """
 
     def __init__(self, filelike):
-        super(OxfordITC503, self).__init__(filelike)
+        super().__init__(filelike)
         self.terminator = "\r"
         self.sendcmd("C3")  # Enable remote commands
 
@@ -56,7 +55,7 @@ class OxfordITC503(Instrument):
             :units: Kelvin
             :type: `~pint.Quantity`
             """
-            value = float(self._parent.query("R{}".format(self._idx))[1:])
+            value = float(self._parent.query(f"R{self._idx}")[1:])
             return u.Quantity(value, u.kelvin)
 
     # PROPERTIES #

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # tektds5xx.py: Driver for the Tektronix TDS 5xx series oscilloscope.
 #
@@ -62,7 +61,7 @@ class _TekTDS5xxMeasurement:
     def __init__(self, tek, idx):
         self._tek = tek
         self._id = idx + 1
-        resp = self._tek.query("MEASU:MEAS{}?".format(self._id))
+        resp = self._tek.query(f"MEASU:MEAS{self._id}?")
         self._data = dict(
             zip(
                 ["enabled", "type", "units", "src1", "src2", "edge1", "edge2", "dir"],
@@ -78,7 +77,7 @@ class _TekTDS5xxMeasurement:
         :rtype: `dict` of measurement parameters
         """
         if int(self._data["enabled"]):
-            resp = self._tek.query("MEASU:MEAS{}:VAL?".format(self._id))
+            resp = self._tek.query(f"MEASU:MEAS{self._id}:VAL?")
             self._data["value"] = float(resp)
             return self._data
 
@@ -147,22 +146,22 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
                 self._parent._file.read_raw(1)
 
             # Retrieve Y offset
-            yoffs = float(self._parent.query("WFMP:{}:YOF?".format(self.name)))
+            yoffs = float(self._parent.query(f"WFMP:{self.name}:YOF?"))
             # Retrieve Y multiply
-            ymult = float(self._parent.query("WFMP:{}:YMU?".format(self.name)))
+            ymult = float(self._parent.query(f"WFMP:{self.name}:YMU?"))
             # Retrieve Y zero
-            yzero = float(self._parent.query("WFMP:{}:YZE?".format(self.name)))
+            yzero = float(self._parent.query(f"WFMP:{self.name}:YZE?"))
 
             # Retrieve X incr
-            xincr = float(self._parent.query("WFMP:{}:XIN?".format(self.name)))
+            xincr = float(self._parent.query(f"WFMP:{self.name}:XIN?"))
             # Retrieve number of data points
-            ptcnt = int(self._parent.query("WFMP:{}:NR_P?".format(self.name)))
+            ptcnt = int(self._parent.query(f"WFMP:{self.name}:NR_P?"))
 
             if numpy:
                 x = numpy.arange(float(ptcnt)) * float(xincr)
                 y = ((raw - yoffs) * float(ymult)) + float(yzero)
             else:
-                x = tuple([float(val) * float(xincr) for val in range(ptcnt)])
+                x = tuple(float(val) * float(xincr) for val in range(ptcnt))
                 y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
 
             return x, y
@@ -180,7 +179,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
     """
 
     def __init__(self, parent, idx):
-        super(_TekTDS5xxChannel, self).__init__(parent, "CH{}".format(idx + 1))
+        super().__init__(parent, f"CH{idx + 1}")
         self._idx = idx + 1
 
     @property
@@ -190,7 +189,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `TekTDS5xx.Coupling`
         """
-        return TekTDS5xx.Coupling(self._parent.query("CH{}:COUPL?".format(self._idx)))
+        return TekTDS5xx.Coupling(self._parent.query(f"CH{self._idx}:COUPL?"))
 
     @coupling.setter
     def coupling(self, newval):
@@ -200,7 +199,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
                 " value, got {} instead.".format(type(newval))
             )
 
-        self._parent.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
+        self._parent.sendcmd(f"CH{self._idx}:COUPL {newval.value}")
 
     @property
     def bandwidth(self):
@@ -209,7 +208,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `TekTDS5xx.Bandwidth`
         """
-        return TekTDS5xx.Bandwidth(self._parent.query("CH{}:BAND?".format(self._idx)))
+        return TekTDS5xx.Bandwidth(self._parent.query(f"CH{self._idx}:BAND?"))
 
     @bandwidth.setter
     def bandwidth(self, newval):
@@ -219,7 +218,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
                 " value, got {} instead.".format(type(newval))
             )
 
-        self._parent.sendcmd("CH{}:BAND {}".format(self._idx, newval.value))
+        self._parent.sendcmd(f"CH{self._idx}:BAND {newval.value}")
 
     @property
     def impedance(self):
@@ -228,7 +227,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `TekTDS5xx.Impedance`
         """
-        return TekTDS5xx.Impedance(self._parent.query("CH{}:IMP?".format(self._idx)))
+        return TekTDS5xx.Impedance(self._parent.query(f"CH{self._idx}:IMP?"))
 
     @impedance.setter
     def impedance(self, newval):
@@ -238,7 +237,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
                 " value, got {} instead.".format(type(newval))
             )
 
-        self._parent.sendcmd("CH{}:IMP {}".format(self._idx, newval.value))
+        self._parent.sendcmd(f"CH{self._idx}:IMP {newval.value}")
 
     @property
     def probe(self):
@@ -247,7 +246,7 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `float`
         """
-        return round(1 / float(self._parent.query("CH{}:PRO?".format(self._idx))), 0)
+        return round(1 / float(self._parent.query(f"CH{self._idx}:PRO?")), 0)
 
     @property
     def scale(self):
@@ -256,15 +255,15 @@ class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
 
         :type: `float`
         """
-        return float(self._parent.query("CH{}:SCA?".format(self._idx)))
+        return float(self._parent.query(f"CH{self._idx}:SCA?"))
 
     @scale.setter
     def scale(self, newval):
-        self._parent.sendcmd("CH{0}:SCA {1:.3E}".format(self._idx, newval))
-        resp = float(self._parent.query("CH{}:SCA?".format(self._idx)))
+        self._parent.sendcmd(f"CH{self._idx}:SCA {newval:.3E}")
+        resp = float(self._parent.query(f"CH{self._idx}:SCA?"))
         if newval != resp:
             raise ValueError(
-                "Tried to set CH{0} Scale to {1} but got {2}"
+                "Tried to set CH{} Scale to {} but got {}"
                 " instead".format(self._idx, newval, resp)
             )
 
@@ -394,7 +393,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         return ProxyList(
             self,
-            lambda s, idx: _TekTDS5xxDataSource(s, "REF{}".format(idx + 1)),
+            lambda s, idx: _TekTDS5xxDataSource(s, f"REF{idx + 1}"),
             range(4),
         )
 
@@ -407,7 +406,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         return ProxyList(
             self,
-            lambda s, idx: _TekTDS5xxDataSource(s, "MATH{}".format(idx + 1)),
+            lambda s, idx: _TekTDS5xxDataSource(s, f"MATH{idx + 1}"),
             range(3),
         )
 
@@ -425,10 +424,10 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
                 active.append(_TekTDS5xxChannel(self, idx))
         for idx in range(4, 7):
             if channels[idx]:
-                active.append(_TekTDS5xxDataSource(self, "MATH{}".format(idx - 3)))
+                active.append(_TekTDS5xxDataSource(self, f"MATH{idx - 3}"))
         for idx in range(7, 11):
             if channels[idx]:
-                active.append(_TekTDS5xxDataSource(self, "REF{}".format(idx - 6)))
+                active.append(_TekTDS5xxDataSource(self, f"REF{idx - 6}"))
         return active
 
     @property
@@ -455,7 +454,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
                 " value, got {} instead.".format(type(newval))
             )
 
-        self.sendcmd("DAT:SOU {}".format(newval.value))
+        self.sendcmd(f"DAT:SOU {newval.value}")
         time.sleep(0.01)  # Let the instrument catch up.
 
     @property
@@ -472,7 +471,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         if int(newval) not in [1, 2]:
             raise ValueError("Only one or two byte-width is supported.")
 
-        self.sendcmd("DATA:WIDTH {}".format(newval))
+        self.sendcmd(f"DATA:WIDTH {newval}")
 
     def force_trigger(self):
         raise NotImplementedError
@@ -488,7 +487,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
 
     @horizontal_scale.setter
     def horizontal_scale(self, newval):
-        self.sendcmd("HOR:MAI:SCA {0:.3E}".format(newval))
+        self.sendcmd(f"HOR:MAI:SCA {newval:.3E}")
         resp = float(self.query("HOR:MAI:SCA?"))
         if newval != resp:
             raise ValueError(
@@ -507,7 +506,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
 
     @trigger_level.setter
     def trigger_level(self, newval):
-        self.sendcmd("TRIG:MAI:LEV {0:.3E}".format(newval))
+        self.sendcmd(f"TRIG:MAI:LEV {newval:.3E}")
         resp = float(self.query("TRIG:MAI:LEV?"))
         if newval != resp:
             raise ValueError(
@@ -532,7 +531,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
                 " value, got {} instead.".format(type(newval))
             )
 
-        self.sendcmd("TRIG:MAI:EDGE:COUP {}".format(newval.value))
+        self.sendcmd(f"TRIG:MAI:EDGE:COUP {newval.value}")
 
     @property
     def trigger_slope(self):
@@ -551,7 +550,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
                 " value, got {} instead.".format(type(newval))
             )
 
-        self.sendcmd("TRIG:MAI:EDGE:SLO {}".format(newval.value))
+        self.sendcmd(f"TRIG:MAI:EDGE:SLO {newval.value}")
 
     @property
     def trigger_source(self):
@@ -571,7 +570,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
                 "instead.".format(type(newval))
             )
 
-        self.sendcmd("TRIG:MAI:EDGE:SOU {}".format(newval.value))
+        self.sendcmd(f"TRIG:MAI:EDGE:SOU {newval.value}")
 
     @property
     def clock(self):
@@ -604,7 +603,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
     def display_clock(self, newval):
         if not isinstance(newval, bool):
             raise ValueError("Expected bool but got " "{} instead".format(type(newval)))
-        self.sendcmd("DISPLAY:CLOCK {}".format(int(newval)))
+        self.sendcmd(f"DISPLAY:CLOCK {int(newval)}")
 
     def get_hardcopy(self):
         """

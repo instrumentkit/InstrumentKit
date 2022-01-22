@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for named structures.
 """
@@ -41,13 +40,13 @@ class TestNamedStruct(TestCase):
             b = StringField(9, strip_null=True)
             c = StringField(2, encoding="utf-8")
 
-        foo = Foo(a="0123456\x00", b="abc", c=u"α")
+        foo = Foo(a="0123456\x00", b="abc", c="α")
         assert Foo.unpack(foo.pack()) == foo
 
         # Also check that we can get fields out directly.
         self.assertEqual(foo.a, "0123456\x00")
         self.assertEqual(foo.b, "abc")
-        self.assertEqual(foo.c, u"α")
+        self.assertEqual(foo.c, "α")
 
     def test_negative_len(self):
         """
@@ -64,8 +63,8 @@ class TestNamedStruct(TestCase):
             b = Field("B")
             c = StringField(5, encoding="utf8", strip_null=True)
 
-        foo1 = Foo(a=0x1234, b=0x56, c=u"ω")
-        foo2 = Foo(a=0xABCD, b=0xEF, c=u"α")
+        foo1 = Foo(a=0x1234, b=0x56, c="ω")
+        foo2 = Foo(a=0xABCD, b=0xEF, c="α")
 
         assert foo1 == foo1
         assert foo1 != foo2

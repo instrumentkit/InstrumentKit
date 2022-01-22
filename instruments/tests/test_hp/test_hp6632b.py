@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the HP 6632b power supply
 """
@@ -41,9 +40,7 @@ def test_hp6632b_output():
 
 
 def test_hp6632b_voltage():
-    with expected_protocol(
-        ik.hp.HP6632b, ["VOLT?", "VOLT {:e}".format(1)], ["10.0"]
-    ) as psu:
+    with expected_protocol(ik.hp.HP6632b, ["VOLT?", f"VOLT {1:e}"], ["10.0"]) as psu:
         unit_eq(psu.voltage, 10 * u.volt)
         psu.voltage = 1.0 * u.volt
 
@@ -61,16 +58,14 @@ def test_hp6632b_voltage_sense():
 
 def test_hp6632b_overvoltage():
     with expected_protocol(
-        ik.hp.HP6632b, ["VOLT:PROT?", "VOLT:PROT {:e}".format(1)], ["10.0"]
+        ik.hp.HP6632b, ["VOLT:PROT?", f"VOLT:PROT {1:e}"], ["10.0"]
     ) as psu:
         unit_eq(psu.overvoltage, 10 * u.volt)
         psu.overvoltage = 1.0 * u.volt
 
 
 def test_hp6632b_current():
-    with expected_protocol(
-        ik.hp.HP6632b, ["CURR?", "CURR {:e}".format(1)], ["10.0"]
-    ) as psu:
+    with expected_protocol(ik.hp.HP6632b, ["CURR?", f"CURR {1:e}"], ["10.0"]) as psu:
         unit_eq(psu.current, 10 * u.amp)
         psu.current = 1.0 * u.amp
 
@@ -96,7 +91,7 @@ def test_hp6632b_overcurrent():
 
 def test_hp6632b_current_sense_range():
     with expected_protocol(
-        ik.hp.HP6632b, ["SENS:CURR:RANGE?", "SENS:CURR:RANGE {:e}".format(1)], ["0.05"]
+        ik.hp.HP6632b, ["SENS:CURR:RANGE?", f"SENS:CURR:RANGE {1:e}"], ["0.05"]
     ) as psu:
         unit_eq(psu.current_sense_range, 0.05 * u.amp)
         psu.current_sense_range = 1 * u.amp
@@ -134,7 +129,7 @@ def test_hp6632b_digital_data():
 
 def test_hp6632b_sense_sweep_points():
     with expected_protocol(
-        ik.hp.HP6632b, ["SENS:SWE:POIN?", "SENS:SWE:POIN {:e}".format(2048)], ["5"]
+        ik.hp.HP6632b, ["SENS:SWE:POIN?", f"SENS:SWE:POIN {2048:e}"], ["5"]
     ) as psu:
         assert psu.sense_sweep_points == 5
         psu.sense_sweep_points = 2048
@@ -143,7 +138,7 @@ def test_hp6632b_sense_sweep_points():
 def test_hp6632b_sense_sweep_interval():
     with expected_protocol(
         ik.hp.HP6632b,
-        ["SENS:SWE:TINT?", "SENS:SWE:TINT {:e}".format(1e-05)],
+        ["SENS:SWE:TINT?", f"SENS:SWE:TINT {1e-05:e}"],
         ["1.56e-05"],
     ) as psu:
         unit_eq(psu.sense_sweep_interval, 1.56e-05 * u.second)
@@ -160,7 +155,7 @@ def test_hp6632b_sense_window():
 
 def test_hp6632b_output_protection_delay():
     with expected_protocol(
-        ik.hp.HP6632b, ["OUTP:PROT:DEL?", "OUTP:PROT:DEL {:e}".format(5e-02)], ["8e-02"]
+        ik.hp.HP6632b, ["OUTP:PROT:DEL?", f"OUTP:PROT:DEL {5e-02:e}"], ["8e-02"]
     ) as psu:
         unit_eq(psu.output_protection_delay, 8e-02 * u.second)
         psu.output_protection_delay = 5e-02 * u.second
@@ -179,7 +174,7 @@ def test_hp6632b_voltage_alc_bandwidth():
 
 def test_hp6632b_voltage_trigger():
     with expected_protocol(
-        ik.hp.HP6632b, ["VOLT:TRIG?", "VOLT:TRIG {:e}".format(1)], ["1e+0"]
+        ik.hp.HP6632b, ["VOLT:TRIG?", f"VOLT:TRIG {1:e}"], ["1e+0"]
     ) as psu:
         unit_eq(psu.voltage_trigger, 1 * u.volt)
         psu.voltage_trigger = 1 * u.volt
@@ -187,7 +182,7 @@ def test_hp6632b_voltage_trigger():
 
 def test_hp6632b_current_trigger():
     with expected_protocol(
-        ik.hp.HP6632b, ["CURR:TRIG?", "CURR:TRIG {:e}".format(0.1)], ["1e-01"]
+        ik.hp.HP6632b, ["CURR:TRIG?", f"CURR:TRIG {0.1:e}"], ["1e-01"]
     ) as psu:
         unit_eq(psu.current_trigger, 0.1 * u.amp)
         psu.current_trigger = 0.1 * u.amp

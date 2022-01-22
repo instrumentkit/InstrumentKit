@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing support for loading instruments from configuration files.
 """
@@ -68,7 +67,7 @@ def quantity_constructor(loader, node):
 
 # We avoid having to register !Q every time by doing as soon as the
 # relevant constructor is defined.
-yaml.add_constructor(u"!Q", quantity_constructor)
+yaml.add_constructor("!Q", quantity_constructor)
 
 
 def load_instruments(conf_file_name, conf_path="/"):
@@ -146,7 +145,7 @@ def load_instruments(conf_file_name, conf_path="/"):
         )
 
     if isinstance(conf_file_name, str):
-        with open(conf_file_name, "r") as f:
+        with open(conf_file_name) as f:
             conf_dict = yaml.load(f, Loader=yaml.Loader)
     else:
         conf_dict = yaml.load(conf_file_name, Loader=yaml.Loader)
@@ -163,7 +162,7 @@ def load_instruments(conf_file_name, conf_path="/"):
                 for attr_name, attr_value in value["attrs"].items():
                     setattr_expression(inst_dict[name], attr_name, attr_value)
 
-        except IOError as ex:
+        except OSError as ex:
             # FIXME: need to subclass Warning so that repeated warnings
             #        aren't ignored.
             warnings.warn(

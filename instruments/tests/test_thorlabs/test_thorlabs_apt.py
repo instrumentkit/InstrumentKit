@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for the Thorlabs TC200
 """
@@ -56,7 +55,7 @@ def test_apt_hw_info(hw_type):
                     # Serial number
                     b"\x01\x02\x03\x04",
                     # Model number
-                    "ABC-123".encode("ascii"),
+                    b"ABC-123",
                     # HW type
                     hw_type[0],
                     # FW version,
@@ -64,7 +63,7 @@ def test_apt_hw_info(hw_type):
                     0xA2,
                     0xA3,
                     # Notes
-                    "abcdefg".encode("ascii"),
+                    b"abcdefg",
                     # HW version
                     42,
                     # Mod state
@@ -137,7 +136,7 @@ def init_kdc101():
             # Serial number
             b"\x01\x02\x03\x04",
             # Model number
-            "KDC101".encode("ascii"),
+            b"KDC101",
             # HW type
             16,
             # FW version,
@@ -145,7 +144,7 @@ def init_kdc101():
             0xA2,
             0xA3,
             # Notes
-            "abcdefg".encode("ascii"),
+            b"abcdefg",
             # HW version
             42,
             # Mod state
@@ -176,7 +175,7 @@ def init_kim101():
             # Serial number
             b"\x01\x02\x03\x04",
             # Model number
-            "KIM101".encode("ascii"),
+            b"KIM101",
             # HW type
             16,
             # FW version,
@@ -184,7 +183,7 @@ def init_kim101():
             0xA2,
             0xA3,
             # Notes
-            "abcdefg".encode("ascii"),
+            b"abcdefg",
             # HW version
             42,
             # Mod state
@@ -218,7 +217,7 @@ def init_tim101():
             # Serial number
             b"\x01\x02\x03\x04",
             # Model number
-            "TIM101".encode("ascii"),
+            b"TIM101",
             # HW type
             16,
             # FW version,
@@ -226,7 +225,7 @@ def init_tim101():
             0xA2,
             0xA3,
             # Notes
-            "abcdefg".encode("ascii"),
+            b"abcdefg",
             # HW version
             42,
             # Mod state
@@ -257,7 +256,7 @@ def init_ksg101():
             # Serial number
             b"\x01\x02\x03\x04",
             # Model number
-            "KSG101".encode("ascii"),
+            b"KSG101",
             # HW type
             3,
             # FW version,
@@ -265,7 +264,7 @@ def init_ksg101():
             0xA2,
             0xA3,
             # Notes
-            "abcdefg".encode("ascii"),
+            b"abcdefg",
             # HW version
             42,
             # Mod state
@@ -296,7 +295,7 @@ def init_kpz001():
             # Serial number
             b"\x01\x02\x03\x04",
             # Model number
-            "KPZ101".encode("ascii"),
+            b"KPZ101",
             # HW type
             3,
             # FW version,
@@ -304,7 +303,7 @@ def init_kpz001():
             0xA2,
             0xA3,
             # Notes
-            "abcdefg".encode("ascii"),
+            b"abcdefg",
             # HW version
             42,
             # Mod state
@@ -1107,10 +1106,10 @@ apt_mc_channel_status_bit_mask = {
 @pytest.mark.parametrize("status_bits", apt_mc_channel_status_bit_mask.values())
 def test_apt_mc_status_bits(init_kdc101, status_bits):
     """Get status bits."""
-    status_dict_expected = dict(
-        (key, (status_bits & bit_mask > 0))
+    status_dict_expected = {
+        key: (status_bits & bit_mask > 0)
         for key, bit_mask in apt_mc_channel_status_bit_mask.items()
-    )
+    }
 
     with expected_protocol(
         ik.thorlabs.APTMotorController,

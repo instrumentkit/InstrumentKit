@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Newport Pico Motor Controller 8742
 
@@ -82,7 +81,7 @@ class PicoMotorController8742(Instrument):
 
     def __init__(self, filelike):
         """Initialize the PicoMotorController class."""
-        super(PicoMotorController8742, self).__init__(filelike)
+        super().__init__(filelike)
 
         # terminator
         self.terminator = "\r\n"
@@ -630,7 +629,7 @@ class PicoMotorController8742(Instrument):
             retval = self._parent.query(command, size=size)
 
             if retval[: len(self._address)] != self._address:
-                raise IOError(
+                raise OSError(
                     f"Expected to hear back from secondary "
                     f"controller {self._address}, instead "
                     f"controller {retval[:len(self._address)]} "

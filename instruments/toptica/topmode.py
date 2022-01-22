@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides the support for the Toptica Topmode diode laser.
 
@@ -34,7 +33,7 @@ class TopMode(Instrument):
     """
 
     def __init__(self, filelike):
-        super(TopMode, self).__init__(filelike)
+        super().__init__(filelike)
         self.prompt = "> "
         self.terminator = "\r\n"
 
@@ -72,7 +71,7 @@ class TopMode(Instrument):
 
         def __init__(self, parent, idx):
             self.parent = parent
-            self.name = "laser{}".format(idx + 1)
+            self.name = f"laser{idx + 1}"
 
         # PROPERTIES #
 
@@ -325,12 +324,12 @@ class TopMode(Instrument):
         """
 
         if isinstance(value, str):
-            self.query('(param-set! \'{} "{}")'.format(param, value))
+            self.query(f'(param-set! \'{param} "{value}")')
         elif isinstance(value, (tuple, list)):
             self.query("(param-set! '{} '({}))".format(param, " ".join(value)))
         elif isinstance(value, bool):
             value = "t" if value else "f"
-            self.query("(param-set! '{} #{})".format(param, value))
+            self.query(f"(param-set! '{param} #{value})")
 
     def reference(self, param):
         """
@@ -341,7 +340,7 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        response = self.query("(param-ref '{})".format(param)).replace('"', "")
+        response = self.query(f"(param-ref '{param})").replace('"', "")
         return response
 
     def display(self, param):
@@ -351,7 +350,7 @@ class TopMode(Instrument):
         :param str param: Parameter that will be sent with a display request
         :return: Response to the display request
         """
-        return self.query("(param-disp '{})".format(param))
+        return self.query(f"(param-disp '{param})")
 
     # PROPERTIES #
 

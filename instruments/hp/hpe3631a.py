@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # hpe3631a.py: Driver for the HP E3631A Power Supply
 #
@@ -82,7 +81,7 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
     """
 
     def __init__(self, filelike):
-        super(HPe3631a, self).__init__(filelike)
+        super().__init__(filelike)
         self.sendcmd("SYST:REM")  # Puts the device in remote operation
         time.sleep(0.1)
 
@@ -184,8 +183,8 @@ class HPe3631a(PowerSupply, PowerSupplyChannel, SCPIInstrument):
 
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
-        strval = "{:e}".format(assume_units(newval, u.volt).to(u.volt).magnitude)
-        self.sendcmd("SOUR:VOLT {}".format(strval))
+        strval = f"{assume_units(newval, u.volt).to(u.volt).magnitude:e}"
+        self.sendcmd(f"SOUR:VOLT {strval}")
 
     @property
     def voltage_min(self):

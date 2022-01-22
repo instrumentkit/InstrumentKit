@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Qubitekk MC1 Motor Controller.
 
@@ -29,7 +28,7 @@ class MC1(Instrument):
     """
 
     def __init__(self, filelike):
-        super(MC1, self).__init__(filelike)
+        super().__init__(filelike)
         self.terminator = "\r"
         self._increment = 1 * u.ms
         self._lower_limit = -300 * u.ms

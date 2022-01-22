@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides a serial communicator for connecting with instruments over serial
 connections.
@@ -27,7 +26,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        super(SerialCommunicator, self).__init__(self)
+        super().__init__(self)
 
         if isinstance(conn, serial.Serial):
             self._conn = conn
@@ -123,7 +122,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
             while not (result.endswith(term) if term is not None else c == b""):
                 c = self._conn.read(1)
                 if c == b"" and term is not None:
-                    raise IOError(
+                    raise OSError(
                         "Serial connection timed out before reading "
                         "a termination character."
                     )

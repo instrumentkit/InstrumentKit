@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the SRS 345 function generator
 """
@@ -35,7 +34,7 @@ def test_frequency():
         ik.srs.SRS345,
         [
             "FREQ?",
-            "FREQ {:e}".format(0.1),
+            f"FREQ {0.1:e}",
         ],
         [
             "1.234",
@@ -62,7 +61,7 @@ def test_offset():
         ik.srs.SRS345,
         [
             "OFFS?",
-            "OFFS {:e}".format(0.1),
+            f"OFFS {0.1:e}",
         ],
         [
             "1.234",
@@ -77,7 +76,7 @@ def test_phase():
         ik.srs.SRS345,
         [
             "PHSE?",
-            "PHSE {:e}".format(0.1),
+            f"PHSE {0.1:e}",
         ],
         [
             "1.234",

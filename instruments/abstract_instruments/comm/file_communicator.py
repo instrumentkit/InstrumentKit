@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides a communication layer for an instrument with a file on the filesystem
 """
@@ -35,7 +34,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, filelike):
-        super(FileCommunicator, self).__init__(self)
+        super().__init__(self)
         if isinstance(filelike, str):  # pragma: no cover
             filelike = open(filelike, "rb+")
 
@@ -104,7 +103,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         """
         try:
             self._filelike.close()
-        except IOError as e:  # pragma: no cover
+        except OSError as e:  # pragma: no cover
             logger.warning("Failed to close file, exception: %s", repr(e))
 
     def read_raw(self, size=-1):
@@ -178,7 +177,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         self.write(msg)
         try:
             self.flush()
-        except IOError as e:
+        except OSError as e:
             logger.warning("Exception %s occured during flush().", repr(e))
 
     def _query(self, msg, size=-1):
@@ -209,7 +208,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
                 if nextchar.endswith(self._terminator.encode("utf-8")):
                     resp = resp[: -len(self._terminator)]
                     break
-        except IOError as ex:
+        except OSError as ex:
             if ex.errno == errno.ETIMEDOUT:
                 # We don't mind timeouts if resp is nonempty,
                 # and will just return what we have.
@@ -218,7 +217,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
             elif ex.errno != errno.EPIPE:
                 raise  # Reraise the existing exception.
             else:  # Give a more helpful and specific exception.
-                raise IOError(
+                raise OSError(
                     "Pipe broken when reading from {}; this probably "
                     "indicates that the driver "
                     "providing the device file is unable to communicate with "

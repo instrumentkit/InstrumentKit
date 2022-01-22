@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """
 Provides the support for the Thorlabs SC10 optical beam shutter controller.
 
@@ -32,7 +31,7 @@ class SC10(Instrument):
     """
 
     def __init__(self, filelike):
-        super(SC10, self).__init__(filelike)
+        super().__init__(filelike)
         self.terminator = "\r"
         self.prompt = "> "
 
@@ -178,7 +177,7 @@ class SC10(Instrument):
         if newval != 9600 and newval != 115200:
             raise ValueError("Invalid baud rate mode")
         else:
-            self.sendcmd("baud={}".format(0 if newval == 9600 else 1))
+            self.sendcmd(f"baud={0 if newval == 9600 else 1}")
 
     closed = bool_property(
         "closed",

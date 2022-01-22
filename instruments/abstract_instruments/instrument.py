@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides the base Instrument class for all instruments.
 """
@@ -276,7 +275,7 @@ class Instrument:
         # This needs to be a # symbol for valid binary block
         symbol = self._file.read_raw(1)
         if symbol != b"#":  # Check to make sure block is valid
-            raise IOError(
+            raise OSError(
                 "Not a valid binary block start. Binary blocks "
                 "require the first character to be #, instead got "
                 "{}".format(symbol)
@@ -304,7 +303,7 @@ class Instrument:
                 if old_len == len(data):
                     tries -= 1
                 if tries == 0:
-                    raise IOError(
+                    raise OSError(
                         "Did not read in the required number of bytes"
                         "during binblock read. Got {}, expected "
                         "{}".format(len(data), num_of_bytes)
@@ -701,7 +700,7 @@ class Instrument:
         """
         dev = usb.core.find(idVendor=vid, idProduct=pid)
         if dev is None:
-            raise IOError("No such device found.")
+            raise OSError("No such device found.")
 
         return cls(USBCommunicator(dev))
 

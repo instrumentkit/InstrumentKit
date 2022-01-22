@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for the int property factories
 """
@@ -21,7 +20,7 @@ def test_int_property_outside_valid_set():
     with pytest.raises(ValueError):
 
         class IntMock(MockInstrument):
-            mock_property = int_property("MOCK", valid_set=set([1, 2]))
+            mock_property = int_property("MOCK", valid_set={1, 2})
 
         mock_inst = IntMock()
         mock_inst.mock_property = 3
@@ -29,7 +28,7 @@ def test_int_property_outside_valid_set():
 
 def test_int_property_valid_set():
     class IntMock(MockInstrument):
-        int_property = int_property("MOCK", valid_set=set([1, 2]))
+        int_property = int_property("MOCK", valid_set={1, 2})
 
     mock_inst = IntMock({"MOCK?": "1"})
 
@@ -68,7 +67,7 @@ def test_int_property_writeonly_writing_passes():
     mock_inst = IntMock()
 
     mock_inst.int_property = 1
-    assert mock_inst.value == "MOCK {:d}\n".format(1)
+    assert mock_inst.value == f"MOCK {1:d}\n"
 
 
 def test_int_property_readonly_writing_fails():
@@ -98,7 +97,7 @@ def test_int_property_format_code():
     mock_inst = IntMock()
 
     mock_inst.int_property = 1
-    assert mock_inst.value == "MOCK {:e}\n".format(1)
+    assert mock_inst.value == f"MOCK {1:e}\n"
 
 
 def test_int_property_set_cmd():

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # hp6632b.py: Python class for the HP6632b power supply
 #

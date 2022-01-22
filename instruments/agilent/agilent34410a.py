@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Agilent 34410a digital multimeter.
 """
@@ -141,7 +140,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
             sample_count = self.data_point_count
         units = UNITS[self.mode]
         self.sendcmd("FORM:DATA ASC")
-        data = self.query("DATA:REM? {}".format(sample_count)).split(",")
+        data = self.query(f"DATA:REM? {sample_count}").split(",")
         data = list(map(float, data))
         if numpy:
             return data * units

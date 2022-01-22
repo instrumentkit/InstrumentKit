@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Newport ESP-301 motor controller.
 
@@ -95,7 +94,7 @@ class NewportESP301(Instrument):
     """
 
     def __init__(self, filelike):
-        super(NewportESP301, self).__init__(filelike)
+        super().__init__(filelike)
         self._execute_immediately = True
         self._command_list = []
         self._bulk_query_resp = ""
@@ -1171,7 +1170,7 @@ class NewportESP301Axis:
                 if max_wait is None or (time.time() - tic) < max_wait:
                     time.sleep(poll_interval)
                 else:
-                    raise IOError("Timed out waiting for motion to finish.")
+                    raise OSError("Timed out waiting for motion to finish.")
 
     def enable(self):
         """
@@ -1383,7 +1382,7 @@ class NewportESP301Axis:
             if quant == quantity:
                 return num
 
-        raise KeyError("{0} is not a valid unit for Newport Axis".format(quantity))
+        raise KeyError(f"{quantity} is not a valid unit for Newport Axis")
 
     # pylint: disable=protected-access
     def _newport_cmd(self, cmd, **kwargs):

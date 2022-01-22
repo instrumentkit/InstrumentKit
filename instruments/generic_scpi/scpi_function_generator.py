@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for SCPI compliant function generators
 """
@@ -38,7 +37,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
         FunctionGenerator.VoltageMode.dBm: "DBM",
     }
 
-    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.items())
+    _MNEMONIC_UNITS = {mnem: unit for unit, mnem in _UNIT_MNEMONICS.items()}
 
     # FunctionGenerator CONTRACT #
 
@@ -63,8 +62,8 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
         :param units: The type of voltage measurements units
         :type units: `FunctionGenerator.VoltageMode`
         """
-        self.sendcmd("VOLT:UNIT {}".format(self._UNIT_MNEMONICS[units]))
-        self.sendcmd("VOLT {}".format(magnitude))
+        self.sendcmd(f"VOLT:UNIT {self._UNIT_MNEMONICS[units]}")
+        self.sendcmd(f"VOLT {magnitude}")
 
     # PROPERTIES #
 

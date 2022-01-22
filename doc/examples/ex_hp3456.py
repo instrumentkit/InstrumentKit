@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import logging
 import time
@@ -28,10 +27,10 @@ print(dmm.mean)
 
 # Read registers
 dmm.nplc = 10
-print("n = {}".format(dmm.number_of_readings))
-print("g = {}".format(dmm.number_of_digits))
-print("p = {}".format(dmm.nplc))
-print("d = {}".format(dmm.delay))
+print(f"n = {dmm.number_of_readings}")
+print(f"g = {dmm.number_of_digits}")
+print(f"p = {dmm.nplc}")
+print(f"d = {dmm.delay}")
 print(dmm.mean)
 print(dmm.variance)
 print(dmm.count)

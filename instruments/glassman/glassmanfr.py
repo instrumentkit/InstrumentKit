@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # hpe3631a.py: Driver for the Glassman FR Series Power Supplies
 #
@@ -83,7 +82,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         """
         Initialize the instrument, and set the properties needed for communication.
         """
-        super(GlassmanFR, self).__init__(filelike)
+        super().__init__(filelike)
         self.terminator = "\r"
         self.voltage_max = 50.0 * u.kilovolt
         self.current_max = 6.0 * u.milliamp
@@ -268,7 +267,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
     def device_timeout(self, newval):
         if not isinstance(newval, bool):
             raise TypeError("Device timeout mode must be a boolean.")
-        self.query("C{}".format(int(not newval)))  # Device acknowledges
+        self.query(f"C{int(not newval)}")  # Device acknowledges
         self._device_timeout = newval
 
     # METHODS ##
@@ -303,14 +302,14 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         self.sendcmd(cmd)
         result = self._file.read(size)
         if result[0] != getattr(self.ResponseCode, cmd[0]).value and result[0] != "E":
-            raise ValueError("Invalid response code: {}".format(result))
+            raise ValueError(f"Invalid response code: {result}")
         if result[0] == "A":
             return "Acknowledged"
         if not self._verify_checksum(result):
-            raise ValueError("Invalid checksum: {}".format(result))
+            raise ValueError(f"Invalid checksum: {result}")
         if result[0] == "E":
             error_name = self.ErrorCode(result[1]).name
-            raise ValueError("Instrument responded with error: {}".format(error_name))
+            raise ValueError(f"Instrument responded with error: {error_name}")
 
         return result[1:-2]  # Remove SOH and checksum
 
@@ -359,7 +358,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
             # If the output status is not specified, keep it as is
             output = output if output is not None else self.output
-            control = "00{}{}".format(int(output), int(not output))
+            control = f"00{int(output)}{int(not output)}"
             cmd += format(int(control, 2), "07X")
 
         self.query("S" + cmd)  # Device acknowledges

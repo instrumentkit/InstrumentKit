@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides the support for the Thorlabs PM100USB power meter.
 """
@@ -216,7 +215,7 @@ class PM100USB(SCPIInstrument):
     def averaging_count(self, newval):
         if newval < 1:
             raise ValueError("Must count at least one time.")
-        self.sendcmd("SENS:AVER:COUN {}".format(newval))
+        self.sendcmd(f"SENS:AVER:COUN {newval}")
 
     # METHODS ##
 

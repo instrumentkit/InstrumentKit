@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Picowatt AVS 47 resistance bridge
 """
@@ -29,7 +28,7 @@ class PicowattAVS47(SCPIInstrument):
     """
 
     def __init__(self, filelike):
-        super(PicowattAVS47, self).__init__(filelike)
+        super().__init__(filelike)
         self.sendcmd("HDR 0")  # Disables response headers from replies
 
     # INNER CLASSES #

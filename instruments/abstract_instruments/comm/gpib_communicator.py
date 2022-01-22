@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides a communication layer for an instrument connected via a Galvant
 Industries or Prologix GPIB adapter.
@@ -32,7 +31,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
 
     # pylint: disable=too-many-instance-attributes
     def __init__(self, filelike, gpib_address, model="gi"):
-        super(GPIBCommunicator, self).__init__(self)
+        super().__init__(self)
         self._model = self.Model(model)
         self._file = filelike
         self._gpib_address = gpib_address
@@ -109,10 +108,10 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         newval = assume_units(newval, u.second)
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             newval = newval.to(u.second)
-            self._file.sendcmd("+t:{}".format(int(newval.magnitude)))
+            self._file.sendcmd(f"+t:{int(newval.magnitude)}")
         else:
             newval = newval.to(u.millisecond)
-            self._file.sendcmd("++read_tmo_ms {}".format(int(newval.magnitude)))
+            self._file.sendcmd(f"++read_tmo_ms {int(newval.magnitude)}")
         self._file.timeout = newval.to(u.second)
         self._timeout = newval.to(u.second)
 
@@ -222,7 +221,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             if isinstance(newval, (str, bytes)):
                 newval = ord(newval)
-            self._file.sendcmd("+eos:{}".format(newval))
+            self._file.sendcmd(f"+eos:{newval}")
             self._eos = newval
         else:
             if isinstance(newval, int):
@@ -241,7 +240,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                 newval = 3
             else:
                 raise ValueError("EOS must be CRLF, CR, LF, or None")
-            self._file.sendcmd("++eos {}".format(newval))
+            self._file.sendcmd(f"++eos {newval}")
 
     # FILE-LIKE METHODS #
 
@@ -326,9 +325,9 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if msg == "":
             return
         if self._model == GPIBCommunicator.Model.gi:
-            self._file.sendcmd("+a:{0}".format(str(self._gpib_address)))
+            self._file.sendcmd(f"+a:{str(self._gpib_address)}")
         else:
-            self._file.sendcmd("++addr {0}".format(str(self._gpib_address)))
+            self._file.sendcmd(f"++addr {str(self._gpib_address)}")
         time.sleep(sleep_time)
         self.eoi = self.eoi
         time.sleep(sleep_time)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Tektronix DPO 70000 oscilloscope series
 """
@@ -247,7 +246,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             self._idx = idx + 1  # 1-based.
 
             # Initialize as a data source with name MATH{}.
-            super(TekDPO70000.Math, self).__init__(parent, "MATH{}".format(self._idx))
+            super(TekDPO70000.Math, self).__init__(parent, f"MATH{self._idx}")
 
         def sendcmd(self, cmd):
             """
@@ -256,7 +255,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
             :param str cmd: Command to send to the instrument
             """
-            self._parent.sendcmd("MATH{}:{}".format(self._idx, cmd))
+            self._parent.sendcmd(f"MATH{self._idx}:{cmd}")
 
         def query(self, cmd, size=-1):
             """
@@ -269,7 +268,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             :return: The query response
             :rtype: `str`
             """
-            return self._parent.query("MATH{}:{}".format(self._idx, cmd), size)
+            return self._parent.query(f"MATH{self._idx}:{cmd}", size)
 
         class FilterMode(Enum):
             """
@@ -517,9 +516,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             self._idx = idx + 1  # 1-based.
 
             # Initialize as a data source with name CH{}.
-            super(TekDPO70000.Channel, self).__init__(
-                self._parent, "CH{}".format(self._idx)
-            )
+            super(TekDPO70000.Channel, self).__init__(self._parent, f"CH{self._idx}")
 
         def sendcmd(self, cmd):
             """
@@ -528,7 +525,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
             :param str cmd: Command to send to the instrument
             """
-            self._parent.sendcmd("CH{}:{}".format(self._idx, cmd))
+            self._parent.sendcmd(f"CH{self._idx}:{cmd}")
 
         def query(self, cmd, size=-1):
             """
@@ -541,7 +538,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             :return: The query response
             :rtype: `str`
             """
-            return self._parent.query("CH{}:{}".format(self._idx, cmd), size)
+            return self._parent.query(f"CH{self._idx}:{cmd}", size)
 
         class Coupling(Enum):
             """
@@ -795,8 +792,8 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
     @data_source.setter
     def data_source(self, newval):
         if not isinstance(newval, self.DataSource):
-            raise TypeError("{} is not a valid data source.".format(type(newval)))
-        self.sendcmd("DAT:SOU {}".format(newval.name))
+            raise TypeError(f"{type(newval)} is not a valid data source.")
+        self.sendcmd(f"DAT:SOU {newval.name}")
 
         # Some Tek scopes require this after the DAT:SOU command, or else
         # they will stop responding.
@@ -939,7 +936,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
     outgoing_n_bytes = int_property(
         "WFMO:BYT_N",
-        valid_set=set((1, 2, 4, 8)),
+        valid_set={1, 2, 4, 8},
         doc="""
         The number of bytes per sample used in representing outgoing
         waveforms in binary encodings.

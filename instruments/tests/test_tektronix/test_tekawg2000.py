@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the Tektronix AGG2000 arbitrary wave generators.
 """
@@ -215,7 +214,7 @@ def test_upload_waveform(yzero, ymult, xincr, waveform):
     waveform_send = waveform_send.astype("<u2").tobytes()
     wfm_header_2 = str(len(waveform_send))
     wfm_header_1 = len(wfm_header_2)
-    bin_str = "#{}{}{}".format(wfm_header_1, wfm_header_2, waveform_send)
+    bin_str = f"#{wfm_header_1}{wfm_header_2}{waveform_send}"
     with expected_protocol(
         ik.tektronix.TekAWG2000,
         [

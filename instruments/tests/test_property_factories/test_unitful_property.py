@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for the unitful property factories
 """
@@ -28,7 +27,7 @@ def test_unitful_property_basics():
     assert mock_inst.unitful_property == 1000 * u.hertz
 
     mock_inst.unitful_property = 1000 * u.hertz
-    assert mock_inst.value == "MOCK?\nMOCK {:e}\n".format(1000)
+    assert mock_inst.value == f"MOCK?\nMOCK {1000:e}\n"
 
 
 def test_unitful_property_format_code():
@@ -38,7 +37,7 @@ def test_unitful_property_format_code():
     mock_inst = UnitfulMock()
 
     mock_inst.unitful_property = 1000 * u.hertz
-    assert mock_inst.value == "MOCK {:f}\n".format(1000)
+    assert mock_inst.value == f"MOCK {1000:f}\n"
 
 
 def test_unitful_property_rescale_units():
@@ -48,7 +47,7 @@ def test_unitful_property_rescale_units():
     mock_inst = UnitfulMock()
 
     mock_inst.unitful_property = 1 * u.kilohertz
-    assert mock_inst.value == "MOCK {:e}\n".format(1000)
+    assert mock_inst.value == f"MOCK {1000:e}\n"
 
 
 def test_unitful_property_no_units_on_set():
@@ -58,7 +57,7 @@ def test_unitful_property_no_units_on_set():
     mock_inst = UnitfulMock()
 
     mock_inst.unitful_property = 1000
-    assert mock_inst.value == "MOCK {:e}\n".format(1000)
+    assert mock_inst.value == f"MOCK {1000:e}\n"
 
 
 def test_unitful_property_wrong_units():
@@ -90,7 +89,7 @@ def test_unitful_property_writeonly_writing_passes():
     mock_inst = UnitfulMock()
 
     mock_inst.unitful_property = 1 * u.hertz
-    assert mock_inst.value == "MOCK {:e}\n".format(1)
+    assert mock_inst.value == f"MOCK {1:e}\n"
 
 
 def test_unitful_property_readonly_writing_fails():
@@ -122,7 +121,7 @@ def test_unitful_property_valid_range():
     mock_inst.unitful_property = 0
     mock_inst.unitful_property = 10
 
-    assert mock_inst.value == "MOCK {:e}\nMOCK {:e}\n".format(0, 10)
+    assert mock_inst.value == f"MOCK {0:e}\nMOCK {10:e}\n"
 
 
 def test_unitful_property_valid_range_functions():
@@ -142,7 +141,7 @@ def test_unitful_property_valid_range_functions():
     mock_inst.unitful_property = 0
     mock_inst.unitful_property = 10
 
-    assert mock_inst.value == "MOCK {:e}\nMOCK {:e}\n".format(0, 10)
+    assert mock_inst.value == f"MOCK {0:e}\nMOCK {10:e}\n"
 
 
 def test_unitful_property_minimum_value():
@@ -236,4 +235,4 @@ def test_unitful_property_name_read_not_none():
     assert mock_inst.a == 1000 * u.hertz
     mock_inst.a = 1000 * u.hertz
 
-    assert mock_inst.value == "MOCK?\nFOOBAR {:e}\n".format(1000)
+    assert mock_inst.value == f"MOCK?\nFOOBAR {1000:e}\n"

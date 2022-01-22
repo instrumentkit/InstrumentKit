@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # hp3456a.py: Driver for the HP3456a Digital Voltmeter.
 #
@@ -61,7 +60,7 @@ class HP3456a(Multimeter):
         Initialise the instrument, and set the required eos, eoi needed for
         communication.
         """
-        super(HP3456a, self).__init__(filelike)
+        super().__init__(filelike)
         self.timeout = 15 * u.second
         self.terminator = "\r"
         self.sendcmd("HO0T4SO1")
@@ -459,7 +458,7 @@ class HP3456a(Multimeter):
                     "Value {} outside valid ranges " "{}".format(value, valid)
                 )
             value = valid.index(value) + 2
-            self.sendcmd("R{}W".format(value))
+            self.sendcmd(f"R{value}W")
         else:
             raise TypeError(
                 "Range setting must be specified as a float, int, "
@@ -479,10 +478,10 @@ class HP3456a(Multimeter):
     def relative(self, value):
         if value is True:
             self._null = True
-            self.sendcmd("M{}".format(HP3456a.MathMode.null.value))
+            self.sendcmd(f"M{HP3456a.MathMode.null.value}")
         elif value is False:
             self._null = False
-            self.sendcmd("M{}".format(HP3456a.MathMode.off.value))
+            self.sendcmd(f"M{HP3456a.MathMode.off.value}")
         else:
             raise TypeError(
                 "Relative setting must be specified as a bool, "
@@ -570,7 +569,7 @@ class HP3456a(Multimeter):
             modevalue = ""
             units = 1
 
-        self.sendcmd("{}W1STNT3".format(modevalue))
+        self.sendcmd(f"{modevalue}W1STNT3")
 
         value = self.query("", size=-1)
         return float(value) * units
@@ -593,7 +592,7 @@ class HP3456a(Multimeter):
                 "HP3456a.Register, got {} "
                 "instead.".format(name)
             )
-        self.sendcmd("RE{}".format(name.value))
+        self.sendcmd(f"RE{name.value}")
         time.sleep(0.1)
         return float(self.query("", size=-1))
 
@@ -620,8 +619,8 @@ class HP3456a(Multimeter):
             HP3456a.Register.variance,
             HP3456a.Register.count,
         ]:
-            raise ValueError("register {} is read only".format(name))
-        self.sendcmd("W{}ST{}".format(value, name.value))
+            raise ValueError(f"register {name} is read only")
+        self.sendcmd(f"W{value}ST{name.value}")
         time.sleep(0.1)
 
     def trigger(self):

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """
 Provides the support for the Thorlabs LCC25 liquid crystal controller.
 
@@ -31,7 +30,7 @@ class LCC25(Instrument):
     """
 
     def __init__(self, filelike):
-        super(LCC25, self).__init__(filelike)
+        super().__init__(filelike)
         self.terminator = "\r"
         self.prompt = "> "
 
@@ -260,7 +259,7 @@ class LCC25(Instrument):
         """
         if slot not in range(1, 5):
             raise ValueError("Cannot set memory out of `[1,4]` range")
-        response = self.query("set={}".format(slot))
+        response = self.query(f"set={slot}")
         return check_cmd(response)
 
     def get_settings(self, slot):
@@ -275,7 +274,7 @@ class LCC25(Instrument):
         """
         if slot not in range(1, 5):
             raise ValueError("Cannot set memory out of `[1,4]` range")
-        response = self.query("get={}".format(slot))
+        response = self.query(f"get={slot}")
         return check_cmd(response)
 
     def test_mode(self):

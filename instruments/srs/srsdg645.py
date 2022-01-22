@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the SRS DG645 digital delay generator.
 """
@@ -59,7 +58,7 @@ class _SRSDG645Channel:
 
         :units: Assume seconds if no units given.
         """
-        resp = self._ddg.query("DLAY?{}".format(int(self._chan))).split(",")
+        resp = self._ddg.query(f"DLAY?{int(self._chan)}").split(",")
         return SRSDG645.Channels(int(resp[0])), u.Quantity(float(resp[1]), "s")
 
     @delay.setter
@@ -90,7 +89,7 @@ class SRSDG645(SCPIInstrument):
     """
 
     def __init__(self, filelike):
-        super(SRSDG645, self).__init__(filelike)
+        super().__init__(filelike)
 
         # This instrument requires stripping two characters.
         if isinstance(filelike, GPIBCommunicator):
@@ -192,7 +191,7 @@ class SRSDG645(SCPIInstrument):
             :type: :class:`SRSDG645.LevelPolarity`
             """
             return self._parent.LevelPolarity(
-                int(self._parent.query("LPOL? {}".format(self._idx)))
+                int(self._parent.query(f"LPOL? {self._idx}"))
             )
 
         @polarity.setter
@@ -203,7 +202,7 @@ class SRSDG645(SCPIInstrument):
                     "SRSDG645.LevelPolarity value, got {} "
                     "instead.".format(type(newval))
                 )
-            self._parent.sendcmd("LPOL {},{}".format(self._idx, int(newval.value)))
+            self._parent.sendcmd(f"LPOL {self._idx},{int(newval.value)}")
 
         @property
         def level_amplitude(self):
@@ -213,14 +212,12 @@ class SRSDG645(SCPIInstrument):
             :type: `float` or :class:`~pint.Quantity`
             :units: As specified, or :math:`\\text{V}` by default.
             """
-            return u.Quantity(
-                float(self._parent.query("LAMP? {}".format(self._idx))), "V"
-            )
+            return u.Quantity(float(self._parent.query(f"LAMP? {self._idx}")), "V")
 
         @level_amplitude.setter
         def level_amplitude(self, newval):
             newval = assume_units(newval, "V").magnitude
-            self._parent.sendcmd("LAMP {},{}".format(self._idx, newval))
+            self._parent.sendcmd(f"LAMP {self._idx},{newval}")
 
         @property
         def level_offset(self):
@@ -230,14 +227,12 @@ class SRSDG645(SCPIInstrument):
             :type: `float` or :class:`~pint.Quantity`
             :units: As specified, or :math:`\\text{V}` by default.
             """
-            return u.Quantity(
-                float(self._parent.query("LOFF? {}".format(self._idx))), "V"
-            )
+            return u.Quantity(float(self._parent.query(f"LOFF? {self._idx}")), "V")
 
         @level_offset.setter
         def level_offset(self, newval):
             newval = assume_units(newval, "V").magnitude
-            self._parent.sendcmd("LOFF {},{}".format(self._idx, newval))
+            self._parent.sendcmd(f"LOFF {self._idx},{newval}")
 
     # PROPERTIES #
 
@@ -282,7 +277,7 @@ class SRSDG645(SCPIInstrument):
     @display.setter
     def display(self, newval):
         # TODO: check types here.
-        self.sendcmd("DISP {0},{1}".format(*map(int, newval)))
+        self.sendcmd("DISP {},{}".format(*map(int, newval)))
 
     @property
     def enable_adv_triggering(self):
@@ -295,7 +290,7 @@ class SRSDG645(SCPIInstrument):
 
     @enable_adv_triggering.setter
     def enable_adv_triggering(self, newval):
-        self.sendcmd("ADVT {}".format(1 if newval else 0))
+        self.sendcmd(f"ADVT {1 if newval else 0}")
 
     @property
     def trigger_rate(self):
@@ -310,7 +305,7 @@ class SRSDG645(SCPIInstrument):
     @trigger_rate.setter
     def trigger_rate(self, newval):
         newval = assume_units(newval, u.Hz)
-        self.sendcmd("TRAT {}".format(newval.to(u.Hz).magnitude))
+        self.sendcmd(f"TRAT {newval.to(u.Hz).magnitude}")
 
     @property
     def trigger_source(self):
@@ -323,7 +318,7 @@ class SRSDG645(SCPIInstrument):
 
     @trigger_source.setter
     def trigger_source(self, newval):
-        self.sendcmd("TSRC {}".format(int(newval)))
+        self.sendcmd(f"TSRC {int(newval)}")
 
     @property
     def holdoff(self):
@@ -338,7 +333,7 @@ class SRSDG645(SCPIInstrument):
     @holdoff.setter
     def holdoff(self, newval):
         newval = assume_units(newval, u.s)
-        self.sendcmd("HOLD {}".format(newval.to(u.s).magnitude))
+        self.sendcmd(f"HOLD {newval.to(u.s).magnitude}")
 
     @property
     def enable_burst_mode(self):
@@ -351,7 +346,7 @@ class SRSDG645(SCPIInstrument):
 
     @enable_burst_mode.setter
     def enable_burst_mode(self, newval):
-        self.sendcmd("BURM {}".format(1 if newval else 0))
+        self.sendcmd(f"BURM {1 if newval else 0}")
 
     @property
     def enable_burst_t0_first(self):
@@ -367,7 +362,7 @@ class SRSDG645(SCPIInstrument):
 
     @enable_burst_t0_first.setter
     def enable_burst_t0_first(self, newval):
-        self.sendcmd("BURT {}".format(1 if newval else 0))
+        self.sendcmd(f"BURT {1 if newval else 0}")
 
     @property
     def burst_count(self):
@@ -380,7 +375,7 @@ class SRSDG645(SCPIInstrument):
 
     @burst_count.setter
     def burst_count(self, newval):
-        self.sendcmd("BURC {}".format(int(newval)))
+        self.sendcmd(f"BURC {int(newval)}")
 
     @property
     def burst_period(self):
@@ -396,7 +391,7 @@ class SRSDG645(SCPIInstrument):
     @burst_period.setter
     def burst_period(self, newval):
         newval = assume_units(newval, u.sec)
-        self.sendcmd("BURP {}".format(newval.to(u.sec).magnitude))
+        self.sendcmd(f"BURP {newval.to(u.sec).magnitude}")
 
     @property
     def burst_delay(self):
@@ -413,4 +408,4 @@ class SRSDG645(SCPIInstrument):
     @burst_delay.setter
     def burst_delay(self, newval):
         newval = assume_units(newval, u.s)
-        self.sendcmd("BURD {}".format(newval.to(u.sec).magnitude))
+        self.sendcmd(f"BURD {newval.to(u.sec).magnitude}")

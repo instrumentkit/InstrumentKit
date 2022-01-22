@@ -40,7 +40,7 @@ class Blu(Instrument):
     """
 
     def __init__(self, filelike):
-        super(Blu, self).__init__(filelike)
+        super().__init__(filelike)
 
         # use a terminator for blu, even though none required
         self.terminator = "\r\n"
@@ -138,7 +138,7 @@ class Blu(Instrument):
     @anticipation.setter
     def anticipation(self, newval):
         sendval = 1 if newval else 0
-        self.sendcmd("*ANT{}".format(sendval))
+        self.sendcmd(f"*ANT{sendval}")
 
     @property
     def auto_scale(self):
@@ -163,7 +163,7 @@ class Blu(Instrument):
     @auto_scale.setter
     def auto_scale(self, newval):
         sendval = 1 if newval else 0
-        self.sendcmd("*SAS{}".format(sendval))
+        self.sendcmd(f"*SAS{sendval}")
 
     @property
     def available_scales(self):
@@ -329,7 +329,7 @@ class Blu(Instrument):
 
     @scale.setter
     def scale(self, newval):
-        self.sendcmd("*SCS{}".format(newval.value))
+        self.sendcmd(f"*SCS{newval.value}")
 
     @property
     def single_shot_energy_mode(self):
@@ -353,7 +353,7 @@ class Blu(Instrument):
     def single_shot_energy_mode(self, newval):
         sendval = 1 if newval else 0  # set send value
         self._power_mode = False if newval else True  # set power mode
-        self.sendcmd("*SSE{}".format(sendval))
+        self.sendcmd(f"*SSE{sendval}")
 
     @property
     def trigger_level(self):
@@ -394,7 +394,7 @@ class Blu(Instrument):
         else:
             newval = str(round(newval, 2)).zfill(4)
 
-        self.sendcmd("*STL{}".format(newval))
+        self.sendcmd(f"*STL{newval}")
 
     @property
     def usb_state(self):
@@ -430,7 +430,7 @@ class Blu(Instrument):
     @user_multiplier.setter
     def user_multiplier(self, newval):
         sendval = _format_eight(newval)  # sendval: 8 characters long
-        self.sendcmd("*MUL{}".format(sendval))
+        self.sendcmd(f"*MUL{sendval}")
 
     @property
     def user_offset(self):
@@ -474,7 +474,7 @@ class Blu(Instrument):
                     "Value must be given in watts, " "joules, or unitless."
                 )
         sendval = _format_eight(newval)  # sendval: 8 characters long
-        self.sendcmd("*OFF{}".format(sendval))
+        self.sendcmd(f"*OFF{sendval}")
 
     @property
     def version(self):
@@ -519,7 +519,7 @@ class Blu(Instrument):
         if val >= 1000000 or val < 0:  # can only send 5 digits
             val = 0  # out of bound anyway
         val = str(int(val)).zfill(5)
-        self.sendcmd("*PWC{}".format(val))
+        self.sendcmd(f"*PWC{val}")
 
     @property
     def zero_offset(self):
@@ -645,9 +645,9 @@ def _format_eight(value):
     """
     if len(str(value)) > 8:
         if value < 0:
-            value = "{0:.2g}".format(value).zfill(8)  # make space for -
+            value = f"{value:.2g}".zfill(8)  # make space for -
         else:
-            value = "{0:.3g}".format(value).zfill(8)
+            value = f"{value:.3g}".zfill(8)
     else:
         value = str(value).zfill(8)
     return value

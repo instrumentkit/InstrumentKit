@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Defines a generic Thorlabs instrument to define some common functionality.
 """
@@ -26,7 +25,7 @@ class ThorLabsInstrument(Instrument):
     """
 
     def __init__(self, filelike):
-        super(ThorLabsInstrument, self).__init__(filelike)
+        super().__init__(filelike)
         self.terminator = ""
 
     def sendpacket(self, packet):
@@ -93,12 +92,12 @@ class ThorLabsInstrument(Instrument):
             if expect is None:
                 return None
             else:
-                raise IOError("Expected packet {}, got nothing instead.".format(expect))
+                raise OSError(f"Expected packet {expect}, got nothing instead.")
         pkt = _packets.ThorLabsPacket.unpack(resp)
         if expect is not None and pkt._message_id != expect:
             # TODO: make specialized subclass that can record the offending
             #       packet.
-            raise IOError(
+            raise OSError(
                 "APT returned message ID {}, expected {}".format(
                     pkt._message_id, expect
                 )

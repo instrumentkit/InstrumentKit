@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for the property factories
 """
@@ -21,7 +20,7 @@ from . import MockInstrument
 def test_rproperty_basic():
     class Mock(MockInstrument):
         def __init__(self):
-            super(Mock, self).__init__()
+            super().__init__()
             self._value = 0
 
         def mockget(self):
@@ -42,7 +41,7 @@ def test_rproperty_readonly_writing_fails():
 
         class Mock(MockInstrument):
             def __init__(self):
-                super(Mock, self).__init__()
+                super().__init__()
                 self._value = 0
 
             def mockset(self, newval):  # pragma: no cover
@@ -57,7 +56,7 @@ def test_rproperty_readonly_writing_fails():
 def test_rproperty_readonly_reading_passes():
     class Mock(MockInstrument):
         def __init__(self):
-            super(Mock, self).__init__()
+            super().__init__()
             self._value = 0
 
         def mockget(self):
@@ -74,7 +73,7 @@ def test_rproperty_writeonly_reading_fails():
 
         class Mock(MockInstrument):
             def __init__(self):
-                super(Mock, self).__init__()
+                super().__init__()
                 self._value = 0
 
             def mockget(self):  # pragma: no cover
@@ -89,7 +88,7 @@ def test_rproperty_writeonly_reading_fails():
 def test_rproperty_writeonly_writing_passes():
     class Mock(MockInstrument):
         def __init__(self):
-            super(Mock, self).__init__()
+            super().__init__()
             self._value = 0
 
         def mockset(self, newval):

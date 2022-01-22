@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides the support for the MingHe low-cost function generator.
 
@@ -27,7 +26,7 @@ class MHS5200(FunctionGenerator):
     """
 
     def __init__(self, filelike):
-        super(MHS5200, self).__init__(filelike)
+        super().__init__(filelike)
         self._channel_count = 2
         self.terminator = "\r\n"
 
@@ -58,7 +57,7 @@ class MHS5200(FunctionGenerator):
             self._count = 0
 
         def _get_amplitude_(self):
-            query = ":r{0}a".format(self._chan)
+            query = f":r{self._chan}a"
             response = self._mhs.query(query)
             return float(response.replace(query, "")) / 100.0, self._mhs.VoltageMode.rms
 
@@ -71,7 +70,7 @@ class MHS5200(FunctionGenerator):
             elif units == self._mhs.VoltageMode.dBm:
                 raise NotImplementedError("Decibel units are not supported.")
             magnitude *= 100
-            query = ":s{0}a{1}".format(self._chan, int(magnitude))
+            query = f":s{self._chan}a{int(magnitude)}"
             self._mhs.sendcmd(query)
 
         @property
@@ -82,14 +81,14 @@ class MHS5200(FunctionGenerator):
             :units: A fraction
             :type: `float`
             """
-            query = ":r{0}d".format(self._chan)
+            query = f":r{self._chan}d"
             response = self._mhs.query(query)
             duty = float(response.replace(query, "")) / 10.0
             return duty
 
         @duty_cycle.setter
         def duty_cycle(self, new_val):
-            query = ":s{0}d{1}".format(self._chan, int(100.0 * new_val))
+            query = f":s{self._chan}d{int(100.0 * new_val)}"
             self._mhs.sendcmd(query)
 
         @property
@@ -99,12 +98,12 @@ class MHS5200(FunctionGenerator):
 
             :type: `bool`
             """
-            query = ":r{0}b".format(self._chan)
+            query = f":r{self._chan}b"
             return int(self._mhs.query(query).replace(query, "").replace("\r", ""))
 
         @enable.setter
         def enable(self, newval):
-            query = ":s{0}b{1}".format(self._chan, int(newval))
+            query = f":s{self._chan}b{int(newval)}"
             self._mhs.sendcmd(query)
 
         @property
@@ -116,7 +115,7 @@ class MHS5200(FunctionGenerator):
             of units hertz.
             :type: `~pint.Quantity`
             """
-            query = ":r{0}f".format(self._chan)
+            query = f":r{self._chan}f"
             response = self._mhs.query(query)
             freq = float(response.replace(query, "")) * u.Hz
             return freq / 100.0
@@ -124,7 +123,7 @@ class MHS5200(FunctionGenerator):
         @frequency.setter
         def frequency(self, new_val):
             new_val = assume_units(new_val, u.Hz).to(u.Hz).magnitude * 100.0
-            query = ":s{0}f{1}".format(self._chan, int(new_val))
+            query = f":s{self._chan}f{int(new_val)}"
             self._mhs.sendcmd(query)
 
         @property
@@ -137,14 +136,14 @@ class MHS5200(FunctionGenerator):
             :type: `float`
             """
             # need to convert
-            query = ":r{0}o".format(self._chan)
+            query = f":r{self._chan}o"
             response = self._mhs.query(query)
             return int(response.replace(query, "")) / 100.0 - 1.20
 
         @offset.setter
         def offset(self, new_val):
             new_val = int(new_val * 100) + 120
-            query = ":s{0}o{1}".format(self._chan, new_val)
+            query = f":s{self._chan}o{new_val}"
             self._mhs.sendcmd(query)
 
         @property
@@ -157,14 +156,14 @@ class MHS5200(FunctionGenerator):
             :type: `~pint.Quantity`
             """
             # need to convert
-            query = ":r{0}p".format(self._chan)
+            query = f":r{self._chan}p"
             response = self._mhs.query(query)
             return int(response.replace(query, "")) * u.deg
 
         @phase.setter
         def phase(self, new_val):
             new_val = assume_units(new_val, u.deg).to("deg").magnitude
-            query = ":s{0}p{1}".format(self._chan, int(new_val))
+            query = f":s{self._chan}p{int(new_val)}"
             self._mhs.sendcmd(query)
 
         @property
@@ -174,13 +173,13 @@ class MHS5200(FunctionGenerator):
 
             :type: `MHS5200.Function`
             """
-            query = ":r{0}w".format(self._chan)
+            query = f":r{self._chan}w"
             response = self._mhs.query(query).replace(query, "")
             return self._mhs.Function(int(response))
 
         @function.setter
         def function(self, new_val):
-            query = ":s{0}w{1}".format(self._chan, self._mhs.Function(new_val).value)
+            query = f":s{self._chan}w{self._mhs.Function(new_val).value}"
             self._mhs.sendcmd(query)
 
     class Function(Enum):

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the Keithley 6220 constant current supply
 """
@@ -38,7 +37,7 @@ def test_voltage():
 def test_current():
     with expected_protocol(
         ik.keithley.Keithley6220,
-        ["SOUR:CURR?", "SOUR:CURR {:e}".format(0.05)],
+        ["SOUR:CURR?", f"SOUR:CURR {0.05:e}"],
         [
             "0.1",
         ],

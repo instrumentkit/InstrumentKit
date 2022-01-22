@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Tektronix TDS 224 oscilloscope
 """
@@ -34,7 +33,7 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
     """
 
     def __init__(self, tek, name):
-        super(_TekTDS224DataSource, self).__init__(tek, name)
+        super().__init__(tek, name)
         self._tek = self._parent
 
     @property
@@ -123,7 +122,7 @@ class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
     """
 
     def __init__(self, parent, idx):
-        super(_TekTDS224Channel, self).__init__(parent, f"CH{idx + 1}")
+        super().__init__(parent, f"CH{idx + 1}")
         self._idx = idx + 1
 
     @property
@@ -160,7 +159,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
     """
 
     def __init__(self, filelike):
-        super(TekTDS224, self).__init__(filelike)
+        super().__init__(filelike)
         self._file.timeout = 3 * u.second
 
     # ENUMS #
