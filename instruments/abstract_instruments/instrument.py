@@ -16,9 +16,7 @@ import urllib.parse as parse
 from serial import SerialException
 from serial.tools.list_ports import comports
 import pyvisa
-import usb
 import usb.core
-import usb.util
 
 from instruments.abstract_instruments.comm import (
     SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
@@ -674,39 +672,16 @@ class Instrument:
             method.
 
         :param str vid: Vendor ID of the USB device to open.
-        :param int pid: Product ID of the USB device to open.
+        :param str pid: Product ID of the USB device to open.
 
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
         """
-        # pylint: disable=no-member
         dev = usb.core.find(idVendor=vid, idProduct=pid)
         if dev is None:
             raise IOError("No such device found.")
 
-        # Use the default configuration offered by the device.
-        dev.set_configuration()
-
-        # Copied from the tutorial at:
-        #     http://pyusb.sourceforge.net/docs/1.0/tutorial.html
-        cfg = dev.get_active_configuration()
-        interface_number = cfg[(0, 0)].bInterfaceNumber
-        alternate_setting = usb.control.get_interface(dev, interface_number)
-        intf = usb.util.find_descriptor(
-            cfg, bInterfaceNumber=interface_number,
-            bAlternateSetting=alternate_setting
-        )
-
-        ep = usb.util.find_descriptor(
-            intf,
-            custom_match=lambda e:
-            usb.util.endpoint_direction(e.bEndpointAddress) ==
-            usb.util.ENDPOINT_OUT
-        )
-        if ep is None:
-            raise IOError("USB descriptor not found.")
-
-        return cls(USBCommunicator(ep))
+        return cls(USBCommunicator(dev))
 
     @classmethod
     def open_file(cls, filename):

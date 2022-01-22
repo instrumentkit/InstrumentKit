@@ -346,46 +346,23 @@ def test_instrument_open_vxi11(mock_vxi11_comm):
     mock_vxi11_comm.assert_called_with("string", 1, key1="value")
 
 
+@mock.patch("instruments.abstract_instruments.instrument.USBCommunicator")
 @mock.patch("instruments.abstract_instruments.instrument.usb")
-def test_instrument_open_usb(mock_usb):
+def test_instrument_open_usb(mock_usb, mock_usb_comm):
     """Open USB device."""
-    # mock some behavior
-    mock_usb.core.find.return_value.__class__ = usb.core.Device  # dev
-    mock_usb.core.find().get_active_configuration.return_value.__class__ = (
-        usb.core.Configuration
-    )
+    mock_usb.core.find.return_value.__class__ = usb.core.Device
+    mock_usb_comm.return_value.__class__ = USBCommunicator
 
-    # shortcuts for asserting calls
-    dev = mock_usb.core.find()
-    cfg = dev.get_active_configuration()
-    interface_number = cfg[(0, 0)].bInterfaceNumber
-    alternate_setting = mock_usb.control.get_interface(
-        dev, cfg[(0, 0)].bInterfaceNumber
-    )
+    # fake instrument
+    vid = "0x1000"
+    pid = "0x1000"
+    dev = mock_usb.core.find(idVendor=vid, idProduct=pid)
 
     # call instrument
-    inst = ik.Instrument.open_usb("0x1000", 0x1000)
+    inst = ik.Instrument.open_usb(vid, pid)
 
-    # assert calls according to manual
-    dev.set_configuration.assert_called()  # check default configuration
-    dev.get_active_configuration.assert_called()  # get active configuration
-    mock_usb.control.get_interface.assert_called_with(dev, interface_number)
-    mock_usb.util.find_descriptor.assert_any_call(
-        cfg,
-        bInterfaceNumber=interface_number,
-        bAlternateSetting=alternate_setting
-    )
-    # check the first argument of the `ep =` call
-    assert mock_usb.util.find_descriptor.call_args_list[1][0][0] == (
-        mock_usb.util.find_descriptor(
-            cfg,
-            bInterfaceNumber=interface_number,
-            bAlternateSetting=alternate_setting
-        )
-    )
-
-    # assert instrument of correct class
     assert isinstance(inst._file, USBCommunicator)
+    mock_usb_comm.assert_called_with(dev)
 
 
 @mock.patch("instruments.abstract_instruments.instrument.usb")
@@ -396,17 +373,6 @@ def test_instrument_open_usb_no_device(mock_usb):
         _ = ik.Instrument.open_usb(0x1000, 0x1000)
     err_msg = err.value.args[0]
     assert err_msg == "No such device found."
-
-
-@mock.patch("instruments.abstract_instruments.instrument.usb")
-def test_instrument_open_usb_ep_none(mock_usb):
-    """Raise IOError if endpoint matching returns None."""
-    mock_usb.util.find_descriptor.return_value = None
-
-    with pytest.raises(IOError) as err:
-        _ = ik.Instrument.open_usb(0x1000, 0x1000)
-    err_msg = err.value.args[0]
-    assert err_msg == "USB descriptor not found."
 
 
 @mock.patch("instruments.abstract_instruments.instrument.USBTMCCommunicator")
