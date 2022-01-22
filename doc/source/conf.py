@@ -48,7 +48,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "InstrumentKit Library"
-copyright = "2013-2020, Steven Casagrande"
+copyright = "2013-2022, Steven Casagrande"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

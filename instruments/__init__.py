@@ -51,4 +51,4 @@ __author__ = "Steven Casagrande"
 __email__ = "scasagrande@galvant.ca"
 
 __license__ = "AGPLv3"
-__copyright__ = "Copyright (c) 2012-2020 Steven Casagrande"
+__copyright__ = "Copyright (c) 2012-2022 Steven Casagrande"
