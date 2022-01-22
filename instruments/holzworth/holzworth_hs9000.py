@@ -9,12 +9,12 @@ Provides support for the Holzworth HS9000
 
 from instruments.units import ureg as u
 
-from instruments.abstract_instruments.signal_generator import (
-    SignalGenerator,
-    SGChannel
-)
+from instruments.abstract_instruments.signal_generator import SignalGenerator, SGChannel
 from instruments.util_fns import (
-    ProxyList, split_unit_str, bounded_unitful_property, bool_property
+    ProxyList,
+    split_unit_str,
+    bounded_unitful_property,
+    bool_property,
 )
 
 # CLASSES #####################################################################
@@ -49,8 +49,7 @@ class HS9000(SignalGenerator):
             # Some channel names, like "REF", are special and are preserved
             # as strs.
             self._ch_name = (
-                idx_chan if isinstance(idx_chan, str)
-                else "CH{}".format(idx_chan + 1)
+                idx_chan if isinstance(idx_chan, str) else "CH{}".format(idx_chan + 1)
             )
 
         # PRIVATE METHODS #
@@ -143,7 +142,7 @@ class HS9000(SignalGenerator):
 
             :type: `~pint.Quantity`
             :units: As specified or assumed to be of units GHz
-            """
+            """,
         )
         power, power_min, power_max = bounded_unitful_property(
             "PWR",
@@ -162,7 +161,7 @@ class HS9000(SignalGenerator):
 
             :type: `~pint.Quantity`
             :units: `instruments.units.dBm`
-            """
+            """,
         )
         phase, phase_min, phase_max = bounded_unitful_property(
             "PHASE",
@@ -181,7 +180,7 @@ class HS9000(SignalGenerator):
 
             :type: `~pint.Quantity`
             :units: As specified or assumed to be of units degrees
-            """
+            """,
         )
 
         output = bool_property(
@@ -201,7 +200,7 @@ class HS9000(SignalGenerator):
             >>> hs.channel[0].output = True
 
             :type: `bool`
-            """
+            """,
         )
 
     # PROXY LIST ##
@@ -221,8 +220,8 @@ class HS9000(SignalGenerator):
         return [
             (
                 int(ch_name.replace("CH", "")) - 1
-                if ch_name.startswith('CH') else
-                ch_name.strip()
+                if ch_name.startswith("CH")
+                else ch_name.strip()
             )
             for ch_name in self.query(":ATTACH?").split(":")
             if ch_name

@@ -35,8 +35,8 @@ class Keithley195(Multimeter):
 
     def __init__(self, filelike):
         super(Keithley195, self).__init__(filelike)
-        self.sendcmd('YX')  # Removes the termination CRLF
-        self.sendcmd('G1DX')  # Disable returning prefix and suffix
+        self.sendcmd("YX")  # Removes the termination CRLF
+        self.sendcmd("G1DX")  # Disable returning prefix and suffix
 
     # ENUMS ##
 
@@ -44,6 +44,7 @@ class Keithley195(Multimeter):
         """
         Enum containing valid measurement modes for the Keithley 195
         """
+
         voltage_dc = 0
         voltage_ac = 1
         resistance = 2
@@ -54,6 +55,7 @@ class Keithley195(Multimeter):
         """
         Enum containing valid trigger modes for the Keithley 195
         """
+
         talk_continuous = 0
         talk_one_shot = 1
         get_continuous = 2
@@ -67,6 +69,7 @@ class Keithley195(Multimeter):
         """
         Enum containing valid range settings for the Keithley 195
         """
+
         voltage_dc = (20e-3, 200e-3, 2, 20, 200, 1000)
         voltage_ac = (20e-3, 200e-3, 2, 20, 200, 700)
         current_dc = (20e-6, 200e-6, 2e-3, 20e-3, 200e-3, 2)
@@ -91,16 +94,18 @@ class Keithley195(Multimeter):
 
         :type: `Keithley195.Mode`
         """
-        return self.parse_status_word(self.get_status_word())['mode']
+        return self.parse_status_word(self.get_status_word())["mode"]
 
     @mode.setter
     def mode(self, newval):
         if isinstance(newval, str):
             newval = self.Mode[newval]
         if not isinstance(newval, Keithley195.Mode):
-            raise TypeError("Mode must be specified as a Keithley195.Mode "
-                            "value, got {} instead.".format(newval))
-        self.sendcmd('F{}DX'.format(newval.value))
+            raise TypeError(
+                "Mode must be specified as a Keithley195.Mode "
+                "value, got {} instead.".format(newval)
+            )
+        self.sendcmd("F{}DX".format(newval.value))
 
     @property
     def trigger_mode(self):
@@ -127,17 +132,19 @@ class Keithley195(Multimeter):
 
         :type: `Keithley195.TriggerMode`
         """
-        return self.parse_status_word(self.get_status_word())['trigger']
+        return self.parse_status_word(self.get_status_word())["trigger"]
 
     @trigger_mode.setter
     def trigger_mode(self, newval):
         if isinstance(newval, str):
             newval = Keithley195.TriggerMode[newval]
         if not isinstance(newval, Keithley195.TriggerMode):
-            raise TypeError('Drive must be specified as a '
-                            'Keithley195.TriggerMode, got {} '
-                            'instead.'.format(newval))
-        self.sendcmd('T{}X'.format(newval.value))
+            raise TypeError(
+                "Drive must be specified as a "
+                "Keithley195.TriggerMode, got {} "
+                "instead.".format(newval)
+            )
+        self.sendcmd("T{}X".format(newval.value))
 
     @property
     def relative(self):
@@ -159,13 +166,13 @@ class Keithley195(Multimeter):
 
         :type: `bool`
         """
-        return self.parse_status_word(self.get_status_word())['relative']
+        return self.parse_status_word(self.get_status_word())["relative"]
 
     @relative.setter
     def relative(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError('Relative mode must be a boolean.')
-        self.sendcmd('Z{}DX'.format(int(newval)))
+            raise TypeError("Relative mode must be a boolean.")
+        self.sendcmd("Z{}DX".format(int(newval)))
 
     @property
     def input_range(self):
@@ -189,9 +196,9 @@ class Keithley195(Multimeter):
 
         :rtype: `~pint.Quantity` or `str`
         """
-        index = self.parse_status_word(self.get_status_word())['range']
+        index = self.parse_status_word(self.get_status_word())["range"]
         if index == 0:
-            return 'auto'
+            return "auto"
 
         mode = self.mode
         value = Keithley195.ValidRange[mode.name].value[index - 1]
@@ -201,12 +208,14 @@ class Keithley195(Multimeter):
     @input_range.setter
     def input_range(self, newval):
         if isinstance(newval, str):
-            if newval.lower() == 'auto':
-                self.sendcmd('R0DX')
+            if newval.lower() == "auto":
+                self.sendcmd("R0DX")
                 return
             else:
-                raise ValueError('Only "auto" is acceptable when specifying '
-                                 'the input range as a string.')
+                raise ValueError(
+                    'Only "auto" is acceptable when specifying '
+                    "the input range as a string."
+                )
         if isinstance(newval, u.Quantity):
             newval = float(newval.magnitude)
 
@@ -216,12 +225,15 @@ class Keithley195(Multimeter):
             if newval in valid:
                 newval = valid.index(newval) + 1
             else:
-                raise ValueError('Valid range settings for mode {} '
-                                 'are: {}'.format(mode, valid))
+                raise ValueError(
+                    "Valid range settings for mode {} " "are: {}".format(mode, valid)
+                )
         else:
-            raise TypeError('Range setting must be specified as a float, int, '
-                            'or the string "auto", got {}'.format(type(newval)))
-        self.sendcmd('R{}DX'.format(newval))
+            raise TypeError(
+                "Range setting must be specified as a float, int, "
+                'or the string "auto", got {}'.format(type(newval))
+            )
+        self.sendcmd("R{}DX".format(newval))
 
     # METHODS #
 
@@ -261,7 +273,7 @@ class Keithley195(Multimeter):
                 time.sleep(2)  # Gives the instrument a moment to settle
         else:
             mode = self.mode
-        value = self.query('')
+        value = self.query("")
         return float(value) * UNITS2[mode]
 
     def get_status_word(self):
@@ -275,7 +287,7 @@ class Keithley195(Multimeter):
         :return: String containing setting information of the instrument
         :rtype: `str`
         """
-        self.sendcmd('U0DX')
+        self.sendcmd("U0DX")
         return self._file.read_raw()
 
     @staticmethod
@@ -294,29 +306,47 @@ class Keithley195(Multimeter):
         :return: A parsed version of the status word as a Python dictionary
         :rtype: `dict`
         """
-        if statusword[:3] != b'195':
-            raise ValueError('Status word starts with wrong prefix, expected '
-                             '195, got {}'.format(statusword))
+        if statusword[:3] != b"195":
+            raise ValueError(
+                "Status word starts with wrong prefix, expected "
+                "195, got {}".format(statusword)
+            )
 
-        (trigger, function, input_range, eoi, buf, rate, srqmode, relative,
-         delay, multiplex, selftest, data_fmt, data_ctrl, filter_mode,
-         terminator) = struct.unpack('@4c2s3c2s5c2s', statusword[4:])
+        (
+            trigger,
+            function,
+            input_range,
+            eoi,
+            buf,
+            rate,
+            srqmode,
+            relative,
+            delay,
+            multiplex,
+            selftest,
+            data_fmt,
+            data_ctrl,
+            filter_mode,
+            terminator,
+        ) = struct.unpack("@4c2s3c2s5c2s", statusword[4:])
 
-        return {'trigger': Keithley195.TriggerMode(int(trigger)),
-                'mode': Keithley195.Mode(int(function)),
-                'range': int(input_range),
-                'eoi': (eoi == b'1'),
-                'buffer': buf,
-                'rate': rate,
-                'srqmode': srqmode,
-                'relative': (relative == b'1'),
-                'delay': delay,
-                'multiplex': (multiplex == b'1'),
-                'selftest': selftest,
-                'dataformat': data_fmt,
-                'datacontrol': data_ctrl,
-                'filter': filter_mode,
-                'terminator': terminator}
+        return {
+            "trigger": Keithley195.TriggerMode(int(trigger)),
+            "mode": Keithley195.Mode(int(function)),
+            "range": int(input_range),
+            "eoi": (eoi == b"1"),
+            "buffer": buf,
+            "rate": rate,
+            "srqmode": srqmode,
+            "relative": (relative == b"1"),
+            "delay": delay,
+            "multiplex": (multiplex == b"1"),
+            "selftest": selftest,
+            "dataformat": data_fmt,
+            "datacontrol": data_ctrl,
+            "filter": filter_mode,
+            "terminator": terminator,
+        }
 
     def trigger(self):
         """
@@ -325,7 +355,7 @@ class Keithley195(Multimeter):
         Do note that this is different from the standard SCPI ``*TRG`` command
         (which is not supported by the 195 anyways).
         """
-        self.sendcmd('X')
+        self.sendcmd("X")
 
     def auto_range(self):
         """
@@ -333,22 +363,23 @@ class Keithley195(Multimeter):
 
         This is the same as calling ``Keithley195.input_range = 'auto'``
         """
-        self.input_range = 'auto'
+        self.input_range = "auto"
+
 
 # UNITS #######################################################################
 
 UNITS = {
-    'DCV':  u.volt,
-    'ACV':  u.volt,
-    'ACA':  u.amp,
-    'DCA':  u.amp,
-    'OHM':  u.ohm,
+    "DCV": u.volt,
+    "ACV": u.volt,
+    "ACA": u.amp,
+    "DCA": u.amp,
+    "OHM": u.ohm,
 }
 
 UNITS2 = {
-    Keithley195.Mode.voltage_dc:  u.volt,
-    Keithley195.Mode.voltage_ac:  u.volt,
-    Keithley195.Mode.current_dc:  u.amp,
-    Keithley195.Mode.current_ac:  u.amp,
-    Keithley195.Mode.resistance:  u.ohm,
+    Keithley195.Mode.voltage_dc: u.volt,
+    Keithley195.Mode.voltage_ac: u.volt,
+    Keithley195.Mode.current_dc: u.amp,
+    Keithley195.Mode.current_ac: u.amp,
+    Keithley195.Mode.resistance: u.ohm,
 }

@@ -35,38 +35,52 @@ class Keithley6514(SCPIInstrument, Electrometer):
         """
         Enum containing valid measurement modes for the Keithley 6514
         """
-        voltage = 'VOLT:DC'
-        current = 'CURR:DC'
-        resistance = 'RES'
-        charge = 'CHAR'
+
+        voltage = "VOLT:DC"
+        current = "CURR:DC"
+        resistance = "RES"
+        charge = "CHAR"
 
     class TriggerMode(Enum):
         """
         Enum containing valid trigger modes for the Keithley 6514
         """
-        immediate = 'IMM'
-        tlink = 'TLINK'
+
+        immediate = "IMM"
+        tlink = "TLINK"
 
     class ArmSource(Enum):
         """
         Enum containing valid trigger arming sources for the Keithley 6514
         """
-        immediate = 'IMM'
-        timer = 'TIM'
-        bus = 'BUS'
-        tlink = 'TLIN'
-        stest = 'STES'
-        pstest = 'PST'
-        nstest = 'NST'
-        manual = 'MAN'
+
+        immediate = "IMM"
+        timer = "TIM"
+        bus = "BUS"
+        tlink = "TLIN"
+        stest = "STES"
+        pstest = "PST"
+        nstest = "NST"
+        manual = "MAN"
 
     class ValidRange(Enum):
         """
         Enum containing valid measurement ranges for the Keithley 6514
         """
+
         voltage = (2, 20, 200)
-        current = (20e-12, 200e-12, 2e-9, 20e-9,
-                   200e-9, 2e-6, 20e-6, 200e-6, 2e-3, 20e-3)
+        current = (
+            20e-12,
+            200e-12,
+            2e-9,
+            20e-9,
+            200e-9,
+            2e-6,
+            20e-6,
+            200e-6,
+            2e-3,
+            20e-3,
+        )
         resistance = (2e3, 20e3, 200e3, 2e6, 20e6, 200e6, 2e9, 20e9, 200e9)
         charge = (20e-9, 200e-9, 2e-6, 20e-6)
 
@@ -76,7 +90,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
         Mode.voltage: u.volt,
         Mode.current: u.amp,
         Mode.resistance: u.ohm,
-        Mode.charge: u.coulomb
+        Mode.charge: u.coulomb,
     }
 
     # PRIVATE METHODS #
@@ -91,11 +105,11 @@ class Keithley6514(SCPIInstrument, Electrometer):
         elif mode == self.Mode.charge:
             return self.ValidRange.charge
         else:
-            raise ValueError('Invalid mode.')
+            raise ValueError("Invalid mode.")
 
     def _parse_measurement(self, ascii):
         # TODO: don't assume ASCII data format # pylint: disable=fixme
-        vals = list(map(float, ascii.split(',')))
+        vals = list(map(float, ascii.split(",")))
         reading = vals[0] * self.unit
         timestamp = vals[1]
         status = vals[2]
@@ -105,48 +119,48 @@ class Keithley6514(SCPIInstrument, Electrometer):
 
     # The mode values have quotes around them for some annoying reason.
     mode = enum_property(
-        'FUNCTION',
+        "FUNCTION",
         Mode,
         input_decoration=lambda val: val[1:-1],
         # output_decoration=lambda val: '"{}"'.format(val),
         set_fmt='{} "{}"',
         doc="""
         Gets/sets the measurement mode of the Keithley 6514.
-        """
+        """,
     )
 
     trigger_mode = enum_property(
-        'TRIGGER:SOURCE',
+        "TRIGGER:SOURCE",
         TriggerMode,
         doc="""
         Gets/sets the trigger mode of the Keithley 6514.
-        """
+        """,
     )
 
     arm_source = enum_property(
-        'ARM:SOURCE',
+        "ARM:SOURCE",
         ArmSource,
         doc="""
         Gets/sets the arm source of the Keithley 6514.
-        """
+        """,
     )
 
     zero_check = bool_property(
-        'SYST:ZCH',
-        inst_true='ON',
-        inst_false='OFF',
+        "SYST:ZCH",
+        inst_true="ON",
+        inst_false="OFF",
         doc="""
         Gets/sets the zero checking status of the Keithley 6514.
-        """
+        """,
     )
 
     zero_correct = bool_property(
-        'SYST:ZCOR',
-        inst_true='ON',
-        inst_false='OFF',
+        "SYST:ZCOR",
+        inst_true="ON",
+        inst_false="OFF",
         doc="""
         Gets/sets the zero correcting status of the Keithley 6514.
-        """
+        """,
     )
 
     @property
@@ -161,14 +175,13 @@ class Keithley6514(SCPIInstrument, Electrometer):
         :type: `bool`
         """
         # pylint: disable=no-member
-        out = self.query('{}:RANGE:AUTO?'.format(self.mode.value))
-        return True if out == '1' else False
+        out = self.query("{}:RANGE:AUTO?".format(self.mode.value))
+        return True if out == "1" else False
 
     @auto_range.setter
     def auto_range(self, newval):
         # pylint: disable=no-member
-        self.sendcmd('{}:RANGE:AUTO {}'.format(
-            self.mode.value, '1' if newval else '0'))
+        self.sendcmd("{}:RANGE:AUTO {}".format(self.mode.value, "1" if newval else "0"))
 
     @property
     def input_range(self):
@@ -179,7 +192,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
         """
         # pylint: disable=no-member
         mode = self.mode
-        out = self.query('{}:RANGE:UPPER?'.format(mode.value))
+        out = self.query("{}:RANGE:UPPER?".format(mode.value))
         return float(out) * self._MODE_UNITS[mode]
 
     @input_range.setter
@@ -188,9 +201,8 @@ class Keithley6514(SCPIInstrument, Electrometer):
         mode = self.mode
         val = newval.to(self._MODE_UNITS[mode]).magnitude
         if val not in self._valid_range(mode).value:
-            raise ValueError(
-                'Unexpected range limit for currently selected mode.')
-        self.sendcmd('{}:RANGE:UPPER {:e}'.format(mode.value, val))
+            raise ValueError("Unexpected range limit for currently selected mode.")
+        self.sendcmd("{}:RANGE:UPPER {:e}".format(mode.value, val))
 
     # METHODS ##
 
@@ -207,7 +219,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
             - Disable buffer operation
             - Enable autozero
         """
-        self.sendcmd('CONF:{}'.format(mode.value))
+        self.sendcmd("CONF:{}".format(mode.value))
 
     def fetch(self):
         """
@@ -215,7 +227,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
         (So does not issue a trigger)
         Returns a tuple of the form (reading, timestamp)
         """
-        raw = self.query('FETC?')
+        raw = self.query("FETC?")
         reading, timestamp, _ = self._parse_measurement(raw)
         return reading, timestamp
 
@@ -224,6 +236,6 @@ class Keithley6514(SCPIInstrument, Electrometer):
         Trigger and acquire readings using the current mode.
         Returns a tuple of the form (reading, timestamp)
         """
-        raw = self.query('READ?')
+        raw = self.query("READ?")
         reading, timestamp, _ = self._parse_measurement(raw)
         return reading, timestamp

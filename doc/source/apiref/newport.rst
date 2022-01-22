@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.newport
-    
+
 =======
 Newport
 =======
@@ -24,11 +24,11 @@ Newport
 .. autoclass:: NewportESP301
     :members:
     :undoc-members:
-    
+
 .. autoclass:: NewportESP301Axis
     :members:
     :undoc-members:
-    
+
 .. autoclass:: NewportESP301HomeSearchMode
     :members:
     :undoc-members:

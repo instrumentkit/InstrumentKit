@@ -11,7 +11,7 @@ Originally contributed by Wil Langford (wil.langford+instrumentkit@gmail.com)
 
 from instruments.units import ureg as u
 
-from instruments.abstract_instruments import (PowerSupply, PowerSupplyChannel)
+from instruments.abstract_instruments import PowerSupply, PowerSupplyChannel
 from instruments.util_fns import unitful_property, bool_property
 
 
@@ -70,7 +70,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     current = unitful_property(
@@ -83,7 +83,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     voltage_sense = unitful_property(
@@ -95,7 +95,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
         :units: :math:`\\text{V}` (volts)
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     current_sense = unitful_property(
@@ -107,7 +107,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
         :units: :math:`\\text{A}` (amps)
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     overvoltage = unitful_property(
@@ -120,7 +120,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     overcurrent = bool_property(
@@ -133,7 +133,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         This is a toggle setting. It is either on or off.
 
         :type: `bool`
-        """
+        """,
     )
 
     output = bool_property(
@@ -147,7 +147,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         while False will turn it off.
 
         :type: `bool`
-        """
+        """,
     )
 
     display_textmode = bool_property(
@@ -164,7 +164,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         .. seealso:: `~HP6652a.display_text()`
 
         :type: `bool`
-        """
+        """,
     )
 
     @property
@@ -176,8 +176,8 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         :rtype: `str`
         """
         idn_string = self.query("*IDN?")
-        idn_list = idn_string.split(',')
-        return ' '.join(idn_list[:2])
+        idn_list = idn_string.split(",")
+        return " ".join(idn_list[:2])
 
     @property
     def mode(self):
@@ -199,7 +199,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         """
         Reset overvoltage and overcurrent errors to resume operation.
         """
-        self.sendcmd('OUTP:PROT:CLE')
+        self.sendcmd("OUTP:PROT:CLE")
 
     def display_text(self, text_to_display):
         """
@@ -248,4 +248,4 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
         :rtype: 'tuple' of length 1 containing a reference back to the parent
             HP6652a object.
         """
-        return self,
+        return (self,)

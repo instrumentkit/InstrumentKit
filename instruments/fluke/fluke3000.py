@@ -111,6 +111,7 @@ class Fluke3000(Multimeter):
         """
         Enum containing the supported modules serial numbers.
         """
+
         #: Multimeter
         m3000 = 46333030304643
         #: Temperature module
@@ -120,6 +121,7 @@ class Fluke3000(Multimeter):
         """
         Enum containing the supported mode codes.
         """
+
         #: AC Voltage
         voltage_ac = "01"
         #: DC Voltage
@@ -171,7 +173,9 @@ class Fluke3000(Multimeter):
 
         :rtype: `str`
         """
-        raise AttributeError("The `Fluke3000` only supports single trigger when queried")
+        raise AttributeError(
+            "The `Fluke3000` only supports single trigger when queried"
+        )
 
     @property
     def relative(self):
@@ -182,7 +186,9 @@ class Fluke3000(Multimeter):
 
         :rtype: `bool`
         """
-        raise AttributeError("The `Fluke3000` FC does not support relative measurements")
+        raise AttributeError(
+            "The `Fluke3000` FC does not support relative measurements"
+        )
 
     @property
     def input_range(self):
@@ -193,7 +199,7 @@ class Fluke3000(Multimeter):
 
         :rtype: `str`
         """
-        raise AttributeError('The `Fluke3000` FC is an autoranging only multimeter')
+        raise AttributeError("The `Fluke3000` FC is an autoranging only multimeter")
 
     # METHODS #
 
@@ -202,14 +208,16 @@ class Fluke3000(Multimeter):
         Connect to available modules and returns a dictionary
         of the modules found and their port ID.
         """
-        self.scan()                        # Look for connected devices
+        self.scan()  # Look for connected devices
         if not self.positions:
-            self.reset()                   # Reset the PC3000 dongle
-            timeout = self.timeout         # Store default timeout
-            self.timeout = 30 * u.second  # PC 3000 can take a while to bind with wireless devices
-            self.query_lines("rfdis", 3)   # Discover available modules and bind them
-            self.timeout = timeout         # Restore default timeout
-            self.scan()                    # Look for connected devices
+            self.reset()  # Reset the PC3000 dongle
+            timeout = self.timeout  # Store default timeout
+            self.timeout = (
+                30 * u.second
+            )  # PC 3000 can take a while to bind with wireless devices
+            self.query_lines("rfdis", 3)  # Discover available modules and bind them
+            self.timeout = timeout  # Restore default timeout
+            self.scan()  # Look for connected devices
 
         if not self.positions:
             raise ValueError("No `Fluke3000` modules available")
@@ -244,8 +252,8 @@ class Fluke3000(Multimeter):
         """
         Resets the device and unbinds all modules.
         """
-        self.query_lines("ri", 3)       # Resets the device
-        self.query_lines("rfsm 1", 2)   # Turns comms on
+        self.query_lines("ri", 3)  # Resets the device
+        self.query_lines("rfsm 1", 2)  # Turns comms on
 
     def read_lines(self, nlines=1):
         """
@@ -292,7 +300,7 @@ class Fluke3000(Multimeter):
         timeout = self.timeout
         self.timeout = 0.1 * u.second
         init_time = time.time()
-        while time.time() - init_time < 1.:
+        while time.time() - init_time < 1.0:
             try:
                 self.read()
             except OSError:
@@ -320,10 +328,10 @@ class Fluke3000(Multimeter):
             raise ValueError(f"Device necessary to measure {mode} is not available")
 
         # Query the module
-        value = ''
+        value = ""
         port_id = self.positions[module]
         init_time = time.time()
-        while time.time() - init_time < 3.:
+        while time.time() - init_time < 3.0:
             # Read out
             if mode == self.Mode.temperature:
                 # The temperature module supports single readout
@@ -382,15 +390,19 @@ class Fluke3000(Multimeter):
         """
         # Check that a value is contained
         if "PH" not in result:
-            raise ValueError("Cannot parse a string that does not contain a return value")
+            raise ValueError(
+                "Cannot parse a string that does not contain a return value"
+            )
 
         # Isolate the data string from the output
-        data = result.split('PH=')[-1]
+        data = result.split("PH=")[-1]
 
         # Check that the multimeter is in the right mode (fifth byte)
         if self._parse_mode(data) != mode.value:
-            error = (f"Mode {mode.name} was requested but the Fluke 3000FC Multimeter is in "
-                     f"mode {self.Mode(data[8:10]).name} instead. Could not read the requested quantity.")
+            error = (
+                f"Mode {mode.name} was requested but the Fluke 3000FC Multimeter is in "
+                f"mode {self.Mode(data[8:10]).name} instead. Could not read the requested quantity."
+            )
             raise ValueError(error)
 
         # Extract the value from the first two bytes
@@ -400,7 +412,7 @@ class Fluke3000(Multimeter):
         scale = self._parse_factor(data)
 
         # Combine and return
-        return scale*value
+        return scale * value
 
     @staticmethod
     def _parse_mode(data):
@@ -430,7 +442,7 @@ class Fluke3000(Multimeter):
 
         """
         # The second dual hex byte is the most significant byte
-        return int(data[2:4]+data[:2], 16)
+        return int(data[2:4] + data[:2], 16)
 
     @staticmethod
     def _parse_factor(data):
@@ -457,33 +469,33 @@ class Fluke3000(Multimeter):
         prefix = PREFIXES[code]
 
         # The sixth and seventh bit encode the decimal place
-        scale = 10**(-int(byte[5:7], 2))
+        scale = 10 ** (-int(byte[5:7], 2))
 
         # Return the combination
-        return sign*prefix*scale
+        return sign * prefix * scale
 
 
 # UNITS #######################################################################
 
 UNITS = {
     None: 1,
-    Fluke3000.Mode.voltage_ac:  u.volt,
-    Fluke3000.Mode.voltage_dc:  u.volt,
-    Fluke3000.Mode.current_ac:  u.amp,
-    Fluke3000.Mode.current_dc:  u.amp,
-    Fluke3000.Mode.frequency:   u.hertz,
+    Fluke3000.Mode.voltage_ac: u.volt,
+    Fluke3000.Mode.voltage_dc: u.volt,
+    Fluke3000.Mode.current_ac: u.amp,
+    Fluke3000.Mode.current_dc: u.amp,
+    Fluke3000.Mode.frequency: u.hertz,
     Fluke3000.Mode.temperature: u.degC,
-    Fluke3000.Mode.resistance:  u.ohm,
-    Fluke3000.Mode.capacitance: u.farad
+    Fluke3000.Mode.resistance: u.ohm,
+    Fluke3000.Mode.capacitance: u.farad,
 }
 
 # METRIC PREFIXES #############################################################
 
 PREFIXES = {
-    0: 1e0,     # None
-    2: 1e6,     # Mega
-    3: 1e3,     # Kilo
-    4: 1e-3,    # milli
-    5: 1e-6,    # micro
-    6: 1e-9     # nano
+    0: 1e0,  # None
+    2: 1e6,  # Mega
+    3: 1e3,  # Kilo
+    4: 1e-3,  # milli
+    5: 1e-6,  # micro
+    6: 1e-9,  # nano
 }

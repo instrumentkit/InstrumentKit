@@ -20,7 +20,7 @@ from instruments.tests import expected_protocol
 def ps(monkeypatch):
     """Patch and return Power Supply class for access."""
     inst = ik.abstract_instruments.PowerSupply
-    monkeypatch.setattr(inst, '__abstractmethods__', set())
+    monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
 
@@ -28,7 +28,7 @@ def ps(monkeypatch):
 def ps_ch(monkeypatch):
     """Patch and return Power Supply Channel class for access."""
     inst = ik.abstract_instruments.PowerSupplyChannel
-    monkeypatch.setattr(inst, '__abstractmethods__', set())
+    monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
 
@@ -37,33 +37,21 @@ def ps_ch(monkeypatch):
 
 def test_power_supply_channel(ps):
     """Get channel: ensure existence."""
-    with expected_protocol(
-            ps,
-            [],
-            []
-    ) as inst:
+    with expected_protocol(ps, [], []) as inst:
         with pytest.raises(NotImplementedError):
             _ = inst.channel
 
 
 def test_power_supply_voltage(ps):
     """Get / set voltage: ensure existence."""
-    with expected_protocol(
-            ps,
-            [],
-            []
-    ) as inst:
+    with expected_protocol(ps, [], []) as inst:
         _ = inst.voltage
         inst.voltage = 42
 
 
 def test_power_supply_current(ps):
     """Get / set current: ensure existence."""
-    with expected_protocol(
-            ps,
-            [],
-            []
-    ) as inst:
+    with expected_protocol(ps, [], []) as inst:
         _ = inst.current
         inst.current = 42
 

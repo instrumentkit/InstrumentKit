@@ -79,7 +79,7 @@ def test_loopbackcomm_read_raw():
     comm = LoopbackCommunicator(stdin=mock_stdin)
 
     assert comm.read_raw() == b"abc"
-    mock_stdin.read.assert_has_calls([mock.call(1)]*4)
+    mock_stdin.read.assert_has_calls([mock.call(1)] * 4)
     assert mock_stdin.read.call_count == 4
 
     mock_stdin.read = mock.MagicMock()
@@ -94,7 +94,7 @@ def test_loopbackcomm_read_raw_2char_terminator():
     comm._terminator = "\r\n"
 
     assert comm.read_raw() == b"abc"
-    mock_stdin.read.assert_has_calls([mock.call(1)]*5)
+    mock_stdin.read.assert_has_calls([mock.call(1)] * 5)
     assert mock_stdin.read.call_count == 5
 
 

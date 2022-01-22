@@ -46,9 +46,7 @@ def test_init(usb_util, dev):
     # shortcuts for asserting calls
     cfg = dev.get_active_configuration()
     interface_number = cfg[(0, 0)].bInterfaceNumber
-    _ = dev.control.get_interface(
-        dev, cfg[(0, 0)].bInterfaceNumber
-    )
+    _ = dev.control.get_interface(dev, cfg[(0, 0)].bInterfaceNumber)
 
     inst = USBCommunicator(dev)
 
@@ -106,8 +104,10 @@ def test_terminator_wrong_type(inst):
     with pytest.raises(TypeError) as err:
         inst.terminator = 42
     msg = err.value.args[0]
-    assert msg == "Terminator for USBCommunicator must be specified as a " \
-                  "character string."
+    assert (
+        msg == "Terminator for USBCommunicator must be specified as a "
+        "character string."
+    )
 
 
 @given(val=st.integers(min_value=1))
@@ -181,9 +181,11 @@ def test_read_raw_termination_char_not_found(inst):
     with pytest.raises(IOError) as err:
         _ = inst.read_raw()
     err_msg = err.value.args[0]
-    assert err_msg == f"Did not find the terminator in the returned " \
-                      f"string. Total size of {default_read_size} might " \
-                      f"not be enough."
+    assert (
+        err_msg == f"Did not find the terminator in the returned "
+        f"string. Total size of {default_read_size} might "
+        f"not be enough."
+    )
 
 
 def test_write_raw(inst):

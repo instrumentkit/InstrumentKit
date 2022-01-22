@@ -34,12 +34,11 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
 
     _UNIT_MNEMONICS = {
         FunctionGenerator.VoltageMode.peak_to_peak: "VPP",
-        FunctionGenerator.VoltageMode.rms:          "VRMS",
-        FunctionGenerator.VoltageMode.dBm:          "DBM",
+        FunctionGenerator.VoltageMode.rms: "VRMS",
+        FunctionGenerator.VoltageMode.dBm: "DBM",
     }
 
-    _MNEMONIC_UNITS = dict((mnem, unit)
-                           for unit, mnem in _UNIT_MNEMONICS.items())
+    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.items())
 
     # FunctionGenerator CONTRACT #
 
@@ -53,10 +52,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
         """
         units = self.query("VOLT:UNIT?").strip()
 
-        return (
-            float(self.query("VOLT?").strip()),
-            self._MNEMONIC_UNITS[units]
-        )
+        return (float(self.query("VOLT?").strip()), self._MNEMONIC_UNITS[units])
 
     def _set_amplitude_(self, magnitude, units):
         """
@@ -80,7 +76,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
 
         :units: As specified, or assumed to be :math:`\\text{Hz}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     function = enum_property(
@@ -90,7 +86,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
         Gets/sets the output function of the function generator
 
         :type: `SCPIFunctionGenerator.Function`
-        """
+        """,
     )
 
     offset = unitful_property(
@@ -104,7 +100,7 @@ class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
         :units: As specified  (if a `~pint.Quantity`) or assumed
             to be of units volts.
         :type: `~pint.Quantity` with units volts.
-        """
+        """,
     )
 
     @property

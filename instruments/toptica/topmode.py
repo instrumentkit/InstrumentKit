@@ -53,6 +53,7 @@ class TopMode(Instrument):
         """
         Enum containing valid charm statuses for the lasers
         """
+
         un_initialized = 0
         in_progress = 1
         success = 2
@@ -130,11 +131,13 @@ class TopMode(Instrument):
         @enable.setter
         def enable(self, newval):
             if not isinstance(newval, bool):
-                raise TypeError("Emission status must be a boolean, got: "
-                                "{}".format(type(newval)))
+                raise TypeError(
+                    "Emission status must be a boolean, got: " "{}".format(type(newval))
+                )
             if not self.is_connected:
-                raise RuntimeError("Laser was not recognized by charm "
-                                   "controller. Is it plugged in?")
+                raise RuntimeError(
+                    "Laser was not recognized by charm " "controller. Is it plugged in?"
+                )
             self.parent.set(self.name + ":enable-emission", newval)
 
         @property
@@ -145,7 +148,7 @@ class TopMode(Instrument):
             :return: Whether the controller successfully connected to a laser
             :type: `bool`
             """
-            if self.serial_number == 'unknown':
+            if self.serial_number == "unknown":
                 return False
             return True
 
@@ -236,8 +239,10 @@ class TopMode(Instrument):
             # if mode locking has not started yet, the device will respond with
             # an empty date string. This causes a problem with ctdate.
             _corr_stat = self.correction_status
-            if _corr_stat == TopMode.CharmStatus.un_initialized \
-                    or _corr_stat == TopMode.CharmStatus.failure:
+            if (
+                _corr_stat == TopMode.CharmStatus.un_initialized
+                or _corr_stat == TopMode.CharmStatus.failure
+            ):
                 raise RuntimeError("Laser has not yet successfully locked")
 
             response = self.parent.reference(self.name + ":charm:reg:started")
@@ -320,7 +325,7 @@ class TopMode(Instrument):
         """
 
         if isinstance(value, str):
-            self.query("(param-set! '{} \"{}\")".format(param, value))
+            self.query('(param-set! \'{} "{}")'.format(param, value))
         elif isinstance(value, (tuple, list)):
             self.query("(param-set! '{} '({}))".format(param, " ".join(value)))
         elif isinstance(value, bool):
@@ -336,7 +341,7 @@ class TopMode(Instrument):
         :return: Response to the reference request
         :rtype: `str`
         """
-        response = self.query("(param-ref '{})".format(param)).replace("\"", "")
+        response = self.query("(param-ref '{})".format(param)).replace('"', "")
         return response
 
     def display(self, param):
@@ -378,8 +383,9 @@ class TopMode(Instrument):
     @enable.setter
     def enable(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError("Emission status must be a boolean, "
-                            "got: {}".format(type(newval)))
+            raise TypeError(
+                "Emission status must be a boolean, " "got: {}".format(type(newval))
+            )
         self.set("enable-emission", newval)
 
     @property

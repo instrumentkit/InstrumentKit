@@ -31,8 +31,9 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
 
         version = int(pyvisa.__version__.replace(".", "").ljust(3, "0"))
         # pylint: disable=no-member
-        if (version < 160 and isinstance(conn, pyvisa.Instrument)) or \
-                (version >= 160 and isinstance(conn, pyvisa.Resource)):
+        if (version < 160 and isinstance(conn, pyvisa.Instrument)) or (
+            version >= 160 and isinstance(conn, pyvisa.Resource)
+        ):
             self._conn = conn
             self._terminator = "\n"
         else:
@@ -55,8 +56,9 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
 
     @address.setter
     def address(self, newval):
-        raise NotImplementedError("Changing addresses of a VISA Instrument "
-                                  "is not supported.")
+        raise NotImplementedError(
+            "Changing addresses of a VISA Instrument " "is not supported."
+        )
 
     @property
     def terminator(self):
@@ -70,11 +72,14 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError("Terminator for VisaCommunicator must be specified "
-                            "as a single character string.")
+            raise TypeError(
+                "Terminator for VisaCommunicator must be specified "
+                "as a single character string."
+            )
         if len(newval) > 1:
-            raise ValueError("Terminator for VisaCommunicator must only be 1 "
-                             "character long.")
+            raise ValueError(
+                "Terminator for VisaCommunicator must only be 1 " "character long."
+            )
         self._terminator = newval
 
     @property
@@ -119,8 +124,9 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
             # Reset the contents of the buffer.
             self._buf = bytearray()
         else:
-            raise ValueError("Must read a positive value of characters, or "
-                             "-1 for all characters.")
+            raise ValueError(
+                "Must read a positive value of characters, or " "-1 for all characters."
+            )
         return msg
 
     def write_raw(self, msg):

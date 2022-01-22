@@ -43,7 +43,7 @@ class Field:
     __n_fields_created = 0
     _field_birthday = None
 
-    _fmt = ''
+    _fmt = ""
     _name = None
     _owner_type = object
 
@@ -63,7 +63,7 @@ class Field:
             raise TypeError("Field is specified with negative length.")
 
     def is_significant(self):
-        return not self._fmt.endswith('x')
+        return not self._fmt.endswith("x")
 
     @property
     def fmt_char(self):
@@ -86,32 +86,30 @@ class Field:
                 self._name, self._owner_type, self._fmt
             )
 
-        return "<Unbound field, fmt={}>".format(
-            self._fmt
-        )
+        return "<Unbound field, fmt={}>".format(self._fmt)
 
     def __str__(self):
         n, fmt_char = len(self), self.fmt_char
         c_type = {
-            'x': 'char',
-            'c': 'char',
-            'b': 'char',
-            'B': 'unsigned char',
-            '?': 'bool',
-            'h': 'short',
-            'H': 'unsigned short',
-            'i': 'int',
-            'I': 'unsigned int',
-            'l': 'long',
-            'L': 'unsigned long',
-            'q': 'long long',
-            'Q': 'unsigned long long',
-            'f': 'float',
-            'd': 'double',
+            "x": "char",
+            "c": "char",
+            "b": "char",
+            "B": "unsigned char",
+            "?": "bool",
+            "h": "short",
+            "H": "unsigned short",
+            "i": "int",
+            "I": "unsigned int",
+            "l": "long",
+            "L": "unsigned long",
+            "q": "long long",
+            "Q": "unsigned long long",
+            "f": "float",
+            "d": "double",
             # NB: no [], since that will be implied by n.
-            's': 'char',
-            'p': 'char',
-            'P': 'void *'
+            "s": "char",
+            "p": "char",
+            "P": "void *",
         }[fmt_char]
 
         if n:
@@ -146,10 +144,10 @@ class StringField(Field):
     """
 
     _strip_null = False
-    _encoding = 'ascii'
+    _encoding = "ascii"
 
-    def __init__(self, length, encoding='ascii', strip_null=False):
-        super(StringField, self).__init__('{}s'.format(length))
+    def __init__(self, length, encoding="ascii", strip_null=False):
+        super(StringField, self).__init__("{}s".format(length))
         self._strip_null = strip_null
         self._encoding = encoding
 
@@ -157,7 +155,7 @@ class StringField(Field):
         if isinstance(value, bytes):
             value = value.decode(self._encoding)
         if self._strip_null:
-            value = value.rstrip('\x00')
+            value = value.rstrip("\x00")
         value = value.encode(self._encoding)
 
         super(StringField, self).__set__(obj, value)
@@ -175,13 +173,14 @@ class Padding(Field):
     """
 
     def __init__(self, n_bytes=1):
-        super(Padding, self).__init__('{}x'.format(n_bytes))
+        super(Padding, self).__init__("{}x".format(n_bytes))
 
 
 class HasFields(type):
     """
     Metaclass used for NamedStruct
     """
+
     def __new__(mcs, name, bases, attrs):
         # Since this is a metaclass, the __new__ method observes
         # creation of new *classes* and not new instances.
@@ -192,17 +191,19 @@ class HasFields(type):
 
         # We now sort the fields by their birthdays and store them in an
         # ordered dict for easier look up later.
-        cls._fields = OrderedDict([
-            (field_name, field)
-            for field_name, field in sorted(
-                [
-                    (field_name, field)
-                    for field_name, field in attrs.items()
-                    if isinstance(field, Field)
-                ],
-                key=lambda item: item[1]._field_birthday
-            )
-        ])
+        cls._fields = OrderedDict(
+            [
+                (field_name, field)
+                for field_name, field in sorted(
+                    [
+                        (field_name, field)
+                        for field_name, field in attrs.items()
+                        if isinstance(field, Field)
+                    ],
+                    key=lambda item: item[1]._field_birthday,
+                )
+            ]
+        )
 
         # Assign names and owner types to each field so that they can follow
         # the descriptor protocol.
@@ -214,9 +215,7 @@ class HasFields(type):
         # that defines how to pack/unpack the new type.
         cls._struct = struct.Struct(
             # TODO: support alignment char at start.
-            " ".join([
-                field._fmt for field in cls._fields.values()
-            ])
+            " ".join([field._fmt for field in cls._fields.values()])
         )
 
         return cls
@@ -253,12 +252,12 @@ class NamedStruct(metaclass=HasFields):
 
     def __init__(self, **kwargs):
         super(NamedStruct, self).__init__()
-        self._values = OrderedDict([
-            (
-                field._name, None
-            )
-            for field in filter(Field.is_significant, self._fields.values())
-        ])
+        self._values = OrderedDict(
+            [
+                (field._name, None)
+                for field in filter(Field.is_significant, self._fields.values())
+            ]
+        )
 
         for field_name, value in kwargs.items():
             setattr(self, field_name, value)
@@ -268,11 +267,14 @@ class NamedStruct(metaclass=HasFields):
 
     @classmethod
     def _from_seq(cls, new_values):
-        return cls(**{
-            field._name: new_value
-            for field, new_value in
-            zip(list(filter(Field.is_significant, cls._fields.values())), new_values)
-        })
+        return cls(
+            **{
+                field._name: new_value
+                for field, new_value in zip(
+                    list(filter(Field.is_significant, cls._fields.values())), new_values
+                )
+            }
+        )
 
     def pack(self):
         """
@@ -307,15 +309,17 @@ class NamedStruct(metaclass=HasFields):
     def __str__(self):
         return "{name} {{\n{fields}\n}}".format(
             name=type(self).__name__,
-            fields="\n".join([
-                "    {field}{value};".format(
-                    field=field,
-                    value=(
-                        " = {}".format(repr(self._values[field._name]))
-                        if field.is_significant()
-                        else ""
+            fields="\n".join(
+                [
+                    "    {field}{value};".format(
+                        field=field,
+                        value=(
+                            " = {}".format(repr(self._values[field._name]))
+                            if field.is_significant()
+                            else ""
+                        ),
                     )
-                )
-                for field in self._fields.values()
-            ])
+                    for field in self._fields.values()
+                ]
+            ),
         )

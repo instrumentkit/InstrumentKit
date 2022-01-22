@@ -16,11 +16,11 @@ def convert_toptica_boolean(response):
     :return: the converted boolean
     :rtype: bool
     """
-    if response.find('Error: -3') > -1:
+    if response.find("Error: -3") > -1:
         return None
-    elif response.find('f') > -1:
+    elif response.find("f") > -1:
         return False
-    elif response.find('t') > -1:
+    elif response.find("t") > -1:
         return True
     else:
         raise ValueError("cannot convert: " + str(response) + " to boolean")

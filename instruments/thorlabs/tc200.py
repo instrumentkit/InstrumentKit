@@ -13,7 +13,10 @@ from enum import IntEnum, Enum
 from instruments.abstract_instruments import Instrument
 from instruments.units import ureg as u
 from instruments.util_fns import (
-    convert_temperature, enum_property, unitful_property, int_property
+    convert_temperature,
+    enum_property,
+    unitful_property,
+    int_property,
 )
 
 # CLASSES #####################################################################
@@ -45,6 +48,7 @@ class TC200(Instrument):
         """
         Enum containing valid output modes of the TC200.
         """
+
         normal = 0
         cycle = 1
 
@@ -53,6 +57,7 @@ class TC200(Instrument):
         """
         Enum containing valid temperature sensor types for the TC200.
         """
+
         ptc100 = "ptc100"
         ptc1000 = "ptc1000"
         th10k = "th10k"
@@ -84,8 +89,10 @@ class TC200(Instrument):
     @mode.setter
     def mode(self, newval):
         if not isinstance(newval, TC200.Mode):
-            raise TypeError("Mode setting must be a `TC200.Mode` value, "
-                            "got {} instead.".format(type(newval)))
+            raise TypeError(
+                "Mode setting must be a `TC200.Mode` value, "
+                "got {} instead.".format(type(newval))
+            )
         out_query = "mode={}".format(newval.name)
         # there is an issue with the TC200; it responds with a spurious
         # Command Error on mode=normal. Thus, the sendcmd() method cannot
@@ -112,8 +119,9 @@ class TC200(Instrument):
     @enable.setter
     def enable(self, newval):
         if not isinstance(newval, bool):
-            raise TypeError("TC200 enable property must be specified with a "
-                            "boolean.")
+            raise TypeError(
+                "TC200 enable property must be specified with a " "boolean."
+            )
         # the "ens" command is a toggle, we need to track two different cases,
         # when it should be on and it is off, and when it is off and
         # should be on
@@ -149,8 +157,9 @@ class TC200(Instrument):
         "tact",
         units=u.degC,
         readonly=True,
-        input_decoration=lambda x: x.replace(
-            " C", "").replace(" F", "").replace(" K", ""),
+        input_decoration=lambda x: x.replace(" C", "")
+        .replace(" F", "")
+        .replace(" K", ""),
         doc="""
         Gets the actual temperature of the sensor
 
@@ -159,7 +168,7 @@ class TC200(Instrument):
         :type: `~pint.Quantity` or `int`
         :return: the temperature (in degrees C)
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     max_temperature = unitful_property(
@@ -175,7 +184,7 @@ class TC200(Instrument):
         :units: As specified or assumed to be degree Celsius. Returns with
             units degC.
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     @property
@@ -189,8 +198,9 @@ class TC200(Instrument):
         :return: the temperature (in degrees C)
         :rtype: `~pint.Quantity`
         """
-        response = self.query("tset?").replace(
-            " C", "").replace(" F", "").replace(" K", "")
+        response = (
+            self.query("tset?").replace(" C", "").replace(" F", "").replace(" K", "")
+        )
         return u.Quantity(float(response), u.degC)
 
     @temperature_set.setter
@@ -305,8 +315,7 @@ class TC200(Instrument):
     sensor = enum_property(
         "sns",
         Sensor,
-        input_decoration=lambda x: x.split(
-            ",")[0].split("=")[1].strip().lower(),
+        input_decoration=lambda x: x.split(",")[0].split("=")[1].strip().lower(),
         set_fmt="{}={}",
         doc="""
         Gets/sets the current thermistor type. Used for converting resistances
@@ -314,7 +323,7 @@ class TC200(Instrument):
 
         :return: The thermistor type
         :type: `TC200.Sensor`
-        """
+        """,
     )
 
     beta = int_property(
@@ -328,7 +337,7 @@ class TC200(Instrument):
 
         :return: the gain (in nnn)
         :type: `int`
-        """
+        """,
     )
 
     max_power = unitful_property(
@@ -336,12 +345,12 @@ class TC200(Instrument):
         units=u.W,
         format_code="{:.1f}",
         set_fmt="{}={}",
-        valid_range=(0.1*u.W, 18.0*u.W),
+        valid_range=(0.1 * u.W, 18.0 * u.W),
         doc="""
         Gets/sets the maximum power
 
         :return: The maximum power
         :units: Watts (linear units)
         :type: `~pint.Quantity`
-        """
+        """,
     )

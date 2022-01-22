@@ -35,10 +35,7 @@ Kit project.
 from struct import unpack
 from enum import Enum
 
-from instruments.abstract_instruments import (
-    PowerSupply,
-    PowerSupplyChannel
-)
+from instruments.abstract_instruments import PowerSupply, PowerSupplyChannel
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units
 
@@ -92,8 +89,8 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         self.current_max = 6.0 * u.milliamp
         self.polarity = +1
         self._device_timeout = False
-        self._voltage = 0. * u.volt
-        self._current = 0. * u.amp
+        self._voltage = 0.0 * u.volt
+        self._current = 0.0 * u.amp
 
     # ENUMS ##
 
@@ -101,6 +98,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         """
         Enum containing the possible modes of operations of the instrument
         """
+
         #: Constant voltage mode
         voltage = "0"
         #: Constant current mode
@@ -110,6 +108,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         """
         Enum containing the possible reponse codes returned by the instrument.
         """
+
         #: A set command expects an acknowledge response (`A`)
         S = "A"
         #: A query command expects a response packet (`R`)
@@ -123,6 +122,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         """
         Enum containing the possible error codes returned by the instrument.
         """
+
         #: Undefined command received (not S, Q, V or C)
         undefined_command = "1"
         #: The checksum calculated by the instrument does not correspond to the one received
@@ -157,7 +157,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~pint.Quantity`
         """
-        return self.polarity*self._voltage
+        return self.polarity * self._voltage
 
     @voltage.setter
     def voltage(self, newval):
@@ -171,7 +171,7 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~pint.Quantity`
         """
-        return self.polarity*self._current
+        return self.polarity * self._current
 
     @current.setter
     def current(self, newval):
@@ -329,28 +329,32 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         kept as what they were set to previously.
         """
         if reset:
-            self._voltage = 0. * u.volt
-            self._current = 0. * u.amp
+            self._voltage = 0.0 * u.volt
+            self._current = 0.0 * u.amp
             cmd = format(4, "013d")
         else:
             # The maximum value is encoded as the maximum of three hex characters (4095)
-            cmd = ''
-            value_max = int(0xfff)
+            cmd = ""
+            value_max = int(0xFFF)
 
             # If the voltage is not specified, keep it as is
-            voltage = assume_units(voltage, u.volt) if voltage is not None else self.voltage
-            ratio = float(voltage.to(u.volt)/self.voltage_max.to(u.volt))
-            voltage_int = int(round(value_max*ratio))
-            self._voltage = self.voltage_max*float(voltage_int)/value_max
-            assert 0. * u.volt <= self._voltage <= self.voltage_max
+            voltage = (
+                assume_units(voltage, u.volt) if voltage is not None else self.voltage
+            )
+            ratio = float(voltage.to(u.volt) / self.voltage_max.to(u.volt))
+            voltage_int = int(round(value_max * ratio))
+            self._voltage = self.voltage_max * float(voltage_int) / value_max
+            assert 0.0 * u.volt <= self._voltage <= self.voltage_max
             cmd += format(voltage_int, "03X")
 
             # If the current is not specified, keep it as is
-            current = assume_units(current, u.amp) if current is not None else self.current
-            ratio = float(current.to(u.amp)/self.current_max.to(u.amp))
-            current_int = int(round(value_max*ratio))
-            self._current = self.current_max*float(current_int)/value_max
-            assert 0. * u.amp <= self._current <= self.current_max
+            current = (
+                assume_units(current, u.amp) if current is not None else self.current
+            )
+            ratio = float(current.to(u.amp) / self.current_max.to(u.amp))
+            current_int = int(round(value_max * ratio))
+            self._current = self.current_max * float(current_int) / value_max
+            assert 0.0 * u.amp <= self._current <= self.current_max
             cmd += format(current_int, "03X")
 
             # If the output status is not specified, keep it as is
@@ -383,22 +387,22 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
         :rtype: `dict`
         """
-        (voltage, current, monitors) = \
-            unpack("@3s3s3x1c2x", bytes(response, "utf-8"))
+        (voltage, current, monitors) = unpack("@3s3s3x1c2x", bytes(response, "utf-8"))
 
         try:
             voltage = self._parse_voltage(voltage)
             current = self._parse_current(current)
             mode, fault, output = self._parse_monitors(monitors)
         except:
-            raise RuntimeError("Cannot parse response "
-                               "packet: {}".format(response))
+            raise RuntimeError("Cannot parse response " "packet: {}".format(response))
 
-        return {"voltage": voltage,
-                "current": current,
-                "mode": mode,
-                "fault": fault,
-                "output": output}
+        return {
+            "voltage": voltage,
+            "current": current,
+            "mode": mode,
+            "fault": fault,
+            "output": output,
+        }
 
     def _parse_voltage(self, word):
         """
@@ -410,9 +414,9 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
 
         :rtype: `~pint.Quantity`
         """
-        value = int(word.decode('utf-8'), 16)
-        value_max = int(0x3ff)
-        return self.polarity*self.voltage_max*float(value)/value_max
+        value = int(word.decode("utf-8"), 16)
+        value_max = int(0x3FF)
+        return self.polarity * self.voltage_max * float(value) / value_max
 
     def _parse_current(self, word):
         """
@@ -425,8 +429,8 @@ class GlassmanFR(PowerSupply, PowerSupplyChannel):
         :rtype: `~pint.Quantity`
         """
         value = int(word.decode("utf-8"), 16)
-        value_max = int(0x3ff)
-        return self.polarity*self.current_max*float(value)/value_max
+        value_max = int(0x3FF)
+        return self.polarity * self.current_max * float(value) / value_max
 
     def _parse_monitors(self, word):
         """

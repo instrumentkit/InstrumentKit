@@ -57,4 +57,3 @@ dimensionality of values to be sent to the device without regards for what the
 instrument expects; the unit conversions will be handled by InstrumentKit in a
 way that ensures that the expectations of the instrument are properly met,
 irrespective of what the user knows.
-

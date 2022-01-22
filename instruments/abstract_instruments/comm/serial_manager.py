@@ -52,15 +52,14 @@ def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3):
     :rtype: `SerialCommunicator`
     """
     if not isinstance(port, str):
-        raise TypeError('Serial port must be specified as a string.')
+        raise TypeError("Serial port must be specified as a string.")
 
     if port not in serialObjDict or serialObjDict[port] is None:
-        conn = SerialCommunicator(serial.Serial(
-            port,
-            baudrate=baud,
-            timeout=timeout,
-            writeTimeout=write_timeout
-        ))
+        conn = SerialCommunicator(
+            serial.Serial(
+                port, baudrate=baud, timeout=timeout, writeTimeout=write_timeout
+            )
+        )
         serialObjDict[port] = conn
     # pylint: disable=protected-access
     if not serialObjDict[port]._conn.isOpen():

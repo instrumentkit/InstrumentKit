@@ -20,16 +20,12 @@ from instruments.tests import expected_protocol
 def sg(monkeypatch):
     """Patch and return signal generator for direct access of metaclass."""
     inst = ik.abstract_instruments.signal_generator.SignalGenerator
-    monkeypatch.setattr(inst, '__abstractmethods__', set())
+    monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
 
 def test_signal_generator_channel(sg):
     """Get channel: Ensure existence."""
-    with expected_protocol(
-            sg,
-            [],
-            []
-    ) as inst:
+    with expected_protocol(sg, [], []) as inst:
         with pytest.raises(NotImplementedError):
             _ = inst.channel

@@ -12,11 +12,15 @@ from enum import Enum
 from instruments.generic_scpi import SCPIFunctionGenerator
 from instruments.units import ureg as u
 from instruments.util_fns import (
-    enum_property, int_property, bool_property, assume_units
+    enum_property,
+    int_property,
+    bool_property,
+    assume_units,
 )
 
 
 # CLASSES #####################################################################
+
 
 class Agilent33220a(SCPIFunctionGenerator):
 
@@ -46,6 +50,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         """
         Enum containing valid functions for the Agilent/Keysight 33220a
         """
+
         sinusoid = "SIN"
         square = "SQU"
         ramp = "RAMP"
@@ -59,6 +64,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         """
         Enum containing valid load resistance for the Agilent/Keysight 33220a
         """
+
         minimum = "MIN"
         maximum = "MAX"
         high_impedance = "INF"
@@ -69,6 +75,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         Enum containg valid output polarity modes for the
         Agilent/Keysight 33220a
         """
+
         normal = "NORM"
         inverted = "INV"
 
@@ -82,7 +89,7 @@ class Agilent33220a(SCPIFunctionGenerator):
 
         :type: `Agilent33220a.Function`
         """,
-        set_fmt="{}:{}"
+        set_fmt="{}:{}",
     )
 
     duty_cycle = int_property(
@@ -95,7 +102,7 @@ class Agilent33220a(SCPIFunctionGenerator):
 
         :type: `int`
         """,
-        valid_set=range(101)
+        valid_set=range(101),
     )
 
     ramp_symmetry = int_property(
@@ -108,7 +115,7 @@ class Agilent33220a(SCPIFunctionGenerator):
 
         :type: `int`
         """,
-        valid_set=range(101)
+        valid_set=range(101),
     )
 
     output = bool_property(
@@ -122,7 +129,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         the output being off.
 
         :type: `bool`
-        """
+        """,
     )
 
     output_sync = bool_property(
@@ -133,7 +140,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         Gets/sets the enabled status of the front panel sync connector.
 
         :type: `bool`
-        """
+        """,
     )
 
     output_polarity = enum_property(
@@ -143,7 +150,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         Gets/sets the polarity of the waveform relative to the offset voltage.
 
         :type: `~Agilent33220a.OutputPolarity`
-        """
+        """,
     )
 
     @property
@@ -173,8 +180,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         else:
             newval = assume_units(newval, u.ohm).to(u.ohm).magnitude
             if (newval < 0) or (newval > 10000):
-                raise ValueError(
-                    "Load resistance must be between 0 and 10,000")
+                raise ValueError("Load resistance must be between 0 and 10,000")
         self.sendcmd("OUTP:LOAD {}".format(newval))
 
     @property

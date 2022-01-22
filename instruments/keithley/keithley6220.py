@@ -49,20 +49,22 @@ class Keithley6220(SCPIInstrument, PowerSupply):
         >>> ccs.channel[0].current = 0.01
         >>> ccs.current = 0.01
         """
-        return self,
+        return (self,)
 
     @property
     def voltage(self):
         """
         This property is not supported by the Keithley 6220.
         """
-        raise NotImplementedError("The Keithley 6220 does not support voltage "
-                                  "settings.")
+        raise NotImplementedError(
+            "The Keithley 6220 does not support voltage " "settings."
+        )
 
     @voltage.setter
     def voltage(self, newval):
-        raise NotImplementedError("The Keithley 6220 does not support voltage "
-                                  "settings.")
+        raise NotImplementedError(
+            "The Keithley 6220 does not support voltage " "settings."
+        )
 
     current, current_min, current_max = bounded_unitful_property(
         "SOUR:CURR",
@@ -74,7 +76,7 @@ class Keithley6220(SCPIInstrument, PowerSupply):
 
         :units: As specified, or assumed to be :math:`\\text{A}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     # METHODS #

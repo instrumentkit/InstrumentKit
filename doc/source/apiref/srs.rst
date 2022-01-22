@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.srs
-    
+
 =========================
 Stanford Research Systems
 =========================
@@ -13,7 +13,7 @@ Stanford Research Systems
 .. autoclass:: SRS345
     :members:
     :undoc-members:
-    
+
 :class:`SRS830` Lock-In Amplifier
 =================================
 
@@ -34,7 +34,7 @@ Stanford Research Systems
 .. autoclass:: SRSDG645
     :members:
     :undoc-members:
-    
+
 .. autoclass:: _SRSDG645Channel
     :members:
     :undoc-members:

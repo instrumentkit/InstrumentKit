@@ -97,7 +97,7 @@ def test_socketcomm_read_raw():
     comm._conn.recv = mock.MagicMock(side_effect=[b"a", b"b", b"c", b"\n"])
 
     assert comm.read_raw() == b"abc"
-    comm._conn.recv.assert_has_calls([mock.call(1)]*4)
+    comm._conn.recv.assert_has_calls([mock.call(1)] * 4)
     assert comm._conn.recv.call_count == 4
 
     comm._conn.recv = mock.MagicMock()

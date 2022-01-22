@@ -10,8 +10,7 @@ from enum import IntEnum
 
 from instruments.generic_scpi import SCPIInstrument
 from instruments.units import ureg as u
-from instruments.util_fns import (enum_property, bool_property, int_property,
-                                  ProxyList)
+from instruments.util_fns import enum_property, bool_property, int_property, ProxyList
 
 # CLASSES #####################################################################
 
@@ -72,6 +71,7 @@ class PicowattAVS47(SCPIInstrument):
         """
         Enum containing valid input source modes for the AVS 47
         """
+
         ground = 0
         actual = 1
         reference = 2
@@ -102,7 +102,7 @@ class PicowattAVS47(SCPIInstrument):
         interface and locks-out the front panel.
 
         :type: `bool`
-        """
+        """,
     )
 
     input_source = enum_property(
@@ -113,7 +113,7 @@ class PicowattAVS47(SCPIInstrument):
         Gets/sets the input source.
 
         :type: `PicowattAVS47.InputSource`
-        """
+        """,
     )
 
     mux_channel = int_property(
@@ -127,7 +127,7 @@ class PicowattAVS47(SCPIInstrument):
 
         :type: `int`
         """,
-        valid_set=range(8)
+        valid_set=range(8),
     )
 
     excitation = int_property(
@@ -139,7 +139,7 @@ class PicowattAVS47(SCPIInstrument):
 
         :type: `int`
         """,
-        valid_set=range(8)
+        valid_set=range(8),
     )
 
     display = int_property(
@@ -151,5 +151,5 @@ class PicowattAVS47(SCPIInstrument):
 
         :type: `int`
         """,
-        valid_set=range(8)
+        valid_set=range(8),
     )

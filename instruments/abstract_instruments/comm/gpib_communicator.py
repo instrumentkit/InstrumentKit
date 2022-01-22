@@ -56,6 +56,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         """
         Enum containing the supported GPIB controller models
         """
+
         #: Galvant Industries
         gi = "gi"
         #: Prologix, LLC
@@ -108,7 +109,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         newval = assume_units(newval, u.second)
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
             newval = newval.to(u.second)
-            self._file.sendcmd('+t:{}'.format(int(newval.magnitude)))
+            self._file.sendcmd("+t:{}".format(int(newval.magnitude)))
         else:
             newval = newval.to(u.millisecond)
             self._file.sendcmd("++read_tmo_ms {}".format(int(newval.magnitude)))
@@ -129,7 +130,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         if not self._eoi:
             return self._terminator
 
-        return 'eoi'
+        return "eoi"
 
     @terminator.setter
     def terminator(self, newval):
@@ -139,7 +140,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             newval = newval.lower()
 
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
-            if newval == 'eoi':
+            if newval == "eoi":
                 self.eoi = True
             elif not isinstance(newval, int):
                 if len(newval) == 1:
@@ -147,14 +148,18 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
                     self.eoi = False
                     self.eos = newval
                 else:
-                    raise TypeError('GPIB termination must be integer 0-255 '
-                                    'represending decimal value of ASCII '
-                                    'termination character or a string'
-                                    'containing "eoi".')
+                    raise TypeError(
+                        "GPIB termination must be integer 0-255 "
+                        "represending decimal value of ASCII "
+                        "termination character or a string"
+                        'containing "eoi".'
+                    )
             elif (newval < 0) or (newval > 255):
-                raise ValueError('GPIB termination must be integer 0-255 '
-                                 'represending decimal value of ASCII '
-                                 'termination character.')
+                raise ValueError(
+                    "GPIB termination must be integer 0-255 "
+                    "represending decimal value of ASCII "
+                    "termination character."
+                )
             else:
                 self.eoi = False
                 self.eos = newval
@@ -194,9 +199,9 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
             raise TypeError("EOI status must be specified as a boolean")
         self._eoi = newval
         if self._model == GPIBCommunicator.Model.gi and self._version <= 4:
-            self._file.sendcmd("+eoi:{}".format('1' if newval else '0'))
+            self._file.sendcmd("+eoi:{}".format("1" if newval else "0"))
         else:
-            self._file.sendcmd("++eoi {}".format('1' if newval else '0'))
+            self._file.sendcmd("++eoi {}".format("1" if newval else "0"))
 
     @property
     def eos(self):
@@ -318,7 +323,7 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         """
         sleep_time = 0.01
 
-        if msg == '':
+        if msg == "":
             return
         if self._model == GPIBCommunicator.Model.gi:
             self._file.sendcmd("+a:{0}".format(str(self._gpib_address)))
@@ -357,8 +362,8 @@ class GPIBCommunicator(io.IOBase, AbstractCommunicator):
         :rtype: `str`
         """
         self.sendcmd(msg)
-        if self._model == GPIBCommunicator.Model.gi and '?' not in msg:
-            self._file.sendcmd('+read')
+        if self._model == GPIBCommunicator.Model.gi and "?" not in msg:
+            self._file.sendcmd("+read")
         if self._model == GPIBCommunicator.Model.pl:
-            self._file.sendcmd('++read')
+            self._file.sendcmd("++read")
         return self._file.read(size).strip()

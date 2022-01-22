@@ -32,6 +32,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
     >>> print(srs.offset)
     >>> srs.function = srs.Function.triangle
     """
+
     # FIXME: need to add OUTX 1 here, but doing so seems to cause a syntax
     #        error on the instrument.
 
@@ -39,26 +40,21 @@ class SRS345(SCPIInstrument, FunctionGenerator):
 
     _UNIT_MNEMONICS = {
         FunctionGenerator.VoltageMode.peak_to_peak: "VP",
-        FunctionGenerator.VoltageMode.rms:          "VR",
-        FunctionGenerator.VoltageMode.dBm:          "DB",
+        FunctionGenerator.VoltageMode.rms: "VR",
+        FunctionGenerator.VoltageMode.dBm: "DB",
     }
 
-    _MNEMONIC_UNITS = dict((mnem, unit)
-                           for unit, mnem in _UNIT_MNEMONICS.items())
+    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.items())
 
     # FunctionGenerator CONTRACT #
 
     def _get_amplitude_(self):
         resp = self.query("AMPL?").strip()
 
-        return (
-            float(resp[:-2]),
-            self._MNEMONIC_UNITS[resp[-2:]]
-        )
+        return (float(resp[:-2]), self._MNEMONIC_UNITS[resp[-2:]])
 
     def _set_amplitude_(self, magnitude, units):
-        self.sendcmd(
-            "AMPL {}{}".format(magnitude, self._UNIT_MNEMONICS[units]))
+        self.sendcmd("AMPL {}{}".format(magnitude, self._UNIT_MNEMONICS[units]))
 
     # ENUMS ##
 
@@ -66,6 +62,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         """
         Enum containing valid output function modes for the SRS 345
         """
+
         sinusoid = 0
         square = 1
         triangle = 2
@@ -83,7 +80,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
 
         :units: As specified, or assumed to be :math:`\\text{Hz}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     function = enum_property(
@@ -94,7 +91,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         Gets/sets the output function of the function generator.
 
         :type: `~SRS345.Function`
-        """
+        """,
     )
 
     offset = unitful_property(
@@ -105,7 +102,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
 
         :units: As specified, or assumed to be :math:`\\text{V}` otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )
 
     phase = unitful_property(
@@ -117,5 +114,5 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         :units: As specified, or assumed to be degrees (:math:`{}^{\\circ}`)
             otherwise.
         :type: `float` or `~pint.Quantity`
-        """
+        """,
     )

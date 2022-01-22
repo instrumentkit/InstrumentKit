@@ -51,19 +51,15 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         ep_out = usb.util.find_descriptor(
             intf,
             # match the first OUT endpoint
-            custom_match= \
-                lambda e: \
-                    usb.util.endpoint_direction(e.bEndpointAddress) == \
-                    usb.util.ENDPOINT_OUT
+            custom_match=lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
+            == usb.util.ENDPOINT_OUT,
         )
 
         ep_in = usb.util.find_descriptor(
             intf,
             # match the first OUT endpoint
-            custom_match= \
-                lambda e: \
-                    usb.util.endpoint_direction(e.bEndpointAddress) == \
-                    usb.util.ENDPOINT_IN
+            custom_match=lambda e: usb.util.endpoint_direction(e.bEndpointAddress)
+            == usb.util.ENDPOINT_IN,
         )
 
         if (ep_in or ep_out) is None:
@@ -76,6 +72,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         self._ep_in = ep_in
         self._ep_out = ep_out
         self._terminator = "\n"
+
     # PROPERTIES #
 
     @property
@@ -98,8 +95,10 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     @terminator.setter
     def terminator(self, newval):
         if not isinstance(newval, str):
-            raise TypeError("Terminator for USBCommunicator must be specified "
-                            "as a character string.")
+            raise TypeError(
+                "Terminator for USBCommunicator must be specified "
+                "as a character string."
+            )
         self._terminator = newval
 
     @property
@@ -141,8 +140,10 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         term = self._terminator.encode("utf-8")
         read_val = bytes(self._ep_in.read(size))
         if term not in read_val:
-            raise IOError(f"Did not find the terminator in the returned string. "
-                          f"Total size of {size} might not be enough.")
+            raise IOError(
+                f"Did not find the terminator in the returned string. "
+                f"Total size of {size} might not be enough."
+            )
         return read_val.rstrip(term)
 
     def write_raw(self, msg):

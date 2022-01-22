@@ -25,6 +25,7 @@ class MHS5200(FunctionGenerator):
     communications protocol:
     https://github.com/wd5gnr/mhs5200a/blob/master/MHS5200AProtocol.pdf
     """
+
     def __init__(self, filelike):
         super(MHS5200, self).__init__(filelike)
         self._channel_count = 2
@@ -42,12 +43,10 @@ class MHS5200(FunctionGenerator):
         """
         Class representing a channel on the MHS52000.
         """
+
         # pylint: disable=protected-access
 
-        __CHANNEL_NAMES = {
-            1: '1',
-            2: '2'
-        }
+        __CHANNEL_NAMES = {1: "1", 2: "2"}
 
         def __init__(self, mhs, idx):
             self._mhs = mhs
@@ -61,11 +60,13 @@ class MHS5200(FunctionGenerator):
         def _get_amplitude_(self):
             query = ":r{0}a".format(self._chan)
             response = self._mhs.query(query)
-            return float(response.replace(query, ""))/100.0, self._mhs.VoltageMode.rms
+            return float(response.replace(query, "")) / 100.0, self._mhs.VoltageMode.rms
 
         def _set_amplitude_(self, magnitude, units):
-            if units == self._mhs.VoltageMode.peak_to_peak or \
-                            units == self._mhs.VoltageMode.rms:
+            if (
+                units == self._mhs.VoltageMode.peak_to_peak
+                or units == self._mhs.VoltageMode.rms
+            ):
                 magnitude = assume_units(magnitude, "V").to(u.V).magnitude
             elif units == self._mhs.VoltageMode.dBm:
                 raise NotImplementedError("Decibel units are not supported.")
@@ -83,12 +84,12 @@ class MHS5200(FunctionGenerator):
             """
             query = ":r{0}d".format(self._chan)
             response = self._mhs.query(query)
-            duty = float(response.replace(query, ""))/10.0
+            duty = float(response.replace(query, "")) / 10.0
             return duty
 
         @duty_cycle.setter
         def duty_cycle(self, new_val):
-            query = ":s{0}d{1}".format(self._chan, int(100.0*new_val))
+            query = ":s{0}d{1}".format(self._chan, int(100.0 * new_val))
             self._mhs.sendcmd(query)
 
         @property
@@ -99,8 +100,7 @@ class MHS5200(FunctionGenerator):
             :type: `bool`
             """
             query = ":r{0}b".format(self._chan)
-            return int(self._mhs.query(query).replace(query, "").
-                       replace("\r", ""))
+            return int(self._mhs.query(query).replace(query, "").replace("\r", ""))
 
         @enable.setter
         def enable(self, newval):
@@ -118,13 +118,12 @@ class MHS5200(FunctionGenerator):
             """
             query = ":r{0}f".format(self._chan)
             response = self._mhs.query(query)
-            freq = float(response.replace(query, ""))*u.Hz
-            return freq/100.0
+            freq = float(response.replace(query, "")) * u.Hz
+            return freq / 100.0
 
         @frequency.setter
         def frequency(self, new_val):
-            new_val = assume_units(new_val, u.Hz).to(u.Hz).\
-                          magnitude*100.0
+            new_val = assume_units(new_val, u.Hz).to(u.Hz).magnitude * 100.0
             query = ":s{0}f{1}".format(self._chan, int(new_val))
             self._mhs.sendcmd(query)
 
@@ -140,11 +139,11 @@ class MHS5200(FunctionGenerator):
             # need to convert
             query = ":r{0}o".format(self._chan)
             response = self._mhs.query(query)
-            return int(response.replace(query, ""))/100.0-1.20
+            return int(response.replace(query, "")) / 100.0 - 1.20
 
         @offset.setter
         def offset(self, new_val):
-            new_val = int(new_val*100)+120
+            new_val = int(new_val * 100) + 120
             query = ":s{0}o{1}".format(self._chan, new_val)
             self._mhs.sendcmd(query)
 
@@ -160,7 +159,7 @@ class MHS5200(FunctionGenerator):
             # need to convert
             query = ":r{0}p".format(self._chan)
             response = self._mhs.query(query)
-            return int(response.replace(query, ""))*u.deg
+            return int(response.replace(query, "")) * u.deg
 
         @phase.setter
         def phase(self, new_val):
@@ -181,14 +180,14 @@ class MHS5200(FunctionGenerator):
 
         @function.setter
         def function(self, new_val):
-            query = ":s{0}w{1}".format(self._chan,
-                                       self._mhs.Function(new_val).value)
+            query = ":s{0}w{1}".format(self._chan, self._mhs.Function(new_val).value)
             self._mhs.sendcmd(query)
 
     class Function(Enum):
         """
         Enum containing valid wave modes for
         """
+
         sine = 0
         square = 1
         triangular = 2

@@ -30,7 +30,7 @@ import instruments.units as u
 
 # <codecell>
 
-ddg = SRSDG645.open_gpibusb('/dev/ttyUSB0', 15)
+ddg = SRSDG645.open_gpibusb("/dev/ttyUSB0", 15)
 
 # <markdowncell>
 
@@ -38,8 +38,6 @@ ddg = SRSDG645.open_gpibusb('/dev/ttyUSB0', 15)
 
 # <codecell>
 
-ddg.channel[ddg.Channels.A].delay = (ddg.Channels.B, u.Quantity(10, 'us'))
+ddg.channel[ddg.Channels.A].delay = (ddg.Channels.B, u.Quantity(10, "us"))
 
 # <codecell>
-
-

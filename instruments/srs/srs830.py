@@ -15,18 +15,21 @@ from enum import Enum, IntEnum
 from instruments.abstract_instruments.comm import (
     GPIBCommunicator,
     SerialCommunicator,
-    LoopbackCommunicator
+    LoopbackCommunicator,
 )
 from instruments.generic_scpi import SCPIInstrument
 from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import (
-    bool_property, bounded_unitful_property, enum_property, unitful_property
+    bool_property,
+    bounded_unitful_property,
+    enum_property,
+    unitful_property,
 )
 
 # CONSTANTS ###################################################################
 
-VALID_SAMPLE_RATES = [2.0**n for n in range(-4, 10)]
+VALID_SAMPLE_RATES = [2.0 ** n for n in range(-4, 10)]
 VALID_SAMPLE_RATES += ["trigger"]
 
 # CLASSES #####################################################################
@@ -68,8 +71,12 @@ class SRS830(SCPIInstrument):
             elif isinstance(self._file, LoopbackCommunicator):
                 pass
             else:
-                warnings.warn("OUTX command has not been set. Instrument "
-                              "behaviour is unknown.", UserWarning)
+                warnings.warn(
+                    "OUTX command has not been set. Instrument "
+                    "behaviour is unknown.",
+                    UserWarning,
+                )
+
     # ENUMS #
 
     class FreqSource(IntEnum):
@@ -77,6 +84,7 @@ class SRS830(SCPIInstrument):
         """
         Enum for the SRS830 frequency source settings.
         """
+
         external = 0
         internal = 1
 
@@ -85,6 +93,7 @@ class SRS830(SCPIInstrument):
         """
         Enum for the SRS830 channel coupling settings.
         """
+
         ac = 0
         dc = 1
 
@@ -92,6 +101,7 @@ class SRS830(SCPIInstrument):
         """
         Enum for the SRS830 buffer modes.
         """
+
         one_shot = 0
         loop = 1
 
@@ -99,6 +109,7 @@ class SRS830(SCPIInstrument):
         """
         Enum containing valid modes for the SRS 830
         """
+
         x = "x"
         y = "y"
         r = "r"
@@ -129,7 +140,7 @@ class SRS830(SCPIInstrument):
             or uses the internal reference.
 
         :type: `SRS830.FreqSource`
-        """
+        """,
     )
 
     frequency = unitful_property(
@@ -142,7 +153,7 @@ class SRS830(SCPIInstrument):
         :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units Hertz.
         :type: `~pint.Quantity` with units Hertz.
-        """
+        """,
     )
 
     phase, phase_min, phase_max = bounded_unitful_property(
@@ -157,7 +168,7 @@ class SRS830(SCPIInstrument):
         :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units degrees.
         :type: `~pint.Quantity` with units degrees.
-        """
+        """,
     )
 
     amplitude, amplitude_min, amplitude_max = bounded_unitful_property(
@@ -172,7 +183,7 @@ class SRS830(SCPIInstrument):
         :units: As specified (if a `~pint.Quantity`) or assumed to be
             of units volts. Value should be specified as peak-to-peak.
         :type: `~pint.Quantity` with units volts peak-to-peak.
-        """
+        """,
     )
 
     input_shield_ground = bool_property(
@@ -183,7 +194,7 @@ class SRS830(SCPIInstrument):
         Function sets the input shield grounding to either 'float' or 'ground'.
 
         :type: `bool`
-        """
+        """,
     )
 
     coupling = enum_property(
@@ -194,7 +205,7 @@ class SRS830(SCPIInstrument):
         Gets/sets the input coupling to either 'ac' or 'dc'.
 
         :type: `SRS830.Coupling`
-        """
+        """,
     )
 
     @property
@@ -207,7 +218,7 @@ class SRS830(SCPIInstrument):
 
         :type: `~pint.Quantity` with units Hertz.
         """
-        value = int(self.query('SRAT?'))
+        value = int(self.query("SRAT?"))
         if value == 14:
             return "trigger"
         return u.Quantity(VALID_SAMPLE_RATES[value], u.Hz)
@@ -218,10 +229,12 @@ class SRS830(SCPIInstrument):
             newval = newval.lower()
 
         if newval in VALID_SAMPLE_RATES:
-            self.sendcmd('SRAT {}'.format(VALID_SAMPLE_RATES.index(newval)))
+            self.sendcmd("SRAT {}".format(VALID_SAMPLE_RATES.index(newval)))
         else:
-            raise ValueError('Valid samples rates given by {} '
-                             'and "trigger".'.format(VALID_SAMPLE_RATES))
+            raise ValueError(
+                "Valid samples rates given by {} "
+                'and "trigger".'.format(VALID_SAMPLE_RATES)
+            )
 
     buffer_mode = enum_property(
         "SEND",
@@ -235,7 +248,7 @@ class SRS830(SCPIInstrument):
         will repeat from the start.
 
         :type: `SRS830.BufferMode`
-        """
+        """,
     )
 
     @property
@@ -248,12 +261,11 @@ class SRS830(SCPIInstrument):
         resp = None
         i = 0
         while not resp and i < 10:
-            resp = self.query('SPTS?').strip()
+            resp = self.query("SPTS?").strip()
             i += 1
         if not resp:
             raise IOError(
-                "Expected integer response from instrument, got {}".format(
-                    repr(resp))
+                "Expected integer response from instrument, got {}".format(repr(resp))
             )
         return int(resp)
 
@@ -269,7 +281,7 @@ class SRS830(SCPIInstrument):
         other, FAST1, is for legacy systems which this package does not support.
 
         :type: `bool`
-        """
+        """,
     )
 
     # AUTO- METHODS #
@@ -290,11 +302,11 @@ class SRS830(SCPIInstrument):
             mode = SRS830.Mode[mode]
 
         if mode not in self._XYR_MODE_MAP:
-            raise ValueError('Specified mode not valid for this function.')
+            raise ValueError("Specified mode not valid for this function.")
 
         mode = self._XYR_MODE_MAP[mode]
 
-        self.sendcmd('AOFF {}'.format(mode))
+        self.sendcmd("AOFF {}".format(mode))
 
     def auto_phase(self):
         """
@@ -304,7 +316,7 @@ class SRS830(SCPIInstrument):
         Do not send this message again without waiting the correct amount
         of time for the lock-in to finish.
         """
-        self.sendcmd('APHS')
+        self.sendcmd("APHS")
 
     # META-METHODS #
 
@@ -356,11 +368,11 @@ class SRS830(SCPIInstrument):
             or if numpy is installed, `numpy.array`[`numpy.array`, `numpy.array`]
         """
         if num_samples > 16383:
-            raise ValueError('Number of samples cannot exceed 16383.')
+            raise ValueError("Number of samples cannot exceed 16383.")
 
         sample_time = math.ceil(num_samples / sample_rate)
 
-        self.init(sample_rate, SRS830.BufferMode['one_shot'])
+        self.init(sample_rate, SRS830.BufferMode["one_shot"])
         self.start_data_transfer()
 
         time.sleep(sample_time + 0.1)
@@ -376,8 +388,8 @@ class SRS830(SCPIInstrument):
         except IOError:
             pass
 
-        ch1 = self.read_data_buffer('ch1')
-        ch2 = self.read_data_buffer('ch2')
+        ch1 = self.read_data_buffer("ch1")
+        ch2 = self.read_data_buffer("ch2")
 
         if numpy:
             return numpy.array([ch1, ch2])
@@ -406,25 +418,25 @@ class SRS830(SCPIInstrument):
             mode = SRS830.Mode[mode]
 
         if mode not in self._XYR_MODE_MAP:
-            raise ValueError('Specified mode not valid for this function.')
+            raise ValueError("Specified mode not valid for this function.")
 
         mode = self._XYR_MODE_MAP[mode]
 
         if not isinstance(offset, (int, float)):
-            raise TypeError('Offset parameter must be an integer or a float.')
+            raise TypeError("Offset parameter must be an integer or a float.")
         if not isinstance(expand, (int, float)):
-            raise TypeError('Expand parameter must be an integer or a float.')
+            raise TypeError("Expand parameter must be an integer or a float.")
 
         if (offset > 105) or (offset < -105):
-            raise ValueError('Offset mustbe -105 <= offset <= +105.')
+            raise ValueError("Offset mustbe -105 <= offset <= +105.")
 
         valid = [1, 10, 100]
         if expand in valid:
             expand = valid.index(expand)
         else:
-            raise ValueError('Expand must be 1, 10, 100.')
+            raise ValueError("Expand must be 1, 10, 100.")
 
-        self.sendcmd('OEXP {},{},{}'.format(mode, int(offset), expand))
+        self.sendcmd("OEXP {},{},{}".format(mode, int(offset), expand))
 
     def start_scan(self):
         """
@@ -432,18 +444,26 @@ class SRS830(SCPIInstrument):
         this is used to start the scan. The scan starts after a delay of
         0.5 seconds.
         """
-        self.sendcmd('STRD')
+        self.sendcmd("STRD")
 
     def pause(self):
         """
         Has the instrument pause data capture.
         """
-        self.sendcmd('PAUS')
+        self.sendcmd("PAUS")
 
     _data_snap_modes = {
-        Mode.x: 1, Mode.y: 2, Mode.r: 3, Mode.theta: 4, Mode.aux1: 5,
-        Mode.aux2: 6, Mode.aux3: 7, Mode.aux4: 8, Mode.ref: 9,
-        Mode.ch1: 10, Mode.ch2: 11
+        Mode.x: 1,
+        Mode.y: 2,
+        Mode.r: 3,
+        Mode.theta: 4,
+        Mode.aux1: 5,
+        Mode.aux2: 6,
+        Mode.aux3: 7,
+        Mode.aux4: 8,
+        Mode.ref: 9,
+        Mode.ch1: 10,
+        Mode.ch2: 11,
     }
 
     def data_snap(self, mode1, mode2):
@@ -474,19 +494,17 @@ class SRS830(SCPIInstrument):
             mode2 = mode2.lower()
             mode2 = SRS830.Mode[mode2]
 
-        if ((mode1 not in self._data_snap_modes) or
-                (mode2 not in self._data_snap_modes)):
-            raise ValueError('Specified mode not valid for this function.')
+        if (mode1 not in self._data_snap_modes) or (mode2 not in self._data_snap_modes):
+            raise ValueError("Specified mode not valid for this function.")
 
         mode1 = self._XYR_MODE_MAP[mode1]
         mode2 = self._XYR_MODE_MAP[mode2]
 
         if mode1 == mode2:
-            raise ValueError('Both parameters for the data snapshot are the '
-                             'same.')
+            raise ValueError("Both parameters for the data snapshot are the " "same.")
 
-        result = self.query('SNAP? {},{}'.format(mode1, mode2))
-        return list(map(float, result.split(',')))
+        result = self.query("SNAP? {},{}".format(mode1, mode2))
+        return list(map(float, result.split(",")))
 
     _valid_read_data_buffer = {Mode.ch1: 1, Mode.ch2: 2}
 
@@ -509,7 +527,7 @@ class SRS830(SCPIInstrument):
             channel = SRS830.Mode[channel]
 
         if channel not in self._valid_read_data_buffer:
-            raise ValueError('Specified mode not valid for this function.')
+            raise ValueError("Specified mode not valid for this function.")
 
         channel = self._valid_read_data_buffer[channel]
 
@@ -518,30 +536,31 @@ class SRS830(SCPIInstrument):
         # Query device for entire buffer, returning in ASCII, then
         # converting to a list of floats before returning to the
         # calling method
-        data = self.query('TRCA?{},0,{}'.format(channel, N)).strip()
+        data = self.query("TRCA?{},0,{}".format(channel, N)).strip()
         if numpy:
-            return numpy.fromstring(data, sep=',')
+            return numpy.fromstring(data, sep=",")
         return tuple(map(float, data.split(",")))
 
     def clear_data_buffer(self):
         """
         Clears the data buffer of the SRS830.
         """
-        self.sendcmd('REST')
+        self.sendcmd("REST")
 
     _valid_channel_display = [
-        {  # channel1
-            Mode.x: 0, Mode.r: 1, Mode.xnoise: 2, Mode.aux1: 3, Mode.aux2: 4
-        },
+        {Mode.x: 0, Mode.r: 1, Mode.xnoise: 2, Mode.aux1: 3, Mode.aux2: 4},  # channel1
         {  # channel2
-            Mode.y: 0, Mode.theta: 1, Mode.ynoise: 2, Mode.aux3: 3,
-            Mode.aux4: 4
-        }
+            Mode.y: 0,
+            Mode.theta: 1,
+            Mode.ynoise: 2,
+            Mode.aux3: 3,
+            Mode.aux4: 4,
+        },
     ]
 
     _valid_channel_ratio = [
         {Mode.none: 0, Mode.aux1: 1, Mode.aux2: 2},  # channel1
-        {Mode.none: 0, Mode.aux3: 1, Mode.aux4: 2}  # channel2
+        {Mode.none: 0, Mode.aux3: 1, Mode.aux4: 2},  # channel2
     ]
 
     _valid_channel = {Mode.ch1: 1, Mode.ch2: 2}
@@ -578,18 +597,16 @@ class SRS830(SCPIInstrument):
             ratio = SRS830.Mode[ratio]
 
         if channel not in self._valid_channel:
-            raise ValueError('Specified channel not valid for this function.')
+            raise ValueError("Specified channel not valid for this function.")
 
         channel = self._valid_channel[channel]
 
         if display not in self._valid_channel_display[channel - 1]:
-            raise ValueError('Specified display mode not valid for this '
-                             'function.')
+            raise ValueError("Specified display mode not valid for this " "function.")
         if ratio not in self._valid_channel_ratio[channel - 1]:
-            raise ValueError('Specified display ratio not valid for this '
-                             'function.')
+            raise ValueError("Specified display ratio not valid for this " "function.")
 
         display = self._valid_channel_display[channel - 1][display]
         ratio = self._valid_channel_ratio[channel - 1][ratio]
 
-        self.sendcmd('DDEF {},{},{}'.format(channel, display, ratio))
+        self.sendcmd("DDEF {},{},{}".format(channel, display, ratio))

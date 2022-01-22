@@ -10,9 +10,7 @@ Module containing tests for the util_fns.split_unit_str utility function
 import pytest
 
 from instruments.units import ureg as u
-from instruments.util_fns import (
-    split_unit_str
-)
+from instruments.util_fns import split_unit_str
 
 # TEST CASES #################################################################
 
@@ -63,10 +61,7 @@ def test_split_unit_str_lookups():
     This checks that the unit lookup parameter is correctly called, which can be
     used to map between units as string and their pyquantities equivalent.
     """
-    unit_dict = {
-        "FOO": "foobars",
-        "SNA": "snafus"
-    }
+    unit_dict = {"FOO": "foobars", "SNA": "snafus"}
     mag, units = split_unit_str("42 FOO", lookup=unit_dict.__getitem__)
     assert mag == 42
     assert units == "foobars"

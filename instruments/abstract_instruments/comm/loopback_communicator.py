@@ -62,8 +62,10 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
         if not isinstance(newval, str):
-            raise TypeError("Terminator for loopback communicator must be "
-                            "specified as a byte or unicode string.")
+            raise TypeError(
+                "Terminator for loopback communicator must be "
+                "specified as a byte or unicode string."
+            )
         self._terminator = newval
 
     @property
@@ -107,10 +109,10 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
                 if self._terminator:
                     while result.endswith(self._terminator.encode("utf-8")) is False:
                         c = self._stdin.read(1)
-                        if c == b'':
+                        if c == b"":
                             break
                         result += c
-                    return result[:-len(self._terminator)]
+                    return result[: -len(self._terminator)]
                 return self._stdin.read(-1)
 
             elif size >= 0:

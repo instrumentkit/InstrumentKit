@@ -51,7 +51,7 @@ class Keithley2182(SCPIMultimeter):
 
         @property
         def mode(self):
-            return Keithley2182.Mode(self._parent.query('SENS:FUNC?'))
+            return Keithley2182.Mode(self._parent.query("SENS:FUNC?"))
 
         @mode.setter
         def mode(self, newval):
@@ -96,8 +96,8 @@ class Keithley2182(SCPIMultimeter):
             if mode is not None:
                 # self.mode = mode
                 raise NotImplementedError
-            self._parent.sendcmd('SENS:CHAN {}'.format(self._idx))
-            value = float(self._parent.query('SENS:DATA:FRES?'))
+            self._parent.sendcmd("SENS:CHAN {}".format(self._idx))
+            value = float(self._parent.query("SENS:DATA:FRES?"))
             unit = self._parent.units
             return u.Quantity(value, unit)
 
@@ -107,6 +107,7 @@ class Keithley2182(SCPIMultimeter):
         """
         Enum containing valid measurement modes for the Keithley 2182
         """
+
         voltage_dc = "VOLT"
         temperature = "TEMP"
 
@@ -114,11 +115,12 @@ class Keithley2182(SCPIMultimeter):
         """
         Enum containing valid trigger modes for the Keithley 2182
         """
-        immediate = 'IMM'
-        external = 'EXT'
-        bus = 'BUS'
-        timer = 'TIM'
-        manual = 'MAN'
+
+        immediate = "IMM"
+        external = "EXT"
+        bus = "BUS"
+        timer = "TIM"
+        manual = "MAN"
 
     # PROPERTIES #
 
@@ -166,9 +168,8 @@ class Keithley2182(SCPIMultimeter):
         if self.relative:
             self.sendcmd("SENS:{}:CHAN1:REF:ACQ".format(mode.value))
         else:
-            newval = ("ON" if newval is True else "OFF")
-            self.sendcmd(
-                "SENS:{}:CHAN1:REF:STAT {}".format(mode.value, newval))
+            newval = "ON" if newval is True else "OFF"
+            self.sendcmd("SENS:{}:CHAN1:REF:STAT {}".format(mode.value, newval))
 
     @property
     def input_range(self):
@@ -237,8 +238,10 @@ class Keithley2182(SCPIMultimeter):
         if mode is None:
             mode = self.channel[0].mode
         if not isinstance(mode, Keithley2182.Mode):
-            raise TypeError("Mode must be specified as a Keithley2182.Mode "
-                            "value, got {} instead.".format(mode))
+            raise TypeError(
+                "Mode must be specified as a Keithley2182.Mode "
+                "value, got {} instead.".format(mode)
+            )
         value = float(self.query("MEAS:{}?".format(mode.value)))
         unit = self.units
         return value * unit

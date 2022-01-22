@@ -37,7 +37,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, filelike):
         super(FileCommunicator, self).__init__(self)
         if isinstance(filelike, str):  # pragma: no cover
-            filelike = open(filelike, 'rb+')
+            filelike = open(filelike, "rb+")
 
         self._filelike = filelike
         self._terminator = "\n"
@@ -53,15 +53,16 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
 
         :type: `str`
         """
-        if hasattr(self._filelike, 'name'):
+        if hasattr(self._filelike, "name"):
             return self._filelike.name
 
         return None
 
     @address.setter
     def address(self, newval):
-        raise NotImplementedError("Changing addresses of a file communicator"
-                                  " is not yet supported.")
+        raise NotImplementedError(
+            "Changing addresses of a file communicator" " is not yet supported."
+        )
 
     @property
     def terminator(self):
@@ -77,8 +78,10 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
         if not isinstance(newval, str) or len(newval) > 1:
-            raise TypeError("Terminator for socket communicator must be "
-                            "specified as a single character string.")
+            raise TypeError(
+                "Terminator for socket communicator must be "
+                "specified as a single character string."
+            )
         self._terminator = newval
 
     @property
@@ -115,10 +118,10 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
             return self._filelike.read(size)
         elif size == -1:
             result = bytes()
-            c = b''
+            c = b""
             while c != self._terminator.encode("utf-8"):
                 c = self._filelike.read(1)
-                if c == b'':
+                if c == b"":
                     break
                 if c != self._terminator.encode("utf-8"):
                     result += c
@@ -204,7 +207,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
                     break
                 resp += nextchar
                 if nextchar.endswith(self._terminator.encode("utf-8")):
-                    resp = resp[:-len(self._terminator)]
+                    resp = resp[: -len(self._terminator)]
                     break
         except IOError as ex:
             if ex.errno == errno.ETIMEDOUT:
@@ -221,5 +224,6 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
                     "providing the device file is unable to communicate with "
                     "the instrument. Consider restarting the instrument.".format(
                         self.address
-                    ))
+                    )
+                )
         return resp.decode("utf-8")

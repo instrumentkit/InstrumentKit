@@ -36,7 +36,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         Note that no commands will be accepted by the generator for at least
         :math:`5 \mu\text{s}`.
         """
-        self.sendcmd('0E.')
+        self.sendcmd("0E.")
 
     @property
     def frequency(self):
@@ -48,7 +48,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         :type: `~pint.Quantity`
         :units: frequency, assumed to be GHz
         """
-        return (int(self.query('04.'), 16) * u.mHz).to(u.GHz)
+        return (int(self.query("04."), 16) * u.mHz).to(u.GHz)
 
     @frequency.setter
     def frequency(self, newval):
@@ -58,7 +58,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
         # Write the integer to the serial port in ASCII-encoded
         # uppercase-hexadecimal format, with padding to 12 nybbles.
-        self.sendcmd('0C{:012X}.'.format(newval))
+        self.sendcmd("0C{:012X}.".format(newval))
 
         # No return data, so no readline needed.
 
@@ -72,7 +72,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         :type: `~pint.Quantity`
         :units: log-power, assumed to be dBm
         """
-        return u.Quantity((int(self.query('0D.'), 16)), u.cBm).to(u.dBm)
+        return u.Quantity((int(self.query("0D."), 16)), u.cBm).to(u.dBm)
 
     @power.setter
     def power(self, newval):
@@ -84,7 +84,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         newval = int(assume_units(newval, u.dBm).to(u.cBm).magnitude)
 
         # Command code 0x03, parameter length 2 bytes (4 nybbles)
-        self.sendcmd('03{:04X}.'.format(newval))
+        self.sendcmd("03{:04X}.".format(newval))
 
     @property
     def phase(self):
@@ -105,7 +105,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @blanking.setter
     def blanking(self, newval):
-        self.sendcmd('05{:02X}.'.format(1 if newval else 0))
+        self.sendcmd("05{:02X}.".format(1 if newval else 0))
 
     @property
     def ref_output(self):
@@ -118,7 +118,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @ref_output.setter
     def ref_output(self, newval):
-        self.sendcmd('08{:02X}.'.format(1 if newval else 0))
+        self.sendcmd("08{:02X}.".format(1 if newval else 0))
 
     @property
     def output(self):
@@ -132,7 +132,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @output.setter
     def output(self, newval):
-        self.sendcmd('0F{:02X}.'.format(1 if newval else 0))
+        self.sendcmd("0F{:02X}.".format(1 if newval else 0))
 
     @property
     def pulse_modulation(self):
@@ -145,7 +145,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @pulse_modulation.setter
     def pulse_modulation(self, newval):
-        self.sendcmd('09{:02X}.'.format(1 if newval else 0))
+        self.sendcmd("09{:02X}.".format(1 if newval else 0))
 
     @property
     def am_modulation(self):
@@ -158,4 +158,4 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @am_modulation.setter
     def am_modulation(self, newval):
-        self.sendcmd('0A{:02X}.'.format(1 if newval else 0))
+        self.sendcmd("0A{:02X}.".format(1 if newval else 0))

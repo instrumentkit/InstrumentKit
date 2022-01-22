@@ -231,13 +231,15 @@ def test_gpibusbcomm_sendcmd():
     comm._version = 5
 
     comm._sendcmd("mock")
-    comm._file.sendcmd.assert_has_calls([
-        mock.call("+a:1"),
-        mock.call("++eoi 1"),
-        mock.call("++read_tmo_ms 1000"),
-        mock.call("++eos 2"),
-        mock.call("mock")
-    ])
+    comm._file.sendcmd.assert_has_calls(
+        [
+            mock.call("+a:1"),
+            mock.call("++eoi 1"),
+            mock.call("++read_tmo_ms 1000"),
+            mock.call("++eos 2"),
+            mock.call("mock"),
+        ]
+    )
 
 
 def test_gpibusbcomm_sendcmd_empty_string():

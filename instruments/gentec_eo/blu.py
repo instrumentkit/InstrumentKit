@@ -68,6 +68,7 @@ class Blu(Instrument):
         `enum` class while the unit is omitted since it depends on the
         mode the head is in.
         """
+
         max1pico = "00"
         max3pico = "01"
         max10pico = "02"
@@ -187,7 +188,7 @@ class Blu(Instrument):
 
         try:
             # get the response
-            resp = self._no_ack_query("*DVS").split('\r\n')
+            resp = self._no_ack_query("*DVS").split("\r\n")
         finally:
             # set back terminator and 3 second timeout
             self.terminator = _terminator
@@ -197,7 +198,7 @@ class Blu(Instrument):
         retlist = []  # init return list of enums
         for line in resp:
             if len(line) > 0:  # account for empty lines
-                index = line[line.find("[")+1:line.find("]")]
+                index = line[line.find("[") + 1 : line.find("]")]
                 retlist.append(self.Scale(index))
         return retlist
 
@@ -215,7 +216,7 @@ class Blu(Instrument):
             array(100.) * %
         """
         resp = self._no_ack_query("*QSO").rstrip()
-        resp = float(resp[resp.find("=")+1:len(resp)])
+        resp = float(resp[resp.find("=") + 1 : len(resp)])
         return u.Quantity(resp, u.percent)
 
     @property
@@ -273,10 +274,10 @@ class Blu(Instrument):
         resp = self._value_query("*GMD", tp=int)
         if resp == 0:
             self._power_mode = True
-            return 'power'
+            return "power"
         else:
             self._power_mode = False
-            return 'sse'
+            return "sse"
 
     @property
     def new_value_ready(self):
@@ -332,7 +333,7 @@ class Blu(Instrument):
 
     @property
     def single_shot_energy_mode(self):
-        """ Get / Set single shot energy mode.
+        """Get / Set single shot energy mode.
 
         :return: Is single shot energy mode turned on?
         :rtype: bool
@@ -376,16 +377,18 @@ class Blu(Instrument):
         """
         level = self._no_ack_query("*GTL")
         # get the percent
-        retval = float(level[level.find(":")+1:level.find("%")]) / 100
+        retval = float(level[level.find(":") + 1 : level.find("%")]) / 100
         return retval
 
     @trigger_level.setter
     def trigger_level(self, newval):
         if newval < 0.001 or newval > 0.99:
-            raise ValueError("Trigger level {} is out of range. It must be "
-                             "between 0.001 and 0.998.".format(newval))
+            raise ValueError(
+                "Trigger level {} is out of range. It must be "
+                "between 0.001 and 0.998.".format(newval)
+            )
 
-        newval = newval * 100.
+        newval = newval * 100.0
         if newval >= 10:
             newval = str(round(newval, 1)).zfill(4)
         else:
@@ -467,8 +470,9 @@ class Blu(Instrument):
             elif newval.is_compatible_with(u.J):
                 newval = newval.to(u.J).magnitude
             else:
-                raise ValueError("Value must be given in watts, "
-                                 "joules, or unitless.")
+                raise ValueError(
+                    "Value must be given in watts, " "joules, or unitless."
+                )
         sendval = _format_eight(newval)  # sendval: 8 characters long
         self.sendcmd("*OFF{}".format(sendval))
 

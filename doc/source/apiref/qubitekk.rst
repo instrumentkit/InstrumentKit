@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.qubitekk
-    
+
 ========
 Qubitekk
 ========
@@ -13,7 +13,7 @@ Qubitekk
 .. autoclass:: CC1
     :members:
     :undoc-members:
-    
+
 :class:`MC1` Motor Controller
 =============================
 

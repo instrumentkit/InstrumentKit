@@ -6,7 +6,7 @@ import time
 import instruments as ik
 import instruments.units as u
 
-dmm = ik.hp.HP3456a.open_gpibusb('/dev/ttyUSB0', 22)
+dmm = ik.hp.HP3456a.open_gpibusb("/dev/ttyUSB0", 22)
 logging.basicConfig(level=logging.DEBUG)
 dmm._file.debug = True
 dmm.trigger_mode = dmm.TriggerMode.hold
@@ -72,4 +72,3 @@ dmm.filter = 1
 print(dmm.measure(dmm.Mode.dcv))
 dmm.autozero = 0
 print(dmm.measure(dmm.Mode.dcv))
-

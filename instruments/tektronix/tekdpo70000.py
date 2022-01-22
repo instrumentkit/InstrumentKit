@@ -11,14 +11,21 @@ from enum import Enum
 import time
 
 from instruments.abstract_instruments import (
-    Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
+    Oscilloscope,
+    OscilloscopeChannel,
+    OscilloscopeDataSource,
 )
 from instruments.generic_scpi import SCPIInstrument
 from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import (
-    enum_property, string_property, int_property, unitful_property,
-    unitless_property, bool_property, ProxyList
+    enum_property,
+    string_property,
+    int_property,
+    unitful_property,
+    unitless_property,
+    bool_property,
+    ProxyList,
 )
 
 # CLASSES #####################################################################
@@ -55,6 +62,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         Enum containing valid acquisition modes for the Tektronix 70000 series
         oscilloscopes.
         """
+
         sample = "SAM"
         peak_detect = "PEAK"
         hi_res = "HIR"
@@ -68,10 +76,11 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         Enum containing valid acquisition states for the Tektronix 70000 series
         oscilloscopes.
         """
-        on = 'ON'
-        off = 'OFF'
-        run = 'RUN'
-        stop = 'STOP'
+
+        on = "ON"
+        off = "OFF"
+        run = "RUN"
+        stop = "STOP"
 
     class StopAfter(Enum):
 
@@ -79,8 +88,9 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         Enum containing valid stop condition modes for the Tektronix 70000
         series oscilloscopes.
         """
-        run_stop = 'RUNST'
-        sequence = 'SEQ'
+
+        run_stop = "RUNST"
+        sequence = "SEQ"
 
     class SamplingMode(Enum):
 
@@ -88,6 +98,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         Enum containing valid sampling modes for the Tektronix 70000
         series oscilloscopes.
         """
+
         real_time = "RT"
         equivalent_time_allowed = "ET"
         interpolation_allowed = "IT"
@@ -98,6 +109,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         Enum containing valid horizontal scan modes for the Tektronix 70000
         series oscilloscopes.
         """
+
         auto = "AUTO"
         constant = "CONST"
         manual = "MAN"
@@ -108,6 +120,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         Enum containing valid waveform encoding modes for the Tektronix 70000
         series oscilloscopes.
         """
+
         # NOTE: For some reason, it uses the full names here instead of
         # returning the mneonics listed in the manual.
         ascii = "ASCII"
@@ -119,6 +132,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         Enum containing valid binary formats for the Tektronix 70000
         series oscilloscopes (int, unsigned-int, floating-point).
         """
+
         int = "RI"
         uint = "RP"
         float = "FP"  # Single-precision!
@@ -129,6 +143,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         Enum containing valid byte order (big-/little-endian) for the
         Tektronix 70000 series oscilloscopes.
         """
+
         little_endian = "LSB"
         big_endian = "MSB"
 
@@ -138,6 +153,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         Enum containing valid trigger states for the Tektronix 70000
         series oscilloscopes.
         """
+
         armed = "ARMED"
         auto = "AUTO"
         dpo = "DPO"
@@ -148,14 +164,18 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
     @staticmethod
     def _dtype(binary_format, byte_order, n_bytes):
-        return "{}{}{}".format({
-            TekDPO70000.ByteOrder.big_endian: ">",
-            TekDPO70000.ByteOrder.little_endian: "<"
-        }[byte_order], (n_bytes if n_bytes is not None else ""), {
-            TekDPO70000.BinaryFormat.int: "i",
-            TekDPO70000.BinaryFormat.uint: "u",
-            TekDPO70000.BinaryFormat.float: "f"
-        }[binary_format])
+        return "{}{}{}".format(
+            {
+                TekDPO70000.ByteOrder.big_endian: ">",
+                TekDPO70000.ByteOrder.little_endian: "<",
+            }[byte_order],
+            (n_bytes if n_bytes is not None else ""),
+            {
+                TekDPO70000.BinaryFormat.int: "i",
+                TekDPO70000.BinaryFormat.uint: "u",
+                TekDPO70000.BinaryFormat.float: "f",
+            }[binary_format],
+        )
 
     # CLASSES #
 
@@ -189,7 +209,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
                 dtype = self._parent._dtype(
                     self._parent.outgoing_binary_format,
                     self._parent.outgoing_byte_order,
-                    n_bytes=None
+                    n_bytes=None,
                 )
                 self._parent.sendcmd("CURV?")
                 raw = self._parent.binblockread(n_bytes, fmt=dtype)
@@ -227,10 +247,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             self._idx = idx + 1  # 1-based.
 
             # Initialize as a data source with name MATH{}.
-            super(TekDPO70000.Math, self).__init__(
-                parent,
-                "MATH{}".format(self._idx)
-            )
+            super(TekDPO70000.Math, self).__init__(parent, "MATH{}".format(self._idx))
 
         def sendcmd(self, cmd):
             """
@@ -259,6 +276,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             Enum containing valid filter modes for a math channel on the
             TekDPO70000 series oscilloscope.
             """
+
             centered = "CENT"
             shifted = "SHIF"
 
@@ -267,6 +285,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             Enum containing valid amplitude units for a math channel on the
             TekDPO70000 series oscilloscope.
             """
+
             linear = "LINEA"
             db = "DB"
             dbm = "DBM"
@@ -276,6 +295,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             Enum containing valid phase units for a math channel on the
             TekDPO70000 series oscilloscope.
             """
+
             degrees = "DEG"
             radians = "RAD"
             group_delay = "GROUPD"
@@ -285,6 +305,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             Enum containing valid spectral windows for a math channel on the
             TekDPO70000 series oscilloscope.
             """
+
             rectangular = "RECTANG"
             hamming = "HAMM"
             hanning = "HANN"
@@ -298,37 +319,31 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             "DEF",
             doc="""
             A text string specifying the math to do, ex. CH1+CH2
-            """
+            """,
         )
 
-        filter_mode = enum_property(
-            "FILT:MOD",
-            FilterMode
-        )
+        filter_mode = enum_property("FILT:MOD", FilterMode)
 
-        filter_risetime = unitful_property(
-            "FILT:RIS",
-            u.second
-        )
+        filter_risetime = unitful_property("FILT:RIS", u.second)
 
         label = string_property(
             "LAB:NAM",
             doc="""
             Just a human readable label for the channel.
-            """
+            """,
         )
 
         label_xpos = unitless_property(
             "LAB:XPOS",
             doc="""
             The x position, in divisions, to place the label.
-            """
+            """,
         )
 
         label_ypos = unitless_property(
             "LAB:YPOS",
             doc="""The y position, in divisions, to place the label.
-            """
+            """,
         )
 
         num_avg = unitless_property(
@@ -336,7 +351,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             doc="""
             The number of acquisistions over which exponential averaging is
             performed.
-            """
+            """,
         )
 
         spectral_center = unitful_property(
@@ -345,7 +360,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             doc="""
             The desired frequency of the spectral analyzer output data span
             in Hz.
-            """
+            """,
         )
 
         spectral_gatepos = unitful_property(
@@ -354,7 +369,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             doc="""
             The gate position. Units are represented in seconds, with respect
             to trigger position.
-            """
+            """,
         )
 
         spectral_gatewidth = unitful_property(
@@ -362,21 +377,17 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             u.second,
             doc="""
             The time across the 10-division screen in seconds.
-            """
+            """,
         )
 
-        spectral_lock = bool_property(
-            "SPEC:LOCK",
-            inst_true="ON",
-            inst_false="OFF"
-        )
+        spectral_lock = bool_property("SPEC:LOCK", inst_true="ON", inst_false="OFF")
 
         spectral_mag = enum_property(
             "SPEC:MAG",
             Mag,
             doc="""
             Whether the spectral magnitude is linear, db, or dbm.
-            """
+            """,
         )
 
         spectral_phase = enum_property(
@@ -384,7 +395,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             Phase,
             doc="""
             Whether the spectral phase is degrees, radians, or group delay.
-            """
+            """,
         )
 
         spectral_reflevel = unitless_property(
@@ -392,12 +403,10 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             doc="""
             The value that represents the topmost display screen graticule.
             The units depend on spectral_mag.
-            """
+            """,
         )
 
-        spectral_reflevel_offset = unitless_property(
-            "SPEC:REFLEVELO"
-        )
+        spectral_reflevel_offset = unitless_property("SPEC:REFLEVELO")
 
         spectral_resolution_bandwidth = unitful_property(
             "SPEC:RESB",
@@ -405,7 +414,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             doc="""
             The desired resolution bandwidth value. Units are represented in
             Hertz.
-            """
+            """,
         )
 
         spectral_span = unitful_property(
@@ -414,7 +423,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             doc="""
             Specifies the frequency span of the output data vector from the
             spectral analyzer.
-            """
+            """,
         )
 
         spectral_suppress = unitless_property(
@@ -422,7 +431,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             doc="""
             The magnitude level that data with magnitude values below this
             value are displayed as zero phase.
-            """
+            """,
         )
 
         spectral_unwrap = bool_property(
@@ -431,27 +440,24 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             inst_false="OFF",
             doc="""
             Enables or disables phase wrapping.
-            """
+            """,
         )
 
-        spectral_window = enum_property(
-            "SPEC:WIN",
-            SpectralWindow
-        )
+        spectral_window = enum_property("SPEC:WIN", SpectralWindow)
 
         threshhold = unitful_property(
             "THRESH",
             u.volt,
             doc="""
             The math threshhold in volts
-            """
+            """,
         )
 
         unit_string = string_property(
             "UNITS",
             doc="""
             Just a label for the units...doesn"t actually change anything.
-            """
+            """,
         )
 
         autoscale = bool_property(
@@ -460,14 +466,14 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             inst_false="OFF",
             doc="""
             Enables or disables the auto-scaling of new math waveforms.
-            """
+            """,
         )
 
         position = unitless_property(
             "VERT:POS",
             doc="""
             The vertical position, in divisions from the center graticule.
-            """
+            """,
         )
 
         scale = unitful_property(
@@ -476,14 +482,15 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             doc="""
             The scale in volts per division. The range is from
             ``100e-36`` to ``100e+36``.
-            """
+            """,
         )
 
         def _scale_raw_data(self, data):
             # TODO: incorperate the unit_string somehow
             if numpy:
                 return self.scale * (
-                    (TekDPO70000.VERT_DIVS / 2) * data.astype(float) / (2**15) - self.position
+                    (TekDPO70000.VERT_DIVS / 2) * data.astype(float) / (2 ** 15)
+                    - self.position
                 )
 
             scale = self.scale
@@ -511,8 +518,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
             # Initialize as a data source with name CH{}.
             super(TekDPO70000.Channel, self).__init__(
-                self._parent,
-                "CH{}".format(self._idx)
+                self._parent, "CH{}".format(self._idx)
             )
 
         def sendcmd(self, cmd):
@@ -541,6 +547,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             """
             Enum containing valid coupling modes for the oscilloscope channel
             """
+
             ac = "AC"
             dc = "DC"
             dc_reject = "DCREJ"
@@ -558,70 +565,61 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             >>> inst = ik.tektronix.TekDPO70000.open_tcpip("192.168.0.1", 8080)
             >>> channel = inst.channel[0]
             >>> channel.coupling = channel.Coupling.ac
-            """
+            """,
         )
 
-        bandwidth = unitful_property(
-            'BAN',
-            u.Hz
-        )
+        bandwidth = unitful_property("BAN", u.Hz)
 
-        deskew = unitful_property(
-            'DESK',
-            u.second
-        )
+        deskew = unitful_property("DESK", u.second)
 
-        termination = unitful_property(
-            'TERM',
-            u.ohm
-        )
+        termination = unitful_property("TERM", u.ohm)
 
         label = string_property(
-            'LAB:NAM',
+            "LAB:NAM",
             doc="""
             Just a human readable label for the channel.
-            """
+            """,
         )
 
         label_xpos = unitless_property(
-            'LAB:XPOS',
+            "LAB:XPOS",
             doc="""
             The x position, in divisions, to place the label.
-            """
+            """,
         )
 
         label_ypos = unitless_property(
-            'LAB:YPOS',
+            "LAB:YPOS",
             doc="""
             The y position, in divisions, to place the label.
-            """
+            """,
         )
 
         offset = unitful_property(
-            'OFFS',
+            "OFFS",
             u.volt,
             doc="""
             The vertical offset in units of volts. Voltage is given by
             ``offset+scale*(5*raw/2^15 - position)``.
-            """
+            """,
         )
 
         position = unitless_property(
-            'POS',
+            "POS",
             doc="""
             The vertical position, in divisions from the center graticule,
             ranging from ``-8`` to ``8``. Voltage is given by
             ``offset+scale*(5*raw/2^15 - position)``.
-            """
+            """,
         )
 
         scale = unitful_property(
-            'SCALE',
+            "SCALE",
             u.volt,
             doc="""
             Vertical channel scale in units volts/division. Voltage is given
             by ``offset+scale*(5*raw/2^15 - position)``.
-            """
+            """,
         )
 
         def _scale_raw_data(self, data):
@@ -630,13 +628,18 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             offset = self.offset
 
             if numpy:
-                return scale * (
-                    (TekDPO70000.VERT_DIVS / 2) *
-                    data.astype(float) / (2**15) - position
-                ) + offset
+                return (
+                    scale
+                    * (
+                        (TekDPO70000.VERT_DIVS / 2) * data.astype(float) / (2 ** 15)
+                        - position
+                    )
+                    + offset
+                )
 
             return tuple(
-                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2 ** 15) - position) + offset
+                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2 ** 15) - position)
+                + offset
                 for d in map(float, data)
             )
 
@@ -657,134 +660,116 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
     # For some settings that probably won't be used that often, use
     # string_property instead of setting up an enum property.
     acquire_enhanced_enob = string_property(
-        'ACQ:ENHANCEDE',
-        bookmark_symbol='',
+        "ACQ:ENHANCEDE",
+        bookmark_symbol="",
         doc="""
         Valid values are AUTO and OFF.
-        """
+        """,
     )
 
     acquire_enhanced_state = bool_property(
-        'ACQ:ENHANCEDE:STATE',
-        inst_false='0',  # TODO: double check that these are correct
-        inst_true='1'
+        "ACQ:ENHANCEDE:STATE",
+        inst_false="0",  # TODO: double check that these are correct
+        inst_true="1",
     )
 
     acquire_interp_8bit = string_property(
-        'ACQ:INTERPE',
-        bookmark_symbol='',
+        "ACQ:INTERPE",
+        bookmark_symbol="",
         doc="""
         Valid values are AUTO, ON and OFF.
-        """
+        """,
     )
 
-    acquire_magnivu = bool_property(
-        'ACQ:MAG',
-        inst_true='ON',
-        inst_false='OFF'
-    )
+    acquire_magnivu = bool_property("ACQ:MAG", inst_true="ON", inst_false="OFF")
 
-    acquire_mode = enum_property(
-        'ACQ:MOD',
-        AcquisitionMode
-    )
+    acquire_mode = enum_property("ACQ:MOD", AcquisitionMode)
 
-    acquire_mode_actual = enum_property(
-        'ACQ:MOD:ACT',
-        AcquisitionMode,
-        readonly=True
-    )
+    acquire_mode_actual = enum_property("ACQ:MOD:ACT", AcquisitionMode, readonly=True)
 
     acquire_num_acquisitions = int_property(
-        'ACQ:NUMAC',
+        "ACQ:NUMAC",
         readonly=True,
         doc="""
         The number of waveform acquisitions that have occurred since starting
         acquisition with the ACQuire:STATE RUN command
-        """
+        """,
     )
 
     acquire_num_avgs = int_property(
-        'ACQ:NUMAV',
+        "ACQ:NUMAV",
         doc="""
         The number of waveform acquisitions to average.
-        """
+        """,
     )
 
     acquire_num_envelop = int_property(
-        'ACQ:NUME',
+        "ACQ:NUME",
         doc="""
         The number of waveform acquisitions to be enveloped
-        """
+        """,
     )
 
     acquire_num_frames = int_property(
-        'ACQ:NUMFRAMESACQ',
+        "ACQ:NUMFRAMESACQ",
         readonly=True,
         doc="""
         The number of frames acquired when in FastFrame Single Sequence and
         acquisitions are running.
-        """
+        """,
     )
 
     acquire_num_samples = int_property(
-        'ACQ:NUMSAM',
+        "ACQ:NUMSAM",
         doc="""
         The minimum number of acquired samples that make up a waveform
         database (WfmDB) waveform for single sequence mode and Mask Pass/Fail
         Completion Test. The default value is 16,000 samples. The range is
         5,000 to 2,147,400,000 samples.
-        """
+        """,
     )
 
-    acquire_sampling_mode = enum_property(
-        'ACQ:SAMP',
-        SamplingMode
-    )
+    acquire_sampling_mode = enum_property("ACQ:SAMP", SamplingMode)
 
     acquire_state = enum_property(
-        'ACQ:STATE',
+        "ACQ:STATE",
         AcquisitionState,
         doc="""
         This command starts or stops acquisitions.
-        """
+        """,
     )
 
     acquire_stop_after = enum_property(
-        'ACQ:STOPA',
+        "ACQ:STOPA",
         StopAfter,
         doc="""
         This command sets or queries whether the instrument continually
         acquires acquisitions or acquires a single sequence.
-        """
+        """,
     )
 
-    data_framestart = int_property('DAT:FRAMESTAR')
+    data_framestart = int_property("DAT:FRAMESTAR")
 
-    data_framestop = int_property('DAT:FRAMESTOP')
+    data_framestop = int_property("DAT:FRAMESTOP")
 
     data_start = int_property(
-        'DAT:STAR',
+        "DAT:STAR",
         doc="""
         The first data point that will be transferred, which ranges from 1 to
         the record length.
-        """
+        """,
     )
 
     # TODO: Look into the following troublesome datasheet note: "When using the
     # CURVe command, DATa:STOP is ignored and WFMInpre:NR_Pt is used."
     data_stop = int_property(
-        'DAT:STOP',
+        "DAT:STOP",
         doc="""
         The last data point that will be transferred.
-        """
+        """,
     )
 
-    data_sync_sources = bool_property(
-        'DAT:SYNCSOU',
-        inst_true='ON',
-        inst_false='OFF'
-    )
+    data_sync_sources = bool_property("DAT:SYNCSOU", inst_true="ON", inst_false="OFF")
 
     @property
     def data_source(self):
@@ -796,12 +781,12 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
         :type: `TekDPO70000.Channel` or `TekDPO70000.Math`
         """
-        val = self.query('DAT:SOU?')
-        if val[0:2] == 'CH':
+        val = self.query("DAT:SOU?")
+        if val[0:2] == "CH":
             out = self.channel[int(val[2]) - 1]
-        elif val[0:2] == 'MA':
+        elif val[0:2] == "MA":
             out = self.math[int(val[4]) - 1]
-        elif val[0:2] == 'RE':
+        elif val[0:2] == "RE":
             out = self.ref[int(val[3]) - 1]
         else:
             raise NotImplementedError
@@ -810,8 +795,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
     @data_source.setter
     def data_source(self, newval):
         if not isinstance(newval, self.DataSource):
-            raise TypeError(
-                "{} is not a valid data source.".format(type(newval)))
+            raise TypeError("{} is not a valid data source.".format(type(newval)))
         self.sendcmd("DAT:SOU {}".format(newval.name))
 
         # Some Tek scopes require this after the DAT:SOU command, or else
@@ -819,131 +803,121 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         time.sleep(0.02)
 
     horiz_acq_duration = unitful_property(
-        'HOR:ACQDURATION',
+        "HOR:ACQDURATION",
         u.second,
         readonly=True,
         doc="""
         The duration of the acquisition.
-        """
+        """,
     )
 
     horiz_acq_length = int_property(
-        'HOR:ACQLENGTH',
+        "HOR:ACQLENGTH",
         readonly=True,
         doc="""
         The record length.
-        """
+        """,
     )
 
-    horiz_delay_mode = bool_property(
-        'HOR:DEL:MOD',
-        inst_true='1',
-        inst_false='0'
-    )
+    horiz_delay_mode = bool_property("HOR:DEL:MOD", inst_true="1", inst_false="0")
 
     horiz_delay_pos = unitful_property(
-        'HOR:DEL:POS',
+        "HOR:DEL:POS",
         u.percent,
         doc="""
         The percentage of the waveform that is displayed left of the center
         graticule.
-        """
+        """,
     )
 
     horiz_delay_time = unitful_property(
-        'HOR:DEL:TIM',
+        "HOR:DEL:TIM",
         u.second,
         doc="""
         The base trigger delay time setting.
-        """
+        """,
     )
 
     horiz_interp_ratio = unitless_property(
-        'HOR:MAI:INTERPR',
+        "HOR:MAI:INTERPR",
         readonly=True,
         doc="""
         The ratio of interpolated points to measured points.
-        """
+        """,
     )
 
     horiz_main_pos = unitful_property(
-        'HOR:MAI:POS',
+        "HOR:MAI:POS",
         u.percent,
         doc="""
         The percentage of the waveform that is displayed left of the center
         graticule.
-        """
+        """,
     )
 
-    horiz_unit = string_property('HOR:MAI:UNI')
+    horiz_unit = string_property("HOR:MAI:UNI")
 
-    horiz_mode = enum_property(
-        'HOR:MODE',
-        HorizontalMode
-    )
+    horiz_mode = enum_property("HOR:MODE", HorizontalMode)
 
     horiz_record_length_lim = int_property(
-        'HOR:MODE:AUTO:LIMIT',
+        "HOR:MODE:AUTO:LIMIT",
         doc="""
         The recond length limit in samples.
-        """
+        """,
     )
 
     horiz_record_length = int_property(
-        'HOR:MODE:RECO',
+        "HOR:MODE:RECO",
         doc="""
         The recond length in samples. See `horiz_mode`; manual mode lets you
         change the record length, while the length is readonly for auto and
         constant mode.
-        """
+        """,
     )
 
     horiz_sample_rate = unitful_property(
-        'HOR:MODE:SAMPLER',
+        "HOR:MODE:SAMPLER",
         u.Hz,
         doc="""
         The sample rate in samples per second.
-        """
+        """,
     )
 
     horiz_scale = unitful_property(
-        'HOR:MODE:SCA',
+        "HOR:MODE:SCA",
         u.second,
         doc="""
         The horizontal scale in seconds per division. The horizontal scale is
         readonly when `horiz_mode` is manual.
-        """
+        """,
     )
 
     horiz_pos = unitful_property(
-        'HOR:POS',
+        "HOR:POS",
         u.percent,
         doc="""
         The position of the trigger point on the screen, left is 0%, right
         is 100%.
-        """
+        """,
     )
 
     horiz_roll = string_property(
-        'HOR:ROLL',
-        bookmark_symbol='',
+        "HOR:ROLL",
+        bookmark_symbol="",
         doc="""
         Valid arguments are AUTO, OFF, and ON.
-        """
+        """,
     )
 
-    trigger_state = enum_property(
-        'TRIG:STATE',
-        TriggerState
-    )
+    trigger_state = enum_property("TRIG:STATE", TriggerState)
 
     # Waveform Transfer Properties
     outgoing_waveform_encoding = enum_property(
-        'WFMO:ENC',
+        "WFMO:ENC",
         WaveformEncoding,
         doc="""
         Controls the encoding used for outgoing waveforms (instrument → host).
-        """
+        """,
     )
 
     outgoing_binary_format = enum_property(
@@ -952,7 +926,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         doc="""
         Controls the data type of samples when transferring waveforms from
         the instrument to the host using binary encoding.
-        """
+        """,
     )
 
     outgoing_byte_order = enum_property(
@@ -960,7 +934,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         ByteOrder,
         doc="""
         Controls whether binary data is returned in little or big endian.
-        """
+        """,
     )
 
     outgoing_n_bytes = int_property(
@@ -971,7 +945,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         waveforms in binary encodings.
 
         Must be either 1, 2, 4 or 8.
-        """
+        """,
     )
 
     # METHODS #
@@ -987,7 +961,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         """
         Forces a trigger event to happen for the oscilloscope.
         """
-        self.sendcmd('TRIG FORC')
+        self.sendcmd("TRIG FORC")
 
     # TODO: consider moving the next few methods to Oscilloscope.
     def run(self):

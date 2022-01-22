@@ -41,7 +41,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
 
         :rtype: `int`
         """
-        return int(self.query('DATA:POIN?'))
+        return int(self.query("DATA:POIN?"))
 
     # STATE MANAGEMENT METHODS #
 
@@ -54,13 +54,13 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         Note that this command will also clear the previous set of readings
         from memory.
         """
-        self.sendcmd('INIT')
+        self.sendcmd("INIT")
 
     def abort(self):
         """
         Abort all measurements currently in progress.
         """
-        self.sendcmd('ABOR')
+        self.sendcmd("ABOR")
 
     # MEMORY MANAGEMENT METHODS #
 
@@ -68,7 +68,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         """
         Clears the non-volatile memory of the Agilent 34410a.
         """
-        self.sendcmd('DATA:DEL NVMEM')
+        self.sendcmd("DATA:DEL NVMEM")
 
     def r(self, count):
         """
@@ -87,10 +87,10 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         if not isinstance(count, int):
             raise TypeError('Parameter "count" must be an integer')
         if count == 0:
-            msg = 'R?'
+            msg = "R?"
         else:
-            msg = 'R? ' + str(count)
-        self.sendcmd('FORM:DATA REAL,64')
+            msg = "R? " + str(count)
+        self.sendcmd("FORM:DATA REAL,64")
         self.sendcmd(msg)
         data = self.binblockread(8, fmt=">d")
         if numpy:
@@ -115,7 +115,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
             or if numpy is installed, `~pint.Quantity` with `numpy.array` data
         """
         units = UNITS[self.mode]
-        data = list(map(float, self.query('FETC?').split(',')))
+        data = list(map(float, self.query("FETC?").split(",")))
         if numpy:
             return data * units
         return tuple(val * units for val in data)
@@ -140,8 +140,8 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         if sample_count == -1:
             sample_count = self.data_point_count
         units = UNITS[self.mode]
-        self.sendcmd('FORM:DATA ASC')
-        data = self.query('DATA:REM? {}'.format(sample_count)).split(',')
+        self.sendcmd("FORM:DATA ASC")
+        data = self.query("DATA:REM? {}".format(sample_count)).split(",")
         data = list(map(float, data))
         if numpy:
             return data * units
@@ -155,7 +155,7 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
             or if numpy is installed, `~pint.Quantity` with `numpy.array` data
         """
         units = UNITS[self.mode]
-        data = list(map(float, self.query('DATA:DATA? NVMEM').split(',')))
+        data = list(map(float, self.query("DATA:DATA? NVMEM").split(",")))
         if numpy:
             return data * units
         return tuple(val * units for val in data)
@@ -170,13 +170,13 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         :units: As specified by the data returned by the instrument.
         :rtype: `~pint.Quantity`
         """
-        data = self.query('DATA:LAST?')
+        data = self.query("DATA:LAST?")
         unit_map = {
             "VDC": "V",
             "VAC": "V",
         }
 
-        if data == '9.91000000E+37':
+        if data == "9.91000000E+37":
             return float(data)
         else:
             data = data.split(" ")
@@ -198,21 +198,22 @@ class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
         """
         mode = self.mode
         units = UNITS[mode]
-        return float(self.query('READ?')) * units
+        return float(self.query("READ?")) * units
+
 
 # UNITS #######################################################################
 
 UNITS = {
     Agilent34410a.Mode.capacitance: u.farad,
-    Agilent34410a.Mode.voltage_dc:  u.volt,
-    Agilent34410a.Mode.voltage_ac:  u.volt,
-    Agilent34410a.Mode.diode:       u.volt,
-    Agilent34410a.Mode.current_ac:  u.amp,
-    Agilent34410a.Mode.current_dc:  u.amp,
-    Agilent34410a.Mode.resistance:  u.ohm,
+    Agilent34410a.Mode.voltage_dc: u.volt,
+    Agilent34410a.Mode.voltage_ac: u.volt,
+    Agilent34410a.Mode.diode: u.volt,
+    Agilent34410a.Mode.current_ac: u.amp,
+    Agilent34410a.Mode.current_dc: u.amp,
+    Agilent34410a.Mode.resistance: u.ohm,
     Agilent34410a.Mode.fourpt_resistance: u.ohm,
-    Agilent34410a.Mode.frequency:   u.hertz,
-    Agilent34410a.Mode.period:      u.second,
+    Agilent34410a.Mode.frequency: u.hertz,
+    Agilent34410a.Mode.period: u.second,
     Agilent34410a.Mode.temperature: u.kelvin,
-    Agilent34410a.Mode.continuity:  1,
+    Agilent34410a.Mode.continuity: 1,
 }

@@ -21,7 +21,7 @@ from instruments.util_fns import (
     setattr_expression,
     string_property,
     unitful_property,
-    unitless_property
+    unitless_property,
 )
 
 
@@ -39,13 +39,15 @@ def mock_inst(mocker):
 
     :return: Fake instrument class.
     """
+
     class Inst:
         """Mock instrument class."""
+
         def __init__(self):
             """Set up the mocker spies and send command placeholder."""
             # spies
-            self.spy_query = mocker.spy(self, 'query')
-            self.spy_sendcmd = mocker.spy(self, 'sendcmd')
+            self.spy_query = mocker.spy(self, "query")
+            self.spy_sendcmd = mocker.spy(self, "sendcmd")
 
             # variable to set with send command
             self._sendcmd = None
@@ -83,7 +85,6 @@ def mock_inst(mocker):
 
 def test_ProxyList_basics():
     class ProxyChild:
-
         def __init__(self, parent, name):
             self._parent = parent
             self._name = name
@@ -99,7 +100,6 @@ def test_ProxyList_basics():
 
 def test_ProxyList_valid_range_is_enum():
     class ProxyChild:
-
         def __init__(self, parent, name):
             self._parent = parent
             self._name = name
@@ -111,14 +111,13 @@ def test_ProxyList_valid_range_is_enum():
     parent = object()
 
     proxy_list = ProxyList(parent, ProxyChild, MockEnum)
-    assert proxy_list['aa']._name == MockEnum.a.value
-    assert proxy_list['b']._name == MockEnum.b.value
+    assert proxy_list["aa"]._name == MockEnum.a.value
+    assert proxy_list["b"]._name == MockEnum.b.value
     assert proxy_list[MockEnum.a]._name == MockEnum.a.value
 
 
 def test_ProxyList_length():
     class ProxyChild:
-
         def __init__(self, parent, name):
             self._parent = parent
             self._name = name
@@ -132,7 +131,6 @@ def test_ProxyList_length():
 
 def test_ProxyList_iterator():
     class ProxyChild:
-
         def __init__(self, parent, name):
             self._parent = parent
             self._name = name
@@ -149,8 +147,8 @@ def test_ProxyList_iterator():
 
 def test_ProxyList_invalid_idx_enum():
     with pytest.raises(IndexError):
-        class ProxyChild:
 
+        class ProxyChild:
             def __init__(self, parent, name):
                 self._parent = parent
                 self._name = name
@@ -163,13 +161,13 @@ def test_ProxyList_invalid_idx_enum():
 
         proxy_list = ProxyList(parent, ProxyChild, MockEnum)
 
-        _ = proxy_list['c']  # Should raise IndexError
+        _ = proxy_list["c"]  # Should raise IndexError
 
 
 def test_ProxyList_invalid_idx():
     with pytest.raises(IndexError):
-        class ProxyChild:
 
+        class ProxyChild:
             def __init__(self, parent, name):
                 self._parent = parent
                 self._name = name
@@ -182,60 +180,68 @@ def test_ProxyList_invalid_idx():
 
 
 def test_assume_units_correct():
-    m = u.Quantity(1, 'm')
+    m = u.Quantity(1, "m")
 
     # Check that unitful quantities are kept unitful.
-    assert assume_units(m, 'mm').to('mm').magnitude == 1000
+    assert assume_units(m, "mm").to("mm").magnitude == 1000
 
     # Check that raw scalars are made unitful.
-    assert assume_units(1, 'm').to('mm').magnitude == 1000
+    assert assume_units(1, "m").to("mm").magnitude == 1000
 
 
 def test_assume_units_failures():
     with pytest.raises(pint.errors.DimensionalityError):
-        assume_units(1, 'm').to('s')
+        assume_units(1, "m").to("s")
+
 
 def test_setattr_expression_simple():
     class A:
-        x = 'x'
-        y = 'y'
-        z = 'z'
+        x = "x"
+        y = "y"
+        z = "z"
 
     a = A()
-    setattr_expression(a, 'x', 'foo')
-    assert a.x == 'foo'
+    setattr_expression(a, "x", "foo")
+    assert a.x == "foo"
+
 
 def test_setattr_expression_index():
     class A:
-        x = ['x', 'y', 'z']
+        x = ["x", "y", "z"]
 
     a = A()
-    setattr_expression(a, 'x[1]', 'foo')
-    assert a.x[1] == 'foo'
+    setattr_expression(a, "x[1]", "foo")
+    assert a.x[1] == "foo"
+
 
 def test_setattr_expression_nested():
     class B:
-        x = 'x'
+        x = "x"
+
     class A:
         b = None
+
         def __init__(self):
             self.b = B()
 
     a = A()
-    setattr_expression(a, 'b.x', 'foo')
-    assert a.b.x == 'foo'
+    setattr_expression(a, "b.x", "foo")
+    assert a.b.x == "foo"
+
 
 def test_setattr_expression_both():
     class B:
-        x = 'x'
+        x = "x"
+
     class A:
         b = None
+
         def __init__(self):
             self.b = [B()]
 
     a = A()
-    setattr_expression(a, 'b[0].x', 'foo')
-    assert a.b[0].x == 'foo'
+    setattr_expression(a, "b[0].x", "foo")
+    assert a.b[0].x == "foo"
 
 
 def test_bool_property_sendcmd_query(mock_inst):

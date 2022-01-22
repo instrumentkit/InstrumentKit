@@ -57,13 +57,15 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
 
             :raises TypeError: If controller is not supported
             """
-            if self._apt.model_number[0:3] == 'KIM':
-                raise TypeError("For KIM controllers, use the "
-                                "`enabled_single` function to enable "
-                                "one axis. For KIM101 controllers, "
-                                "multiple axes can be enabled using "
-                                "the `enabled_multi` function from the "
-                                "controller level.")
+            if self._apt.model_number[0:3] == "KIM":
+                raise TypeError(
+                    "For KIM controllers, use the "
+                    "`enabled_single` function to enable "
+                    "one axis. For KIM101 controllers, "
+                    "multiple axes can be enabled using "
+                    "the `enabled_multi` function from the "
+                    "controller level."
+                )
 
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.MOD_REQ_CHANENABLESTATE,
@@ -71,10 +73,11 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                 param2=0x00,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
             resp = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.MOD_GET_CHANENABLESTATE)
+                pkt, expect=_cmds.ThorLabsCommands.MOD_GET_CHANENABLESTATE
+            )
             return not bool(resp.parameters[1] - 1)
 
         @enabled.setter
@@ -85,7 +88,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                 param2=0x01 if newval else 0x02,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
             self._apt.sendpacket(pkt)
 
@@ -115,45 +118,49 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
                 param2=0x00,
                 dest=self._dest,
                 source=0x01,
-                data=None
+                data=None,
             )
             hw_info = self.querypacket(
-                req_packet, expect=_cmds.ThorLabsCommands.HW_GET_INFO,
-                expect_data_len=84
+                req_packet,
+                expect=_cmds.ThorLabsCommands.HW_GET_INFO,
+                expect_data_len=84,
             )
 
-            self._serial_number = codecs.encode(hw_info.data[0:4], 'hex').decode('ascii')
-            self._model_number = hw_info.data[4:12].decode('ascii').replace('\x00', '').strip()
+            self._serial_number = codecs.encode(hw_info.data[0:4], "hex").decode(
+                "ascii"
+            )
+            self._model_number = (
+                hw_info.data[4:12].decode("ascii").replace("\x00", "").strip()
+            )
 
-            hw_type_int = struct.unpack('<H', hw_info.data[12:14])[0]
+            hw_type_int = struct.unpack("<H", hw_info.data[12:14])[0]
             if hw_type_int == 45:
-                self._hw_type = 'Multi-channel controller motherboard'
+                self._hw_type = "Multi-channel controller motherboard"
             elif hw_type_int == 44:
-                self._hw_type = 'Brushless DC controller'
+                self._hw_type = "Brushless DC controller"
             else:
-                self._hw_type = 'Unknown type: {}'.format(hw_type_int)
+                self._hw_type = "Unknown type: {}".format(hw_type_int)
 
             # Note that the fourth byte is padding, so we strip out the first
             # three bytes and format them.
             # pylint: disable=invalid-format-index
-            self._fw_version = "{0[0]:x}.{0[1]:x}.{0[2]:x}".format(
-                hw_info.data[14:18]
+            self._fw_version = "{0[0]:x}.{0[1]:x}.{0[2]:x}".format(hw_info.data[14:18])
+            self._notes = (
+                hw_info.data[18:66].replace(b"\x00", b"").decode("ascii").strip()
             )
-            self._notes = hw_info.data[18:66].replace(b'\x00', b'').decode('ascii').strip()
 
-            self._hw_version = struct.unpack(
-                '<H', hw_info.data[78:80])[0]
-            self._mod_state = struct.unpack(
-                '<H', hw_info.data[80:82])[0]
-            self._n_channels = struct.unpack(
-                '<H', hw_info.data[82:84])[0]
+            self._hw_version = struct.unpack("<H", hw_info.data[78:80])[0]
+            self._mod_state = struct.unpack("<H", hw_info.data[80:82])[0]
+            self._n_channels = struct.unpack("<H", hw_info.data[82:84])[0]
         except IOError as e:
             logger.error("Exception occured while fetching hardware info: %s", e)
 
         # Create a tuple of channels of length _n_channel_type
         if self._n_channels > 0:
-            self._channel = tuple(self._channel_type(self, chan_idx)
-                                  for chan_idx in range(self._n_channels))
+            self._channel = tuple(
+                self._channel_type(self, chan_idx)
+                for chan_idx in range(self._n_channels)
+            )
 
     @property
     def serial_number(self):
@@ -182,13 +189,15 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
 
         :type: `str`
         """
-        return "ThorLabs APT Instrument model {model}, serial {serial} " \
-               "(HW version {hw_ver}, FW version {fw_ver})".format(
-                   hw_ver=self._hw_version,
-                   serial=self.serial_number,
-                   fw_ver=self._fw_version,
-                   model=self.model_number
-               )
+        return (
+            "ThorLabs APT Instrument model {model}, serial {serial} "
+            "(HW version {hw_ver}, FW version {fw_ver})".format(
+                hw_ver=self._hw_version,
+                serial=self.serial_number,
+                fw_ver=self._fw_version,
+                model=self.model_number,
+            )
+        )
 
     @property
     def channel(self):
@@ -218,9 +227,10 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
         # If we add more channels, append them to the list,
         # If we remove channels, remove them from the end of the list.
         if nch > self._n_channels:
-            self._channel = list(self._channel) + \
-                list(self._channel_type(self, chan_idx)
-                     for chan_idx in range(self._n_channels, nch))
+            self._channel = list(self._channel) + list(
+                self._channel_type(self, chan_idx)
+                for chan_idx in range(self._n_channels, nch)
+            )
         elif nch < self._n_channels:
             self._channel = self._channel[:nch]
         self._n_channels = nch
@@ -236,7 +246,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             param2=0x00,
             dest=self._dest,
             source=0x01,
-            data=None
+            data=None,
         )
         self.sendpacket(pkt)
 
@@ -264,6 +274,7 @@ class APTPiezoDevice(ThorLabsAPT):
 
         This class represents piezo stage channels.
         """
+
         # PIEZO COMMANDS #
 
         @property
@@ -280,11 +291,9 @@ class APTPiezoDevice(ThorLabsAPT):
                 param2=0x00,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
-            resp = self._apt.querypacket(
-                pkt, expect_data_len=4
-            )
+            resp = self._apt.querypacket(pkt, expect_data_len=4)
 
             # Not all APT piezo devices support querying the maximum travel
             # distance. Those that do not simply ignore the PZ_REQ_MAXTRAVEL
@@ -293,8 +302,8 @@ class APTPiezoDevice(ThorLabsAPT):
                 return NotImplemented
 
             # chan, int_maxtrav
-            _, int_maxtrav = struct.unpack('<HH', resp.data)
-            return int_maxtrav * u.Quantity(100, 'nm')
+            _, int_maxtrav = struct.unpack("<HH", resp.data)
+            return int_maxtrav * u.Quantity(100, "nm")
 
     @property
     def led_intensity(self):
@@ -309,11 +318,9 @@ class APTPiezoDevice(ThorLabsAPT):
             param2=0x00,
             dest=self._dest,
             source=0x01,
-            data=None
+            data=None,
         )
-        resp = self.querypacket(
-            pkt, expect_data_len=2
-        )
+        resp = self.querypacket(pkt, expect_data_len=2)
 
         # Not all APT piezo devices support querying the LED intenstiy
         # distance, e.g., TIM, KIM. Those that do not simply ignore the
@@ -322,7 +329,7 @@ class APTPiezoDevice(ThorLabsAPT):
         if resp is None:
             return NotImplemented
         else:
-            return float(struct.unpack('<H', resp.data)[0]) / 255
+            return float(struct.unpack("<H", resp.data)[0]) / 255
 
     @led_intensity.setter
     def led_intensity(self, intensity):
@@ -333,7 +340,7 @@ class APTPiezoDevice(ThorLabsAPT):
             param2=None,
             dest=self._dest,
             source=0x01,
-            data=struct.pack('<H', int(round(255 * intensity)))
+            data=struct.pack("<H", int(round(255 * intensity))),
         )
         self.sendpacket(pkt)
 
@@ -431,22 +438,22 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=self._idx_chan,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
 
             resp = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
-                expect_data_len=14)
+                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS, expect_data_len=14
+            )
 
             # unpack
-            ret_val = struct.unpack('<HHHll', resp.data)
+            ret_val = struct.unpack("<HHHll", resp.data)
             ret_val = [ret_val[2], ret_val[3], ret_val[4]]
 
             # set units and formats
             ret_val = [
                 u.Quantity(int(ret_val[0]), u.V),
-                u.Quantity(int(ret_val[1]), 1/u.s),
-                u.Quantity(int(ret_val[2]), 1/u.s**2)
+                u.Quantity(int(ret_val[1]), 1 / u.s),
+                u.Quantity(int(ret_val[2]), 1 / u.s ** 2),
             ]
             return ret_val
 
@@ -455,29 +462,30 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             if not isinstance(params, tuple) and not isinstance(params, list):
                 raise TypeError("Parameters must be given as list or tuple.")
             if len(params) != 3:
-                raise ValueError("Parameters must be a list or tuple with "
-                                 "length 3.")
+                raise ValueError("Parameters must be a list or tuple with " "length 3.")
 
             # ensure units
             volt = int(assume_units(params[0], u.V).to(u.V).magnitude)
-            rate = int(assume_units(params[1], 1/u.s).to(1/u.s).magnitude)
-            accl = int(assume_units(params[2], 1/u.s**2).to(
-                1/u.s**2
-            ).magnitude)
+            rate = int(assume_units(params[1], 1 / u.s).to(1 / u.s).magnitude)
+            accl = int(assume_units(params[2], 1 / u.s ** 2).to(1 / u.s ** 2).magnitude)
 
             # check parameters
             if volt < 85 or volt > 125:
-                raise ValueError("The voltage ({} V) is out of range. It must "
-                                 "be between 85 V and 125 V.".format(volt))
+                raise ValueError(
+                    "The voltage ({} V) is out of range. It must "
+                    "be between 85 V and 125 V.".format(volt)
+                )
             if rate < 1 or rate > 2000:
-                raise ValueError("The step rate ({} /s) is out of range. It "
-                                 "must be between 1 /s and 2,000 /s."
-                                 .format(rate))
+                raise ValueError(
+                    "The step rate ({} /s) is out of range. It "
+                    "must be between 1 /s and 2,000 /s.".format(rate)
+                )
 
             if accl < 1 or accl > 100000:
-                raise ValueError("The acceleration ({} /s/s) is out of range. "
-                                 "It must be between 1 /s/s and 100,000 /s/s."
-                                 .format(accl))
+                raise ValueError(
+                    "The acceleration ({} /s/s) is out of range. "
+                    "It must be between 1 /s/s and 100,000 /s/s.".format(accl)
+                )
 
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.PZMOT_SET_PARAMS,
@@ -485,8 +493,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=None,
                 dest=self._apt.destination,
                 source=0x01,
-                data=struct.pack('<HHHll', 0x07, self._idx_chan, volt, rate,
-                                 accl)
+                data=struct.pack("<HHHll", 0x07, self._idx_chan, volt, rate, accl),
             )
             self._apt.sendpacket(pkt)
 
@@ -511,10 +518,13 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 >>> # enable channel 0
                 >>> ch.enabled_single = True
             """
-            if self._apt.model_number[0:3] != 'KIM':
-                raise("This command is only valid with KIM001 and "
-                      "KIM101 controllers. Your controller is a {}."
-                      .format(self._apt.model_number))
+            if self._apt.model_number[0:3] != "KIM":
+                raise (
+                    "This command is only valid with KIM001 and "
+                    "KIM101 controllers. Your controller is a {}.".format(
+                        self._apt.model_number
+                    )
+                )
 
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.PZMOT_REQ_PARAMS,
@@ -522,25 +532,25 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=self._idx_chan,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
 
             resp = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
-                expect_data_len=4)
+                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS, expect_data_len=4
+            )
 
-            ret_val = struct.unpack('<HH', resp.data)[1] == \
-                      self._idx_chan
+            ret_val = struct.unpack("<HH", resp.data)[1] == self._idx_chan
 
             return ret_val
 
         @enabled_single.setter
         def enabled_single(self, newval):
-            if self._apt.model_number[0:3] != 'KIM':
-                raise TypeError("This command is only valid with "
-                                "KIM001 and KIM101 controllers. Your "
-                                "controller is a {}."
-                                .format(self._apt.model_number))
+            if self._apt.model_number[0:3] != "KIM":
+                raise TypeError(
+                    "This command is only valid with "
+                    "KIM001 and KIM101 controllers. Your "
+                    "controller is a {}.".format(self._apt.model_number)
+                )
 
             param = self._idx_chan if newval else 0x00
             pkt = _packets.ThorLabsPacket(
@@ -549,7 +559,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=None,
                 dest=self._apt.destination,
                 source=0x01,
-                data=struct.pack('<HH', 0x2B, param)
+                data=struct.pack("<HH", 0x2B, param),
             )
             self._apt.sendpacket(pkt)
 
@@ -615,11 +625,12 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 >>> ch.jog_parameters
                 [2, 100, 100, array(1000) * 1/s, array(10000) * 1/s**2]
             """
-            if self._apt.model_number[0:3] != 'KIM':
-                raise TypeError("This command is only valid with "
-                                "KIM001 and KIM101 controllers. Your "
-                                "controller is a {}."
-                                .format(self._apt.model_number))
+            if self._apt.model_number[0:3] != "KIM":
+                raise TypeError(
+                    "This command is only valid with "
+                    "KIM001 and KIM101 controllers. Your "
+                    "controller is a {}.".format(self._apt.model_number)
+                )
 
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.PZMOT_REQ_PARAMS,
@@ -627,72 +638,75 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=self._idx_chan,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
 
             resp = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
-                expect_data_len=22)
+                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS, expect_data_len=22
+            )
 
             # unpack response
-            ret_val = struct.unpack('<HHHllll', resp.data)
-            ret_val = [ret_val[2], ret_val[3], ret_val[4], ret_val[5],
-                       ret_val[6]]
+            ret_val = struct.unpack("<HHHllll", resp.data)
+            ret_val = [ret_val[2], ret_val[3], ret_val[4], ret_val[5], ret_val[6]]
 
             # assign the appropriate units, forms
             ret_val = [
                 int(ret_val[0]),
                 int(ret_val[1]),
                 int(ret_val[2]),
-                u.Quantity(int(ret_val[3]), 1/u.s),
-                u.Quantity(int(ret_val[4]), 1 / u.s**2)
+                u.Quantity(int(ret_val[3]), 1 / u.s),
+                u.Quantity(int(ret_val[4]), 1 / u.s ** 2),
             ]
 
             return ret_val
 
         @jog_parameters.setter
         def jog_parameters(self, params):
-            if self._apt.model_number[0:3] != 'KIM':
-                raise TypeError("This command is only valid with "
-                                "KIM001 and KIM101 controllers. Your "
-                                "controller is a {}."
-                                .format(self._apt.model_number))
+            if self._apt.model_number[0:3] != "KIM":
+                raise TypeError(
+                    "This command is only valid with "
+                    "KIM001 and KIM101 controllers. Your "
+                    "controller is a {}.".format(self._apt.model_number)
+                )
 
             if not isinstance(params, tuple) and not isinstance(params, list):
                 raise TypeError("Parameters must be given as list or tuple.")
             if len(params) != 5:
-                raise ValueError("Parameters must be a list or tuple with "
-                                 "length 5.")
+                raise ValueError("Parameters must be a list or tuple with " "length 5.")
 
             # ensure units
             mode = int(params[0])
             steps_fwd = int(params[1])
             steps_bkw = int(params[2])
-            rate = int(assume_units(params[3], 1/u.s).to(1/u.s).magnitude)
-            accl = int(assume_units(params[4], 1/u.s**2).to(
-                1/u.s**2
-            ).magnitude)
+            rate = int(assume_units(params[3], 1 / u.s).to(1 / u.s).magnitude)
+            accl = int(assume_units(params[4], 1 / u.s ** 2).to(1 / u.s ** 2).magnitude)
 
             # check parameters
             if mode != 1 and mode != 2:
-                raise ValueError("The mode ({}) must be either set to 1 "
-                                 "(continuus) or 2 (steps).".format(mode))
+                raise ValueError(
+                    "The mode ({}) must be either set to 1 "
+                    "(continuus) or 2 (steps).".format(mode)
+                )
             if steps_fwd < 1 or steps_fwd > 2000:
-                raise ValueError("The steps forward ({}) are out of range. It "
-                                 "must be between 1 and 2,000."
-                                 .format(steps_fwd))
+                raise ValueError(
+                    "The steps forward ({}) are out of range. It "
+                    "must be between 1 and 2,000.".format(steps_fwd)
+                )
             if steps_bkw < 1 or steps_bkw > 2000:
-                raise ValueError("The steps backward ({}) are out of range. "
-                                 "It must be between 1 and 2,000."
-                                 .format(steps_bkw))
+                raise ValueError(
+                    "The steps backward ({}) are out of range. "
+                    "It must be between 1 and 2,000.".format(steps_bkw)
+                )
             if rate < 1 or rate > 2000:
-                raise ValueError("The step rate ({} /s) is out of range. It "
-                                 "must be between 1 /s and 2,000 /s."
-                                 .format(rate))
+                raise ValueError(
+                    "The step rate ({} /s) is out of range. It "
+                    "must be between 1 /s and 2,000 /s.".format(rate)
+                )
             if accl < 1 or accl > 100000:
-                raise ValueError("The acceleration ({} /s/s) is out of range. "
-                                 "It must be between 1 /s/s and 100,000 /s/s."
-                                 .format(accl))
+                raise ValueError(
+                    "The acceleration ({} /s/s) is out of range. "
+                    "It must be between 1 /s/s and 100,000 /s/s.".format(accl)
+                )
 
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.PZMOT_SET_PARAMS,
@@ -700,8 +714,16 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=None,
                 dest=self._apt.destination,
                 source=0x01,
-                data=struct.pack('<HHHllll', 0x2D, self._idx_chan, mode,
-                                 steps_fwd, steps_bkw, rate, accl)
+                data=struct.pack(
+                    "<HHHllll",
+                    0x2D,
+                    self._idx_chan,
+                    mode,
+                    steps_fwd,
+                    steps_bkw,
+                    rate,
+                    accl,
+                ),
             )
             self._apt.sendpacket(pkt)
 
@@ -732,14 +754,14 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=self._idx_chan,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
 
             resp = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
-                expect_data_len=12)
+                pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS, expect_data_len=12
+            )
 
-            ret_val = int(struct.unpack('<HHll', resp.data)[2])
+            ret_val = int(struct.unpack("<HHll", resp.data)[2])
 
             return ret_val
 
@@ -751,7 +773,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=None,
                 dest=self._apt.destination,
                 source=0x01,
-                data=struct.pack('<HHll', 0x05, self._idx_chan, pos, 0x00)
+                data=struct.pack("<HHll", 0x05, self._idx_chan, pos, 0x00),
             )
             self._apt.sendpacket(pkt)
 
@@ -783,12 +805,11 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=None,
                 dest=self._apt.destination,
                 source=0x01,
-                data=struct.pack('<Hl', self._idx_chan, pos)
-
+                data=struct.pack("<Hl", self._idx_chan, pos),
             )
             self._apt.sendpacket(pkt)
 
-        def move_jog(self, direction='fwd'):
+        def move_jog(self, direction="fwd"):
             """
             Jogs the axis in forward or backward direction by the number
             of steps that are stored in the controller.
@@ -816,7 +837,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 >>> # jog reverse
                 >>> ch.move_jog('rev')
             """
-            if direction == 'rev':
+            if direction == "rev":
                 param2 = 0x02
             else:
                 param2 = 0x01
@@ -827,7 +848,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=param2,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
             self._apt.sendpacket(pkt)
 
@@ -847,7 +868,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 param2=0x00,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
 
             self._apt.sendpacket(pkt)
@@ -887,11 +908,12 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             >>> kim.enabled_multi
             1
         """
-        if self.model_number != 'KIM101':
-            raise TypeError("This command is only valid with "
-                            "a KIM101 controller. Your "
-                            "controller is a {}."
-                            .format(self.model_number))
+        if self.model_number != "KIM101":
+            raise TypeError(
+                "This command is only valid with "
+                "a KIM101 controller. Your "
+                "controller is a {}.".format(self.model_number)
+            )
 
         pkt = _packets.ThorLabsPacket(
             message_id=_cmds.ThorLabsCommands.PZMOT_REQ_PARAMS,
@@ -899,14 +921,14 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             param2=0x00,
             dest=self.destination,
             source=0x01,
-            data=None
+            data=None,
         )
 
-        resp = self.querypacket(pkt,
-                                expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS,
-                                expect_data_len=4)
+        resp = self.querypacket(
+            pkt, expect=_cmds.ThorLabsCommands.PZMOT_GET_PARAMS, expect_data_len=4
+        )
 
-        ret_val = int(struct.unpack('<HH', resp.data)[1])
+        ret_val = int(struct.unpack("<HH", resp.data)[1])
 
         if ret_val == 5:
             return 1
@@ -917,11 +939,12 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
     @enabled_multi.setter
     def enabled_multi(self, mode):
-        if self.model_number != 'KIM101':
-            raise TypeError("This command is only valid with "
-                            "a KIM101 controller. Your "
-                            "controller is a {}."
-                            .format(self.model_number))
+        if self.model_number != "KIM101":
+            raise TypeError(
+                "This command is only valid with "
+                "a KIM101 controller. Your "
+                "controller is a {}.".format(self.model_number)
+            )
 
         if mode == 0:
             param = 0x00
@@ -930,9 +953,11 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
         elif mode == 2:
             param = 0x06
         else:
-            raise ValueError("Please select a valid mode: 0 - all "
-                             "disabled, 1 - Channel 1 & 2 enabled, "
-                             "2 - Channel 3 & 4 enabled.")
+            raise ValueError(
+                "Please select a valid mode: 0 - all "
+                "disabled, 1 - Channel 1 & 2 enabled, "
+                "2 - Channel 3 & 4 enabled."
+            )
 
         pkt = _packets.ThorLabsPacket(
             message_id=_cmds.ThorLabsCommands.PZMOT_SET_PARAMS,
@@ -940,7 +965,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             param2=None,
             dest=self.destination,
             source=0x01,
-            data=struct.pack('<HH', 0x2B, param)
+            data=struct.pack("<HH", 0x2B, param),
         )
 
         self.sendpacket(pkt)
@@ -975,10 +1000,11 @@ class APTPiezoStage(APTPiezoDevice):
                 param2=0x00,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
             resp = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.PZ_GET_POSCONTROLMODE)
+                pkt, expect=_cmds.ThorLabsCommands.PZ_GET_POSCONTROLMODE
+            )
             return bool((resp.parameters[1] - 1) & 1)
 
         def change_position_control_mode(self, closed, smooth=True):
@@ -996,7 +1022,7 @@ class APTPiezoStage(APTPiezoDevice):
                 param2=mode,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
             self._apt.sendpacket(pkt)
 
@@ -1013,14 +1039,13 @@ class APTPiezoStage(APTPiezoDevice):
                 param2=0x00,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
             resp = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.PZ_GET_OUTPUTPOS,
-                expect_data_len=4
+                pkt, expect=_cmds.ThorLabsCommands.PZ_GET_OUTPUTPOS, expect_data_len=4
             )
             # chan, pos
-            _, pos = struct.unpack('<HH', resp.data)
+            _, pos = struct.unpack("<HH", resp.data)
             return pos
 
         @output_position.setter
@@ -1031,7 +1056,7 @@ class APTPiezoStage(APTPiezoDevice):
                 param2=None,
                 dest=self._apt.destination,
                 source=0x01,
-                data=struct.pack('<HH', self._idx_chan, pos)
+                data=struct.pack("<HH", self._idx_chan, pos),
             )
             self._apt.sendpacket(pkt)
 
@@ -1113,46 +1138,57 @@ class APTMotorController(ThorLabsAPT):
         #: from dimensionful input.
         #:
         #: For more details, see the APT protocol documentation.
-        scale_factors = (u.Quantity(1, 'dimensionless'), ) * 3
+        scale_factors = (u.Quantity(1, "dimensionless"),) * 3
 
-        _motion_timeout = u.Quantity(10, 'second')
+        _motion_timeout = u.Quantity(10, "second")
 
         __SCALE_FACTORS_BY_MODEL = {
             # TODO: add other tables here.
-            re.compile('TST001|BSC00.|BSC10.|MST601'): {
+            re.compile("TST001|BSC00.|BSC10.|MST601"): {
                 # Note that for these drivers, the scale factors are identical
                 # for position, velcoity and acceleration. This is not true for
                 # all drivers!
-                'DRV001': (u.Quantity(51200, 'count/mm'),) * 3,
-                'DRV013': (u.Quantity(25600, 'count/mm'),) * 3,
-                'DRV014': (u.Quantity(25600, 'count/mm'),) * 3,
-                'DRV113': (u.Quantity(20480, 'count/mm'),) * 3,
-                'DRV114': (u.Quantity(20480, 'count/mm'),) * 3,
-                'FW103':  (u.Quantity(25600 / 360, 'count/deg'),) * 3,
-                'NR360':  (u.Quantity(25600 / 5.4546, 'count/deg'),) * 3
+                "DRV001": (u.Quantity(51200, "count/mm"),) * 3,
+                "DRV013": (u.Quantity(25600, "count/mm"),) * 3,
+                "DRV014": (u.Quantity(25600, "count/mm"),) * 3,
+                "DRV113": (u.Quantity(20480, "count/mm"),) * 3,
+                "DRV114": (u.Quantity(20480, "count/mm"),) * 3,
+                "FW103": (u.Quantity(25600 / 360, "count/deg"),) * 3,
+                "NR360": (u.Quantity(25600 / 5.4546, "count/deg"),) * 3,
             },
-
-            re.compile('TDC001|KDC101'): {
-                'MTS25-Z8': (1 / u.Quantity(34304, 'mm/count'), NotImplemented, NotImplemented),
-                'MTS50-Z8': (1 / u.Quantity(34304, 'mm/count'), NotImplemented, NotImplemented),
+            re.compile("TDC001|KDC101"): {
+                "MTS25-Z8": (
+                    1 / u.Quantity(34304, "mm/count"),
+                    NotImplemented,
+                    NotImplemented,
+                ),
+                "MTS50-Z8": (
+                    1 / u.Quantity(34304, "mm/count"),
+                    NotImplemented,
+                    NotImplemented,
+                ),
                 # TODO: Z8xx and Z6xx models. Need to add regex support to motor models, too.
-                'PRM1-Z8': (u.Quantity(1919.64, 'count/deg'), NotImplemented, NotImplemented),
-            }
+                "PRM1-Z8": (
+                    u.Quantity(1919.64, "count/deg"),
+                    NotImplemented,
+                    NotImplemented,
+                ),
+            },
         }
 
         __STATUS_BIT_MASK = {
-            'CW_HARD_LIM':          0x00000001,
-            'CCW_HARD_LIM':         0x00000002,
-            'CW_SOFT_LIM':          0x00000004,
-            'CCW_SOFT_LIM':         0x00000008,
-            'CW_MOVE_IN_MOTION':    0x00000010,
-            'CCW_MOVE_IN_MOTION':   0x00000020,
-            'CW_JOG_IN_MOTION':     0x00000040,
-            'CCW_JOG_IN_MOTION':    0x00000080,
-            'MOTOR_CONNECTED':      0x00000100,
-            'HOMING_IN_MOTION':     0x00000200,
-            'HOMING_COMPLETE':      0x00000400,
-            'INTERLOCK_STATE':      0x00001000
+            "CW_HARD_LIM": 0x00000001,
+            "CCW_HARD_LIM": 0x00000002,
+            "CW_SOFT_LIM": 0x00000004,
+            "CCW_SOFT_LIM": 0x00000008,
+            "CW_MOVE_IN_MOTION": 0x00000010,
+            "CCW_MOVE_IN_MOTION": 0x00000020,
+            "CW_JOG_IN_MOTION": 0x00000040,
+            "CCW_JOG_IN_MOTION": 0x00000080,
+            "MOTOR_CONNECTED": 0x00000100,
+            "HOMING_IN_MOTION": 0x00000200,
+            "HOMING_COMPLETE": 0x00000400,
+            "INTERLOCK_STATE": 0x00001000,
         }
 
         # IK-SPECIFIC PROPERTIES #
@@ -1193,8 +1229,11 @@ class APTMotorController(ThorLabsAPT):
                         break
             # If we've made it down here, emit a warning that we didn't find the
             # model.
-            logger.warning("Scale factors for controller %s and motor %s are "
-                           "unknown", self._apt.model_number, motor_model)
+            logger.warning(
+                "Scale factors for controller %s and motor %s are " "unknown",
+                self._apt.model_number,
+                motor_model,
+            )
 
         # We copy the docstring below, so it's OK for this method
         # to not have a docstring of its own.
@@ -1203,7 +1242,7 @@ class APTMotorController(ThorLabsAPT):
             warnings.warn(
                 "The set_scale method has been deprecated in favor "
                 "of the motor_model property.",
-                DeprecationWarning
+                DeprecationWarning,
             )
             return self._set_scale(motor_model)
 
@@ -1244,17 +1283,17 @@ class APTMotorController(ThorLabsAPT):
                 param2=0x00,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
             # The documentation claims there are 14 data bytes, but it seems
             # there are sometimes some extra random ones...
             resp_data = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER,
-                expect_data_len=14
+                pkt,
+                expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER,
+                expect_data_len=14,
             ).data[:14]
             # ch_ident, position, enc_count, status_bits
-            _, _, _, status_bits = struct.unpack(
-                '<HLLL', resp_data)
+            _, _, _, status_bits = struct.unpack("<HLLL", resp_data)
 
             status_dict = dict(
                 (key, (status_bits & bit_mask > 0))
@@ -1276,15 +1315,14 @@ class APTMotorController(ThorLabsAPT):
                 param2=0x00,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
             response = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER,
-                expect_data_len=6
+                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER, expect_data_len=6
             )
             # chan, pos
-            _, pos = struct.unpack('<Hl', response.data)
-            return u.Quantity(pos, 'counts') / self.scale_factors[0]
+            _, pos = struct.unpack("<Hl", response.data)
+            return u.Quantity(pos, "counts") / self.scale_factors[0]
 
         @property
         def position_encoder(self):
@@ -1300,14 +1338,14 @@ class APTMotorController(ThorLabsAPT):
                 param2=0x00,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
             response = self._apt.querypacket(
-                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_ENCCOUNTER,
-                expect_data_len=6)
+                pkt, expect=_cmds.ThorLabsCommands.MOT_GET_ENCCOUNTER, expect_data_len=6
+            )
             # chan, pos
-            _, pos = struct.unpack('<Hl', response.data)
-            return u.Quantity(pos, 'counts')
+            _, pos = struct.unpack("<Hl", response.data)
+            return u.Quantity(pos, "counts")
 
         def go_home(self):
             """
@@ -1320,12 +1358,13 @@ class APTMotorController(ThorLabsAPT):
                 param2=0x00,
                 dest=self._apt.destination,
                 source=0x01,
-                data=None
+                data=None,
             )
-            _ = self._apt.querypacket(pkt,
-                                      expect=_cmds.ThorLabsCommands.MOT_MOVE_HOMED,
-                                      timeout=self.motion_timeout
-                                     )
+            _ = self._apt.querypacket(
+                pkt,
+                expect=_cmds.ThorLabsCommands.MOT_MOVE_HOMED,
+                timeout=self.motion_timeout,
+            )
 
         def move(self, pos, absolute=True):
             """
@@ -1369,30 +1408,33 @@ class APTMotorController(ThorLabsAPT):
                 if pos.units == u.counts:
                     pos_ec = int(pos.magnitude)
                 else:
-                    scaled_pos = (pos * self.scale_factors[0])
+                    scaled_pos = pos * self.scale_factors[0]
                     # Force a unit error.
                     try:
                         pos_ec = int(scaled_pos.to(u.counts).magnitude)
                     except:
-                        raise ValueError("Provided units are not compatible "
-                                         "with current motor scale factor.")
+                        raise ValueError(
+                            "Provided units are not compatible "
+                            "with current motor scale factor."
+                        )
 
             # Now that we have our position as an integer number of encoder
             # counts, we're good to move.
             pkt = _packets.ThorLabsPacket(
-                message_id=_cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE if absolute
+                message_id=_cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE
+                if absolute
                 else _cmds.ThorLabsCommands.MOT_MOVE_RELATIVE,
                 param1=None,
                 param2=None,
                 dest=self._apt.destination,
                 source=0x01,
-                data=struct.pack('<Hl', self._idx_chan, pos_ec)
+                data=struct.pack("<Hl", self._idx_chan, pos_ec),
             )
 
             _ = self._apt.querypacket(
                 pkt,
                 expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED,
-                timeout=self.motion_timeout
+                timeout=self.motion_timeout,
             )
 
     _channel_type = MotorChannel

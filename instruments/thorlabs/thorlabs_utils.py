@@ -14,8 +14,4 @@ def check_cmd(response):
     :return: 1 if not found, 0 otherwise
     :rtype: int
     """
-    return (
-        1
-        if response != "CMD_NOT_DEFINED" and response != "CMD_ARG_INVALID"
-        else 0
-    )
+    return 1 if response != "CMD_NOT_DEFINED" and response != "CMD_ARG_INVALID" else 0

@@ -57,8 +57,10 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         if isinstance(newval, bytes):
             newval = newval.decode("utf-8")
         if not isinstance(newval, str) or len(newval) > 1:
-            raise TypeError("Terminator for loopback communicator must be "
-                            "specified as a single character string.")
+            raise TypeError(
+                "Terminator for loopback communicator must be "
+                "specified as a single character string."
+            )
         self._terminator = newval
         self._filelike.term_char = ord(newval)
 

@@ -20,15 +20,11 @@ from instruments.tests import expected_protocol
 def scsg(monkeypatch):
     """Patch and return signal generator for direct access of metaclass."""
     inst = ik.abstract_instruments.signal_generator.SingleChannelSG
-    monkeypatch.setattr(inst, '__abstractmethods__', set())
+    monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
 
 def test_signal_generator_channel(scsg):
     """Get channel: Ensure existence."""
-    with expected_protocol(
-            scsg,
-            [],
-            []
-    ) as inst:
+    with expected_protocol(scsg, [], []) as inst:
         assert inst.channel[0] == inst

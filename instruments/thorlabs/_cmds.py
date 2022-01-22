@@ -17,6 +17,7 @@ class ThorLabsCommands(IntEnum):
     """
     Enum containing command mneonics for the ThorLabs APT protocol
     """
+
     # General System Commands
     MOD_IDENTIFY = 0x0223
     MOD_SET_CHANENABLESTATE = 0x0210

@@ -28,6 +28,7 @@ class NewportESP301HomeSearchMode(IntEnum):
     """
     Enum containing different search modes code
     """
+
     #: Search along specified axes for the +0 position.
     zero_position_count = 0
     #: Search for combined Home and Index signals.
@@ -49,6 +50,7 @@ class NewportESP301Units(IntEnum):
     """
     Enum containing what `units` return means.
     """
+
     encoder_step = 0
     motor_step = 1
     millimeter = 2
@@ -68,11 +70,13 @@ class NewportESP301MotorType(IntEnum):
     """
     Enum for different motor types.
     """
+
     undefined = 0
     dc_servo = 1
     stepper_motor = 2
     commutated_stepper_motor = 3
     commutated_brushless_servo = 4
+
 
 # CLASSES #####################################################################
 
@@ -143,7 +147,7 @@ class NewportESP301(Instrument):
         raw_cmd = "{target}{cmd}{params}".format(
             target=target if target is not None else "",
             cmd=cmd.upper(),
-            params=",".join(map(str, params))
+            params=",".join(map(str, params)),
         )
 
         if self._execute_immediately:
@@ -175,7 +179,7 @@ class NewportESP301(Instrument):
             self.sendcmd(raw_cmd)
 
         if errcheck:
-            err_resp = self.query('TB?')
+            err_resp = self.query("TB?")
 
             # pylint: disable=unused-variable
             code, timestamp, msg = err_resp.split(",")
@@ -193,14 +197,13 @@ class NewportESP301(Instrument):
         the methods in this class and the axis class can both
         point to the same thing.
         """
-        self._newport_cmd(
-            "OR", target=axis, params=[search_mode], errcheck=errcheck)
+        self._newport_cmd("OR", target=axis, params=[search_mode], errcheck=errcheck)
 
     def search_for_home(
-            self,
-            axis=1,
-            search_mode=NewportESP301HomeSearchMode.zero_position_count.value,
-            errcheck=True
+        self,
+        axis=1,
+        search_mode=NewportESP301HomeSearchMode.zero_position_count.value,
+        errcheck=True,
     ):
         """
         Searches the specified axis for home using the method specified
@@ -245,8 +248,9 @@ class NewportESP301(Instrument):
             Must be in ``range(1, 101)``.
         """
         if program_id not in range(1, 101):
-            raise ValueError("Invalid program ID. Must be an integer from "
-                             "1 to 100 (inclusive).")
+            raise ValueError(
+                "Invalid program ID. Must be an integer from " "1 to 100 (inclusive)."
+            )
         self._newport_cmd("XX", target=program_id)
         try:
             self._newport_cmd("EP", target=program_id)
@@ -270,8 +274,7 @@ class NewportESP301(Instrument):
         """
         self._execute_immediately = False
         yield
-        command_string = reduce(
-            lambda x, y: x + ' ; ' + y + ' ; ', self._command_list)
+        command_string = reduce(lambda x, y: x + " ; " + y + " ; ", self._command_list)
         # TODO: is _bulk_query_resp getting back to user?
         self._bulk_query_resp = self._execute_cmd(command_string, errcheck)
         self._command_list = []
@@ -284,8 +287,9 @@ class NewportESP301(Instrument):
         :param int program_id: ID number for previously saved user program
         """
         if program_id not in range(1, 101):
-            raise ValueError("Invalid program ID. Must be an integer from "
-                             "1 to 100 (inclusive).")
+            raise ValueError(
+                "Invalid program ID. Must be an integer from " "1 to 100 (inclusive)."
+            )
         self._newport_cmd("EX", target=program_id)
 
 
@@ -298,6 +302,7 @@ class NewportESP301Axis:
     instantiated by the user directly, but is
     returned by `NewportESP301.axis`.
     """
+
     # quantities micro inch
     # micro_inch = u.UnitQuantity('micro-inch', u.inch / 1e6, symbol='uin')
     micro_inch = u.uinch
@@ -308,24 +313,25 @@ class NewportESP301Axis:
     # going to do this until I have a physical device
 
     _unit_dict = {
-        0:  u.count,
-        1:  u.count,
-        2:  u.mm,
-        3:  u.um,
-        4:  u.inch,
-        5:  u.mil,
-        6:  micro_inch,  # compound unit for micro-inch
-        7:  u.deg,
-        8:  u.grad,
-        9:  u.rad,
-        10:  u.mrad,
-        11:  u.urad,
+        0: u.count,
+        1: u.count,
+        2: u.mm,
+        3: u.um,
+        4: u.inch,
+        5: u.mil,
+        6: micro_inch,  # compound unit for micro-inch
+        7: u.deg,
+        8: u.grad,
+        9: u.rad,
+        10: u.mrad,
+        11: u.urad,
     }
 
     def __init__(self, controller, axis_id):
         if not isinstance(controller, NewportESP301):
-            raise TypeError("Axis must be controlled by a Newport ESP-301 "
-                            "motor controller.")
+            raise TypeError(
+                "Axis must be controlled by a Newport ESP-301 " "motor controller."
+            )
 
         self._controller = controller
         self._axis_id = axis_id + 1
@@ -355,16 +361,10 @@ class NewportESP301Axis:
         .. seealso::
             NewportESP301Units
         """
-        return NewportESP301Units(
-            int(self._newport_cmd("SN?", target=self.axis_id))
-        )
+        return NewportESP301Units(int(self._newport_cmd("SN?", target=self.axis_id)))
 
     def _set_units(self, new_units):
-        return self._newport_cmd(
-            "SN",
-            target=self.axis_id,
-            params=[int(new_units)]
-        )
+        return self._newport_cmd("SN", target=self.axis_id, params=[int(new_units)])
 
     # PROPERTIES ##
 
@@ -401,15 +401,18 @@ class NewportESP301Axis:
 
         return assume_units(
             float(self._newport_cmd("AC?", target=self.axis_id)),
-            self._units / (u.s**2)
+            self._units / (u.s ** 2),
         )
 
     @acceleration.setter
     def acceleration(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / (u.s**2)).to(
-            self._units / (u.s**2)).magnitude)
+        newval = float(
+            assume_units(newval, self._units / (u.s ** 2))
+            .to(self._units / (u.s ** 2))
+            .magnitude
+        )
         self._newport_cmd("AC", target=self.axis_id, params=[newval])
 
     @property
@@ -423,15 +426,18 @@ class NewportESP301Axis:
         """
         return assume_units(
             float(self._newport_cmd("AG?", target=self.axis_id)),
-            self._units / (u.s**2)
+            self._units / (u.s ** 2),
         )
 
     @deceleration.setter
     def deceleration(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / (u.s**2)).to(
-            self._units / (u.s**2)).magnitude)
+        newval = float(
+            assume_units(newval, self._units / (u.s ** 2))
+            .to(self._units / (u.s ** 2))
+            .magnitude
+        )
         self._newport_cmd("AG", target=self.axis_id, params=[newval])
 
     @property
@@ -445,13 +451,16 @@ class NewportESP301Axis:
         """
         return assume_units(
             float(self._newport_cmd("AE?", target=self.axis_id)),
-            self._units / (u.s**2)
+            self._units / (u.s ** 2),
         )
 
     @estop_deceleration.setter
     def estop_deceleration(self, decel):
-        decel = float(assume_units(decel, self._units / (u.s**2)).to(
-            self._units / (u.s**2)).magnitude)
+        decel = float(
+            assume_units(decel, self._units / (u.s ** 2))
+            .to(self._units / (u.s ** 2))
+            .magnitude
+        )
         self._newport_cmd("AE", target=self.axis_id, params=[decel])
 
     @property
@@ -466,13 +475,16 @@ class NewportESP301Axis:
 
         return assume_units(
             float(self._newport_cmd("JK?", target=self.axis_id)),
-            self._units / (u.s**3)
+            self._units / (u.s ** 3),
         )
 
     @jerk.setter
     def jerk(self, jerk):
-        jerk = float(assume_units(jerk, self._units / (u.s**3)).to(
-            self._units / (u.s**3)).magnitude)
+        jerk = float(
+            assume_units(jerk, self._units / (u.s ** 3))
+            .to(self._units / (u.s ** 3))
+            .magnitude
+        )
         self._newport_cmd("JK", target=self.axis_id, params=[jerk])
 
     @property
@@ -485,14 +497,14 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("VA?", target=self.axis_id)),
-            self._units / u.s
+            float(self._newport_cmd("VA?", target=self.axis_id)), self._units / u.s
         )
 
     @velocity.setter
     def velocity(self, velocity):
-        velocity = float(assume_units(velocity, self._units / (u.s)).to(
-            self._units / u.s).magnitude)
+        velocity = float(
+            assume_units(velocity, self._units / (u.s)).to(self._units / u.s).magnitude
+        )
         self._newport_cmd("VA", target=self.axis_id, params=[velocity])
 
     @property
@@ -505,16 +517,16 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("VU?", target=self.axis_id)),
-            self._units / u.s
+            float(self._newport_cmd("VU?", target=self.axis_id)), self._units / u.s
         )
 
     @max_velocity.setter
     def max_velocity(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / u.s).to(
-            self._units / u.s).magnitude)
+        newval = float(
+            assume_units(newval, self._units / u.s).to(self._units / u.s).magnitude
+        )
         self._newport_cmd("VU", target=self.axis_id, params=[newval])
 
     @property
@@ -527,16 +539,16 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("VB?", target=self.axis_id)),
-            self._units / u.s
+            float(self._newport_cmd("VB?", target=self.axis_id)), self._units / u.s
         )
 
     @max_base_velocity.setter
     def max_base_velocity(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / u.s).to(
-            self._units / u.s).magnitude)
+        newval = float(
+            assume_units(newval, self._units / u.s).to(self._units / u.s).magnitude
+        )
         self._newport_cmd("VB", target=self.axis_id, params=[newval])
 
     @property
@@ -549,18 +561,16 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("JH?", target=self.axis_id)),
-            self._units / u.s
+            float(self._newport_cmd("JH?", target=self.axis_id)), self._units / u.s
         )
 
     @jog_high_velocity.setter
     def jog_high_velocity(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(
-            newval,
-            self._units / u.s
-        ).to(self._units / u.s).magnitude)
+        newval = float(
+            assume_units(newval, self._units / u.s).to(self._units / u.s).magnitude
+        )
         self._newport_cmd("JH", target=self.axis_id, params=[newval])
 
     @property
@@ -573,18 +583,16 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("JW?", target=self.axis_id)),
-            self._units / u.s
+            float(self._newport_cmd("JW?", target=self.axis_id)), self._units / u.s
         )
 
     @jog_low_velocity.setter
     def jog_low_velocity(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(
-            newval,
-            self._units / u.s
-        ).to(self._units / u.s).magnitude)
+        newval = float(
+            assume_units(newval, self._units / u.s).to(self._units / u.s).magnitude
+        )
         self._newport_cmd("JW", target=self.axis_id, params=[newval])
 
     @property
@@ -597,18 +605,16 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("OH?", target=self.axis_id)),
-            self._units / u.s
+            float(self._newport_cmd("OH?", target=self.axis_id)), self._units / u.s
         )
 
     @homing_velocity.setter
     def homing_velocity(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(
-            newval,
-            self._units / u.s
-        ).to(self._units / u.s).magnitude)
+        newval = float(
+            assume_units(newval, self._units / u.s).to(self._units / u.s).magnitude
+        )
         self._newport_cmd("OH", target=self.axis_id, params=[newval])
 
     @property
@@ -622,15 +628,18 @@ class NewportESP301Axis:
         """
         return assume_units(
             float(self._newport_cmd("AU?", target=self.axis_id)),
-            self._units / (u.s**2)
+            self._units / (u.s ** 2),
         )
 
     @max_acceleration.setter
     def max_acceleration(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units / (u.s**2)).to(
-            self._units / (u.s**2)).magnitude)
+        newval = float(
+            assume_units(newval, self._units / (u.s ** 2))
+            .to(self._units / (u.s ** 2))
+            .magnitude
+        )
         self._newport_cmd("AU", target=self.axis_id, params=[newval])
 
     @property
@@ -647,8 +656,11 @@ class NewportESP301Axis:
 
     @max_deceleration.setter
     def max_deceleration(self, decel):
-        decel = float(assume_units(decel, self._units / (u.s**2)).to(
-            self._units / (u.s**2)).magnitude)
+        decel = float(
+            assume_units(decel, self._units / (u.s ** 2))
+            .to(self._units / (u.s ** 2))
+            .magnitude
+        )
         self.max_acceleration = decel
 
     @property
@@ -661,8 +673,7 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("TP?", target=self.axis_id)),
-            self._units
+            float(self._newport_cmd("TP?", target=self.axis_id)), self._units
         )
 
     @property
@@ -675,8 +686,7 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("DP?", target=self.axis_id)),
-            self._units
+            float(self._newport_cmd("DP?", target=self.axis_id)), self._units
         )
 
     @property
@@ -689,8 +699,7 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("DV?", target=self.axis_id)),
-            self._units / u.s
+            float(self._newport_cmd("DV?", target=self.axis_id)), self._units / u.s
         )
 
     @property
@@ -704,16 +713,14 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("DH?", target=self.axis_id)),
-            self._units
+            float(self._newport_cmd("DH?", target=self.axis_id)), self._units
         )
 
     @home.setter
     def home(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units).to(
-            self._units).magnitude)
+        newval = float(assume_units(newval, self._units).to(self._units).magnitude)
         self._newport_cmd("DH", target=self.axis_id, params=[newval])
 
     @property
@@ -749,16 +756,14 @@ class NewportESP301Axis:
         """
 
         return assume_units(
-            float(self._newport_cmd("SU?", target=self.axis_id)),
-            self._units
+            float(self._newport_cmd("SU?", target=self.axis_id)), self._units
         )
 
     @encoder_resolution.setter
     def encoder_resolution(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(newval, self._units).to(
-            self._units).magnitude)
+        newval = float(assume_units(newval, self._units).to(self._units).magnitude)
         self._newport_cmd("SU", target=self.axis_id, params=[newval])
 
     @property
@@ -772,18 +777,14 @@ class NewportESP301Axis:
         """
 
         return assume_units(
-            float(self._newport_cmd("FR?", target=self.axis_id)),
-            self._units
+            float(self._newport_cmd("FR?", target=self.axis_id)), self._units
         )
 
     @full_step_resolution.setter
     def full_step_resolution(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(
-            newval,
-            self._units
-        ).to(self._units).magnitude)
+        newval = float(assume_units(newval, self._units).to(self._units).magnitude)
         self._newport_cmd("FR", target=self.axis_id, params=[newval])
 
     @property
@@ -795,14 +796,12 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("SL?", target=self.axis_id)),
-            self._units
+            float(self._newport_cmd("SL?", target=self.axis_id)), self._units
         )
 
     @left_limit.setter
     def left_limit(self, limit):
-        limit = float(assume_units(limit, self._units).to(
-            self._units).magnitude)
+        limit = float(assume_units(limit, self._units).to(self._units).magnitude)
         self._newport_cmd("SL", target=self.axis_id, params=[limit])
 
     @property
@@ -814,14 +813,12 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("SR?", target=self.axis_id)),
-            self._units
+            float(self._newport_cmd("SR?", target=self.axis_id)), self._units
         )
 
     @right_limit.setter
     def right_limit(self, limit):
-        limit = float(assume_units(limit, self._units).to(
-            self._units).magnitude)
+        limit = float(assume_units(limit, self._units).to(self._units).magnitude)
         self._newport_cmd("SR", target=self.axis_id, params=[limit])
 
     @property
@@ -833,18 +830,14 @@ class NewportESP301Axis:
         :type: `~pint.Quantity` or `float`
         """
         return assume_units(
-            float(self._newport_cmd("FE?", target=self.axis_id)),
-            self._units
+            float(self._newport_cmd("FE?", target=self.axis_id)), self._units
         )
 
     @error_threshold.setter
     def error_threshold(self, newval):
         if newval is None:
             return
-        newval = float(assume_units(
-            newval,
-            self._units
-        ).to(self._units).magnitude)
+        newval = float(assume_units(newval, self._units).to(self._units).magnitude)
         self._newport_cmd("FE", target=self.axis_id, params=[newval])
 
     @property
@@ -856,17 +849,13 @@ class NewportESP301Axis:
             of current newport :math:`\\text{A}`
         :type: `~pint.Quantity` or `float`
         """
-        return assume_units(
-            float(self._newport_cmd("QI?", target=self.axis_id)),
-            u.A
-        )
+        return assume_units(float(self._newport_cmd("QI?", target=self.axis_id)), u.A)
 
     @current.setter
     def current(self, newval):
         if newval is None:
             return
-        current = float(assume_units(newval, u.A).to(
-            u.A).magnitude)
+        current = float(assume_units(newval, u.A).to(u.A).magnitude)
         self._newport_cmd("QI", target=self.axis_id, params=[current])
 
     @property
@@ -878,17 +867,13 @@ class NewportESP301Axis:
             of current newport :math:`\\text{V}`
         :type: `~pint.Quantity` or `float`
         """
-        return assume_units(
-            float(self._newport_cmd("QV?", target=self.axis_id)),
-            u.V
-        )
+        return assume_units(float(self._newport_cmd("QV?", target=self.axis_id)), u.V)
 
     @voltage.setter
     def voltage(self, newval):
         if newval is None:
             return
-        voltage = float(assume_units(newval, u.V).to(
-            u.V).magnitude)
+        voltage = float(assume_units(newval, u.V).to(u.V).magnitude)
         self._newport_cmd("QV", target=self.axis_id, params=[voltage])
 
     @property
@@ -904,10 +889,9 @@ class NewportESP301Axis:
         :type: `int`
         :rtype: `NewportESP301MotorType`
         """
-        return NewportESP301MotorType(int(self._newport_cmd(
-            "QM?",
-            target=self._axis_id
-        )))
+        return NewportESP301MotorType(
+            int(self._newport_cmd("QM?", target=self._axis_id))
+        )
 
     @motor_type.setter
     def motor_type(self, newval):
@@ -977,11 +961,7 @@ class NewportESP301Axis:
         if newval < 1 or newval > 250:
             raise ValueError("Microstep factor must be between 1 and 250")
         else:
-            self._newport_cmd(
-                "QS",
-                target=self._axis_id,
-                params=[newval]
-            )
+            self._newport_cmd("QS", target=self._axis_id, params=[newval])
 
     @property
     def hardware_limit_configuration(self):
@@ -1086,8 +1066,7 @@ class NewportESP301Axis:
     # MOVEMENT METHODS #
 
     def search_for_home(
-            self,
-            search_mode=NewportESP301HomeSearchMode.zero_position_count.value
+        self, search_mode=NewportESP301HomeSearchMode.zero_position_count.value
     ):
         """
         Searches this axis only
@@ -1110,8 +1089,7 @@ class NewportESP301Axis:
             commands until movement is finished
         :param bool block: If True, will block code until movement is finished
         """
-        position = float(assume_units(position, self._units).to(
-            self._units).magnitude)
+        position = float(assume_units(position, self._units).to(self._units).magnitude)
         if absolute:
             self._newport_cmd("PA", params=[position], target=self.axis_id)
         else:
@@ -1163,10 +1141,8 @@ class NewportESP301Axis:
 
         :type position: float or :class:`~pint.Quantity`
         """
-        position = float(assume_units(position, self._units).to(
-            self._units).magnitude)
-        self._newport_cmd(
-            "WP", target=self.axis_id, params=[position])
+        position = float(assume_units(position, self._units).to(self._units).magnitude)
+        self._newport_cmd("WP", target=self.axis_id, params=[position])
 
     def wait_for_motion(self, poll_interval=0.01, max_wait=None):
         """
@@ -1184,11 +1160,9 @@ class NewportESP301Axis:
         #        In programming mode, the "WS" command should be
         #        sent instead, and the two parameters to this method should
         #        be ignored.
-        poll_interval = float(assume_units(poll_interval, u.s).to(
-            u.s).magnitude)
+        poll_interval = float(assume_units(poll_interval, u.s).to(u.s).magnitude)
         if max_wait is not None:
-            max_wait = float(assume_units(max_wait, u.s).to(
-                u.s).magnitude)
+            max_wait = float(assume_units(max_wait, u.s).to(u.s).magnitude)
         tic = time.time()
         while True:
             if self.is_motion_done:
@@ -1247,49 +1221,54 @@ class NewportESP301Axis:
         * 'reduce_motor_torque_percentage' = percentage between 0 and 100
         """
 
-        self.motor_type = kwargs.get('motor_type')
-        self.feedback_configuration = kwargs.get('feedback_configuration')
-        self.full_step_resolution = kwargs.get('full_step_resolution')
-        self.position_display_resolution = kwargs.get('position_display_'
-                                                      'resolution')
-        self.current = kwargs.get('current')
-        self.voltage = kwargs.get('voltage')
-        self.units = int(kwargs.get('units'))
-        self.encoder_resolution = kwargs.get('encoder_resolution')
-        self.max_acceleration = kwargs.get('max_acceleration')
-        self.max_velocity = kwargs.get('max_velocity')
-        self.max_base_velocity = kwargs.get('max_base_velocity')
-        self.homing_velocity = kwargs.get('homing_velocity')
-        self.jog_high_velocity = kwargs.get('jog_high_velocity')
-        self.jog_low_velocity = kwargs.get('jog_low_velocity')
-        self.acceleration = kwargs.get('acceleration')
-        self.velocity = kwargs.get('velocity')
-        self.deceleration = kwargs.get('deceleration')
-        self.estop_deceleration = kwargs.get('estop_deceleration')
-        self.jerk = kwargs.get('jerk')
-        self.error_threshold = kwargs.get('error_threshold')
-        self.proportional_gain = kwargs.get('proportional_gain')
-        self.derivative_gain = kwargs.get('derivative_gain')
-        self.integral_gain = kwargs.get('integral_gain')
-        self.integral_saturation_gain = kwargs.get('integral_saturation_gain')
-        self.home = kwargs.get('home')
-        self.microstep_factor = kwargs.get('microstep_factor')
-        self.acceleration_feed_forward = kwargs.get('acceleration_feed_forward')
-        self.trajectory = kwargs.get('trajectory')
-        self.hardware_limit_configuration = kwargs.get('hardware_limit_'
-                                                       'configuration')
-        if 'reduce_motor_torque_time' in kwargs and 'reduce_motor_torque_percentage' in kwargs:
-            motor_time = kwargs['reduce_motor_torque_time']
+        self.motor_type = kwargs.get("motor_type")
+        self.feedback_configuration = kwargs.get("feedback_configuration")
+        self.full_step_resolution = kwargs.get("full_step_resolution")
+        self.position_display_resolution = kwargs.get("position_display_" "resolution")
+        self.current = kwargs.get("current")
+        self.voltage = kwargs.get("voltage")
+        self.units = int(kwargs.get("units"))
+        self.encoder_resolution = kwargs.get("encoder_resolution")
+        self.max_acceleration = kwargs.get("max_acceleration")
+        self.max_velocity = kwargs.get("max_velocity")
+        self.max_base_velocity = kwargs.get("max_base_velocity")
+        self.homing_velocity = kwargs.get("homing_velocity")
+        self.jog_high_velocity = kwargs.get("jog_high_velocity")
+        self.jog_low_velocity = kwargs.get("jog_low_velocity")
+        self.acceleration = kwargs.get("acceleration")
+        self.velocity = kwargs.get("velocity")
+        self.deceleration = kwargs.get("deceleration")
+        self.estop_deceleration = kwargs.get("estop_deceleration")
+        self.jerk = kwargs.get("jerk")
+        self.error_threshold = kwargs.get("error_threshold")
+        self.proportional_gain = kwargs.get("proportional_gain")
+        self.derivative_gain = kwargs.get("derivative_gain")
+        self.integral_gain = kwargs.get("integral_gain")
+        self.integral_saturation_gain = kwargs.get("integral_saturation_gain")
+        self.home = kwargs.get("home")
+        self.microstep_factor = kwargs.get("microstep_factor")
+        self.acceleration_feed_forward = kwargs.get("acceleration_feed_forward")
+        self.trajectory = kwargs.get("trajectory")
+        self.hardware_limit_configuration = kwargs.get(
+            "hardware_limit_" "configuration"
+        )
+        if (
+            "reduce_motor_torque_time" in kwargs
+            and "reduce_motor_torque_percentage" in kwargs
+        ):
+            motor_time = kwargs["reduce_motor_torque_time"]
             motor_time = int(assume_units(motor_time, u.ms).to(u.ms).magnitude)
             if motor_time < 0 or motor_time > 60000:
                 raise ValueError("Time must be between 0 and 60000 ms")
-            percentage = kwargs['reduce_motor_torque_percentage']
-            percentage = int(assume_units(percentage, u.percent).to(
-                u.percent).magnitude)
+            percentage = kwargs["reduce_motor_torque_percentage"]
+            percentage = int(
+                assume_units(percentage, u.percent).to(u.percent).magnitude
+            )
             if percentage < 0 or percentage > 100:
                 raise ValueError(r"Percentage must be between 0 and 100%")
             self._newport_cmd(
-                "QR", target=self._axis_id, params=[motor_time, percentage])
+                "QR", target=self._axis_id, params=[motor_time, percentage]
+            )
 
         # update motor configuration
         self._newport_cmd("UF", target=self._axis_id)
@@ -1332,35 +1311,33 @@ class NewportESP301Axis:
         """
 
         config = dict()
-        config['units'] = self.units
-        config['motor_type'] = self.motor_type
-        config['feedback_configuration'] = self.feedback_configuration
-        config['full_step_resolution'] = self.full_step_resolution
-        config[
-            'position_display_resolution'] = self.position_display_resolution
-        config['current'] = self.current
-        config['max_velocity'] = self.max_velocity
-        config['encoder_resolution'] = self.encoder_resolution
-        config['acceleration'] = self.acceleration
-        config['deceleration'] = self.deceleration
-        config['velocity'] = self.velocity
-        config['max_acceleration'] = self.max_acceleration
-        config['homing_velocity'] = self.homing_velocity
-        config['jog_high_velocity'] = self.jog_high_velocity
-        config['jog_low_velocity'] = self.jog_low_velocity
-        config['estop_deceleration'] = self.estop_deceleration
-        config['jerk'] = self.jerk
+        config["units"] = self.units
+        config["motor_type"] = self.motor_type
+        config["feedback_configuration"] = self.feedback_configuration
+        config["full_step_resolution"] = self.full_step_resolution
+        config["position_display_resolution"] = self.position_display_resolution
+        config["current"] = self.current
+        config["max_velocity"] = self.max_velocity
+        config["encoder_resolution"] = self.encoder_resolution
+        config["acceleration"] = self.acceleration
+        config["deceleration"] = self.deceleration
+        config["velocity"] = self.velocity
+        config["max_acceleration"] = self.max_acceleration
+        config["homing_velocity"] = self.homing_velocity
+        config["jog_high_velocity"] = self.jog_high_velocity
+        config["jog_low_velocity"] = self.jog_low_velocity
+        config["estop_deceleration"] = self.estop_deceleration
+        config["jerk"] = self.jerk
         # config['error_threshold'] = self.error_threshold
-        config['proportional_gain'] = self.proportional_gain
-        config['derivative_gain'] = self.derivative_gain
-        config['integral_gain'] = self.integral_gain
-        config['integral_saturation_gain'] = self.integral_saturation_gain
-        config['home'] = self.home
-        config['microstep_factor'] = self.microstep_factor
-        config['acceleration_feed_forward'] = self.acceleration_feed_forward
-        config['trajectory'] = self.trajectory
-        config[
-            'hardware_limit_configuration'] = self.hardware_limit_configuration
+        config["proportional_gain"] = self.proportional_gain
+        config["derivative_gain"] = self.derivative_gain
+        config["integral_gain"] = self.integral_gain
+        config["integral_saturation_gain"] = self.integral_saturation_gain
+        config["home"] = self.home
+        config["microstep_factor"] = self.microstep_factor
+        config["acceleration_feed_forward"] = self.acceleration_feed_forward
+        config["trajectory"] = self.trajectory
+        config["hardware_limit_configuration"] = self.hardware_limit_configuration
         return config
 
     def get_status(self):
@@ -1375,11 +1352,11 @@ class NewportESP301Axis:
         :rtype: dict
         """
         status = dict()
-        status['units'] = self.units
-        status['position'] = self.position
-        status['desired_position'] = self.desired_position
-        status['desired_velocity'] = self.desired_velocity
-        status['is_motion_done'] = self.is_motion_done
+        status["units"] = self.units
+        status["position"] = self.position
+        status["desired_position"] = self.desired_position
+        status["desired_velocity"] = self.desired_velocity
+        status["is_motion_done"] = self.is_motion_done
 
         return status
 
@@ -1406,8 +1383,7 @@ class NewportESP301Axis:
             if quant == quantity:
                 return num
 
-        raise KeyError(
-            "{0} is not a valid unit for Newport Axis".format(quantity))
+        raise KeyError("{0} is not a valid unit for Newport Axis".format(quantity))
 
     # pylint: disable=protected-access
     def _newport_cmd(self, cmd, **kwargs):

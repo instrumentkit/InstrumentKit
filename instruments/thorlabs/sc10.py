@@ -14,7 +14,10 @@ from instruments.abstract_instruments import Instrument
 from instruments.thorlabs.thorlabs_utils import check_cmd
 from instruments.units import ureg as u
 from instruments.util_fns import (
-    bool_property, enum_property, int_property, unitful_property
+    bool_property,
+    enum_property,
+    int_property,
+    unitful_property,
 )
 
 # CLASSES #####################################################################
@@ -30,8 +33,8 @@ class SC10(Instrument):
 
     def __init__(self, filelike):
         super(SC10, self).__init__(filelike)
-        self.terminator = '\r'
-        self.prompt = '> '
+        self.terminator = "\r"
+        self.prompt = "> "
 
     def _ack_expected(self, msg=""):
         return msg
@@ -43,6 +46,7 @@ class SC10(Instrument):
         """
         Enum containing valid output modes of the SC10
         """
+
         manual = 1
         auto = 2
         single = 3
@@ -73,7 +77,7 @@ class SC10(Instrument):
         If output enable is on (`True`), there is a voltage on the output.
 
         :rtype: `bool`
-        """
+        """,
     )
 
     repeat = int_property(
@@ -85,7 +89,7 @@ class SC10(Instrument):
         inclusive.
 
         :type: `int`
-        """
+        """,
     )
 
     mode = enum_property(
@@ -97,7 +101,7 @@ class SC10(Instrument):
         Gets/sets the output mode of the SC10
 
         :rtype: `SC10.Mode`
-        """
+        """,
     )
 
     trigger = int_property(
@@ -110,7 +114,7 @@ class SC10(Instrument):
         0 for internal trigger, 1 for external trigger
 
         :type: `int`
-        """
+        """,
     )
 
     out_trigger = int_property(
@@ -124,7 +128,7 @@ class SC10(Instrument):
         controller output
 
         :type: `int`
-        """
+        """,
     )
 
     open_time = unitful_property(
@@ -139,7 +143,7 @@ class SC10(Instrument):
         :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units milliseconds.
         :type: `~pint.Quantity`
-        """
+        """,
     )
 
     shut_time = unitful_property(
@@ -154,7 +158,7 @@ class SC10(Instrument):
         :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units milliseconds.
         :type: `~pint.Quantity`
-        """
+        """,
     )
 
     @property
@@ -188,7 +192,7 @@ class SC10(Instrument):
         open.
 
         :rtype: `bool`
-        """
+        """,
     )
 
     interlock = bool_property(
@@ -202,7 +206,7 @@ class SC10(Instrument):
         Returns `True` if the interlock is tripped, and `False` otherwise.
 
         :rtype: `bool`
-        """
+        """,
     )
 
     # Methods #

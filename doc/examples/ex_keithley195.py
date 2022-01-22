@@ -24,14 +24,14 @@ import instruments as ik
 
 # <markdowncell>
 
-# Next, we open our connection to the instrument. Here we use the 
+# Next, we open our connection to the instrument. Here we use the
 # Keithley195 class and open the connection using Galvant Industries'
 # GPIBUSB adapter. Our connection is made to the virtual serial port located at
 # /dev/ttyUSB0 and GPIB address 16.
 
 # <codecell>
 
-dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 1)
+dmm = ik.keithley.Keithley195.open_gpibusb("/dev/ttyUSB0", 1)
 
 # <markdowncell>
 
@@ -39,5 +39,4 @@ dmm = ik.keithley.Keithley195.open_gpibusb('/dev/ttyUSB0', 1)
 
 # <codecell>
 
-print dmm.measure()
-
+print(dmm.measure())

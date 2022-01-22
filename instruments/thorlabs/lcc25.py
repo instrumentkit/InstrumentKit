@@ -45,6 +45,7 @@ class LCC25(Instrument):
         """
         Enum containing valid output modes of the LCC25
         """
+
         normal = 0
         voltage1 = 1
         voltage2 = 2
@@ -73,7 +74,7 @@ class LCC25(Instrument):
         :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Hertz.
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     mode = enum_property(
@@ -85,7 +86,7 @@ class LCC25(Instrument):
         Gets/sets the output mode of the LCC25
 
         :rtype: `LCC25.Mode`
-        """
+        """,
     )
 
     enable = bool_property(
@@ -99,7 +100,7 @@ class LCC25(Instrument):
         If output enable is on (`True`), there is a voltage on the output.
 
         :rtype: `bool`
-        """
+        """,
     )
 
     extern = bool_property(
@@ -114,7 +115,7 @@ class LCC25(Instrument):
         modulation.
 
         :rtype: `bool`
-        """
+        """,
     )
 
     remote = bool_property(
@@ -129,7 +130,7 @@ class LCC25(Instrument):
         panel buttons.
 
         :rtype: `bool`
-        """
+        """,
     )
 
     voltage1 = unitful_property(
@@ -144,7 +145,7 @@ class LCC25(Instrument):
         :units: As specified (if a `~pint.Quantity`) or
             assumed to be of units Volts.
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     voltage2 = unitful_property(
@@ -159,7 +160,7 @@ class LCC25(Instrument):
         :units: As specified (if a `~pint.Quantity`) or
             assumed to be of units Volts.
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     min_voltage = unitful_property(
@@ -174,7 +175,7 @@ class LCC25(Instrument):
         :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Volts.
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     max_voltage = unitful_property(
@@ -190,7 +191,7 @@ class LCC25(Instrument):
         :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Volts.
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     dwell = unitful_property(
@@ -205,7 +206,7 @@ class LCC25(Instrument):
         :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units milliseconds.
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     increment = unitful_property(
@@ -220,7 +221,7 @@ class LCC25(Instrument):
         :units: As specified (if a `~pint.Quantity`) or assumed
             to be of units Volts.
         :rtype: `~pint.Quantity`
-        """
+        """,
     )
 
     # METHODS #

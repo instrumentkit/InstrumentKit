@@ -9,7 +9,9 @@ Provides support for Rigol DS-1000 series oscilloscopes.
 from enum import Enum
 
 from instruments.abstract_instruments import (
-    Oscilloscope, OscilloscopeChannel, OscilloscopeDataSource
+    Oscilloscope,
+    OscilloscopeChannel,
+    OscilloscopeDataSource,
 )
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList, bool_property, enum_property
@@ -33,6 +35,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
         """
         Enum containing valid acquisition types for the Rigol DS1000
         """
+
         normal = "NORM"
         average = "AVER"
         peak_detect = "PEAK"
@@ -55,9 +58,11 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
         def read_waveform(self, bin_format=True):
             # TODO: add DIG, FFT.
             if self.name not in ["CHAN1", "CHAN2", "DIG", "MATH", "FFT"]:
-                raise NotImplementedError("Rigol DS1000 series does not "
-                                          "supportreading waveforms from "
-                                          "{}.".format(self.name))
+                raise NotImplementedError(
+                    "Rigol DS1000 series does not "
+                    "supportreading waveforms from "
+                    "{}.".format(self.name)
+                )
             self._parent.sendcmd(":WAV:DATA? {}".format(self.name))
             data = self._parent.binblockread(2)  # TODO: check width
             return data
@@ -76,6 +81,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
             """
             Enum containing valid coupling modes for the Rigol DS1000
             """
+
             ac = "AC"
             dc = "DC"
             ground = "GND"
@@ -86,7 +92,8 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
 
             # Initialize as a data source with name CHAN{}.
             super(RigolDS1000Series.Channel, self).__init__(
-                self._parent, "CHAN{}".format(self._idx))
+                self._parent, "CHAN{}".format(self._idx)
+            )
 
         def sendcmd(self, cmd):
             """
@@ -156,7 +163,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
 
     @acquire_averages.setter
     def acquire_averages(self, newval):
-        if newval not in [2**i for i in range(1, 9)]:
+        if newval not in [2 ** i for i in range(1, 9)]:
             raise ValueError(
                 "Number of averages {} not supported by instrument; "
                 "must be a power of 2 from 2 to 256.".format(newval)
@@ -194,8 +201,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
     #
     # Many of the :KEY: commands are not yet implemented as methods.
 
-    panel_locked = bool_property(":KEY:LOCK", inst_true="ENAB",
-                                 inst_false="DIS")
+    panel_locked = bool_property(":KEY:LOCK", inst_true="ENAB", inst_false="DIS")
 
     def release_panel(self):
         # TODO: better name?

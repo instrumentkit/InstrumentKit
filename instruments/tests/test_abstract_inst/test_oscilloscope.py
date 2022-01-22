@@ -20,7 +20,7 @@ from instruments.tests import expected_protocol
 def osc(monkeypatch):
     """Patch and return Oscilloscope class for access."""
     inst = ik.abstract_instruments.Oscilloscope
-    monkeypatch.setattr(inst, '__abstractmethods__', set())
+    monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
 
@@ -28,7 +28,7 @@ def osc(monkeypatch):
 def osc_ch(monkeypatch):
     """Patch and return OscilloscopeChannel class for access."""
     inst = ik.abstract_instruments.OscilloscopeChannel
-    monkeypatch.setattr(inst, '__abstractmethods__', set())
+    monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
 
@@ -36,7 +36,7 @@ def osc_ch(monkeypatch):
 def osc_ds(monkeypatch):
     """Patch and return OscilloscopeDataSource class for access."""
     inst = ik.abstract_instruments.OscilloscopeDataSource
-    monkeypatch.setattr(inst, '__abstractmethods__', set())
+    monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
 
@@ -45,44 +45,28 @@ def osc_ds(monkeypatch):
 
 def test_oscilloscope_channel(osc):
     """Get channel: ensure existence."""
-    with expected_protocol(
-            osc,
-            [],
-            []
-    ) as inst:
+    with expected_protocol(osc, [], []) as inst:
         with pytest.raises(NotImplementedError):
             _ = inst.channel
 
 
 def test_oscilloscope_ref(osc):
     """Get ref: ensure existence."""
-    with expected_protocol(
-            osc,
-            [],
-            []
-    ) as inst:
+    with expected_protocol(osc, [], []) as inst:
         with pytest.raises(NotImplementedError):
             _ = inst.ref
 
 
 def test_oscilloscope_math(osc):
     """Get math: ensure existence."""
-    with expected_protocol(
-            osc,
-            [],
-            []
-    ) as inst:
+    with expected_protocol(osc, [], []) as inst:
         with pytest.raises(NotImplementedError):
             _ = inst.math
 
 
 def test_oscilloscope_force_trigger(osc):
     """Force a trigger: ensure existence."""
-    with expected_protocol(
-            osc,
-            [],
-            []
-    ) as inst:
+    with expected_protocol(osc, [], []) as inst:
         with pytest.raises(NotImplementedError):
             inst.force_trigger()
 
@@ -104,8 +88,8 @@ def test_oscilloscope_channel_coupling(osc_ch):
 
 def test_oscilloscope_data_source_init(osc_ds):
     """Initialize Oscilloscope Data Source."""
-    parent = 'parent'
-    name = 'name'
+    parent = "parent"
+    name = "name"
     inst = osc_ds(parent, name)
     assert inst._parent == parent
     assert inst._name == name
@@ -114,8 +98,8 @@ def test_oscilloscope_data_source_init(osc_ds):
 
 def test_oscilloscope_data_source_name(osc_ds):
     """Get data source name: ensure existence."""
-    parent = 'parent'
-    name = 'name'
+    parent = "parent"
+    name = "name"
     inst = osc_ds(parent, name)
     with pytest.raises(NotImplementedError):
         _ = inst.name
@@ -123,8 +107,8 @@ def test_oscilloscope_data_source_name(osc_ds):
 
 def test_oscilloscope_data_source_read_waveform(osc_ds):
     """Read data source waveform: ensure existence."""
-    parent = 'parent'
-    name = 'name'
+    parent = "parent"
+    name = "name"
     inst = osc_ds(parent, name)
     with pytest.raises(NotImplementedError):
         inst.read_waveform()

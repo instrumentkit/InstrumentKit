@@ -194,4 +194,3 @@ C-style structures for serializing and deserializing data.
 .. autoclass:: instruments.named_struct.Field
 
 .. autoclass:: instruments.named_struct.Padding
-

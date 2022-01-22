@@ -19,9 +19,16 @@ import pyvisa
 import usb.core
 
 from instruments.abstract_instruments.comm import (
-    SocketCommunicator, USBCommunicator, VisaCommunicator, FileCommunicator,
-    LoopbackCommunicator, GPIBCommunicator, AbstractCommunicator,
-    USBTMCCommunicator, VXI11Communicator, serial_manager
+    SocketCommunicator,
+    USBCommunicator,
+    VisaCommunicator,
+    FileCommunicator,
+    LoopbackCommunicator,
+    GPIBCommunicator,
+    AbstractCommunicator,
+    USBTMCCommunicator,
+    VXI11Communicator,
+    serial_manager,
 )
 from instruments.optional_dep_finder import numpy
 from instruments.errors import AcknowledgementError, PromptError
@@ -29,11 +36,7 @@ from instruments.errors import AcknowledgementError, PromptError
 # CONSTANTS ###################################################################
 
 _DEFAULT_FORMATS = collections.defaultdict(lambda: ">b")
-_DEFAULT_FORMATS.update({
-    1: ">b",
-    2: ">h",
-    4: ">i"
-})
+_DEFAULT_FORMATS.update({1: ">b", 2: ">h", 4: ">i"})
 
 # CLASSES #####################################################################
 
@@ -52,9 +55,11 @@ class Instrument:
         if isinstance(filelike, AbstractCommunicator):
             self._file = filelike
         else:
-            raise TypeError("Instrument must be initialized with a filelike "
-                            "object that is a subclass of "
-                            "AbstractCommunicator.")
+            raise TypeError(
+                "Instrument must be initialized with a filelike "
+                "object that is a subclass of "
+                "AbstractCommunicator."
+            )
         # Record if we're using the Loopback Communicator and put class in
         # testing mode so we can disable sleeps in class implementations
         self._testing = isinstance(self._file, LoopbackCommunicator)
@@ -75,7 +80,9 @@ class Instrument:
             be sent.
         """
         self._file.sendcmd(str(cmd))
-        ack_expected_list = self._ack_expected(cmd)  # pylint: disable=assignment-from-none
+        ack_expected_list = self._ack_expected(
+            cmd
+        )  # pylint: disable=assignment-from-none
         if not isinstance(ack_expected_list, (list, tuple)):
             ack_expected_list = [ack_expected_list]
         for ack_expected in ack_expected_list:
@@ -107,7 +114,9 @@ class Instrument:
             connected instrument.
         :rtype: `str`
         """
-        ack_expected_list = self._ack_expected(cmd)  # pylint: disable=assignment-from-none
+        ack_expected_list = self._ack_expected(
+            cmd
+        )  # pylint: disable=assignment-from-none
         if not isinstance(ack_expected_list, (list, tuple)):
             ack_expected_list = [ack_expected_list]
 
@@ -248,7 +257,7 @@ class Instrument:
         self._file.write(msg)
 
     def binblockread(self, data_width, fmt=None):
-        """"
+        """ "
         Read a binary data block from attached instrument.
         This requires that the instrument respond in a particular manner
         as EOL terminators naturally can not be used in binary transfers.
@@ -267,9 +276,11 @@ class Instrument:
         # This needs to be a # symbol for valid binary block
         symbol = self._file.read_raw(1)
         if symbol != b"#":  # Check to make sure block is valid
-            raise IOError("Not a valid binary block start. Binary blocks "
-                          "require the first character to be #, instead got "
-                          "{}".format(symbol))
+            raise IOError(
+                "Not a valid binary block start. Binary blocks "
+                "require the first character to be #, instead got "
+                "{}".format(symbol)
+            )
         else:
             # Read in the num of digits for next part
             digits = int(self._file.read_raw(1))
@@ -293,18 +304,28 @@ class Instrument:
                 if old_len == len(data):
                     tries -= 1
                 if tries == 0:
-                    raise IOError("Did not read in the required number of bytes"
-                                  "during binblock read. Got {}, expected "
-                                  "{}".format(len(data), num_of_bytes))
+                    raise IOError(
+                        "Did not read in the required number of bytes"
+                        "during binblock read. Got {}, expected "
+                        "{}".format(len(data), num_of_bytes)
+                    )
             if numpy:
                 return numpy.frombuffer(data, dtype=fmt)
             return struct.unpack(f"{fmt[0]}{int(len(data)/data_width)}{fmt[-1]}", data)
 
     # CLASS METHODS #
 
-    URI_SCHEMES = ["serial", "tcpip", "gpib+usb",
-                   "gpib+serial", "visa", "file", "usbtmc", "vxi11",
-                   "test"]
+    URI_SCHEMES = [
+        "serial",
+        "tcpip",
+        "gpib+usb",
+        "gpib+serial",
+        "visa",
+        "file",
+        "usbtmc",
+        "vxi11",
+        "test",
+    ]
 
     @classmethod
     def open_from_uri(cls, uri):
@@ -370,26 +391,20 @@ class Instrument:
             else:
                 kwargs["baud"] = 115200
 
-            return cls.open_serial(
-                dev_name,
-                **kwargs)
+            return cls.open_serial(dev_name, **kwargs)
         elif parsed_uri.scheme == "tcpip":
             # Ex: tcpip://192.168.0.10:4100
             host, port = parsed_uri.netloc.split(":")
             port = int(port)
             return cls.open_tcpip(host, port, **kwargs)
-        elif parsed_uri.scheme == "gpib+usb" \
-                or parsed_uri.scheme == "gpib+serial":
+        elif parsed_uri.scheme == "gpib+usb" or parsed_uri.scheme == "gpib+serial":
             # Ex: gpib+usb://COM3/15
             #     scheme="gpib+usb", netloc="COM3", path="/15"
             # Make a new device path by joining the netloc (if any)
             # with all but the last segment of the path.
             uri_head, uri_tail = os.path.split(parsed_uri.path)
             dev_path = os.path.join(parsed_uri.netloc, uri_head)
-            return cls.open_gpibusb(
-                dev_path,
-                int(uri_tail),
-                **kwargs)
+            return cls.open_gpibusb(dev_path, int(uri_tail), **kwargs)
         elif parsed_uri.scheme == "visa":
             # Ex: visa://USB::{VID}::{PID}::{SERIAL}::0::INSTR
             #     where {VID}, {PID} and {SERIAL} are to be replaced with
@@ -401,10 +416,9 @@ class Instrument:
             # Ex: usbtmc can take URIs exactly like visa://.
             return cls.open_usbtmc(parsed_uri.netloc, **kwargs)
         elif parsed_uri.scheme == "file":
-            return cls.open_file(os.path.join(
-                parsed_uri.netloc,
-                parsed_uri.path
-            ), **kwargs)
+            return cls.open_file(
+                os.path.join(parsed_uri.netloc, parsed_uri.path), **kwargs
+            )
         elif parsed_uri.scheme == "vxi11":
             # Examples:
             #   vxi11://192.168.1.104
@@ -413,8 +427,7 @@ class Instrument:
         elif parsed_uri.scheme == "test":
             return cls.open_test(**kwargs)
         else:
-            raise NotImplementedError("Invalid scheme or not yet "
-                                      "implemented.")
+            raise NotImplementedError("Invalid scheme or not yet " "implemented.")
 
     @classmethod
     def open_tcpip(cls, host, port):
@@ -437,8 +450,16 @@ class Instrument:
 
     # pylint: disable=too-many-arguments
     @classmethod
-    def open_serial(cls, port=None, baud=9600, vid=None, pid=None,
-                    serial_number=None, timeout=3, write_timeout=3):
+    def open_serial(
+        cls,
+        port=None,
+        baud=9600,
+        vid=None,
+        pid=None,
+        serial_number=None,
+        timeout=3,
+        write_timeout=3,
+    ):
         """
         Opens an instrument, connecting via a physical or emulated serial port.
         Note that many instruments which connect via USB are exposed to the
@@ -472,14 +493,18 @@ class Instrument:
             `~serial.Serial` for description of `port`, baud rates and timeouts.
         """
         if port is None and vid is None:
-            raise ValueError("One of port, or the USB VID/PID pair, must be "
-                             "specified when ")
+            raise ValueError(
+                "One of port, or the USB VID/PID pair, must be " "specified when "
+            )
         if port is not None and vid is not None:
-            raise ValueError("Cannot specify both a specific port, and a USB"
-                             "VID/PID pair.")
+            raise ValueError(
+                "Cannot specify both a specific port, and a USB" "VID/PID pair."
+            )
         if (vid is not None and pid is None) or (pid is not None and vid is None):
-            raise ValueError("Both VID and PID must be specified when opening"
-                             "a serial connection via a USB VID/PID pair.")
+            raise ValueError(
+                "Both VID and PID must be specified when opening"
+                "a serial connection via a USB VID/PID pair."
+            )
 
         if port is None:
             match_count = 0
@@ -498,26 +523,26 @@ class Instrument:
                 # If we found more than 1 vid/pid device, but no serial number,
                 # raise an exception due to ambiguity
                 if match_count > 1:
-                    raise SerialException("Found more than one matching serial "
-                                          "port from VID/PID pair")
+                    raise SerialException(
+                        "Found more than one matching serial " "port from VID/PID pair"
+                    )
 
         # if the port is still None after that, raise an error.
         if port is None and vid is not None:
-            err_msg = "Could not find a port with the attributes vid: {vid}, " \
-                      "pid: {pid}, serial number: {serial_number}"
+            err_msg = (
+                "Could not find a port with the attributes vid: {vid}, "
+                "pid: {pid}, serial number: {serial_number}"
+            )
             raise ValueError(
                 err_msg.format(
                     vid=vid,
                     pid=pid,
-                    serial_number="any" if serial_number is None else serial_number
+                    serial_number="any" if serial_number is None else serial_number,
                 )
             )
 
         ser = serial_manager.new_serial_connection(
-            port,
-            baud=baud,
-            timeout=timeout,
-            write_timeout=write_timeout
+            port, baud=baud, timeout=timeout, write_timeout=write_timeout
         )
         return cls(ser)
 
@@ -549,10 +574,7 @@ class Instrument:
         .. _Galvant Industries GPIB-USB adapter: galvant.ca/#!/store/gpibusb
         """
         ser = serial_manager.new_serial_connection(
-            port,
-            baud=460800,
-            timeout=timeout,
-            write_timeout=write_timeout
+            port, baud=460800, timeout=timeout, write_timeout=write_timeout
         )
         return cls(GPIBCommunicator(ser, gpib_address, model))
 
@@ -600,7 +622,7 @@ class Instrument:
         if version[0] >= 1 and version[1] >= 6:
             ins = pyvisa.ResourceManager().open_resource(resource_name)
         else:
-            ins = pyvisa.instrument(resource_name)  #pylint: disable=no-member
+            ins = pyvisa.instrument(resource_name)  # pylint: disable=no-member
         return cls(VisaCommunicator(ins))
 
     @classmethod

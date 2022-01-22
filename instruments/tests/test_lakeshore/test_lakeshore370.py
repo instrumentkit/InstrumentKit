@@ -33,12 +33,9 @@ def test_lakeshore370_channel_init(init):
     Test initialization of channel class.
     """
     with expected_protocol(
-            ik.lakeshore.Lakeshore370,
-            [
-                init
-            ],
-            [
-            ],
+        ik.lakeshore.Lakeshore370,
+        [init],
+        [],
     ) as lsh:
         channel = lsh.channel[7]
         assert channel._parent is lsh
@@ -50,13 +47,8 @@ def test_lakeshore370_channel_resistance(init):
     Receive a unitful resistance from a channel.
     """
     with expected_protocol(
-            ik.lakeshore.Lakeshore370,
-            [
-                init,
-                "RDGR? 1"
-            ],
-            [
-                "100."
-            ],
+        ik.lakeshore.Lakeshore370,
+        [init, "RDGR? 1"],
+        ["100."],
     ) as lsh:
         assert lsh.channel[0].resistance == u.Quantity(100, u.ohm)

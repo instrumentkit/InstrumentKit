@@ -32,31 +32,25 @@ def test_channel_is_channel_class():
 
 
 def test_init():
-    with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64"
-            ],
-            []
-    ) as _:
+    with expected_protocol(ik.yokogawa.Yokogawa6370, [":FORMat:DATA REAL,64"], []) as _:
         pass
 
 
-@given(values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
-       channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces))
+@given(
+    values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
+    channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces),
+)
 def test_channel_data(values, channel):
     values_packed = b"".join(struct.pack("<d", value) for value in values)
     values_len = str(len(values_packed)).encode()
     values_len_of_len = str(len(values_len)).encode()
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":TRAC:Y? {}".format(channel.value),
-            ],
-            [
-                b"#" + values_len_of_len + values_len + values_packed
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":TRAC:Y? {}".format(channel.value),
+        ],
+        [b"#" + values_len_of_len + values_len + values_packed],
     ) as inst:
         values = tuple(values)
         if numpy:
@@ -64,21 +58,21 @@ def test_channel_data(values, channel):
         iterable_eq(inst.channel[channel].data(), values)
 
 
-@given(values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
-       channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces))
+@given(
+    values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
+    channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces),
+)
 def test_channel_wavelength(values, channel):
     values_packed = b"".join(struct.pack("<d", value) for value in values)
     values_len = str(len(values_packed)).encode()
     values_len_of_len = str(len(values_len)).encode()
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":TRAC:X? {}".format(channel.value),
-            ],
-            [
-                b"#" + values_len_of_len + values_len + values_packed
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":TRAC:X? {}".format(channel.value),
+        ],
+        [b"#" + values_len_of_len + values_len + values_packed],
     ) as inst:
         values = tuple(values)
         if numpy:
@@ -89,15 +83,13 @@ def test_channel_wavelength(values, channel):
 @given(value=st.floats(min_value=600e-9, max_value=1700e-9))
 def test_start_wavelength(value):
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":SENS:WAV:STAR?",
-                ":SENS:WAV:STAR {:e}".format(value),
-            ],
-            [
-                "6.000000e-06"
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":SENS:WAV:STAR?",
+            ":SENS:WAV:STAR {:e}".format(value),
+        ],
+        ["6.000000e-06"],
     ) as inst:
         assert inst.start_wl == 6e-6 * u.meter
         inst.start_wl = value * u.meter
@@ -106,15 +98,13 @@ def test_start_wavelength(value):
 @given(value=st.floats(min_value=600e-9, max_value=1700e-9))
 def test_end_wavelength(value):
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":SENS:WAV:STOP?",
-                ":SENS:WAV:STOP {:e}".format(value),
-            ],
-            [
-                "6.000000e-06"
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":SENS:WAV:STOP?",
+            ":SENS:WAV:STOP {:e}".format(value),
+        ],
+        ["6.000000e-06"],
     ) as inst:
         assert inst.stop_wl == 6e-6 * u.meter
         inst.stop_wl = value * u.meter
@@ -122,15 +112,9 @@ def test_end_wavelength(value):
 
 def test_bandwidth():
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":SENS:BAND:RES?",
-                ":SENS:BAND:RES 1.000000e-06"
-            ],
-            [
-                "6.000000e-06"
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [":FORMat:DATA REAL,64", ":SENS:BAND:RES?", ":SENS:BAND:RES 1.000000e-06"],
+        ["6.000000e-06"],
     ) as inst:
         assert inst.bandwidth == 6e-6 * u.meter
         inst.bandwidth = 1e-6 * u.meter
@@ -138,15 +122,9 @@ def test_bandwidth():
 
 def test_span():
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":SENS:WAV:SPAN?",
-                ":SENS:WAV:SPAN 1.000000e-06"
-            ],
-            [
-                "6.000000e-06"
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [":FORMat:DATA REAL,64", ":SENS:WAV:SPAN?", ":SENS:WAV:SPAN 1.000000e-06"],
+        ["6.000000e-06"],
     ) as inst:
         assert inst.span == 6e-6 * u.meter
         inst.span = 1e-6 * u.meter
@@ -154,15 +132,9 @@ def test_span():
 
 def test_center_wl():
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":SENS:WAV:CENT?",
-                ":SENS:WAV:CENT 1.000000e-06"
-            ],
-            [
-                "6.000000e-06"
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [":FORMat:DATA REAL,64", ":SENS:WAV:CENT?", ":SENS:WAV:CENT 1.000000e-06"],
+        ["6.000000e-06"],
     ) as inst:
         assert inst.center_wl == 6e-6 * u.meter
         inst.center_wl = 1e-6 * u.meter
@@ -170,15 +142,9 @@ def test_center_wl():
 
 def test_points():
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":SENS:SWE:POIN?",
-                ":SENS:SWE:POIN 1.000000e+00"
-            ],
-            [
-                "6"
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [":FORMat:DATA REAL,64", ":SENS:SWE:POIN?", ":SENS:SWE:POIN 1.000000e+00"],
+        ["6"],
     ) as inst:
         assert inst.points == 6
         inst.points = 1
@@ -186,21 +152,21 @@ def test_points():
 
 def test_sweep_mode():
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":INIT:SMOD 1",
-                ":INIT:SMOD 2",
-                ":INIT:SMOD 3",
-                ":INIT:SMOD?",
-                ":INIT:SMOD?",
-                ":INIT:SMOD?",
-            ],
-            [
-                "1",
-                "2",
-                "3",
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":INIT:SMOD 1",
+            ":INIT:SMOD 2",
+            ":INIT:SMOD 3",
+            ":INIT:SMOD?",
+            ":INIT:SMOD?",
+            ":INIT:SMOD?",
+        ],
+        [
+            "1",
+            "2",
+            "3",
+        ],
     ) as inst:
         for mode in inst.SweepModes:
             inst.sweep_mode = mode
@@ -210,18 +176,18 @@ def test_sweep_mode():
 
 def test_active_trace():
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":TRAC:ACTIVE TRA",
-                ":TRAC:ACTIVE TRD",
-                ":TRAC:ACTIVE?",
-                ":TRAC:ACTIVE?",
-            ],
-            [
-                "TRB",
-                "TRG",
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":TRAC:ACTIVE TRA",
+            ":TRAC:ACTIVE TRD",
+            ":TRAC:ACTIVE?",
+            ":TRAC:ACTIVE?",
+        ],
+        [
+            "TRB",
+            "TRG",
+        ],
     ) as inst:
         inst.active_trace = inst.Traces.A
         inst.active_trace = inst.Traces.D
@@ -232,8 +198,7 @@ def test_active_trace():
 # METHODS #
 
 
-@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False),
-                       min_size=1))
+@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False), min_size=1))
 def test_data_active_trace(values):
     """Get data from active trace - method."""
     values_packed = b"".join(struct.pack("<d", value) for value in values)
@@ -241,18 +206,18 @@ def test_data_active_trace(values):
     values_len_of_len = str(len(values_len)).encode()
     channel = "TRA"  # active trace
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":TRAC:Y? {}".format(channel),
-                ":TRAC:ACTIVE?",
-                ":TRAC:Y? {}".format(channel)
-            ],
-            [
-                b"#" + values_len_of_len + values_len + values_packed,
-                channel,
-                b"#" + values_len_of_len + values_len + values_packed
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":TRAC:Y? {}".format(channel),
+            ":TRAC:ACTIVE?",
+            ":TRAC:Y? {}".format(channel),
+        ],
+        [
+            b"#" + values_len_of_len + values_len + values_packed,
+            channel,
+            b"#" + values_len_of_len + values_len + values_packed,
+        ],
     ) as inst:
         # data by channel
         data_call_by_trace = inst.channel[channel].data()
@@ -261,8 +226,7 @@ def test_data_active_trace(values):
         iterable_eq(data_call_by_trace, data_active_trace)
 
 
-@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False),
-                       min_size=1))
+@given(values=st.lists(st.decimals(allow_infinity=False, allow_nan=False), min_size=1))
 def test_wavelength_active_trace(values):
     """Get wavelength from active trace - method."""
     values_packed = b"".join(struct.pack("<d", value) for value in values)
@@ -270,18 +234,18 @@ def test_wavelength_active_trace(values):
     values_len_of_len = str(len(values_len)).encode()
     channel = "TRA"  # active trace
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                ":TRAC:X? {}".format(channel),
-                ":TRAC:ACTIVE?",
-                ":TRAC:X? {}".format(channel)
-            ],
-            [
-                b"#" + values_len_of_len + values_len + values_packed,
-                channel,
-                b"#" + values_len_of_len + values_len + values_packed
-            ]
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":TRAC:X? {}".format(channel),
+            ":TRAC:ACTIVE?",
+            ":TRAC:X? {}".format(channel),
+        ],
+        [
+            b"#" + values_len_of_len + values_len + values_packed,
+            channel,
+            b"#" + values_len_of_len + values_len + values_packed,
+        ],
     ) as inst:
         # data by channel
         data_call_by_trace = inst.channel[channel].wavelength()
@@ -292,11 +256,11 @@ def test_wavelength_active_trace(values):
 
 def test_start_sweep():
     with expected_protocol(
-            ik.yokogawa.Yokogawa6370,
-            [
-                ":FORMat:DATA REAL,64",
-                "*CLS;:init",
-            ],
-            []
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            "*CLS;:init",
+        ],
+        [],
     ) as inst:
         inst.start_sweep()

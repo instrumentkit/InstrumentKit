@@ -42,6 +42,7 @@ class PM100USB(SCPIInstrument):
         """
         Enum containing valid sensor flags for the PM100USB
         """
+
         is_power_sensor = 1
         is_energy_sensor = 2
         response_settable = 16
@@ -53,6 +54,7 @@ class PM100USB(SCPIInstrument):
         """
         Enum containing valid measurement modes for the PM100USB
         """
+
         current = "CURR"
         power = "POW"
         voltage = "VOLT"
@@ -66,9 +68,10 @@ class PM100USB(SCPIInstrument):
     # We will cheat and also represent things by a named tuple over bools.
     # TODO: make a flagtuple into a new type in util_fns, copying this out
     #       as a starting point.
-    _SensorFlags = namedtuple("SensorFlags", [
-        flag.name for flag in SensorFlags  # pylint: disable=not-an-iterable
-    ])
+    _SensorFlags = namedtuple(
+        "SensorFlags",
+        [flag.name for flag in SensorFlags],  # pylint: disable=not-an-iterable
+    )
 
     # INNER CLASSES #
 
@@ -79,23 +82,30 @@ class PM100USB(SCPIInstrument):
         .. warning:: This class should NOT be manually created by the user. It
             is designed to be initialized by the `PM100USB` class.
         """
+
         def __init__(self, parent):
             self._parent = parent
 
             # Pull details about the sensor from SYST:SENSOR:IDN?
             sensor_idn = parent.query("SYST:SENSOR:IDN?")
             (
-                self._name, self._serial_number, self._calibration_message,
-                self._sensor_type, self._sensor_subtype, self._flags
+                self._name,
+                self._serial_number,
+                self._calibration_message,
+                self._sensor_type,
+                self._sensor_subtype,
+                self._flags,
             ) = sensor_idn.split(",")
 
             # Normalize things to enums as appropriate.
             # We want flags to be a named tuple over bools.
             # pylint: disable=protected-access
-            self._flags = parent._SensorFlags(**{
-                e.name: bool(e & int(self._flags))
-                for e in PM100USB.SensorFlags  # pylint: disable=not-an-iterable
-            })
+            self._flags = parent._SensorFlags(
+                **{
+                    e.name: bool(e & int(self._flags))
+                    for e in PM100USB.SensorFlags  # pylint: disable=not-an-iterable
+                }
+            )
 
         @property
         def name(self):
@@ -167,8 +177,7 @@ class PM100USB(SCPIInstrument):
     @cache_units.setter
     def cache_units(self, newval):
         self._cache_units = (
-            self._READ_UNITS[self.measurement_configuration]
-            if newval else False
+            self._READ_UNITS[self.measurement_configuration] if newval else False
         )
 
     # SENSOR PROPERTIES #
@@ -192,7 +201,7 @@ class PM100USB(SCPIInstrument):
         Returns the current measurement configuration.
 
         :rtype: :class:`PM100USB.MeasurementConfiguration`
-        """
+        """,
     )
 
     @property
@@ -212,15 +221,16 @@ class PM100USB(SCPIInstrument):
     # METHODS ##
 
     _READ_UNITS = defaultdict(lambda: u.dimensionless)
-    _READ_UNITS.update({
-        MeasurementConfiguration.power: u.W,
-        MeasurementConfiguration.current: u.A,
-        MeasurementConfiguration.frequency: u.Hz,
-        MeasurementConfiguration.voltage: u.V,
+    _READ_UNITS.update(
+        {
+            MeasurementConfiguration.power: u.W,
+            MeasurementConfiguration.current: u.A,
+            MeasurementConfiguration.frequency: u.Hz,
+            MeasurementConfiguration.voltage: u.V,
+        }
+    )
 
-    })
-
-    def read(self, size=-1, encoding='utf-8'):
+    def read(self, size=-1, encoding="utf-8"):
         """
         Reads a measurement from this instrument, according to its current
         configuration mode.
@@ -235,6 +245,7 @@ class PM100USB(SCPIInstrument):
         # attach.
         units = (
             self._READ_UNITS[self.measurement_configuration]
-            if not self._cache_units else self._cache_units
+            if not self._cache_units
+            else self._cache_units
         )
-        return float(self.query('READ?', size)) * units
+        return float(self.query("READ?", size)) * units

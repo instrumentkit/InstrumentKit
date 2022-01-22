@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. _apiref:
-    
+
 InstrumentKit API Reference
 ===========================
 

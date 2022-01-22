@@ -52,7 +52,7 @@ class Lakeshore340(SCPIInstrument):
             :units: Kelvin
             :type: `~pint.Quantity`
             """
-            value = self._parent.query('KRDG?{}'.format(self._idx))
+            value = self._parent.query("KRDG?{}".format(self._idx))
             return u.Quantity(float(value), u.kelvin)
 
     # PROPERTIES ##

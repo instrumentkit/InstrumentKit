@@ -73,14 +73,14 @@ class ThorLabsInstrument(Instrument):
         t_start = time.time()
 
         if timeout is not None:
-            timeout = assume_units(timeout, u.second).to('second').magnitude
+            timeout = assume_units(timeout, u.second).to("second").magnitude
 
         while True:
             self._file.write_raw(packet.pack())
             resp = self._file.read_raw(
-                expect_data_len + 6 # the header is six bytes.
-                if expect_data_len else
-                6
+                expect_data_len + 6  # the header is six bytes.
+                if expect_data_len
+                else 6
             )
             if resp or timeout is None:
                 break
@@ -93,15 +93,15 @@ class ThorLabsInstrument(Instrument):
             if expect is None:
                 return None
             else:
-                raise IOError("Expected packet {}, got nothing instead.".format(
-                    expect
-                ))
+                raise IOError("Expected packet {}, got nothing instead.".format(expect))
         pkt = _packets.ThorLabsPacket.unpack(resp)
         if expect is not None and pkt._message_id != expect:
             # TODO: make specialized subclass that can record the offending
             #       packet.
-            raise IOError("APT returned message ID {}, expected {}".format(
-                pkt._message_id, expect
-            ))
+            raise IOError(
+                "APT returned message ID {}, expected {}".format(
+                    pkt._message_id, expect
+                )
+            )
 
         return pkt
