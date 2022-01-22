@@ -141,6 +141,40 @@ With the required system packages installed, all tests can be run with ``tox``:
     $ pip install tox
     $ tox
 
+Pre-commit
+----------
+
+A variety of static code checks are managed and executed via the tool
+`pre-commit<https://pre-commit.com/>_`. This only needs to be setup once
+and then it'll manage everything for you.
+
+.. code-block:: console
+
+    $ pip install pre-commit
+    $ pre-commit install
+
+Afterwards, when you go to make a git commit, all the plugins (as specified
+by the configuration file `.pre-commit-config.yaml`) will be executed against
+the files that have changed. If any plugins make changes to the files, the
+commit will abort, allowing you to add those changes to your changeset and
+try to commit again. This tool will gate CI, so be sure to let them run
+and pass!
+
+You can also run all the hooks against all the files by directly calling
+pre-commit, or though the `tox` environment:
+
+.. code-block:: console
+
+    $ pre-commit run --all
+
+or
+
+.. code-block:: console
+
+    $ tox -e precommit
+
+See the `pre-commit` documentation for more information.
+
 License
 -------
 
