@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for SCPI compliant instruments
 """
@@ -269,7 +268,7 @@ class SCPIInstrument(Instrument):
     def display_brightness(self, newval):
         if newval < 0 or newval > 1:
             raise ValueError("Display brightness must be a number between 0" " and 1.")
-        self.sendcmd("DISP:BRIG {}".format(newval))
+        self.sendcmd(f"DISP:BRIG {newval}")
 
     @property
     def display_contrast(self):
@@ -285,4 +284,4 @@ class SCPIInstrument(Instrument):
     def display_contrast(self, newval):
         if newval < 0 or newval > 1:
             raise ValueError("Display contrast must be a number between 0" " and 1.")
-        self.sendcmd("DISP:CONT {}".format(newval))
+        self.sendcmd(f"DISP:CONT {newval}")

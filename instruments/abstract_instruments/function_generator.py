@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides an abstract base class for function generator instruments
 """
@@ -29,7 +28,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
     """
 
     def __init__(self, filelike):
-        super(FunctionGenerator, self).__init__(filelike)
+        super().__init__(filelike)
         self._channel_count = 1
 
     # pylint:disable=protected-access

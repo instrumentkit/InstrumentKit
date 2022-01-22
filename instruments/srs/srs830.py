@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the SRS 830 lock-in amplifier.
 """
@@ -58,7 +57,7 @@ class SRS830(SCPIInstrument):
             by the SRS830 manual. If left default, the correct ``OUTX`` command
             will be sent depending on what type of communicator self._file is.
         """
-        super(SRS830, self).__init__(filelike)
+        super().__init__(filelike)
         if outx_mode == 1:
             self.sendcmd("OUTX 1")
         elif outx_mode == 2:
@@ -229,7 +228,7 @@ class SRS830(SCPIInstrument):
             newval = newval.lower()
 
         if newval in VALID_SAMPLE_RATES:
-            self.sendcmd("SRAT {}".format(VALID_SAMPLE_RATES.index(newval)))
+            self.sendcmd(f"SRAT {VALID_SAMPLE_RATES.index(newval)}")
         else:
             raise ValueError(
                 "Valid samples rates given by {} "
@@ -264,8 +263,8 @@ class SRS830(SCPIInstrument):
             resp = self.query("SPTS?").strip()
             i += 1
         if not resp:
-            raise IOError(
-                "Expected integer response from instrument, got {}".format(repr(resp))
+            raise OSError(
+                f"Expected integer response from instrument, got {repr(resp)}"
             )
         return int(resp)
 
@@ -306,7 +305,7 @@ class SRS830(SCPIInstrument):
 
         mode = self._XYR_MODE_MAP[mode]
 
-        self.sendcmd("AOFF {}".format(mode))
+        self.sendcmd(f"AOFF {mode}")
 
     def auto_phase(self):
         """
@@ -385,7 +384,7 @@ class SRS830(SCPIInstrument):
         # in future versions.
         try:
             self.num_data_points
-        except IOError:
+        except OSError:
             pass
 
         ch1 = self.read_data_buffer("ch1")
@@ -436,7 +435,7 @@ class SRS830(SCPIInstrument):
         else:
             raise ValueError("Expand must be 1, 10, 100.")
 
-        self.sendcmd("OEXP {},{},{}".format(mode, int(offset), expand))
+        self.sendcmd(f"OEXP {mode},{int(offset)},{expand}")
 
     def start_scan(self):
         """
@@ -503,7 +502,7 @@ class SRS830(SCPIInstrument):
         if mode1 == mode2:
             raise ValueError("Both parameters for the data snapshot are the " "same.")
 
-        result = self.query("SNAP? {},{}".format(mode1, mode2))
+        result = self.query(f"SNAP? {mode1},{mode2}")
         return list(map(float, result.split(",")))
 
     _valid_read_data_buffer = {Mode.ch1: 1, Mode.ch2: 2}
@@ -536,7 +535,7 @@ class SRS830(SCPIInstrument):
         # Query device for entire buffer, returning in ASCII, then
         # converting to a list of floats before returning to the
         # calling method
-        data = self.query("TRCA?{},0,{}".format(channel, N)).strip()
+        data = self.query(f"TRCA?{channel},0,{N}").strip()
         if numpy:
             return numpy.fromstring(data, sep=",")
         return tuple(map(float, data.split(",")))
@@ -609,4 +608,4 @@ class SRS830(SCPIInstrument):
         display = self._valid_channel_display[channel - 1][display]
         ratio = self._valid_channel_ratio[channel - 1][ratio]
 
-        self.sendcmd("DDEF {},{},{}".format(channel, display, ratio))
+        self.sendcmd(f"DDEF {channel},{display},{ratio}")

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the SRS 830 lock-in amplifier
 """
@@ -86,7 +85,7 @@ def test_frequency_source():
 def test_frequency():
     with expected_protocol(
         ik.srs.SRS830,
-        ["FREQ?", "FREQ {:e}".format(1000)],
+        ["FREQ?", f"FREQ {1000:e}"],
         [
             "12.34",
         ],
@@ -98,7 +97,7 @@ def test_frequency():
 def test_phase():
     with expected_protocol(
         ik.srs.SRS830,
-        ["PHAS?", "PHAS {:e}".format(10)],
+        ["PHAS?", f"PHAS {10:e}"],
         [
             "-45",
         ],
@@ -110,7 +109,7 @@ def test_phase():
 def test_amplitude():
     with expected_protocol(
         ik.srs.SRS830,
-        ["SLVL?", "SLVL {:e}".format(1)],
+        ["SLVL?", f"SLVL {1:e}"],
         [
             "0.1",
         ],
@@ -145,7 +144,7 @@ def test_coupling():
 
 def test_sample_rate():  # sends index of VALID_SAMPLE_RATES
     with expected_protocol(
-        ik.srs.SRS830, ["SRAT?", "SRAT?", "SRAT {:d}".format(5), "SRAT 14"], ["8", "14"]
+        ik.srs.SRS830, ["SRAT?", "SRAT?", f"SRAT {5:d}", "SRAT 14"], ["8", "14"]
     ) as inst:
         assert inst.sample_rate == 16 * u.Hz
         assert inst.sample_rate == "trigger"

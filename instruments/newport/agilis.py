@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Newport Agilis Controller AG-UC2 only (currently).
 
@@ -69,7 +68,7 @@ class _Axis:
         """
         Returns the status of the current axis.
         """
-        resp = self._cont.ag_query("{} TS".format(int(self._ax)))
+        resp = self._cont.ag_query(f"{int(self._ax)} TS")
         if resp.find("TS") == -1:
             return "Status code query failed."
 
@@ -98,7 +97,7 @@ class _Axis:
         :return: Jog motion set
         :rtype: `int`
         """
-        resp = self._cont.ag_query("{} JA?".format(int(self._ax)))
+        resp = self._cont.ag_query(f"{int(self._ax)} JA?")
         return int(resp.split("JA")[1])
 
     @jog.setter
@@ -107,7 +106,7 @@ class _Axis:
         if mode < -4 or mode > 4:
             raise ValueError("Jog mode out of range. Must be between -4 and " "4.")
 
-        self._cont.ag_sendcmd("{} JA {}".format(int(self._ax), mode))
+        self._cont.ag_sendcmd(f"{int(self._ax)} JA {mode}")
 
     @property
     def number_of_steps(self):
@@ -129,7 +128,7 @@ class _Axis:
         :return: Number of steps
         :rtype: int
         """
-        resp = self._cont.ag_query("{} TP".format(int(self._ax)))
+        resp = self._cont.ag_query(f"{int(self._ax)} TP")
         return int(resp.split("TP")[1])
 
     @property
@@ -141,7 +140,7 @@ class _Axis:
         If queried, command returns the current target position. At least this
         is the expected behaviour, never worked with the rotation stage.
         """
-        resp = self._cont.ag_query("{} PR?".format(int(self._ax)))
+        resp = self._cont.ag_query(f"{int(self._ax)} PR?")
         return int(resp.split("PR")[1])
 
     @move_relative.setter
@@ -153,7 +152,7 @@ class _Axis:
                 "between -2,147,483,648 and 2,147,483,647"
             )
 
-        self._cont.ag_sendcmd("{} PR {}".format(int(self._ax), steps))
+        self._cont.ag_sendcmd(f"{int(self._ax)} PR {steps}")
 
     @property
     def move_to_limit(self):
@@ -170,7 +169,7 @@ class _Axis:
         Returns the distance of the current position to the limit in
         1/1000th of the total travel.
         """
-        resp = self._cont.ag_query("{} MA?".format(int(self._ax)))
+        resp = self._cont.ag_query(f"{int(self._ax)} MA?")
         return int(resp.split("MA")[1])
 
     @move_to_limit.setter
@@ -179,7 +178,7 @@ class _Axis:
         if mode < -4 or mode > 4:
             raise ValueError("Jog mode out of range. Must be between -4 and " "4.")
 
-        self._cont.ag_sendcmd("{} MA {}".format(int(self._ax), mode))
+        self._cont.ag_sendcmd(f"{int(self._ax)} MA {mode}")
 
     @property
     def step_amplitude(self):
@@ -198,8 +197,8 @@ class _Axis:
             response.
         :rtype: (`int`, `int`)
         """
-        resp_neg = self._cont.ag_query("{} SU-?".format(int(self._ax)))
-        resp_pos = self._cont.ag_query("{} SU+?".format(int(self._ax)))
+        resp_neg = self._cont.ag_query(f"{int(self._ax)} SU-?")
+        resp_pos = self._cont.ag_query(f"{int(self._ax)} SU+?")
         return int(resp_neg.split("SU")[1]), int(resp_pos.split("SU")[1])
 
     @step_amplitude.setter
@@ -218,7 +217,7 @@ class _Axis:
                 )
 
         for nn in nns:
-            self._cont.ag_sendcmd("{} SU {}".format(int(self._ax), int(nn)))
+            self._cont.ag_sendcmd(f"{int(self._ax)} SU {int(nn)}")
 
     @property
     def step_delay(self):
@@ -234,7 +233,7 @@ class _Axis:
         :return: Step delay
         :rtype: `int`
         """
-        resp = self._cont.ag_query("{} DL?".format(int(self._ax)))
+        resp = self._cont.ag_query(f"{int(self._ax)} DL?")
         return int(resp.split("DL")[1])
 
     @step_delay.setter
@@ -245,7 +244,7 @@ class _Axis:
                 "Step delay is out of range. It must be between " "0 and 200000."
             )
 
-        self._cont.ag_sendcmd("{} DL {}".format(int(self._ax), nn))
+        self._cont.ag_sendcmd(f"{int(self._ax)} DL {nn}")
 
     # MODES #
 
@@ -279,7 +278,7 @@ class _Axis:
             else:
                 retries += 1
 
-        raise IOError(
+        raise OSError(
             "The function `am_i_still` ran out of maximum retries. "
             "Could not query the status of the axis."
         )
@@ -288,13 +287,13 @@ class _Axis:
         """
         Stops the axis. This is useful to interrupt a jogging motion.
         """
-        self._cont.ag_sendcmd("{} ST".format(int(self._ax)))
+        self._cont.ag_sendcmd(f"{int(self._ax)} ST")
 
     def zero_position(self):
         """
         Resets the step counter to zero. See `number_of_steps` for details.
         """
-        self._cont.ag_sendcmd("{} ZP".format(int(self._ax)))
+        self._cont.ag_sendcmd(f"{int(self._ax)} ZP")
 
 
 class AGUC2(Instrument):
@@ -343,7 +342,7 @@ class AGUC2(Instrument):
     """
 
     def __init__(self, filelike):
-        super(AGUC2, self).__init__(filelike)
+        super().__init__(filelike)
 
         # Instrument requires '\r\n' line termination
         self.terminator = "\r\n"
@@ -490,7 +489,7 @@ class AGUC2(Instrument):
         """
         try:
             resp = self.query(cmd, size=size)
-        except IOError:
+        except OSError:
             resp = "Query timed out."
 
         # sleep

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the Yokogawa 6370
 """
@@ -48,7 +47,7 @@ def test_channel_data(values, channel):
         ik.yokogawa.Yokogawa6370,
         [
             ":FORMat:DATA REAL,64",
-            ":TRAC:Y? {}".format(channel.value),
+            f":TRAC:Y? {channel.value}",
         ],
         [b"#" + values_len_of_len + values_len + values_packed],
     ) as inst:
@@ -70,7 +69,7 @@ def test_channel_wavelength(values, channel):
         ik.yokogawa.Yokogawa6370,
         [
             ":FORMat:DATA REAL,64",
-            ":TRAC:X? {}".format(channel.value),
+            f":TRAC:X? {channel.value}",
         ],
         [b"#" + values_len_of_len + values_len + values_packed],
     ) as inst:
@@ -87,7 +86,7 @@ def test_start_wavelength(value):
         [
             ":FORMat:DATA REAL,64",
             ":SENS:WAV:STAR?",
-            ":SENS:WAV:STAR {:e}".format(value),
+            f":SENS:WAV:STAR {value:e}",
         ],
         ["6.000000e-06"],
     ) as inst:
@@ -102,7 +101,7 @@ def test_end_wavelength(value):
         [
             ":FORMat:DATA REAL,64",
             ":SENS:WAV:STOP?",
-            ":SENS:WAV:STOP {:e}".format(value),
+            f":SENS:WAV:STOP {value:e}",
         ],
         ["6.000000e-06"],
     ) as inst:
@@ -209,9 +208,9 @@ def test_data_active_trace(values):
         ik.yokogawa.Yokogawa6370,
         [
             ":FORMat:DATA REAL,64",
-            ":TRAC:Y? {}".format(channel),
+            f":TRAC:Y? {channel}",
             ":TRAC:ACTIVE?",
-            ":TRAC:Y? {}".format(channel),
+            f":TRAC:Y? {channel}",
         ],
         [
             b"#" + values_len_of_len + values_len + values_packed,
@@ -237,9 +236,9 @@ def test_wavelength_active_trace(values):
         ik.yokogawa.Yokogawa6370,
         [
             ":FORMat:DATA REAL,64",
-            ":TRAC:X? {}".format(channel),
+            f":TRAC:X? {channel}",
             ":TRAC:ACTIVE?",
-            ":TRAC:X? {}".format(channel),
+            f":TRAC:X? {channel}",
         ],
         [
             b"#" + values_len_of_len + values_len + values_packed,

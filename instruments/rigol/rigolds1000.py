@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for Rigol DS-1000 series oscilloscopes.
 """
@@ -63,7 +62,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
                     "supportreading waveforms from "
                     "{}.".format(self.name)
                 )
-            self._parent.sendcmd(":WAV:DATA? {}".format(self.name))
+            self._parent.sendcmd(f":WAV:DATA? {self.name}")
             data = self._parent.binblockread(2)  # TODO: check width
             return data
 
@@ -92,7 +91,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
 
             # Initialize as a data source with name CHAN{}.
             super(RigolDS1000Series.Channel, self).__init__(
-                self._parent, "CHAN{}".format(self._idx)
+                self._parent, f"CHAN{self._idx}"
             )
 
         def sendcmd(self, cmd):
@@ -102,7 +101,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
 
             :param str cmd: The command string to send to the instrument
             """
-            self._parent.sendcmd(":CHAN{}:{}".format(self._idx, cmd))
+            self._parent.sendcmd(f":CHAN{self._idx}:{cmd}")
 
         def query(self, cmd):
             """
@@ -113,7 +112,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
             :return: The result as returned by the instrument
             :rtype: `str`
             """
-            return self._parent.query(":CHAN{}:{}".format(self._idx, cmd))
+            return self._parent.query(f":CHAN{self._idx}:{cmd}")
 
         coupling = enum_property("COUP", Coupling)
 
@@ -168,7 +167,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
                 "Number of averages {} not supported by instrument; "
                 "must be a power of 2 from 2 to 256.".format(newval)
             )
-        self.sendcmd(":ACQ:AVER {}".format(newval))
+        self.sendcmd(f":ACQ:AVER {newval}")
 
     # TODO: implement :ACQ:SAMP in a meaningful way. This should probably be
     #       under Channel, and needs to be unitful.

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides common error handling for Newport devices.
 """
@@ -114,26 +113,25 @@ class NewportError(IOError):
             if self._axis == 0:
                 self._axis = None
                 error_message = self.get_message(str(errcode))
-                error = (
-                    "Newport Error: {0}. Error Message: {1}. "
-                    "At time : {2}".format(str(errcode), error_message, self._timestamp)
+                error = "Newport Error: {}. Error Message: {}. " "At time : {}".format(
+                    str(errcode), error_message, self._timestamp
                 )
-                super(NewportError, self).__init__(error)
+                super().__init__(error)
             else:
-                error_message = self.get_message("x{0:02d}".format(self._errcode))
+                error_message = self.get_message(f"x{self._errcode:02d}")
                 error = (
-                    "Newport Error: {0}. Axis: {1}. "
-                    "Error Message: {2}. "
-                    "At time : {3}".format(
+                    "Newport Error: {}. Axis: {}. "
+                    "Error Message: {}. "
+                    "At time : {}".format(
                         str(self._errcode), self._axis, error_message, self._timestamp
                     )
                 )
-                super(NewportError, self).__init__(error)
+                super().__init__(error)
 
         else:
             self._errcode = None
             self._axis = None
-            super(NewportError, self).__init__("")
+            super().__init__("")
 
     # PRIVATE METHODS ##
 

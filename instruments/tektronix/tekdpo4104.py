@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Tektronix DPO 4104 oscilloscope
 """
@@ -51,7 +50,7 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
     """
 
     def __init__(self, tek, name):
-        super(_TekDPO4104DataSource, self).__init__(tek, name)
+        super().__init__(tek, name)
         self._tek = self._parent
 
     @property
@@ -104,7 +103,7 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
 
             # TODO: move this out somewhere more appropriate.
             old_dat_stop = self._tek.query("DAT:STOP?")
-            self._tek.sendcmd("DAT:STOP {}".format(10 ** 7))
+            self._tek.sendcmd(f"DAT:STOP {10 ** 7}")
 
             if not bin_format:
                 # Set data encoding format to ASCII
@@ -141,14 +140,12 @@ class _TekDPO4104DataSource(OscilloscopeDataSource):
                 y = ((raw - yoffs) * float(ymult)) + float(yzero)
             else:
                 x = tuple(
-                    [
-                        float(val) * float(xincr) + float(xzero)
-                        for val in range(int(ptcnt))
-                    ]
+                    float(val) * float(xincr) + float(xzero)
+                    for val in range(int(ptcnt))
                 )
                 y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
 
-            self._tek.sendcmd("DAT:STOP {}".format(old_dat_stop))
+            self._tek.sendcmd(f"DAT:STOP {old_dat_stop}")
 
             return x, y
 
@@ -167,7 +164,7 @@ class _TekDPO4104Channel(_TekDPO4104DataSource, OscilloscopeChannel):
     """
 
     def __init__(self, parent, idx):
-        super(_TekDPO4104Channel, self).__init__(parent, "CH{}".format(idx + 1))
+        super().__init__(parent, f"CH{idx + 1}")
         self._idx = idx + 1
 
     @property
@@ -177,7 +174,7 @@ class _TekDPO4104Channel(_TekDPO4104DataSource, OscilloscopeChannel):
 
         :type: `TekDPO4104.Coupling`
         """
-        return TekDPO4104.Coupling(self._tek.query("CH{}:COUPL?".format(self._idx)))
+        return TekDPO4104.Coupling(self._tek.query(f"CH{self._idx}:COUPL?"))
 
     @coupling.setter
     def coupling(self, newval):
@@ -187,7 +184,7 @@ class _TekDPO4104Channel(_TekDPO4104DataSource, OscilloscopeChannel):
                 " value, got {} instead.".format(type(newval))
             )
 
-        self._tek.sendcmd("CH{}:COUPL {}".format(self._idx, newval.value))
+        self._tek.sendcmd(f"CH{self._idx}:COUPL {newval.value}")
 
 
 class TekDPO4104(SCPIInstrument, Oscilloscope):
@@ -250,7 +247,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         """
         return ProxyList(
             self,
-            lambda s, idx: _TekDPO4104DataSource(s, "REF{}".format(idx + 1)),
+            lambda s, idx: _TekDPO4104DataSource(s, f"REF{idx + 1}"),
             range(4),
         )
 
@@ -282,7 +279,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
                 newval = newval.value
             elif hasattr(newval, "name"):  # Is a datasource with a name.
                 newval = newval.name
-        self.sendcmd("DAT:SOU {}".format(newval))
+        self.sendcmd(f"DAT:SOU {newval}")
         sleep(0.01)  # Let the instrument catch up.
 
     @property
@@ -296,7 +293,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
 
     @aquisition_length.setter
     def aquisition_length(self, newval):
-        self.sendcmd("HOR:RECO {}".format(newval))
+        self.sendcmd(f"HOR:RECO {newval}")
 
     @property
     def aquisition_running(self):
@@ -311,7 +308,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
 
     @aquisition_running.setter
     def aquisition_running(self, newval):
-        self.sendcmd("ACQ:STATE {}".format(1 if newval else 0))
+        self.sendcmd(f"ACQ:STATE {1 if newval else 0}")
 
     @property
     def aquisition_continuous(self):
@@ -344,7 +341,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         if int(newval) not in [1, 2]:
             raise ValueError("Only one or two byte-width is supported.")
 
-        self.sendcmd("DATA:WIDTH {}".format(newval))
+        self.sendcmd(f"DATA:WIDTH {newval}")
 
     # TODO: convert to read in unitful quantities.
     @property
@@ -357,7 +354,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
 
     @y_offset.setter
     def y_offset(self, newval):
-        self.sendcmd("WFMP:YOF {}".format(newval))
+        self.sendcmd(f"WFMP:YOF {newval}")
 
     # METHODS #
 

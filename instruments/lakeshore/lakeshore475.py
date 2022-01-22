@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Lakeshore 475 Gaussmeter.
 """
@@ -18,8 +17,8 @@ LAKESHORE_FIELD_UNITS = {1: u.gauss, 2: u.tesla, 3: u.oersted, 4: u.amp / u.mete
 
 LAKESHORE_TEMP_UNITS = {1: u.celsius, 2: u.kelvin}
 
-LAKESHORE_FIELD_UNITS_INV = dict((v, k) for k, v in LAKESHORE_FIELD_UNITS.items())
-LAKESHORE_TEMP_UNITS_INV = dict((v, k) for k, v in LAKESHORE_TEMP_UNITS.items())
+LAKESHORE_FIELD_UNITS_INV = {v: k for k, v in LAKESHORE_FIELD_UNITS.items()}
+LAKESHORE_TEMP_UNITS_INV = {v: k for k, v in LAKESHORE_TEMP_UNITS.items()}
 
 # CLASSES #####################################################################
 
@@ -156,7 +155,7 @@ class Lakeshore475(SCPIInstrument):
                 f"{newval.units}, currently expecting {expected_units}."
             )
 
-        self.sendcmd("CSETP {}".format(newval.magnitude))
+        self.sendcmd(f"CSETP {newval.magnitude}")
 
     @property
     def field_control_params(self):

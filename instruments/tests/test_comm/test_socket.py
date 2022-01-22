@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the socket communication layer
 """
@@ -58,9 +57,9 @@ def test_socketcomm_terminator():
     assert comm.terminator == "*"
     assert comm._terminator == "*"
 
-    comm.terminator = u"\r"
-    assert comm.terminator == u"\r"
-    assert comm._terminator == u"\r"
+    comm.terminator = "\r"
+    assert comm.terminator == "\r"
+    assert comm._terminator == "\r"
 
     comm.terminator = "\r\n"
     assert comm.terminator == "\r\n"

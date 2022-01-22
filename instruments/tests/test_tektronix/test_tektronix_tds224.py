@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for the Tektronix TDS224
 """
@@ -203,10 +202,10 @@ def test_tektds224_data_source_read_waveform_ascii(values):
             )
         else:
             x_expected = tuple(
-                [float(val) * float(xincr) + float(xzero) for val in range(ptcnt)]
+                float(val) * float(xincr) + float(xzero) for val in range(ptcnt)
             )
             y_expected = tuple(
-                [((val - float(yoffs)) * float(ymult)) + float(yzero) for val in values]
+                ((val - float(yoffs)) * float(ymult)) + float(yzero) for val in values
             )
         x_read, y_read = tek.channel[1].read_waveform(bin_format=False)
         iterable_eq(x_read, x_expected)

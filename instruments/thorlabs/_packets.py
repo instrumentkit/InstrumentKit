@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module for working with ThorLabs packets.
 """
@@ -73,9 +72,9 @@ ThorLabs APT packet:
     Data            {3}
 """.format(
             self,
-            "0x{:x}".format(self._param1) if not self._has_data else "None",
-            "0x{:x}".format(self._param2) if not self._has_data else "None",
-            "{}".format(self._data) if self._has_data else "None",
+            f"0x{self._param1:x}" if not self._has_data else "None",
+            f"0x{self._param2:x}" if not self._has_data else "None",
+            f"{self._data}" if self._has_data else "None",
         )
 
     @property

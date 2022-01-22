@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the HP 6624a power supply
 """
@@ -66,7 +65,7 @@ def test_mode():
 
 def test_channel_voltage():
     with expected_protocol(
-        ik.hp.HP6624a, ["VSET? 1", "VSET 1,{:.1f}".format(5)], ["2"], sep="\n"
+        ik.hp.HP6624a, ["VSET? 1", f"VSET 1,{5:.1f}"], ["2"], sep="\n"
     ) as hp:
         assert hp.channel[0].voltage == 2 * u.V
         hp.channel[0].voltage = 5 * u.V
@@ -74,7 +73,7 @@ def test_channel_voltage():
 
 def test_channel_current():
     with expected_protocol(
-        ik.hp.HP6624a, ["ISET? 1", "ISET 1,{:.1f}".format(5)], ["2"], sep="\n"
+        ik.hp.HP6624a, ["ISET? 1", f"ISET 1,{5:.1f}"], ["2"], sep="\n"
     ) as hp:
         assert hp.channel[0].current == 2 * u.amp
         hp.channel[0].current = 5 * u.amp
@@ -133,14 +132,14 @@ def test_all_voltage():
             "VSET? 2",
             "VSET? 3",
             "VSET? 4",
-            "VSET 1,{:.1f}".format(5),
-            "VSET 2,{:.1f}".format(5),
-            "VSET 3,{:.1f}".format(5),
-            "VSET 4,{:.1f}".format(5),
-            "VSET 1,{:.1f}".format(1),
-            "VSET 2,{:.1f}".format(2),
-            "VSET 3,{:.1f}".format(3),
-            "VSET 4,{:.1f}".format(4),
+            f"VSET 1,{5:.1f}",
+            f"VSET 2,{5:.1f}",
+            f"VSET 3,{5:.1f}",
+            f"VSET 4,{5:.1f}",
+            f"VSET 1,{1:.1f}",
+            f"VSET 2,{2:.1f}",
+            f"VSET 3,{3:.1f}",
+            f"VSET 4,{4:.1f}",
         ],
         ["2", "3", "4", "5"],
         sep="\n",
@@ -166,14 +165,14 @@ def test_all_current():
             "ISET? 2",
             "ISET? 3",
             "ISET? 4",
-            "ISET 1,{:.1f}".format(5),
-            "ISET 2,{:.1f}".format(5),
-            "ISET 3,{:.1f}".format(5),
-            "ISET 4,{:.1f}".format(5),
-            "ISET 1,{:.1f}".format(1),
-            "ISET 2,{:.1f}".format(2),
-            "ISET 3,{:.1f}".format(3),
-            "ISET 4,{:.1f}".format(4),
+            f"ISET 1,{5:.1f}",
+            f"ISET 2,{5:.1f}",
+            f"ISET 3,{5:.1f}",
+            f"ISET 4,{5:.1f}",
+            f"ISET 1,{1:.1f}",
+            f"ISET 2,{2:.1f}",
+            f"ISET 3,{3:.1f}",
+            f"ISET 4,{4:.1f}",
         ],
         ["2", "3", "4", "5"],
         sep="\n",

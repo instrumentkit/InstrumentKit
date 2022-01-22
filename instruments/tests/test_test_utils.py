@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Module containing tests for test-related utility functions
 """

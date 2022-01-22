@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Driver for the HP6652a single output power supply
 
@@ -235,7 +234,7 @@ class HP6652a(PowerSupply, PowerSupplyChannel):
             text_to_display = text_to_display[:15]
         text_to_display = text_to_display.upper()
 
-        self.sendcmd('DISP:TEXT "{}"'.format(text_to_display))
+        self.sendcmd(f'DISP:TEXT "{text_to_display}"')
 
         return text_to_display
 

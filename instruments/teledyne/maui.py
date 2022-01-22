@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Teledyne-Lecroy Oscilloscopes that use the
 MAUI interface.
@@ -76,7 +75,7 @@ class MAUI(Oscilloscope):
     # VERT_DIVS = 8
 
     def __init__(self, filelike):
-        super(MAUI, self).__init__(filelike)
+        super().__init__(filelike)
 
         # turn off command headers -> for SCPI like behavior
         self.sendcmd("COMM_HEADER OFF")
@@ -188,8 +187,8 @@ class MAUI(Oscilloscope):
         values = ["EX", "EX5", "EX10", "ETM10", "LINE"]
         # now add the channels
         for it in range(self._number_channels):
-            names.append("c{}".format(it))
-            values.append("C{}".format(it + 1))  # to send to scope
+            names.append(f"c{it}")
+            values.append(f"C{it + 1}")  # to send to scope
         # create and store the enum
         self.TriggerSource = Enum("TriggerSource", zip(names, values))
 
@@ -332,7 +331,7 @@ class MAUI(Oscilloscope):
             self._idx = idx + 1  # 1-based
 
             # Initialize as a data source with name C{}.
-            super(MAUI.Channel, self).__init__(self._parent, "C{}".format(self._idx))
+            super(MAUI.Channel, self).__init__(self._parent, f"C{self._idx}")
 
         # ENUMS #
 
@@ -383,7 +382,7 @@ class MAUI(Oscilloscope):
         @offset.setter
         def offset(self, newval):
             newval = assume_units(newval, "V").to(u.V).magnitude
-            self.sendcmd("OFST {}".format(newval))
+            self.sendcmd(f"OFST {newval}")
 
         @property
         def scale(self):
@@ -402,7 +401,7 @@ class MAUI(Oscilloscope):
         @scale.setter
         def scale(self, newval):
             newval = assume_units(newval, "V").to(u.V).magnitude
-            self.sendcmd("VDIV {}".format(newval))
+            self.sendcmd(f"VDIV {newval}")
 
         # METHODS #
 
@@ -413,7 +412,7 @@ class MAUI(Oscilloscope):
 
             :param str cmd: Command to send to the instrument
             """
-            self._parent.sendcmd("C{}:{}".format(self._idx, cmd))
+            self._parent.sendcmd(f"C{self._idx}:{cmd}")
 
         def query(self, cmd, size=-1):
             """
@@ -429,7 +428,7 @@ class MAUI(Oscilloscope):
                 connected instrument.
             :rtype: `str`
             """
-            return self._parent.query("C{}:{}".format(self._idx, cmd), size=size)
+            return self._parent.query(f"C{self._idx}:{cmd}", size=size)
 
     class Math(DataSource):
 
@@ -445,7 +444,7 @@ class MAUI(Oscilloscope):
             self._idx = idx + 1  # 1-based
 
             # Initialize as a data source with name C{}.
-            super(MAUI.Math, self).__init__(self._parent, "F{}".format(self._idx))
+            super(MAUI.Math, self).__init__(self._parent, f"F{self._idx}")
 
         # CLASSES #
 
@@ -492,7 +491,7 @@ class MAUI(Oscilloscope):
                 :param int,tuple src: Source, see info above
                 """
                 src_str = _source(src)
-                send_str = "'ABS({})'".format(src_str)
+                send_str = f"'ABS({src_str})'"
                 self._send_operator(send_str)
 
             def average(self, src, average_type="summed", sweeps=1000):
@@ -598,7 +597,7 @@ class MAUI(Oscilloscope):
                 if bits not in bits_possible:
                     bits = 0.5
 
-                send_str = "'ERES({})',BITS,{}".format(src_str, bits)
+                send_str = f"'ERES({src_str})',BITS,{bits}"
 
                 self._send_operator(send_str)
 
@@ -696,7 +695,7 @@ class MAUI(Oscilloscope):
                 :param int,tuple src: Source, see info above
                 """
                 src_str = _source(src)
-                self._send_operator("'-{}'".format(src_str))
+                self._send_operator(f"'-{src_str}'")
 
             def product(self, src1, src2):
                 """
@@ -708,7 +707,7 @@ class MAUI(Oscilloscope):
                 src1_str = _source(src1)
                 src2_str = _source(src2)
 
-                send_str = "'{}*{}'".format(src1_str, src2_str)
+                send_str = f"'{src1_str}*{src2_str}'"
 
                 self._send_operator(send_str)
 
@@ -722,7 +721,7 @@ class MAUI(Oscilloscope):
                 src1_str = _source(src1)
                 src2_str = _source(src2)
 
-                send_str = "'{}/{}'".format(src1_str, src2_str)
+                send_str = f"'{src1_str}/{src2_str}'"
 
                 self._send_operator(send_str)
 
@@ -733,7 +732,7 @@ class MAUI(Oscilloscope):
                 :param int,tuple src: Source, see info above
                 """
                 src_str = _source(src)
-                self._send_operator("'1/{}'".format(src_str))
+                self._send_operator(f"'1/{src_str}'")
 
             def rescale(self, src, multiplier=1, adder=0):
                 """
@@ -761,7 +760,7 @@ class MAUI(Oscilloscope):
                 :param int,tuple src: Source, see info above
                 """
                 src_str = _source(src)
-                self._send_operator("'SINX({})'".format(src_str))
+                self._send_operator(f"'SINX({src_str})'")
 
             def square(self, src):
                 """
@@ -770,7 +769,7 @@ class MAUI(Oscilloscope):
                 :param int,tuple src: Source, see info above
                 """
                 src_str = _source(src)
-                self._send_operator("'SQR({})'".format(src_str))
+                self._send_operator(f"'SQR({src_str})'")
 
             def square_root(self, src):
                 """
@@ -779,7 +778,7 @@ class MAUI(Oscilloscope):
                 :param int,tuple src: Source, see info above
                 """
                 src_str = _source(src)
-                self._send_operator("'SQRT({})'".format(src_str))
+                self._send_operator(f"'SQRT({src_str})'")
 
             def sum(self, src1, src2):
                 """
@@ -791,7 +790,7 @@ class MAUI(Oscilloscope):
                 src1_str = _source(src1)
                 src2_str = _source(src2)
 
-                send_str = "'{}+{}'".format(src1_str, src2_str)
+                send_str = f"'{src1_str}+{src2_str}'"
 
                 self._send_operator(send_str)
 
@@ -872,7 +871,7 @@ class MAUI(Oscilloscope):
 
             :param str cmd: Command to send to the instrument
             """
-            self._parent.sendcmd("F{}:{}".format(self._idx, cmd))
+            self._parent.sendcmd(f"F{self._idx}:{cmd}")
 
         def query(self, cmd, size=-1):
             """
@@ -888,7 +887,7 @@ class MAUI(Oscilloscope):
                 connected instrument.
             :rtype: `str`
             """
-            return self._parent.query("F{}:{}".format(self._idx, cmd), size=size)
+            return self._parent.query(f"F{self._idx}:{cmd}", size=size)
 
     class Measurement:
 
@@ -943,9 +942,7 @@ class MAUI(Oscilloscope):
             :return tuple: (average, low, high, sigma, sweeps)
             :return type: (float, float, float, float, float)
             """
-            ret_str = (
-                self.query("PAST? CUST, P{}".format(self._idx)).rstrip().split(",")
-            )
+            ret_str = self.query(f"PAST? CUST, P{self._idx}").rstrip().split(",")
             # parse the return string -> put into dictionary:
             ret_dict = {
                 ret_str[it]: ret_str[it + 1] for it in range(0, len(ret_str), 2)
@@ -973,7 +970,7 @@ class MAUI(Oscilloscope):
             """
             Deletes the given measurement parameter.
             """
-            self.sendcmd("PADL {}".format(self._idx))
+            self.sendcmd(f"PADL {self._idx}")
 
         def set_parameter(self, param, src):
             """
@@ -1005,7 +1002,7 @@ class MAUI(Oscilloscope):
                     )
                 )
 
-            send_str = "PACU {},{},{}".format(self._idx, param.value, _source(src))
+            send_str = f"PACU {self._idx},{param.value},{_source(src)}"
 
             self.sendcmd(send_str)
 
@@ -1216,7 +1213,7 @@ class MAUI(Oscilloscope):
     @time_div.setter
     def time_div(self, newval):
         newval = assume_units(newval, "s").to(u.s).magnitude
-        self.sendcmd("TDIV {}".format(newval))
+        self.sendcmd(f"TDIV {newval}")
 
     # TRIGGER PROPERTIES
 
@@ -1253,7 +1250,7 @@ class MAUI(Oscilloscope):
     @trigger_delay.setter
     def trigger_delay(self, newval):
         newval = assume_units(newval, "s").to(u.s).magnitude
-        self.sendcmd("TRDL {}".format(newval))
+        self.sendcmd(f"TRDL {newval}")
 
     @property
     def trigger_source(self):
@@ -1286,7 +1283,7 @@ class MAUI(Oscilloscope):
     @trigger_source.setter
     def trigger_source(self, newval):
         curr_trig_typ = self.trigger_type
-        cmd = "TRIG_SELECT {},SR,{}".format(curr_trig_typ.value, newval.value)
+        cmd = f"TRIG_SELECT {curr_trig_typ.value},SR,{newval.value}"
         self.sendcmd(cmd)
 
     @property
@@ -1315,7 +1312,7 @@ class MAUI(Oscilloscope):
     @trigger_type.setter
     def trigger_type(self, newval):
         curr_trig_src = self.trigger_source
-        cmd = "TRIG_SELECT {},SR,{}".format(newval.value, curr_trig_src.value)
+        cmd = f"TRIG_SELECT {newval.value},SR,{curr_trig_src.value}"
         self.sendcmd(cmd)
 
     # METHODS #
@@ -1371,9 +1368,9 @@ class MAUI(Oscilloscope):
 def _source(src):
     """Stich the source together properly and return it."""
     if isinstance(src, int):
-        return "C{}".format(src + 1)
+        return f"C{src + 1}"
     elif isinstance(src, tuple) and len(src) == 2:
-        return "{}{}".format(src[0].upper(), int(src[1]) + 1)
+        return f"{src[0].upper()}{int(src[1]) + 1}"
     else:
         raise ValueError(
             "An invalid source was specified. "

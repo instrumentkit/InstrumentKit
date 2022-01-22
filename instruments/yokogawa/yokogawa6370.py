@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Yokogawa 6370 optical spectrum analyzer.
 """
@@ -41,7 +40,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     """
 
     def __init__(self, *args, **kwargs):
-        super(Yokogawa6370, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # Set data Format to binary
         self.sendcmd(":FORMat:DATA REAL,64")  # TODO: Find out where we want this
 
@@ -65,14 +64,14 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         # METHODS #
 
         def data(self, bin_format=True):
-            cmd = ":TRAC:Y? {0}".format(self._name)
+            cmd = f":TRAC:Y? {self._name}"
             self._parent.sendcmd(cmd)
             data = self._parent.binblockread(data_width=8, fmt="<d")
             self._parent._file.read_raw(1)  # pylint: disable=protected-access
             return data
 
         def wavelength(self, bin_format=True):
-            cmd = ":TRAC:X? {0}".format(self._name)
+            cmd = f":TRAC:X? {self._name}"
             self._parent.sendcmd(cmd)
             data = self._parent.binblockread(data_width=8, fmt="<d")
             self._parent._file.read_raw(1)  # pylint: disable=protected-access

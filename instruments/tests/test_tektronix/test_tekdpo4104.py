@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Tests for the Tektronix DPO 4104 oscilloscope.
 """
@@ -297,8 +296,8 @@ def test_data_source_read_waveform_bin(values, ymult, yzero, xzero, xincr):
             x_calc = numpy.arange(ptcnt) * xincr + xzero
             y_calc = ((numpy.array(values) - yoffs) * ymult) + yzero
         else:
-            x_calc = tuple([float(val) * xincr + xzero for val in range(ptcnt)])
-            y_calc = tuple([((float(val) - yoffs) * ymult) + yzero for val in values])
+            x_calc = tuple(float(val) * xincr + xzero for val in range(ptcnt))
+            y_calc = tuple(((float(val) - yoffs) * ymult) + yzero for val in values)
         iterable_eq(x_read, x_calc)
         iterable_eq(y_read, y_calc)
 
@@ -360,8 +359,8 @@ def test_data_source_read_waveform_ascii(values, ymult, yzero, xzero, xincr):
             x_calc = numpy.arange(ptcnt) * xincr + xzero
             y_calc = (raw - yoffs) * ymult + yzero
         else:
-            x_calc = tuple([float(val) * xincr + xzero for val in range(ptcnt)])
-            y_calc = tuple([((float(val) - yoffs) * ymult) + yzero for val in values])
+            x_calc = tuple(float(val) * xincr + xzero for val in range(ptcnt))
+            y_calc = tuple(((float(val) - yoffs) * ymult) + yzero for val in values)
 
         # assert arrays are equal
         iterable_eq(x_read, x_calc)

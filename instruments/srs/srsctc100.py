@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the SRS CTC-100 cryogenic temperature controller.
 """
@@ -25,7 +24,7 @@ class SRSCTC100(SCPIInstrument):
     """
 
     def __init__(self, filelike):
-        super(SRSCTC100, self).__init__(filelike)
+        super().__init__(filelike)
         self._do_errcheck = True
 
     # DICTIONARIES #
@@ -73,10 +72,10 @@ class SRSCTC100(SCPIInstrument):
         # PRIVATE METHODS #
 
         def _get(self, prop_name):
-            return self._ctc.query("{}.{}?".format(self._rem_name, prop_name)).strip()
+            return self._ctc.query(f"{self._rem_name}.{prop_name}?").strip()
 
         def _set(self, prop_name, newval):
-            self._ctc.sendcmd('{}.{} = "{}"'.format(self._rem_name, prop_name, newval))
+            self._ctc.sendcmd(f'{self._rem_name}.{prop_name} = "{newval}"')
 
         # DISPLAY AND PROGRAMMING #
         # These properties control how the channel is identified in scripts
@@ -215,9 +214,9 @@ class SRSCTC100(SCPIInstrument):
 
             point = [
                 s.strip()
-                for s in self._ctc.query(
-                    "getLog.xy {}, {}".format(self._chan_name, which)
-                ).split(",")
+                for s in self._ctc.query(f"getLog.xy {self._chan_name}, {which}").split(
+                    ","
+                )
             ]
             return u.Quantity(float(point[0]), "ms"), u.Quantity(float(point[1]), units)
 
@@ -236,7 +235,7 @@ class SRSCTC100(SCPIInstrument):
             units = self.units
 
             # Find out how many points there are.
-            n_points = int(self._ctc.query("getLog.xy? {}".format(self._chan_name)))
+            n_points = int(self._ctc.query(f"getLog.xy? {self._chan_name}"))
 
             # Make an empty quantity that size for the times and for the channel
             # values.
@@ -300,10 +299,10 @@ class SRSCTC100(SCPIInstrument):
         unit_strings = [
             unit_str.strip() for unit_str in self.query("getOutput.units?").split(",")
         ]
-        return dict(
-            (chan_name, self._UNIT_NAMES[unit_str])
+        return {
+            chan_name: self._UNIT_NAMES[unit_str]
             for chan_name, unit_str in zip(self._channel_names(), unit_strings)
-        )
+        }
 
     def errcheck(self):
         """
@@ -313,13 +312,13 @@ class SRSCTC100(SCPIInstrument):
 
         :return: Nothing
         """
-        errs = super(SRSCTC100, self).query("geterror?").strip()
+        errs = super().query("geterror?").strip()
         err_code, err_descript = errs.split(",")
         err_code = int(err_code)
         if err_code == 0:
             return err_code
         else:
-            raise IOError(err_descript.strip())
+            raise OSError(err_descript.strip())
 
     @contextmanager
     def _error_checking_disabled(self):
@@ -364,7 +363,7 @@ class SRSCTC100(SCPIInstrument):
                 "Number of display figures must be an integer "
                 "from 0 to 6, inclusive."
             )
-        self.sendcmd("system.display.figures = {}".format(newval))
+        self.sendcmd(f"system.display.figures = {newval}")
 
     @property
     def error_check_toggle(self):
@@ -386,12 +385,12 @@ class SRSCTC100(SCPIInstrument):
     # We override sendcmd() and query() to do error checking after each
     # command.
     def sendcmd(self, cmd):
-        super(SRSCTC100, self).sendcmd(cmd)
+        super().sendcmd(cmd)
         if self._do_errcheck:
             self.errcheck()
 
     def query(self, cmd, size=-1):
-        resp = super(SRSCTC100, self).query(cmd, size)
+        resp = super().query(cmd, size)
         if self._do_errcheck:
             self.errcheck()
         return resp

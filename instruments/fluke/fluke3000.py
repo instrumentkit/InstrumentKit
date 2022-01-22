@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # fluke3000.py: Driver for the Fluke 3000 FC Industrial System
 #
@@ -99,7 +98,7 @@ class Fluke3000(Multimeter):
         """
         Initialize the instrument, and set the properties needed for communication.
         """
-        super(Fluke3000, self).__init__(filelike)
+        super().__init__(filelike)
         self.timeout = 3 * u.second
         self.terminator = "\r"
         self.positions = {}

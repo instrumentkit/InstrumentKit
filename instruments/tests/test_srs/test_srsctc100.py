@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for the SRS CTC-100
 """
@@ -402,10 +401,10 @@ def test_srsctc100_channel_units_all():
     ) as inst:
         with inst._error_checking_disabled():
             # create a unit dictionary to compare the return to
-            unit_dict = dict(
-                (chan_name, ik.srs.SRSCTC100._UNIT_NAMES[unit_str])
+            unit_dict = {
+                chan_name: ik.srs.SRSCTC100._UNIT_NAMES[unit_str]
                 for chan_name, unit_str in zip(ch_names, ch_units)
-            )
+            }
             assert inst.channel_units() == unit_dict
 
 

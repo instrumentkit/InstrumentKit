@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Defines globally-available subpackages and symbols for the instruments package.
 """

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Tektronix AWG2000 series arbitrary wave generators.
 """
@@ -38,7 +37,7 @@ class TekAWG2000(SCPIInstrument):
             self._tek = tek
             # Zero-based for pythonic convienence, so we need to convert to
             # Tektronix's one-based notation here.
-            self._name = "CH{}".format(idx + 1)
+            self._name = f"CH{idx + 1}"
 
             # Remember what the old data source was for use as a context manager
             self._old_dsrc = None
@@ -64,7 +63,7 @@ class TekAWG2000(SCPIInstrument):
             :type: `~pint.Quantity` with units Volts peak-to-peak.
             """
             return u.Quantity(
-                float(self._tek.query("FG:{}:AMPL?".format(self._name)).strip()), u.V
+                float(self._tek.query(f"FG:{self._name}:AMPL?").strip()), u.V
             )
 
         @amplitude.setter
@@ -85,7 +84,7 @@ class TekAWG2000(SCPIInstrument):
             :type: `~pint.Quantity` with units Volts.
             """
             return u.Quantity(
-                float(self._tek.query("FG:{}:OFFS?".format(self._name)).strip()), u.V
+                float(self._tek.query(f"FG:{self._name}:OFFS?").strip()), u.V
             )
 
         @offset.setter
@@ -111,7 +110,7 @@ class TekAWG2000(SCPIInstrument):
         @frequency.setter
         def frequency(self, newval):
             self._tek.sendcmd(
-                "FG:FREQ {}HZ".format(assume_units(newval, u.Hz).to(u.Hz).magnitude)
+                f"FG:FREQ {assume_units(newval, u.Hz).to(u.Hz).magnitude}HZ"
             )
 
         @property
@@ -121,9 +120,7 @@ class TekAWG2000(SCPIInstrument):
 
             :type: `TekAWG2000.Polarity`
             """
-            return TekAWG2000.Polarity(
-                self._tek.query("FG:{}:POL?".format(self._name)).strip()
-            )
+            return TekAWG2000.Polarity(self._tek.query(f"FG:{self._name}:POL?").strip())
 
         @polarity.setter
         def polarity(self, newval):
@@ -134,7 +131,7 @@ class TekAWG2000(SCPIInstrument):
                     "instead.".format(type(newval))
                 )
 
-            self._tek.sendcmd("FG:{}:POL {}".format(self._name, newval.value))
+            self._tek.sendcmd(f"FG:{self._name}:POL {newval.value}")
 
         @property
         def shape(self):
@@ -145,7 +142,7 @@ class TekAWG2000(SCPIInstrument):
             :type: `TekAWG2000.Shape`
             """
             return TekAWG2000.Shape(
-                self._tek.query("FG:{}:SHAP?".format(self._name)).strip().split(",")[0]
+                self._tek.query(f"FG:{self._name}:SHAP?").strip().split(",")[0]
             )
 
         @shape.setter
@@ -155,7 +152,7 @@ class TekAWG2000(SCPIInstrument):
                     "Shape settings must be a `TekAWG2000.Shape` "
                     "value, got {} instead.".format(type(newval))
                 )
-            self._tek.sendcmd("FG:{}:SHAP {}".format(self._name, newval.value))
+            self._tek.sendcmd(f"FG:{self._name}:SHAP {newval.value}")
 
     # ENUMS #
 
@@ -196,7 +193,7 @@ class TekAWG2000(SCPIInstrument):
     def waveform_name(self, newval):
         if not isinstance(newval, str):
             raise TypeError("Waveform name must be specified as a string.")
-        self.sendcmd('DATA:DEST "{}"'.format(newval))
+        self.sendcmd(f'DATA:DEST "{newval}"')
 
     @property
     def channel(self):
@@ -256,15 +253,15 @@ class TekAWG2000(SCPIInstrument):
         if numpy.max(numpy.abs(waveform)) > 1:
             raise ValueError("The max value for an element in waveform is 1.")
 
-        self.sendcmd("WFMP:YZERO {}".format(yzero))
-        self.sendcmd("WFMP:YMULT {}".format(ymult))
-        self.sendcmd("WFMP:XINCR {}".format(xincr))
+        self.sendcmd(f"WFMP:YZERO {yzero}")
+        self.sendcmd(f"WFMP:YMULT {ymult}")
+        self.sendcmd(f"WFMP:XINCR {xincr}")
 
         waveform *= 2 ** 12 - 1
         waveform = waveform.astype("<u2").tobytes()
         wfm_header_2 = str(len(waveform))
         wfm_header_1 = len(wfm_header_2)
 
-        bin_str = "#{}{}{}".format(wfm_header_1, wfm_header_2, waveform)
+        bin_str = f"#{wfm_header_1}{wfm_header_2}{waveform}"
 
-        self.sendcmd("CURVE {}".format(bin_str))
+        self.sendcmd(f"CURVE {bin_str}")

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Holzworth HS9000
 """
@@ -49,7 +48,7 @@ class HS9000(SignalGenerator):
             # Some channel names, like "REF", are special and are preserved
             # as strs.
             self._ch_name = (
-                idx_chan if isinstance(idx_chan, str) else "CH{}".format(idx_chan + 1)
+                idx_chan if isinstance(idx_chan, str) else f"CH{idx_chan + 1}"
             )
 
         # PRIVATE METHODS #
@@ -62,7 +61,7 @@ class HS9000(SignalGenerator):
             :param str cmd: Command that will be sent to the instrument after
                 being prefixed with the channel identifier
             """
-            self._hs.sendcmd(":{ch}:{cmd}".format(ch=self._ch_name, cmd=cmd))
+            self._hs.sendcmd(f":{self._ch_name}:{cmd}")
 
         def query(self, cmd):
             """
@@ -74,7 +73,7 @@ class HS9000(SignalGenerator):
             :return: The result from the query
             :rtype: `str`
             """
-            return self._hs.query(":{ch}:{cmd}".format(ch=self._ch_name, cmd=cmd))
+            return self._hs.query(f":{self._ch_name}:{cmd}")
 
         # STATE METHODS #
 
@@ -122,7 +121,7 @@ class HS9000(SignalGenerator):
             :rtype: `~pint.Quantity`
             """
             val, units = split_unit_str(self.query("TEMP?"))
-            units = "deg{}".format(units)
+            units = f"deg{units}"
             return u.Quantity(val, units)
 
         frequency, frequency_min, frequency_max = bounded_unitful_property(

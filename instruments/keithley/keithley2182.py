@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Driver for the Keithley 2182 nano-voltmeter
 """
@@ -96,7 +95,7 @@ class Keithley2182(SCPIMultimeter):
             if mode is not None:
                 # self.mode = mode
                 raise NotImplementedError
-            self._parent.sendcmd("SENS:CHAN {}".format(self._idx))
+            self._parent.sendcmd(f"SENS:CHAN {self._idx}")
             value = float(self._parent.query("SENS:DATA:FRES?"))
             unit = self._parent.units
             return u.Quantity(value, unit)
@@ -158,7 +157,7 @@ class Keithley2182(SCPIMultimeter):
         :type: `bool`
         """
         mode = self.channel[0].mode
-        return self.query("SENS:{}:CHAN1:REF:STAT?".format(mode.value)) == "ON"
+        return self.query(f"SENS:{mode.value}:CHAN1:REF:STAT?") == "ON"
 
     @relative.setter
     def relative(self, newval):
@@ -166,10 +165,10 @@ class Keithley2182(SCPIMultimeter):
             raise TypeError("Relative mode must be a boolean.")
         mode = self.channel[0].mode
         if self.relative:
-            self.sendcmd("SENS:{}:CHAN1:REF:ACQ".format(mode.value))
+            self.sendcmd(f"SENS:{mode.value}:CHAN1:REF:ACQ")
         else:
             newval = "ON" if newval is True else "OFF"
-            self.sendcmd("SENS:{}:CHAN1:REF:STAT {}".format(mode.value, newval))
+            self.sendcmd(f"SENS:{mode.value}:CHAN1:REF:STAT {newval}")
 
     @property
     def input_range(self):
@@ -242,6 +241,6 @@ class Keithley2182(SCPIMultimeter):
                 "Mode must be specified as a Keithley2182.Mode "
                 "value, got {} instead.".format(mode)
             )
-        value = float(self.query("MEAS:{}?".format(mode.value)))
+        value = float(self.query(f"MEAS:{mode.value}?"))
         unit = self.units
         return value * unit

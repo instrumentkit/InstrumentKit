@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 """
 Contains common utility functions for Thorlabs-brand instruments
 """

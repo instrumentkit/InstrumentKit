@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the SRS 345 function generator.
 """
@@ -44,7 +43,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         FunctionGenerator.VoltageMode.dBm: "DB",
     }
 
-    _MNEMONIC_UNITS = dict((mnem, unit) for unit, mnem in _UNIT_MNEMONICS.items())
+    _MNEMONIC_UNITS = {mnem: unit for unit, mnem in _UNIT_MNEMONICS.items()}
 
     # FunctionGenerator CONTRACT #
 
@@ -54,7 +53,7 @@ class SRS345(SCPIInstrument, FunctionGenerator):
         return (float(resp[:-2]), self._MNEMONIC_UNITS[resp[-2:]])
 
     def _set_amplitude_(self, magnitude, units):
-        self.sendcmd("AMPL {}{}".format(magnitude, self._UNIT_MNEMONICS[units]))
+        self.sendcmd(f"AMPL {magnitude}{self._UNIT_MNEMONICS[units]}")
 
     # ENUMS ##
 

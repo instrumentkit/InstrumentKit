@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing common code for testing the property factories
 """
@@ -30,7 +29,7 @@ class MockInstrument:
         return self._buf.getvalue()
 
     def sendcmd(self, cmd):
-        self._buf.write("{}\n".format(cmd))
+        self._buf.write(f"{cmd}\n")
 
     def query(self, cmd):
         self.sendcmd(cmd)

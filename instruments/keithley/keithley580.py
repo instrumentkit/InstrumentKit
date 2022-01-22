@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # keithley580.py: Driver for the Keithley 580 micro-ohmmeter.
 #
@@ -60,7 +59,7 @@ class Keithley580(Instrument):
         """
         Initialise the instrument and remove CRLF line termination
         """
-        super(Keithley580, self).__init__(filelike)
+        super().__init__(filelike)
         self.sendcmd("Y:X")  # Removes the termination CRLF characters
 
     # ENUMS #
@@ -125,7 +124,7 @@ class Keithley580(Instrument):
                 "instead.".format(newval)
             )
 
-        self.sendcmd("P{}X".format(newval.value))
+        self.sendcmd(f"P{newval.value}X")
 
     @property
     def drive(self):
@@ -154,7 +153,7 @@ class Keithley580(Instrument):
                 "instead.".format(newval)
             )
 
-        self.sendcmd("D{}X".format(newval.value))
+        self.sendcmd(f"D{newval.value}X")
 
     @property
     def dry_circuit_test(self):
@@ -177,7 +176,7 @@ class Keithley580(Instrument):
     def dry_circuit_test(self, newval):
         if not isinstance(newval, bool):
             raise TypeError("DryCircuitTest mode must be a boolean.")
-        self.sendcmd("C{}X".format(int(newval)))
+        self.sendcmd(f"C{int(newval)}X")
 
     @property
     def operate(self):
@@ -194,7 +193,7 @@ class Keithley580(Instrument):
     def operate(self, newval):
         if not isinstance(newval, bool):
             raise TypeError("Operate mode must be a boolean.")
-        self.sendcmd("O{}X".format(int(newval)))
+        self.sendcmd(f"O{int(newval)}X")
 
     @property
     def relative(self):
@@ -222,7 +221,7 @@ class Keithley580(Instrument):
     def relative(self, newval):
         if not isinstance(newval, bool):
             raise TypeError("Relative mode must be a boolean.")
-        self.sendcmd("Z{}X".format(int(newval)))
+        self.sendcmd(f"Z{int(newval)}X")
 
     @property
     def trigger_mode(self):
@@ -258,7 +257,7 @@ class Keithley580(Instrument):
                 "Keithley580.TriggerMode, got {} "
                 "instead.".format(newval)
             )
-        self.sendcmd("T{}X".format(newval.value))
+        self.sendcmd(f"T{newval.value}X")
 
     @property
     def input_range(self):
@@ -294,13 +293,13 @@ class Keithley580(Instrument):
             if newval in valid:
                 newval = valid.index(newval)
             else:
-                raise ValueError("Valid range settings are: {}".format(valid))
+                raise ValueError(f"Valid range settings are: {valid}")
         else:
             raise TypeError(
                 "Range setting must be specified as a float, int, "
                 'or the string "auto", got {}'.format(type(newval))
             )
-        self.sendcmd("R{}X".format(newval))
+        self.sendcmd(f"R{newval}X")
 
     # METHODS #
 
@@ -357,7 +356,7 @@ class Keithley580(Instrument):
             statusword = self._file.read_raw()
 
         if tries == 0:
-            raise IOError("could not retrieve status word")
+            raise OSError("could not retrieve status word")
 
         return statusword[:-1]
 
@@ -481,7 +480,7 @@ class Keithley580(Instrument):
             drive = valid["drive"][drive]
             resistance = float(resistance) * u.ohm
         except:
-            raise Exception("Cannot parse measurement: {}".format(measurement))
+            raise Exception(f"Cannot parse measurement: {measurement}")
 
         return {
             "status": status,
@@ -494,7 +493,7 @@ class Keithley580(Instrument):
     # COMMUNICATOR METHODS #
 
     def sendcmd(self, cmd):
-        super(Keithley580, self).sendcmd(cmd + ":")
+        super().sendcmd(cmd + ":")
 
     def query(self, cmd, size=-1):
-        return super(Keithley580, self).query(cmd + ":", size)[:-1]
+        return super().query(cmd + ":", size)[:-1]

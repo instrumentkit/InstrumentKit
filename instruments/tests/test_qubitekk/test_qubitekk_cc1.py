@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for the Qubitekk CC1
 """
@@ -22,8 +21,8 @@ def test_init_os_error(mocker):
 
     This raises an OSError in the read which must pass without an issue.
     """
-    stdout = BytesIO(":ACKN OF\nFIRM?\n".encode("utf-8"))
-    stdin = BytesIO("Firmware v2.010\n".encode("utf-8"))
+    stdout = BytesIO(b":ACKN OF\nFIRM?\n")
+    stdin = BytesIO(b"Firmware v2.010\n")
     mock_read = mocker.patch.object(ik.qubitekk.CC1, "read")
     mock_read.side_effect = OSError
     _ = ik.qubitekk.CC1.open_test(stdin, stdout)

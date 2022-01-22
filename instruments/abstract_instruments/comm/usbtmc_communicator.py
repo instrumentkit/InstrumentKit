@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides a communicator that uses Python-USBTMC for connecting with TMC
 instruments.
@@ -28,7 +27,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, *args, **kwargs):
         if usbtmc is None:
             raise ImportError("usbtmc is required for TMC instruments.")
-        super(USBTMCCommunicator, self).__init__(self)
+        super().__init__(self)
 
         self._filelike = usbtmc.Instrument(*args, **kwargs)
         self._terminator = "\n"
@@ -87,7 +86,7 @@ class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
         """
         try:
             self._filelike.close()
-        except IOError:
+        except OSError:
             pass
 
     def read(self, size=-1, encoding="utf-8"):

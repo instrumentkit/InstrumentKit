@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides a loopback communicator, used for creating unit tests or for opening
 test connections to explore the InstrumentKit API.
@@ -26,7 +25,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, stdin=None, stdout=None):
-        super(LoopbackCommunicator, self).__init__(self)
+        super().__init__(self)
         self._terminator = "\n"
         self._stdout = stdout
         self._stdin = stdin
@@ -90,7 +89,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         """
         try:
             self._stdin.close()
-        except IOError:
+        except OSError:
             pass
 
     def read_raw(self, size=-1):

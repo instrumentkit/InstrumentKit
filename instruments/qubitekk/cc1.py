@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Qubitekk CC1 Coincidence Counter instrument.
 
@@ -33,7 +32,7 @@ class CC1(SCPIInstrument):
     """
 
     def __init__(self, filelike):
-        super(CC1, self).__init__(filelike)
+        super().__init__(filelike)
         self.terminator = "\n"
         self._channel_count = 3
         self._firmware = None
@@ -114,7 +113,7 @@ class CC1(SCPIInstrument):
 
             :rtype: `int`
             """
-            count = self._cc1.query("COUN:{0}?".format(self._chan))
+            count = self._cc1.query(f"COUN:{self._chan}?")
             tries = 5
             try:
                 count = int(count)
@@ -129,7 +128,7 @@ class CC1(SCPIInstrument):
                         tries -= 1
 
             if tries == 0:
-                raise IOError(f"Could not read the count of channel " f"{self._chan}.")
+                raise OSError(f"Could not read the count of channel " f"{self._chan}.")
 
             self._count = count
             return self._count
@@ -235,7 +234,7 @@ class CC1(SCPIInstrument):
         if new_val_mag < 0 or new_val_mag > 7:
             raise ValueError("Window is out of range.")
         # window must be an integer!
-        self.sendcmd(":WIND {}".format(new_val_mag))
+        self.sendcmd(f":WIND {new_val_mag}")
 
     @property
     def delay(self):
@@ -281,7 +280,7 @@ class CC1(SCPIInstrument):
         new_val_mag = assume_units(new_val, u.s).to(u.s).magnitude
         if new_val_mag < 0:
             raise ValueError("Dwell time cannot be negative.")
-        self.sendcmd(":DWEL {}".format(new_val_mag))
+        self.sendcmd(f":DWEL {new_val_mag}")
 
     @property
     def firmware(self):

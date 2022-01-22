@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Unit tests for the Keithley 6514 electrometer
 """
@@ -114,7 +113,7 @@ def test_input_range():
             "FUNCTION?",
             "VOLT:DC:RANGE:UPPER?",
             "FUNCTION?",
-            "VOLT:DC:RANGE:UPPER {:e}".format(20),
+            f"VOLT:DC:RANGE:UPPER {20:e}",
         ],
         ['"VOLT:DC"', "10", '"VOLT:DC"'],
     ) as inst:

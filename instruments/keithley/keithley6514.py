@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Keithley 6514 electrometer
 """
@@ -175,7 +174,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
         :type: `bool`
         """
         # pylint: disable=no-member
-        out = self.query("{}:RANGE:AUTO?".format(self.mode.value))
+        out = self.query(f"{self.mode.value}:RANGE:AUTO?")
         return True if out == "1" else False
 
     @auto_range.setter
@@ -192,7 +191,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
         """
         # pylint: disable=no-member
         mode = self.mode
-        out = self.query("{}:RANGE:UPPER?".format(mode.value))
+        out = self.query(f"{mode.value}:RANGE:UPPER?")
         return float(out) * self._MODE_UNITS[mode]
 
     @input_range.setter
@@ -202,7 +201,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
         val = newval.to(self._MODE_UNITS[mode]).magnitude
         if val not in self._valid_range(mode).value:
             raise ValueError("Unexpected range limit for currently selected mode.")
-        self.sendcmd("{}:RANGE:UPPER {:e}".format(mode.value, val))
+        self.sendcmd(f"{mode.value}:RANGE:UPPER {val:e}")
 
     # METHODS ##
 
@@ -219,7 +218,7 @@ class Keithley6514(SCPIInstrument, Electrometer):
             - Disable buffer operation
             - Enable autozero
         """
-        self.sendcmd("CONF:{}".format(mode.value))
+        self.sendcmd(f"CONF:{mode.value}")
 
     def fetch(self):
         """

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing various utility functions
 """
@@ -283,7 +282,7 @@ def enum_property(
         return output_decoration(val)
 
     def _getter(self):
-        return enum(_in_decor_fcn(self.query("{}?".format(command)).strip()))
+        return enum(_in_decor_fcn(self.query(f"{command}?").strip()))
 
     def _setter(self, newval):
         try:  # First assume newval is Enum.value
@@ -339,7 +338,7 @@ def unitless_property(
     """
 
     def _getter(self):
-        raw = self.query("{}?".format(command))
+        raw = self.query(f"{command}?")
         return float(raw)
 
     def _setter(self, newval):
@@ -393,7 +392,7 @@ def int_property(
     """
 
     def _getter(self):
-        raw = self.query("{}?".format(command))
+        raw = self.query(f"{command}?")
         return int(raw)
 
     if valid_set is None:
@@ -490,7 +489,7 @@ def unitful_property(
         return output_decoration(val)
 
     def _getter(self):
-        raw = _in_decor_fcn(self.query("{}?".format(command)))
+        raw = _in_decor_fcn(self.query(f"{command}?"))
         return u.Quantity(*split_unit_str(raw, units)).to(units)
 
     def _setter(self, newval):
@@ -636,7 +635,7 @@ def string_property(
     bookmark_length = len(bookmark_symbol)
 
     def _getter(self):
-        string = self.query("{}?".format(command))
+        string = self.query(f"{command}?")
         string = (
             string[bookmark_length:-bookmark_length] if bookmark_length > 0 else string
         )

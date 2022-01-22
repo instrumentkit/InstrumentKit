@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Lakeshore 340 cryogenic temperature controller.
 """
@@ -52,7 +51,7 @@ class Lakeshore340(SCPIInstrument):
             :units: Kelvin
             :type: `~pint.Quantity`
             """
-            value = self._parent.query("KRDG?{}".format(self._idx))
+            value = self._parent.query(f"KRDG?{self._idx}")
             return u.Quantity(float(value), u.kelvin)
 
     # PROPERTIES ##

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Agilent 33220a function generator.
 """
@@ -181,7 +180,7 @@ class Agilent33220a(SCPIFunctionGenerator):
             newval = assume_units(newval, u.ohm).to(u.ohm).magnitude
             if (newval < 0) or (newval > 10000):
                 raise ValueError("Load resistance must be between 0 and 10,000")
-        self.sendcmd("OUTP:LOAD {}".format(newval))
+        self.sendcmd(f"OUTP:LOAD {newval}")
 
     @property
     def phase(self):

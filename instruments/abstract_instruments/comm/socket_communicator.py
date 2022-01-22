@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides a tcpip socket communicator for connecting with instruments over
 raw ethernet connections.
@@ -29,7 +28,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
     """
 
     def __init__(self, conn):
-        super(SocketCommunicator, self).__init__(self)
+        super().__init__(self)
 
         if isinstance(conn, socket.socket):
             self._conn = conn
@@ -111,7 +110,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
             while result.endswith(self._terminator.encode("utf-8")) is False:
                 c = self._conn.recv(1)
                 if c == b"":
-                    raise IOError(
+                    raise OSError(
                         "Socket connection timed out before reading "
                         "a termination character."
                     )

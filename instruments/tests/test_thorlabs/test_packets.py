@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Module containing tests for the ThorLabsPacket class.
 """
@@ -118,12 +117,12 @@ def test_string(params_or_data):
     )
     string_expected = """
 ThorLabs APT packet:
-    Message ID      {0}
-    Parameter 1     {1}
-    Parameter 2     {2}
-    Destination     {3}
-    Source          {4}
-    Data            {5}
+    Message ID      {}
+    Parameter 1     {}
+    Parameter 2     {}
+    Destination     {}
+    Source          {}
+    Data            {}
 """.format(
         f"0x{message_id:x}",
         f"0x{param1:x}" if not params_or_data[3] else "None",

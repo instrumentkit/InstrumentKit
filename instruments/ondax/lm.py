@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides the support for the Ondax LM Laser.
 
@@ -29,7 +28,7 @@ class LM(Instrument):
     """
 
     def __init__(self, filelike):
-        super(LM, self).__init__(filelike)
+        super().__init__(filelike)
         self.terminator = "\r"
         self.apc = self._AutomaticPowerControl(self)
         self.acc = self._AutomaticCurrentControl(self)

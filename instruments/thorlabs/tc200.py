@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides the support for the Thorlabs TC200 temperature controller.
 
@@ -34,7 +33,7 @@ class TC200(Instrument):
     """
 
     def __init__(self, filelike):
-        super(TC200, self).__init__(filelike)
+        super().__init__(filelike)
         self.terminator = "\r"
         self.prompt = "> "
 
@@ -93,7 +92,7 @@ class TC200(Instrument):
                 "Mode setting must be a `TC200.Mode` value, "
                 "got {} instead.".format(type(newval))
             )
-        out_query = "mode={}".format(newval.name)
+        out_query = f"mode={newval.name}"
         # there is an issue with the TC200; it responds with a spurious
         # Command Error on mode=normal. Thus, the sendcmd() method cannot
         # be used.
@@ -149,7 +148,7 @@ class TC200(Instrument):
 
         :rtype: `int`
         """
-        _ = self._file.query(str("stat?"))
+        _ = self._file.query("stat?")
         response = self.read(5)
         return int(response.split(" ")[0])
 
@@ -209,7 +208,7 @@ class TC200(Instrument):
         newval = convert_temperature(newval, u.degC)
         if newval < u.Quantity(20.0, u.degC) or newval > self.max_temperature:
             raise ValueError("Temperature set is out of range.")
-        out_query = "tset={}".format(newval.magnitude)
+        out_query = f"tset={newval.magnitude}"
         self.sendcmd(out_query)
 
     @property
@@ -226,7 +225,7 @@ class TC200(Instrument):
     def p(self, newval):
         if newval not in range(1, 251):
             raise ValueError("P-value not in [1, 250]")
-        self.sendcmd("pgain={}".format(newval))
+        self.sendcmd(f"pgain={newval}")
 
     @property
     def i(self):
@@ -242,7 +241,7 @@ class TC200(Instrument):
     def i(self, newval):
         if newval not in range(0, 251):
             raise ValueError("I-value not in [0, 250]")
-        self.sendcmd("igain={}".format(newval))
+        self.sendcmd(f"igain={newval}")
 
     @property
     def d(self):
@@ -258,7 +257,7 @@ class TC200(Instrument):
     def d(self, newval):
         if newval not in range(0, 251):
             raise ValueError("D-value not in [0, 250]")
-        self.sendcmd("dgain={}".format(newval))
+        self.sendcmd(f"dgain={newval}")
 
     @property
     def pid(self):

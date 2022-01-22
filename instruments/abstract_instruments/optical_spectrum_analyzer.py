@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides an abstract base class for optical spectrum analyzer instruments
 """

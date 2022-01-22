@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Provides support for the Phase Matrix FSW0020 signal generator.
 """
@@ -58,7 +57,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
         # Write the integer to the serial port in ASCII-encoded
         # uppercase-hexadecimal format, with padding to 12 nybbles.
-        self.sendcmd("0C{:012X}.".format(newval))
+        self.sendcmd(f"0C{newval:012X}.")
 
         # No return data, so no readline needed.
 
@@ -84,7 +83,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
         newval = int(assume_units(newval, u.dBm).to(u.cBm).magnitude)
 
         # Command code 0x03, parameter length 2 bytes (4 nybbles)
-        self.sendcmd("03{:04X}.".format(newval))
+        self.sendcmd(f"03{newval:04X}.")
 
     @property
     def phase(self):
@@ -105,7 +104,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @blanking.setter
     def blanking(self, newval):
-        self.sendcmd("05{:02X}.".format(1 if newval else 0))
+        self.sendcmd(f"05{1 if newval else 0:02X}.")
 
     @property
     def ref_output(self):
@@ -118,7 +117,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @ref_output.setter
     def ref_output(self, newval):
-        self.sendcmd("08{:02X}.".format(1 if newval else 0))
+        self.sendcmd(f"08{1 if newval else 0:02X}.")
 
     @property
     def output(self):
@@ -132,7 +131,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @output.setter
     def output(self, newval):
-        self.sendcmd("0F{:02X}.".format(1 if newval else 0))
+        self.sendcmd(f"0F{1 if newval else 0:02X}.")
 
     @property
     def pulse_modulation(self):
@@ -145,7 +144,7 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @pulse_modulation.setter
     def pulse_modulation(self, newval):
-        self.sendcmd("09{:02X}.".format(1 if newval else 0))
+        self.sendcmd(f"09{1 if newval else 0:02X}.")
 
     @property
     def am_modulation(self):
@@ -158,4 +157,4 @@ class PhaseMatrixFSW0020(SingleChannelSG):
 
     @am_modulation.setter
     def am_modulation(self, newval):
-        self.sendcmd("0A{:02X}.".format(1 if newval else 0))
+        self.sendcmd(f"0A{1 if newval else 0:02X}.")

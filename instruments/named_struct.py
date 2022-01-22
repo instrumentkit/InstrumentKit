@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Class for quickly defining C-like structures with named fields.
 """
@@ -48,7 +47,7 @@ class Field:
     _owner_type = object
 
     def __init__(self, fmt, strip_null=False):
-        super(Field, self).__init__()
+        super().__init__()
 
         # Record our birthday so that we can sort fields later.
         self._field_birthday = Field.__n_fields_created
@@ -86,7 +85,7 @@ class Field:
                 self._name, self._owner_type, self._fmt
             )
 
-        return "<Unbound field, fmt={}>".format(self._fmt)
+        return f"<Unbound field, fmt={self._fmt}>"
 
     def __str__(self):
         n, fmt_char = len(self), self.fmt_char
@@ -113,12 +112,8 @@ class Field:
         }[fmt_char]
 
         if n:
-            c_type = "{}[{}]".format(c_type, n)
-        return (
-            "{c_type} {self._name}".format(c_type=c_type, self=self)
-            if self.is_significant()
-            else c_type
-        )
+            c_type = f"{c_type}[{n}]"
+        return f"{c_type} {self._name}" if self.is_significant() else c_type
 
     # DESCRIPTOR PROTOCOL #
 
@@ -147,7 +142,7 @@ class StringField(Field):
     _encoding = "ascii"
 
     def __init__(self, length, encoding="ascii", strip_null=False):
-        super(StringField, self).__init__("{}s".format(length))
+        super().__init__(f"{length}s")
         self._strip_null = strip_null
         self._encoding = encoding
 
@@ -158,10 +153,10 @@ class StringField(Field):
             value = value.rstrip("\x00")
         value = value.encode(self._encoding)
 
-        super(StringField, self).__set__(obj, value)
+        super().__set__(obj, value)
 
     def __get__(self, obj, type=None):
-        return super(StringField, self).__get__(obj, type=type).decode(self._encoding)
+        return super().__get__(obj, type=type).decode(self._encoding)
 
 
 class Padding(Field):
@@ -173,7 +168,7 @@ class Padding(Field):
     """
 
     def __init__(self, n_bytes=1):
-        super(Padding, self).__init__("{}x".format(n_bytes))
+        super().__init__(f"{n_bytes}x")
 
 
 class HasFields(type):
@@ -187,7 +182,7 @@ class HasFields(type):
         # We call the superclass of HasFields, which is another
         # metaclass, to do most of the heavy lifting of creating
         # the new class.
-        cls = super(HasFields, mcs).__new__(mcs, name, bases, attrs)
+        cls = super().__new__(mcs, name, bases, attrs)
 
         # We now sort the fields by their birthdays and store them in an
         # ordered dict for easier look up later.
@@ -195,11 +190,11 @@ class HasFields(type):
             [
                 (field_name, field)
                 for field_name, field in sorted(
-                    [
+                    (
                         (field_name, field)
                         for field_name, field in attrs.items()
                         if isinstance(field, Field)
-                    ],
+                    ),
                     key=lambda item: item[1]._field_birthday,
                 )
             ]
@@ -251,7 +246,7 @@ class NamedStruct(metaclass=HasFields):
     _struct = None
 
     def __init__(self, **kwargs):
-        super(NamedStruct, self).__init__()
+        super().__init__()
         self._values = OrderedDict(
             [
                 (field._name, None)
@@ -314,7 +309,7 @@ class NamedStruct(metaclass=HasFields):
                     "    {field}{value};".format(
                         field=field,
                         value=(
-                            " = {}".format(repr(self._values[field._name]))
+                            f" = {repr(self._values[field._name])}"
                             if field.is_significant()
                             else ""
                         ),
