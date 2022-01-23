@@ -34,7 +34,3 @@ Stanford Research Systems
 .. autoclass:: SRSDG645
     :members:
     :undoc-members:
-
-.. autoclass:: _SRSDG645Channel
-    :members:
-    :undoc-members:
