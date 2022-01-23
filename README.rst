@@ -1,9 +1,9 @@
 InstrumentKit
 =============
 
-.. image:: https://img.shields.io/travis/Galvant/InstrumentKit/master.svg?maxAge=2592000
-    :target: https://travis-ci.com/Galvant/InstrumentKit
-    :alt: Travis-CI build status
+.. image:: https://github.com/Galvant/InstrumentKit/workflows/Testing/badge.svg?branch=master
+    :target: https://github.com/Galvant/InstrumentKit
+    :alt: Github Actions build status
 
 .. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/master.svg?maxAge=2592000
     :target: https://coveralls.io/github/Galvant/InstrumentKit?branch=master
