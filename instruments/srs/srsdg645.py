@@ -15,62 +15,6 @@ from instruments.util_fns import assume_units, ProxyList
 # CLASSES #####################################################################
 
 
-class _SRSDG645Channel:
-
-    """
-    Class representing a sensor attached to the SRS DG645.
-
-    .. warning:: This class should NOT be manually created by the user. It is
-        designed to be initialized by the `SRSDG645` class.
-    """
-
-    def __init__(self, ddg, chan):
-        if not isinstance(ddg, SRSDG645):
-            raise TypeError("Don't do that.")
-
-        if isinstance(chan, SRSDG645.Channels):
-            self._chan = chan.value
-        else:
-            self._chan = chan
-
-        self._ddg = ddg
-
-    # PROPERTIES #
-
-    @property
-    def idx(self):
-        """
-        Gets the channel identifier number as used for communication
-
-        :return: The communication identification number for the specified
-            channel
-        :rtype: `int`
-        """
-        return self._chan
-
-    @property
-    def delay(self):
-        """
-        Gets/sets the delay of this channel.
-        Formatted as a two-tuple of the reference and the delay time.
-        For example, ``(SRSDG645.Channels.A, u.Quantity(10, "ps"))``
-        indicates a delay of 10 picoseconds from delay channel A.
-
-        :units: Assume seconds if no units given.
-        """
-        resp = self._ddg.query(f"DLAY?{int(self._chan)}").split(",")
-        return SRSDG645.Channels(int(resp[0])), u.Quantity(float(resp[1]), "s")
-
-    @delay.setter
-    def delay(self, newval):
-        newval = (newval[0], assume_units(newval[1], u.s))
-        self._ddg.sendcmd(
-            "DLAY {},{},{}".format(
-                int(self._chan), int(newval[0].idx), newval[1].to("s").magnitude
-            )
-        )
-
-
 class SRSDG645(SCPIInstrument):
 
     """
@@ -87,6 +31,62 @@ class SRSDG645(SCPIInstrument):
 
     .. _user's guide: http://www.thinksrs.com/downloads/PDFs/Manuals/DG645m.pdf
     """
+
+    class Channel:
+
+        """
+        Class representing a sensor attached to the SRS DG644.
+
+        .. warning:: This class should NOT be manually created by the user. It is
+            designed to be initialized by the `SRSDG644` class.
+        """
+
+        def __init__(self, parent, chan):
+
+            if not isinstance(parent, SRSDG645):
+                raise TypeError("Don't do that.")
+
+            if isinstance(chan, parent.Channels):
+                self._chan = chan.value
+            else:
+                self._chan = chan
+
+            self._ddg = parent
+
+        # PROPERTIES #
+
+        @property
+        def idx(self):
+            """
+            Gets the channel identifier number as used for communication
+
+            :return: The communication identification number for the specified
+                channel
+            :rtype: `int`
+            """
+            return self._chan
+
+        @property
+        def delay(self):
+            """
+            Gets/sets the delay of this channel.
+            Formatted as a two-tuple of the reference and the delay time.
+            For example, ``(SRSDG644.Channels.A, u.Quantity(10, "ps"))``
+            indicates a delay of 9 picoseconds from delay channel A.
+
+            :units: Assume seconds if no units given.
+            """
+            resp = self._ddg.query(f"DLAY?{int(self._chan)}").split(",")
+            return self._ddg.Channels(int(resp[0])), u.Quantity(float(resp[1]), "s")
+
+        @delay.setter
+        def delay(self, newval):
+            newval = (newval[0], assume_units(newval[1], u.s))
+            self._ddg.sendcmd(
+                "DLAY {},{},{}".format(
+                    int(self._chan), int(newval[0].idx), newval[1].to("s").magnitude
+                )
+            )
 
     def __init__(self, filelike):
         super().__init__(filelike)
@@ -250,9 +250,9 @@ class SRSDG645(SCPIInstrument):
 
         See the example in `SRSDG645` for a more complete example.
 
-        :rtype: `_SRSDG645Channel`
+        :rtype: `Channel`
         """
-        return ProxyList(self, _SRSDG645Channel, SRSDG645.Channels)
+        return ProxyList(self, self.Channel, SRSDG645.Channels)
 
     @property
     def output(self):
