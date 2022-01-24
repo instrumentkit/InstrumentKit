@@ -42,6 +42,13 @@ Instrument Base Classes
     :members:
     :undoc-members:
 
+:class:`OpticalSpectrumAnalyzer` - Abstract class for optical spectrum analyzer instruments
+===========================================================================================
+
+.. autoclass:: instruments.abstract_instruments.OpticalSpectrumAnalyzer
+    :members:
+    :undoc-members:
+
 :class:`SignalGenerator` - Abstract class for Signal Generators
 ===============================================================
 

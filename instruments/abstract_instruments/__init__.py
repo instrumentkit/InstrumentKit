@@ -9,9 +9,5 @@ from .multimeter import Multimeter
 from .electrometer import Electrometer
 from .function_generator import FunctionGenerator
 from .oscilloscope import Oscilloscope
+from .optical_spectrum_analyzer import OpticalSpectrumAnalyzer
 from .power_supply import PowerSupply
-
-from .optical_spectrum_analyzer import (
-    OSAChannel,
-    OpticalSpectrumAnalyzer,
-)

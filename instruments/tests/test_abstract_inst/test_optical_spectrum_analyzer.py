@@ -26,7 +26,7 @@ def osa(monkeypatch):
 @pytest.fixture
 def osc(monkeypatch):
     """Patch and return OSAChannel class for access."""
-    inst = ik.abstract_instruments.OSAChannel
+    inst = ik.abstract_instruments.OpticalSpectrumAnalyzer.Channel
     monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
