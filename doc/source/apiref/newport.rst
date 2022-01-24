@@ -21,14 +21,6 @@ Newport
     :members:
     :undoc-members:
 
-.. autoclass:: NewportESP301Axis
-    :members:
-    :undoc-members:
-
-.. autoclass:: NewportESP301HomeSearchMode
-    :members:
-    :undoc-members:
-
 :class:`NewportError`
 =====================
 

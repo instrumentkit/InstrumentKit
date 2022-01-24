@@ -42,7 +42,7 @@ def test_axis_returns_axis_class(ax):
         sep="\r",
     ) as inst:
         axis = inst.axis[ax]
-        assert isinstance(axis, ik.newport.NewportESP301Axis)
+        assert isinstance(axis, ik.newport.NewportESP301.Axis)
 
 
 def test_newport_cmd(mocker):
@@ -145,7 +145,7 @@ def test_home(mocker):
         )
 
 
-@pytest.mark.parametrize("search_mode", ik.newport.NewportESP301HomeSearchMode)
+@pytest.mark.parametrize("search_mode", ik.newport.NewportESP301.HomeSearchMode)
 def test_search_for_home(mocker, search_mode):
     """Search for home with specific method.
 
@@ -290,7 +290,7 @@ def test_axis_init():
 def test_axis_init_type_error():
     """Raise TypeError when axis initialized from wrong parent."""
     with pytest.raises(TypeError) as err_info:
-        _ = ik.newport.newportesp301.NewportESP301Axis(42, 0)
+        _ = ik.newport.newportesp301.NewportESP301.Axis(42, 0)
     err_msg = err_info.value.args[0]
     assert (
         err_msg == "Axis must be controlled by a Newport ESP-301 motor " "controller."
@@ -304,8 +304,8 @@ def test_axis_units_of(mocker):
     tested separately, thus only assert that the correct calls are
     issued.
     """
-    get_unit = ik.newport.newportesp301.NewportESP301Units.millimeter
-    set_unit = ik.newport.newportesp301.NewportESP301Units.inches
+    get_unit = ik.newport.newportesp301.NewportESP301.Units.millimeter
+    set_unit = ik.newport.newportesp301.NewportESP301.Units.inches
     with expected_protocol(
         ik.newport.NewportESP301, [ax_init[0]], [ax_init[1]], sep="\r"
     ) as inst:
@@ -324,7 +324,7 @@ def test_axis_get_units(mocker):
     Mock out the command sending and receiving.
     """
     resp = "2"
-    unit = ik.newport.newportesp301.NewportESP301Units(int(resp))
+    unit = ik.newport.newportesp301.NewportESP301.Units(int(resp))
     with expected_protocol(
         ik.newport.NewportESP301, [ax_init[0]], [ax_init[1]], sep="\r"
     ) as inst:
@@ -340,7 +340,7 @@ def test_axis_set_units(mocker):
     Mock out the actual command sending for simplicity, but assert it
     has been called.
     """
-    unit = ik.newport.newportesp301.NewportESP301Units.radian  # just pick one
+    unit = ik.newport.newportesp301.NewportESP301.Units.radian  # just pick one
     with expected_protocol(
         ik.newport.NewportESP301, [ax_init[0]], [ax_init[1]], sep="\r"
     ) as inst:
@@ -1224,7 +1224,7 @@ def test_axis_encoder_position(mocker):
     Also mock out `_newport_cmd`.
     """
     value = 42
-    get_unit = ik.newport.newportesp301.NewportESP301Units.millimeter
+    get_unit = ik.newport.newportesp301.NewportESP301.Units.millimeter
     with expected_protocol(
         ik.newport.NewportESP301, [ax_init[0]], [ax_init[1]], sep="\r"
     ) as inst:
@@ -1241,7 +1241,7 @@ def test_axis_encoder_position(mocker):
 # AXIS METHODS #
 
 
-@pytest.mark.parametrize("mode", ik.newport.newportesp301.NewportESP301HomeSearchMode)
+@pytest.mark.parametrize("mode", ik.newport.newportesp301.NewportESP301.HomeSearchMode)
 def test_axis_search_for_home(mocker, mode):
     """Search for home.
 
@@ -1480,7 +1480,7 @@ def test_axis_setup_axis(mocker):
     motor_type = 2  # stepper motor
     current = 1
     voltage = 2
-    units = ik.newport.newportesp301.NewportESP301Units.radian
+    units = ik.newport.newportesp301.NewportESP301.Units.radian
     encoder_resolution = 3.0
     max_velocity = 4
     max_base_velocity = 5
@@ -1598,7 +1598,7 @@ def test_axis_setup_axis_torque(mocker):
     motor_type = 2  # stepper motor
     current = 1
     voltage = 2
-    units = ik.newport.newportesp301.NewportESP301Units.radian
+    units = ik.newport.newportesp301.NewportESP301.Units.radian
     encoder_resolution = 3.0
     max_velocity = 4
     max_base_velocity = 5
@@ -1682,7 +1682,7 @@ def test_axis_setup_axis_torque_time_out_of_range(mocker, rmt_time):
     motor_type = 2  # stepper motor
     current = 1
     voltage = 2
-    units = ik.newport.newportesp301.NewportESP301Units.radian
+    units = ik.newport.newportesp301.NewportESP301.Units.radian
     encoder_resolution = 3.0
     max_velocity = 4
     max_base_velocity = 5
@@ -1764,7 +1764,7 @@ def test_axis_setup_axis_torque_percentage_out_of_range(mocker, rmt_perc):
     motor_type = 2  # stepper motor
     current = 1
     voltage = 2
-    units = ik.newport.newportesp301.NewportESP301Units.radian
+    units = ik.newport.newportesp301.NewportESP301.Units.radian
     encoder_resolution = 3.0
     max_velocity = 4
     max_base_velocity = 5
@@ -1844,7 +1844,7 @@ def test_axis_read_setup(mocker):
     """
     config = {
         "units": u.mm,
-        "motor_type": ik.newport.newportesp301.NewportESP301MotorType.dc_servo,
+        "motor_type": ik.newport.newportesp301.NewportESP301.MotorType.dc_servo,
         "feedback_configuration": 1,  # last 2 removed at return
         "full_step_resolution": u.Quantity(2.0, u.mm),
         "position_display_resolution": 3,
@@ -1877,7 +1877,7 @@ def test_axis_read_setup(mocker):
         axis = inst.axis[0]
         mock_cmd = mocker.patch.object(axis, "_newport_cmd")
         mock_cmd.side_effect = [
-            ik.newport.newportesp301.NewportESP301Units.millimeter.value,
+            ik.newport.newportesp301.NewportESP301.Units.millimeter.value,
             config["motor_type"].value,
             f"{config['feedback_configuration']}**",  # 2 extra
             config["full_step_resolution"].magnitude,
@@ -1934,7 +1934,7 @@ def test_axis_get_status(mocker):
         assert axis.get_status() == status
 
 
-@pytest.mark.parametrize("num", ik.newport.NewportESP301Axis._unit_dict)
+@pytest.mark.parametrize("num", ik.newport.NewportESP301.Axis._unit_dict)
 def test_axis_get_pq_unit(num):
     """Get units for specified axis."""
     with expected_protocol(
@@ -1944,7 +1944,7 @@ def test_axis_get_pq_unit(num):
         assert axis._get_pq_unit(num) == axis._unit_dict[num]
 
 
-@pytest.mark.parametrize("num", ik.newport.NewportESP301Axis._unit_dict)
+@pytest.mark.parametrize("num", ik.newport.NewportESP301.Axis._unit_dict)
 def test_axis_get_unit_num(num):
     """Get unit number from dictionary.
 
