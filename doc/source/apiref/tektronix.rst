@@ -21,14 +21,6 @@ Tektronix
     :members:
     :undoc-members:
 
-.. autoclass:: _TekDPO4104DataSource
-    :members:
-    :undoc-members:
-
-.. autoclass:: _TekDPO4104Channel
-    :members:
-    :undoc-members:
-
 :class:`TekDPO70000` Oscilloscope
 =================================
 

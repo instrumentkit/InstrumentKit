@@ -39,154 +39,6 @@ def _parent_property(prop_name, doc=""):
 # CLASSES #####################################################################
 
 
-class _TekDPO4104DataSource(OscilloscopeDataSource):
-
-    """
-    Class representing a data source (channel, math, or ref) on the Tektronix
-    DPO 4104.
-
-    .. warning:: This class should NOT be manually created by the user. It is
-        designed to be initialized by the `TekDPO4104` class.
-    """
-
-    def __init__(self, tek, name):
-        super().__init__(tek, name)
-        self._tek = self._parent
-
-    @property
-    def name(self):
-        """
-        Gets the name of this data source, as identified over SCPI.
-
-        :type: `str`
-        """
-        return self._name
-
-    def __enter__(self):
-        self._old_dsrc = self._tek.data_source
-        if self._old_dsrc != self:
-            # Set the new data source, and let __exit__ cleanup.
-            self._tek.data_source = self
-        else:
-            # There"s nothing to do or undo in this case.
-            self._old_dsrc = None
-
-    def __exit__(self, type, value, traceback):
-        if self._old_dsrc is not None:
-            self._tek.data_source = self._old_dsrc
-
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        return other.name == self.name
-
-    __hash__ = None
-
-    def read_waveform(self, bin_format=True):
-        """
-        Read waveform from the oscilloscope.
-        This function is all inclusive. After reading the data from the
-        oscilloscope, it unpacks the data and scales it accordingly.
-        Supports both ASCII and binary waveform transfer.
-
-        Function returns a tuple (x,y), where both x and y are numpy arrays.
-
-        :param bool bin_format: If `True`, data is transfered
-            in a binary format. Otherwise, data is transferred in ASCII.
-        :rtype: `tuple`[`tuple`[`~pint.Quantity`, ...], `tuple`[`~pint.Quantity`, ...]]
-            or if numpy is installed, `tuple` of two `~pint.Quantity` with `numpy.array` data
-        """
-
-        # Set the acquisition channel
-        with self:
-
-            # TODO: move this out somewhere more appropriate.
-            old_dat_stop = self._tek.query("DAT:STOP?")
-            self._tek.sendcmd(f"DAT:STOP {10 ** 7}")
-
-            if not bin_format:
-                # Set data encoding format to ASCII
-                self._tek.sendcmd("DAT:ENC ASCI")
-                sleep(0.02)  # Work around issue with 2.48 firmware.
-                raw = self._tek.query("CURVE?")
-                raw = raw.split(",")  # Break up comma delimited string
-                if numpy:
-                    raw = numpy.array(raw, dtype=numpy.float)  # Convert to numpy array
-                else:
-                    raw = map(float, raw)
-            else:
-                # Set encoding to signed, big-endian
-                self._tek.sendcmd("DAT:ENC RIB")
-                sleep(0.02)  # Work around issue with 2.48 firmware.
-                data_width = self._tek.data_width
-                self._tek.sendcmd("CURVE?")
-                # Read in the binary block, data width of 2 bytes.
-                raw = self._tek.binblockread(data_width)
-                # Read the new line character that is sent
-                self._tek._file.read_raw(1)  # pylint: disable=protected-access
-
-            yoffs = self._tek.y_offset  # Retrieve Y offset
-            ymult = self._tek.query("WFMP:YMU?")  # Retrieve Y multiplier
-            yzero = self._tek.query("WFMP:YZE?")  # Retrieve Y zero
-
-            xzero = self._tek.query("WFMP:XZE?")  # Retrieve X zero
-            xincr = self._tek.query("WFMP:XIN?")  # Retrieve X incr
-            # Retrieve number of data points
-            ptcnt = self._tek.query("WFMP:NR_P?")
-
-            if numpy:
-                x = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
-                y = ((raw - yoffs) * float(ymult)) + float(yzero)
-            else:
-                x = tuple(
-                    float(val) * float(xincr) + float(xzero)
-                    for val in range(int(ptcnt))
-                )
-                y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
-
-            self._tek.sendcmd(f"DAT:STOP {old_dat_stop}")
-
-            return x, y
-
-    y_offset = _parent_property("y_offset")
-
-
-class _TekDPO4104Channel(_TekDPO4104DataSource, OscilloscopeChannel):
-
-    """
-    Class representing a channel on the Tektronix DPO 4104.
-
-    This class inherits from `_TekDPO4104DataSource`.
-
-    .. warning:: This class should NOT be manually created by the user. It is
-        designed to be initialized by the `TekDPO4104` class.
-    """
-
-    def __init__(self, parent, idx):
-        super().__init__(parent, f"CH{idx + 1}")
-        self._idx = idx + 1
-
-    @property
-    def coupling(self):
-        """
-        Gets/sets the coupling setting for this channel.
-
-        :type: `TekDPO4104.Coupling`
-        """
-        return TekDPO4104.Coupling(self._tek.query(f"CH{self._idx}:COUPL?"))
-
-    @coupling.setter
-    def coupling(self, newval):
-        if not isinstance(newval, TekDPO4104.Coupling):
-            raise TypeError(
-                "Coupling setting must be a `TekDPO4104.Coupling`"
-                " value, got {} instead.".format(type(newval))
-            )
-
-        self._tek.sendcmd(f"CH{self._idx}:COUPL {newval.value}")
-
-
 class TekDPO4104(SCPIInstrument, Oscilloscope):
 
     """
@@ -201,6 +53,154 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
     >>> tek = ik.tektronix.TekDPO4104.open_tcpip("192.168.0.2", 8888)
     >>> [x, y] = tek.channel[0].read_waveform()
     """
+
+    class DataSource(OscilloscopeDataSource):
+
+        """
+        Class representing a data source (channel, math, or ref) on the Tektronix
+        DPO 4104.
+
+        .. warning:: This class should NOT be manually created by the user. It is
+            designed to be initialized by the `TekDPO4104` class.
+        """
+
+        def __init__(self, tek, name):
+            super().__init__(tek, name)
+            self._tek = self._parent
+
+        @property
+        def name(self):
+            """
+            Gets the name of this data source, as identified over SCPI.
+
+            :type: `str`
+            """
+            return self._name
+
+        def __enter__(self):
+            self._old_dsrc = self._tek.data_source
+            if self._old_dsrc != self:
+                # Set the new data source, and let __exit__ cleanup.
+                self._tek.data_source = self
+            else:
+                # There"s nothing to do or undo in this case.
+                self._old_dsrc = None
+
+        def __exit__(self, type, value, traceback):
+            if self._old_dsrc is not None:
+                self._tek.data_source = self._old_dsrc
+
+        def __eq__(self, other):
+            if not isinstance(other, type(self)):
+                return NotImplemented
+
+            return other.name == self.name
+
+        __hash__ = None
+
+        def read_waveform(self, bin_format=True):
+            """
+            Read waveform from the oscilloscope.
+            This function is all inclusive. After reading the data from the
+            oscilloscope, it unpacks the data and scales it accordingly.
+            Supports both ASCII and binary waveform transfer.
+
+            Function returns a tuple (x,y), where both x and y are numpy arrays.
+
+            :param bool bin_format: If `True`, data is transfered
+                in a binary format. Otherwise, data is transferred in ASCII.
+            :rtype: `tuple`[`tuple`[`~pint.Quantity`, ...], `tuple`[`~pint.Quantity`, ...]]
+                or if numpy is installed, `tuple` of two `~pint.Quantity` with `numpy.array` data
+            """
+
+            # Set the acquisition channel
+            with self:
+
+                # TODO: move this out somewhere more appropriate.
+                old_dat_stop = self._tek.query("DAT:STOP?")
+                self._tek.sendcmd(f"DAT:STOP {10 ** 7}")
+
+                if not bin_format:
+                    # Set data encoding format to ASCII
+                    self._tek.sendcmd("DAT:ENC ASCI")
+                    sleep(0.02)  # Work around issue with 2.48 firmware.
+                    raw = self._tek.query("CURVE?")
+                    raw = raw.split(",")  # Break up comma delimited string
+                    if numpy:
+                        raw = numpy.array(
+                            raw, dtype=numpy.float
+                        )  # Convert to numpy array
+                    else:
+                        raw = map(float, raw)
+                else:
+                    # Set encoding to signed, big-endian
+                    self._tek.sendcmd("DAT:ENC RIB")
+                    sleep(0.02)  # Work around issue with 2.48 firmware.
+                    data_width = self._tek.data_width
+                    self._tek.sendcmd("CURVE?")
+                    # Read in the binary block, data width of 2 bytes.
+                    raw = self._tek.binblockread(data_width)
+                    # Read the new line character that is sent
+                    self._tek._file.read_raw(1)  # pylint: disable=protected-access
+
+                yoffs = self._tek.y_offset  # Retrieve Y offset
+                ymult = self._tek.query("WFMP:YMU?")  # Retrieve Y multiplier
+                yzero = self._tek.query("WFMP:YZE?")  # Retrieve Y zero
+
+                xzero = self._tek.query("WFMP:XZE?")  # Retrieve X zero
+                xincr = self._tek.query("WFMP:XIN?")  # Retrieve X incr
+                # Retrieve number of data points
+                ptcnt = self._tek.query("WFMP:NR_P?")
+
+                if numpy:
+                    x = numpy.arange(float(ptcnt)) * float(xincr) + float(xzero)
+                    y = ((raw - yoffs) * float(ymult)) + float(yzero)
+                else:
+                    x = tuple(
+                        float(val) * float(xincr) + float(xzero)
+                        for val in range(int(ptcnt))
+                    )
+                    y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
+
+                self._tek.sendcmd(f"DAT:STOP {old_dat_stop}")
+
+                return x, y
+
+        y_offset = _parent_property("y_offset")
+
+    class Channel(DataSource, OscilloscopeChannel):
+
+        """
+        Class representing a channel on the Tektronix DPO 4104.
+
+        This class inherits from `_TekDPO4104DataSource`.
+
+        .. warning:: This class should NOT be manually created by the user. It is
+            designed to be initialized by the `TekDPO4104` class.
+        """
+
+        def __init__(self, parent, idx):
+            super().__init__(parent, f"CH{idx + 1}")
+            self._idx = idx + 1
+
+        @property
+        def coupling(self):
+            """
+            Gets/sets the coupling setting for this channel.
+
+            :type: `TekDPO4104.Coupling`
+            """
+            return TekDPO4104.Coupling(self._tek.query(f"CH{self._idx}:COUPL?"))
+
+        @coupling.setter
+        def coupling(self, newval):
+            if not isinstance(newval, TekDPO4104.Coupling):
+                raise TypeError(
+                    "Coupling setting must be a `TekDPO4104.Coupling`"
+                    " value, got {} instead.".format(type(newval))
+                )
+
+            self._tek.sendcmd(f"CH{self._idx}:COUPL {newval.value}")
 
     # ENUMS #
 
@@ -227,9 +227,9 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         >>> tek = ik.tektronix.TekDPO4104.open_tcpip("192.168.0.2", 8888)
         >>> [x, y] = tek.channel[0].read_waveform()
 
-        :rtype: `_TekDPO4104Channel`
+        :rtype: `Channel`
         """
-        return ProxyList(self, _TekDPO4104Channel, range(4))
+        return ProxyList(self, self.Channel, range(4))
 
     @property
     def ref(self):
@@ -243,11 +243,11 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         >>> tek = ik.tektronix.TekDPO4104.open_tcpip("192.168.0.2", 8888)
         >>> [x, y] = tek.ref[0].read_waveform()
 
-        :rtype: `_TekDPO4104DataSource`
+        :rtype: `DataSource`
         """
         return ProxyList(
             self,
-            lambda s, idx: _TekDPO4104DataSource(s, f"REF{idx + 1}"),
+            lambda s, idx: self.DataSource(s, f"REF{idx + 1}"),
             range(4),
         )
 
@@ -256,9 +256,9 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         """
         Gets a data source object corresponding to the MATH channel.
 
-        :rtype: `_TekDPO4104DataSource`
+        :rtype: `DataSource`
         """
-        return _TekDPO4104DataSource(self, "MATH")
+        return self.DataSource(self, "MATH")
 
     @property
     def data_source(self):
@@ -267,9 +267,9 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         """
         name = self.query("DAT:SOU?")
         if name.startswith("CH"):
-            return _TekDPO4104Channel(self, int(name[2:]) - 1)
+            return self.Channel(self, int(name[2:]) - 1)
 
-        return _TekDPO4104DataSource(self, name)
+        return self.DataSource(self, name)
 
     @data_source.setter
     def data_source(self, newval):
