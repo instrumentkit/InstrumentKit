@@ -1256,6 +1256,22 @@ def test_axis_search_for_home(mocker, mode):
         mock_search.assert_called_with(axis=1, search_mode=mode.value)
 
 
+def test_axis_search_for_home_default(mocker):
+    """Search for home without a specified search mode.
+
+    Mock out `search_for_home` of controller since already tested.
+    """
+    with expected_protocol(
+        ik.newport.NewportESP301, [ax_init[0]], [ax_init[1]], sep="\r"
+    ) as inst:
+        axis = inst.axis[0]
+        mock_search = mocker.patch.object(axis._controller, "search_for_home")
+        axis.search_for_home()
+
+        default_mode = axis._controller.HomeSearchMode.zero_position_count.value
+        mock_search.assert_called_with(axis=1, search_mode=default_mode)
+
+
 def test_axis_move_absolute(mocker):
     """Make an absolute move (default) on the axis.
 
