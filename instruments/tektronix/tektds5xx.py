@@ -48,222 +48,6 @@ from instruments.util_fns import ProxyList
 # CLASSES #####################################################################
 
 
-class _TekTDS5xxMeasurement:
-
-    """
-    Class representing a measurement channel on the Tektronix TDS5xx
-    """
-
-    def __init__(self, tek, idx):
-        self._tek = tek
-        self._id = idx + 1
-        resp = self._tek.query(f"MEASU:MEAS{self._id}?")
-        self._data = dict(
-            zip(
-                ["enabled", "type", "units", "src1", "src2", "edge1", "edge2", "dir"],
-                resp.split(";"),
-            )
-        )
-
-    def read(self):
-        """
-        Gets the current measurement value of the channel, and returns a dict
-        of all relevant information
-
-        :rtype: `dict` of measurement parameters
-        """
-        if int(self._data["enabled"]):
-            resp = self._tek.query(f"MEASU:MEAS{self._id}:VAL?")
-            self._data["value"] = float(resp)
-            return self._data
-
-        return self._data
-
-
-class _TekTDS5xxDataSource(Oscilloscope.DataSource):
-
-    """
-    Class representing a data source (channel, math, or ref) on the Tektronix
-    TDS 5xx.
-
-    .. warning:: This class should NOT be manually created by the user. It is
-        designed to be initialized by the `TekTDS5xx` class.
-    """
-
-    @property
-    def name(self):
-        """
-        Gets the name of this data source, as identified over SCPI.
-
-        :type: `str`
-        """
-        return self._name
-
-    def read_waveform(self, bin_format=True):
-        """
-        Read waveform from the oscilloscope.
-        This function is all inclusive. After reading the data from the
-        oscilloscope, it unpacks the data and scales it accordingly.
-
-        Supports both ASCII and binary waveform transfer. For 2500 data
-        points, with a width of 2 bytes, transfer takes approx 2 seconds for
-        binary, and 7 seconds for ASCII over Galvant Industries' GPIBUSB
-        adapter.
-
-        Function returns a tuple (x,y), where both x and y are numpy arrays.
-
-        :param bool bin_format: If `True`, data is transfered
-            in a binary format. Otherwise, data is transferred in ASCII.
-
-        :rtype: `tuple`[`tuple`[`float`, ...], `tuple`[`float`, ...]]
-            or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
-        """
-        with self:
-
-            if not bin_format:
-                # Set the data encoding format to ASCII
-                self._parent.sendcmd("DAT:ENC ASCI")
-                raw = self._parent.query("CURVE?")
-                raw = raw.split(",")  # Break up comma delimited string
-                if numpy:
-                    raw = numpy.array(raw, dtype=numpy.float)  # Convert to numpy array
-                else:
-                    raw = map(float, raw)
-            else:
-                # Set encoding to signed, big-endian
-                self._parent.sendcmd("DAT:ENC RIB")
-                data_width = self._parent.data_width
-                self._parent.sendcmd("CURVE?")
-                # Read in the binary block, data width of 2 bytes
-                raw = self._parent.binblockread(data_width)
-
-                # pylint: disable=protected-access
-                # read line separation character
-                self._parent._file.read_raw(1)
-
-            # Retrieve Y offset
-            yoffs = float(self._parent.query(f"WFMP:{self.name}:YOF?"))
-            # Retrieve Y multiply
-            ymult = float(self._parent.query(f"WFMP:{self.name}:YMU?"))
-            # Retrieve Y zero
-            yzero = float(self._parent.query(f"WFMP:{self.name}:YZE?"))
-
-            # Retrieve X incr
-            xincr = float(self._parent.query(f"WFMP:{self.name}:XIN?"))
-            # Retrieve number of data points
-            ptcnt = int(self._parent.query(f"WFMP:{self.name}:NR_P?"))
-
-            if numpy:
-                x = numpy.arange(float(ptcnt)) * float(xincr)
-                y = ((raw - yoffs) * float(ymult)) + float(yzero)
-            else:
-                x = tuple(float(val) * float(xincr) for val in range(ptcnt))
-                y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
-
-            return x, y
-
-
-class _TekTDS5xxChannel(_TekTDS5xxDataSource, Oscilloscope.Channel):
-
-    """
-    Class representing a channel on the Tektronix TDS 5xx.
-
-    This class inherits from `_TekTDS5xxDataSource`.
-
-    .. warning:: This class should NOT be manually created by the user. It is
-        designed to be initialized by the `TekTDS5xx` class.
-    """
-
-    def __init__(self, parent, idx):
-        super().__init__(parent, f"CH{idx + 1}")
-        self._idx = idx + 1
-
-    @property
-    def coupling(self):
-        """
-        Gets/sets the coupling setting for this channel.
-
-        :type: `TekTDS5xx.Coupling`
-        """
-        return TekTDS5xx.Coupling(self._parent.query(f"CH{self._idx}:COUPL?"))
-
-    @coupling.setter
-    def coupling(self, newval):
-        if not isinstance(newval, TekTDS5xx.Coupling):
-            raise TypeError(
-                "Coupling setting must be a `TekTDS5xx.Coupling`"
-                " value, got {} instead.".format(type(newval))
-            )
-
-        self._parent.sendcmd(f"CH{self._idx}:COUPL {newval.value}")
-
-    @property
-    def bandwidth(self):
-        """
-        Gets/sets the Bandwidth setting for this channel.
-
-        :type: `TekTDS5xx.Bandwidth`
-        """
-        return TekTDS5xx.Bandwidth(self._parent.query(f"CH{self._idx}:BAND?"))
-
-    @bandwidth.setter
-    def bandwidth(self, newval):
-        if not isinstance(newval, TekTDS5xx.Bandwidth):
-            raise TypeError(
-                "Bandwidth setting must be a `TekTDS5xx.Bandwidth`"
-                " value, got {} instead.".format(type(newval))
-            )
-
-        self._parent.sendcmd(f"CH{self._idx}:BAND {newval.value}")
-
-    @property
-    def impedance(self):
-        """
-        Gets/sets the impedance setting for this channel.
-
-        :type: `TekTDS5xx.Impedance`
-        """
-        return TekTDS5xx.Impedance(self._parent.query(f"CH{self._idx}:IMP?"))
-
-    @impedance.setter
-    def impedance(self, newval):
-        if not isinstance(newval, TekTDS5xx.Impedance):
-            raise TypeError(
-                "Impedance setting must be a `TekTDS5xx.Impedance`"
-                " value, got {} instead.".format(type(newval))
-            )
-
-        self._parent.sendcmd(f"CH{self._idx}:IMP {newval.value}")
-
-    @property
-    def probe(self):
-        """
-        Gets the connected probe value for this channel
-
-        :type: `float`
-        """
-        return round(1 / float(self._parent.query(f"CH{self._idx}:PRO?")), 0)
-
-    @property
-    def scale(self):
-        """
-        Gets/sets the scale setting for this channel.
-
-        :type: `float`
-        """
-        return float(self._parent.query(f"CH{self._idx}:SCA?"))
-
-    @scale.setter
-    def scale(self, newval):
-        self._parent.sendcmd(f"CH{self._idx}:SCA {newval:.3E}")
-        resp = float(self._parent.query(f"CH{self._idx}:SCA?"))
-        if newval != resp:
-            raise ValueError(
-                "Tried to set CH{} Scale to {} but got {}"
-                " instead".format(self._idx, newval, resp)
-            )
-
-
 class TekTDS5xx(SCPIInstrument, Oscilloscope):
 
     """
@@ -274,6 +58,230 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
       | 620A, 640A, 644A, 684A, 744A & 784A)
       | Tektronix Document: 070-8709-07
     """
+
+    class Measurement:
+
+        """
+        Class representing a measurement channel on the Tektronix TDS5xx
+        """
+
+        def __init__(self, tek, idx):
+            self._tek = tek
+            self._id = idx + 1
+            resp = self._tek.query(f"MEASU:MEAS{self._id}?")
+            self._data = dict(
+                zip(
+                    [
+                        "enabled",
+                        "type",
+                        "units",
+                        "src1",
+                        "src2",
+                        "edge1",
+                        "edge2",
+                        "dir",
+                    ],
+                    resp.split(";"),
+                )
+            )
+
+        def read(self):
+            """
+            Gets the current measurement value of the channel, and returns a dict
+            of all relevant information
+
+            :rtype: `dict` of measurement parameters
+            """
+            if int(self._data["enabled"]):
+                resp = self._tek.query(f"MEASU:MEAS{self._id}:VAL?")
+                self._data["value"] = float(resp)
+                return self._data
+
+            return self._data
+
+    class DataSource(Oscilloscope.DataSource):
+
+        """
+        Class representing a data source (channel, math, or ref) on the Tektronix
+        TDS 5xx.
+
+        .. warning:: This class should NOT be manually created by the user. It is
+            designed to be initialized by the `TekTDS5xx` class.
+        """
+
+        @property
+        def name(self):
+            """
+            Gets the name of this data source, as identified over SCPI.
+
+            :type: `str`
+            """
+            return self._name
+
+        def read_waveform(self, bin_format=True):
+            """
+            Read waveform from the oscilloscope.
+            This function is all inclusive. After reading the data from the
+            oscilloscope, it unpacks the data and scales it accordingly.
+
+            Supports both ASCII and binary waveform transfer. For 2500 data
+            points, with a width of 2 bytes, transfer takes approx 2 seconds for
+            binary, and 7 seconds for ASCII over Galvant Industries' GPIBUSB
+            adapter.
+
+            Function returns a tuple (x,y), where both x and y are numpy arrays.
+
+            :param bool bin_format: If `True`, data is transfered
+                in a binary format. Otherwise, data is transferred in ASCII.
+
+            :rtype: `tuple`[`tuple`[`float`, ...], `tuple`[`float`, ...]]
+                or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
+            """
+            with self:
+
+                if not bin_format:
+                    # Set the data encoding format to ASCII
+                    self._parent.sendcmd("DAT:ENC ASCI")
+                    raw = self._parent.query("CURVE?")
+                    raw = raw.split(",")  # Break up comma delimited string
+                    if numpy:
+                        raw = numpy.array(
+                            raw, dtype=numpy.float
+                        )  # Convert to numpy array
+                    else:
+                        raw = map(float, raw)
+                else:
+                    # Set encoding to signed, big-endian
+                    self._parent.sendcmd("DAT:ENC RIB")
+                    data_width = self._parent.data_width
+                    self._parent.sendcmd("CURVE?")
+                    # Read in the binary block, data width of 2 bytes
+                    raw = self._parent.binblockread(data_width)
+
+                    # pylint: disable=protected-access
+                    # read line separation character
+                    self._parent._file.read_raw(1)
+
+                # Retrieve Y offset
+                yoffs = float(self._parent.query(f"WFMP:{self.name}:YOF?"))
+                # Retrieve Y multiply
+                ymult = float(self._parent.query(f"WFMP:{self.name}:YMU?"))
+                # Retrieve Y zero
+                yzero = float(self._parent.query(f"WFMP:{self.name}:YZE?"))
+
+                # Retrieve X incr
+                xincr = float(self._parent.query(f"WFMP:{self.name}:XIN?"))
+                # Retrieve number of data points
+                ptcnt = int(self._parent.query(f"WFMP:{self.name}:NR_P?"))
+
+                if numpy:
+                    x = numpy.arange(float(ptcnt)) * float(xincr)
+                    y = ((raw - yoffs) * float(ymult)) + float(yzero)
+                else:
+                    x = tuple(float(val) * float(xincr) for val in range(ptcnt))
+                    y = tuple(((x - yoffs) * float(ymult)) + float(yzero) for x in raw)
+
+                return x, y
+
+    class Channel(DataSource, Oscilloscope.Channel):
+
+        """
+        Class representing a channel on the Tektronix TDS 5xx.
+
+        This class inherits from `_TekTDS5xxDataSource`.
+
+        .. warning:: This class should NOT be manually created by the user. It is
+            designed to be initialized by the `TekTDS5xx` class.
+        """
+
+        def __init__(self, parent, idx):
+            super().__init__(parent, f"CH{idx + 1}")
+            self._idx = idx + 1
+
+        @property
+        def coupling(self):
+            """
+            Gets/sets the coupling setting for this channel.
+
+            :type: `TekTDS5xx.Coupling`
+            """
+            return TekTDS5xx.Coupling(self._parent.query(f"CH{self._idx}:COUPL?"))
+
+        @coupling.setter
+        def coupling(self, newval):
+            if not isinstance(newval, TekTDS5xx.Coupling):
+                raise TypeError(
+                    "Coupling setting must be a `TekTDS5xx.Coupling`"
+                    " value, got {} instead.".format(type(newval))
+                )
+
+            self._parent.sendcmd(f"CH{self._idx}:COUPL {newval.value}")
+
+        @property
+        def bandwidth(self):
+            """
+            Gets/sets the Bandwidth setting for this channel.
+
+            :type: `TekTDS5xx.Bandwidth`
+            """
+            return TekTDS5xx.Bandwidth(self._parent.query(f"CH{self._idx}:BAND?"))
+
+        @bandwidth.setter
+        def bandwidth(self, newval):
+            if not isinstance(newval, TekTDS5xx.Bandwidth):
+                raise TypeError(
+                    "Bandwidth setting must be a `TekTDS5xx.Bandwidth`"
+                    " value, got {} instead.".format(type(newval))
+                )
+
+            self._parent.sendcmd(f"CH{self._idx}:BAND {newval.value}")
+
+        @property
+        def impedance(self):
+            """
+            Gets/sets the impedance setting for this channel.
+
+            :type: `TekTDS5xx.Impedance`
+            """
+            return TekTDS5xx.Impedance(self._parent.query(f"CH{self._idx}:IMP?"))
+
+        @impedance.setter
+        def impedance(self, newval):
+            if not isinstance(newval, TekTDS5xx.Impedance):
+                raise TypeError(
+                    "Impedance setting must be a `TekTDS5xx.Impedance`"
+                    " value, got {} instead.".format(type(newval))
+                )
+
+            self._parent.sendcmd(f"CH{self._idx}:IMP {newval.value}")
+
+        @property
+        def probe(self):
+            """
+            Gets the connected probe value for this channel
+
+            :type: `float`
+            """
+            return round(1 / float(self._parent.query(f"CH{self._idx}:PRO?")), 0)
+
+        @property
+        def scale(self):
+            """
+            Gets/sets the scale setting for this channel.
+
+            :type: `float`
+            """
+            return float(self._parent.query(f"CH{self._idx}:SCA?"))
+
+        @scale.setter
+        def scale(self, newval):
+            self._parent.sendcmd(f"CH{self._idx}:SCA {newval:.3E}")
+            resp = float(self._parent.query(f"CH{self._idx}:SCA?"))
+            if newval != resp:
+                raise ValueError(
+                    "Tried to set CH{} Scale to {} but got {}"
+                    " instead".format(self._idx, newval, resp)
+                )
 
     # ENUMS ##
 
@@ -357,7 +365,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
 
         :rtype: `_TDS5xxMeasurement`
         """
-        return ProxyList(self, _TekTDS5xxMeasurement, range(3))
+        return ProxyList(self, self.Measurement, range(3))
 
     @property
     def channel(self):
@@ -370,9 +378,9 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         >>> tek = ik.tektronix.TekTDS5xx.open_tcpip('192.168.0.2', 8888)
         >>> [x, y] = tek.channel[0].read_waveform()
 
-        :rtype: `_TekTDS5xxChannel`
+        :rtype: `Channel`
         """
-        return ProxyList(self, _TekTDS5xxChannel, range(4))
+        return ProxyList(self, self.Channel, range(4))
 
     @property
     def ref(self):
@@ -385,11 +393,11 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         >>> tek = ik.tektronix.TekTDS5xx.open_tcpip('192.168.0.2', 8888)
         >>> [x, y] = tek.ref[0].read_waveform()
 
-        :rtype: `_TekTDS5xxDataSource`
+        :rtype: `DataSource`
         """
         return ProxyList(
             self,
-            lambda s, idx: _TekTDS5xxDataSource(s, f"REF{idx + 1}"),
+            lambda s, idx: self.DataSource(s, f"REF{idx + 1}"),
             range(4),
         )
 
@@ -398,11 +406,11 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         Gets a data source object corresponding to the MATH channel.
 
-        :rtype: `_TekTDS5xxDataSource`
+        :rtype: `DataSource`
         """
         return ProxyList(
             self,
-            lambda s, idx: _TekTDS5xxDataSource(s, f"MATH{idx + 1}"),
+            lambda s, idx: self.DataSource(s, f"MATH{idx + 1}"),
             range(3),
         )
 
@@ -417,13 +425,13 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         channels = list(map(int, self.query("SEL?").split(";")[0:11]))
         for idx in range(0, 4):
             if channels[idx]:
-                active.append(_TekTDS5xxChannel(self, idx))
+                active.append(self.Channel(self, idx))
         for idx in range(4, 7):
             if channels[idx]:
-                active.append(_TekTDS5xxDataSource(self, f"MATH{idx - 3}"))
+                active.append(self.DataSource(self, f"MATH{idx - 3}"))
         for idx in range(7, 11):
             if channels[idx]:
-                active.append(_TekTDS5xxDataSource(self, f"REF{idx - 6}"))
+                active.append(self.DataSource(self, f"REF{idx - 6}"))
         return active
 
     @property
@@ -436,13 +444,13 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         name = self.query("DAT:SOU?")
         if name.startswith("CH"):
-            return _TekTDS5xxChannel(self, int(name[2:]) - 1)
+            return self.Channel(self, int(name[2:]) - 1)
 
-        return _TekTDS5xxDataSource(self, name)
+        return self.DataSource(self, name)
 
     @data_source.setter
     def data_source(self, newval):
-        if isinstance(newval, _TekTDS5xxDataSource):
+        if isinstance(newval, self.DataSource):
             newval = TekTDS5xx.Source(newval.name)
         if not isinstance(newval, TekTDS5xx.Source):
             raise TypeError(
