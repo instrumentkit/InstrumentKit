@@ -7,7 +7,7 @@ Provides support for the HP6624a power supply
 
 from enum import Enum
 
-from instruments.abstract_instruments import PowerSupply, PowerSupplyChannel
+from instruments.abstract_instruments import PowerSupply
 from instruments.units import ureg as u
 from instruments.util_fns import ProxyList, unitful_property, bool_property
 
@@ -37,7 +37,7 @@ class HP6624a(PowerSupply):
 
     # INNER CLASSES #
 
-    class Channel(PowerSupplyChannel):
+    class Channel(PowerSupply.Channel):
         """
         Class representing a power output channel on the HP6624a.
 

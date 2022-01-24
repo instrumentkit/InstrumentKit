@@ -10,20 +10,20 @@ Originally contributed by Wil Langford (wil.langford+instrumentkit@gmail.com)
 
 from instruments.units import ureg as u
 
-from instruments.abstract_instruments import PowerSupply, PowerSupplyChannel
+from instruments.abstract_instruments import PowerSupply
 from instruments.util_fns import unitful_property, bool_property
 
 
 # CLASSES #####################################################################
 
 
-class HP6652a(PowerSupply, PowerSupplyChannel):
+class HP6652a(PowerSupply, PowerSupply.Channel):
 
     """
     The HP6652a is a single output power supply.
 
     Because it is a single channel output, this object inherits from both
-    PowerSupply and PowerSupplyChannel.
+    PowerSupply and PowerSupply.Channel.
 
     According to the manual, this class MIGHT be usable for any HP power supply
     with a model number HP66XYA, where X is in {4,5,7,8,9} and Y is a digit(?).

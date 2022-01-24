@@ -34,20 +34,20 @@ Kit project.
 from struct import unpack
 from enum import Enum
 
-from instruments.abstract_instruments import PowerSupply, PowerSupplyChannel
+from instruments.abstract_instruments import PowerSupply
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units
 
 # CLASSES #####################################################################
 
 
-class GlassmanFR(PowerSupply, PowerSupplyChannel):
+class GlassmanFR(PowerSupply, PowerSupply.Channel):
 
     """
     The GlassmanFR is a single output power supply.
 
     Because it is a single channel output, this object inherits from both
-    PowerSupply and PowerSupplyChannel.
+    PowerSupply and PowerSupply.Channel.
 
     This class should work for any of the Glassman FR Series power supplies
     and is also likely to work for the EJ, ET, EY and FJ Series which seem

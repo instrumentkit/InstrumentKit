@@ -28,6 +28,13 @@ Instrument Base Classes
     :members:
     :undoc-members:
 
+:class:`PowerSupply` - Abstract class for power supply instruments
+==================================================================
+
+.. autoclass:: instruments.abstract_instruments.PowerSupply
+    :members:
+    :undoc-members:
+
 :class:`Oscilloscope` - Abstract class for oscilloscope instruments
 ===================================================================
 
