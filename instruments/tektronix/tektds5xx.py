@@ -188,7 +188,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         Class representing a channel on the Tektronix TDS 5xx.
 
-        This class inherits from `_TekTDS5xxDataSource`.
+        This class inherits from `TekTDS5xx.DataSource`.
 
         .. warning:: This class should NOT be manually created by the user. It is
             designed to be initialized by the `TekTDS5xx` class.
@@ -363,7 +363,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         Gets a specific oscilloscope measurement object. The desired channel is
         specified like one would access a list.
 
-        :rtype: `_TDS5xxMeasurement`
+        :rtype: `TekTDS5xx.Measurement`
         """
         return ProxyList(self, self.Measurement, range(3))
 
@@ -378,7 +378,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         >>> tek = ik.tektronix.TekTDS5xx.open_tcpip('192.168.0.2', 8888)
         >>> [x, y] = tek.channel[0].read_waveform()
 
-        :rtype: `Channel`
+        :rtype: `TekTDS5xx.Channel`
         """
         return ProxyList(self, self.Channel, range(4))
 
@@ -393,7 +393,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         >>> tek = ik.tektronix.TekTDS5xx.open_tcpip('192.168.0.2', 8888)
         >>> [x, y] = tek.ref[0].read_waveform()
 
-        :rtype: `DataSource`
+        :rtype: `TekTDS5xx.DataSource`
         """
         return ProxyList(
             self,
@@ -406,7 +406,7 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         Gets a data source object corresponding to the MATH channel.
 
-        :rtype: `DataSource`
+        :rtype: `TekTDS5xx.DataSource`
         """
         return ProxyList(
             self,
@@ -439,8 +439,8 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         """
         Gets/sets the the data source for waveform transfer.
 
-        :type: `TekTDS5xx.Source` or `_TekTDS5xxDataSource`
-        :rtype: '_TekTDS5xxDataSource`
+        :type: `TekTDS5xx.Source` or `TekTDS5xx.DataSource`
+        :rtype: `TekTDS5xx.DataSource`
         """
         name = self.query("DAT:SOU?")
         if name.startswith("CH"):

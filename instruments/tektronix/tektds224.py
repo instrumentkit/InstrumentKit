@@ -130,7 +130,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         """
         Class representing a channel on the Tektronix TDS 224.
 
-        This class inherits from `_TekTDS224DataSource`.
+        This class inherits from `TekTDS224.DataSource`.
 
         .. warning:: This class should NOT be manually created by the user. It is
             designed to be initialized by the `TekTDS224` class.
@@ -183,7 +183,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
         >>> tek = ik.tektronix.TekTDS224.open_tcpip('192.168.0.2', 8888)
         >>> [x, y] = tek.channel[0].read_waveform()
 
-        :rtype: `Channel`
+        :rtype: `TekTDS224.Channel`
         """
         return ProxyList(self, self.Channel, range(4))
 

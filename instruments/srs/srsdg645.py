@@ -242,7 +242,7 @@ class SRSDG645(SCPIInstrument):
         Gets a specific channel object.
 
         The desired channel is accessed by passing an EnumValue from
-        `~SRSDG645.Channels`. For example, to access channel A:
+        `SRSDG645.Channels`. For example, to access channel A:
 
         >>> import instruments as ik
         >>> inst = ik.srs.SRSDG645.open_gpibusb('/dev/ttyUSB0', 1)
@@ -250,7 +250,7 @@ class SRSDG645(SCPIInstrument):
 
         See the example in `SRSDG645` for a more complete example.
 
-        :rtype: `Channel`
+        :rtype: `SRSDG645.Channel`
         """
         return ProxyList(self, self.Channel, SRSDG645.Channels)
 

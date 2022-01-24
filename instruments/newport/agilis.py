@@ -378,7 +378,7 @@ class AGUC2(Instrument):
 
         See example in `AGUC2` for a more details
 
-        :rtype: `Axis`
+        :rtype: `AGUC2.Axis`
         """
         self.enable_remote_mode = True
         return ProxyList(self, self.Axis, AGUC2.Axes)

@@ -169,7 +169,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         """
         Class representing a channel on the Tektronix DPO 4104.
 
-        This class inherits from `_TekDPO4104DataSource`.
+        This class inherits from `TekDPO4104.DataSource`.
 
         .. warning:: This class should NOT be manually created by the user. It is
             designed to be initialized by the `TekDPO4104` class.

@@ -644,7 +644,7 @@ class NewportESP301(Instrument):
             * 4 = commutated brushless servo motor
 
             :type: `int`
-            :rtype: `MotorType`
+            :rtype: `NewportESP301.MotorType`
             """
             return self._controller.MotorType(
                 int(self._newport_cmd("QM?", target=self._axis_id))
@@ -909,7 +909,7 @@ class NewportESP301(Instrument):
         def wait_for_motion(self, poll_interval=0.01, max_wait=None):
             """
             Blocks until all movement along this axis is complete, as reported
-            by `~NewportESP301Axis.is_motion_done`.
+            by `NewportESP301.Axis.is_motion_done`.
 
             :param float poll_interval: How long (in seconds) to sleep between
                 checking if the motion is complete.
@@ -1230,7 +1230,7 @@ class NewportESP301(Instrument):
         used in the Newport ESP-301 user's manual, and so care must
         be taken when converting examples.
 
-        :type: :class:`NewportESP301Axis`
+        :type: :class:`NewportESP301.Axis`
         """
 
         return ProxyList(self, self.Axis, range(100))
