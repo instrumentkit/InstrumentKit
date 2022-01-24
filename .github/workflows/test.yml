@@ -5,6 +5,7 @@ on:
     branches: [ master ]
   pull_request:
 
+
 jobs:
   static-checks:
     runs-on: ubuntu-latest
