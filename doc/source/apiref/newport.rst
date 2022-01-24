@@ -14,10 +14,6 @@ Newport
     :members:
     :undoc-members:
 
-.. autoclass:: _Axis
-    :members:
-    :undoc-members:
-
 :class:`NewportESP301` Motor Controller
 =======================================
 
