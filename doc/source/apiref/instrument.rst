@@ -14,10 +14,10 @@ Instrument Base Classes
     :members:
     :undoc-members:
 
-:class:`Multimeter` - Abstract class for multimeter instruments
-===============================================================
+:class:`Electrometer` - Abstract class for electrometer instruments
+===================================================================
 
-.. autoclass:: instruments.abstract_instruments.Multimeter
+.. autoclass:: instruments.abstract_instruments.Electrometer
     :members:
     :undoc-members:
 
@@ -28,10 +28,10 @@ Instrument Base Classes
     :members:
     :undoc-members:
 
-:class:`PowerSupply` - Abstract class for power supply instruments
-==================================================================
+:class:`Multimeter` - Abstract class for multimeter instruments
+===============================================================
 
-.. autoclass:: instruments.abstract_instruments.PowerSupply
+.. autoclass:: instruments.abstract_instruments.Multimeter
     :members:
     :undoc-members:
 
@@ -46,6 +46,13 @@ Instrument Base Classes
 ===========================================================================================
 
 .. autoclass:: instruments.abstract_instruments.OpticalSpectrumAnalyzer
+    :members:
+    :undoc-members:
+
+:class:`PowerSupply` - Abstract class for power supply instruments
+==================================================================
+
+.. autoclass:: instruments.abstract_instruments.PowerSupply
     :members:
     :undoc-members:
 
