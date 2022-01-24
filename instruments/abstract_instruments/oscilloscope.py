@@ -13,98 +13,6 @@ from instruments.abstract_instruments import Instrument
 # CLASSES #####################################################################
 
 
-class OscilloscopeDataSource(metaclass=abc.ABCMeta):
-
-    """
-    Abstract base class for data sources (physical channels, math, ref) on
-    an oscilloscope.
-
-    All applicable concrete instruments should inherit from this ABC to
-    provide a consistent interface to the user.
-    """
-
-    def __init__(self, parent, name):
-        self._parent = parent
-        self._name = name
-        self._old_dsrc = None
-
-    def __enter__(self):
-        self._old_dsrc = self._parent.data_source
-        if self._old_dsrc != self:
-            # Set the new data source, and let __exit__ cleanup.
-            self._parent.data_source = self
-        else:
-            # There's nothing to do or undo in this case.
-            self._old_dsrc = None
-
-    def __exit__(self, type, value, traceback):
-        if self._old_dsrc is not None:
-            self._parent.data_source = self._old_dsrc
-
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-
-        return other.name == self.name
-
-    __hash__ = None
-
-    # PROPERTIES #
-
-    @property
-    @abc.abstractmethod
-    def name(self):
-        """
-        Gets the name of the channel. This is an abstract property.
-
-        :type: `str`
-        """
-        raise NotImplementedError
-
-    # METHODS #
-
-    @abc.abstractmethod
-    def read_waveform(self, bin_format=True):
-        """
-        Gets the waveform of the specified data source channel. This is an
-        abstract property.
-
-        :param bool bin_format: If the waveform should be transfered in binary
-            (``True``) or ASCII (``False``) formats.
-        :return: The waveform with both x and y components.
-        :rtype: `numpy.ndarray`
-        """
-        raise NotImplementedError
-
-
-class OscilloscopeChannel(metaclass=abc.ABCMeta):
-
-    """
-    Abstract base class for physical channels on an oscilloscope.
-
-    All applicable concrete instruments should inherit from this ABC to
-    provide a consistent interface to the user.
-    """
-
-    # PROPERTIES #
-
-    @property
-    @abc.abstractmethod
-    def coupling(self):
-        """
-        Gets/sets the coupling setting for the oscilloscope. This is an
-        abstract method.
-
-        :type: `~enum.Enum`
-        """
-        raise NotImplementedError
-
-    @coupling.setter
-    @abc.abstractmethod
-    def coupling(self, newval):
-        raise NotImplementedError
-
-
 class Oscilloscope(Instrument, metaclass=abc.ABCMeta):
 
     """
@@ -113,6 +21,95 @@ class Oscilloscope(Instrument, metaclass=abc.ABCMeta):
     All applicable concrete instruments should inherit from this ABC to
     provide a consistent interface to the user.
     """
+
+    class Channel(metaclass=abc.ABCMeta):
+        """
+        Abstract base class for physical channels on an oscilloscope.
+
+        All applicable concrete instruments should inherit from this ABC to
+        provide a consistent interface to the user.
+        """
+
+        # PROPERTIES #
+
+        @property
+        @abc.abstractmethod
+        def coupling(self):
+            """
+            Gets/sets the coupling setting for the oscilloscope. This is an
+            abstract method.
+
+            :type: `~enum.Enum`
+            """
+            raise NotImplementedError
+
+        @coupling.setter
+        @abc.abstractmethod
+        def coupling(self, newval):
+            raise NotImplementedError
+
+    class DataSource(metaclass=abc.ABCMeta):
+
+        """
+        Abstract base class for data sources (physical channels, math, ref) on
+        an oscilloscope.
+
+        All applicable concrete instruments should inherit from this ABC to
+        provide a consistent interface to the user.
+        """
+
+        def __init__(self, parent, name):
+            self._parent = parent
+            self._name = name
+            self._old_dsrc = None
+
+        def __enter__(self):
+            self._old_dsrc = self._parent.data_source
+            if self._old_dsrc != self:
+                # Set the new data source, and let __exit__ cleanup.
+                self._parent.data_source = self
+            else:
+                # There's nothing to do or undo in this case.
+                self._old_dsrc = None
+
+        def __exit__(self, type, value, traceback):
+            if self._old_dsrc is not None:
+                self._parent.data_source = self._old_dsrc
+
+        def __eq__(self, other):
+            if not isinstance(other, type(self)):
+                return NotImplemented
+
+            return other.name == self.name
+
+        __hash__ = None
+
+        # PROPERTIES #
+
+        @property
+        @abc.abstractmethod
+        def name(self):
+            """
+            Gets the name of the channel. This is an abstract property.
+
+            :type: `str`
+            """
+            raise NotImplementedError
+
+        # METHODS #
+
+        @abc.abstractmethod
+        def read_waveform(self, bin_format=True):
+            """
+            Gets the waveform of the specified data source channel. This is an
+            abstract property.
+
+            :param bool bin_format: If the waveform should be transfered in binary
+                (``True``) or ASCII (``False``) formats.
+            :return: The waveform with both x and y components.
+            :rtype: `numpy.ndarray`
+            """
+            raise NotImplementedError
 
     # PROPERTIES #
 

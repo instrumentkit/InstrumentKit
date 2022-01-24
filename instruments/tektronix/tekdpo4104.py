@@ -9,11 +9,7 @@ Provides support for the Tektronix DPO 4104 oscilloscope
 from time import sleep
 from enum import Enum
 
-from instruments.abstract_instruments import (
-    OscilloscopeChannel,
-    OscilloscopeDataSource,
-    Oscilloscope,
-)
+from instruments.abstract_instruments import Oscilloscope
 from instruments.optional_dep_finder import numpy
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList
@@ -54,7 +50,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
     >>> [x, y] = tek.channel[0].read_waveform()
     """
 
-    class DataSource(OscilloscopeDataSource):
+    class DataSource(Oscilloscope.DataSource):
 
         """
         Class representing a data source (channel, math, or ref) on the Tektronix
@@ -168,7 +164,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
 
         y_offset = _parent_property("y_offset")
 
-    class Channel(DataSource, OscilloscopeChannel):
+    class Channel(DataSource, Oscilloscope.Channel):
 
         """
         Class representing a channel on the Tektronix DPO 4104.
@@ -227,7 +223,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         >>> tek = ik.tektronix.TekDPO4104.open_tcpip("192.168.0.2", 8888)
         >>> [x, y] = tek.channel[0].read_waveform()
 
-        :rtype: `Channel`
+        :rtype: `TekDPO4104.Channel`
         """
         return ProxyList(self, self.Channel, range(4))
 
@@ -243,7 +239,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         >>> tek = ik.tektronix.TekDPO4104.open_tcpip("192.168.0.2", 8888)
         >>> [x, y] = tek.ref[0].read_waveform()
 
-        :rtype: `DataSource`
+        :rtype: `TekDPO4104.DataSource`
         """
         return ProxyList(
             self,
@@ -256,7 +252,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         """
         Gets a data source object corresponding to the MATH channel.
 
-        :rtype: `DataSource`
+        :rtype: `TekDPO4104.DataSource`
         """
         return self.DataSource(self, "MATH")
 

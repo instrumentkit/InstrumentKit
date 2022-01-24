@@ -8,11 +8,7 @@ from .instrument import Instrument
 from .multimeter import Multimeter
 from .electrometer import Electrometer
 from .function_generator import FunctionGenerator
-from .oscilloscope import (
-    OscilloscopeChannel,
-    OscilloscopeDataSource,
-    Oscilloscope,
-)
+from .oscilloscope import Oscilloscope
 from .power_supply import (
     PowerSupplyChannel,
     PowerSupply,

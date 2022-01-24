@@ -9,11 +9,7 @@ import time
 
 from enum import Enum
 
-from instruments.abstract_instruments import (
-    OscilloscopeChannel,
-    OscilloscopeDataSource,
-    Oscilloscope,
-)
+from instruments.abstract_instruments import Oscilloscope
 from instruments.generic_scpi import SCPIInstrument
 from instruments.optional_dep_finder import numpy
 from instruments.util_fns import ProxyList
@@ -23,7 +19,7 @@ from instruments.units import ureg as u
 # CLASSES #####################################################################
 
 
-class _TekTDS224DataSource(OscilloscopeDataSource):
+class _TekTDS224DataSource(Oscilloscope.DataSource):
     """
     Class representing a data source (channel, math, or ref) on the Tektronix
     TDS 224.
@@ -111,7 +107,7 @@ class _TekTDS224DataSource(OscilloscopeDataSource):
             return x, y
 
 
-class _TekTDS224Channel(_TekTDS224DataSource, OscilloscopeChannel):
+class _TekTDS224Channel(_TekTDS224DataSource, Oscilloscope.Channel):
     """
     Class representing a channel on the Tektronix TDS 224.
 

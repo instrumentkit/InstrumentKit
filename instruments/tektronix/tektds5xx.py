@@ -40,11 +40,7 @@ import struct
 import time
 
 
-from instruments.abstract_instruments import (
-    OscilloscopeChannel,
-    OscilloscopeDataSource,
-    Oscilloscope,
-)
+from instruments.abstract_instruments import Oscilloscope
 from instruments.generic_scpi import SCPIInstrument
 from instruments.optional_dep_finder import numpy
 from instruments.util_fns import ProxyList
@@ -84,7 +80,7 @@ class _TekTDS5xxMeasurement:
         return self._data
 
 
-class _TekTDS5xxDataSource(OscilloscopeDataSource):
+class _TekTDS5xxDataSource(Oscilloscope.DataSource):
 
     """
     Class representing a data source (channel, math, or ref) on the Tektronix
@@ -167,7 +163,7 @@ class _TekTDS5xxDataSource(OscilloscopeDataSource):
             return x, y
 
 
-class _TekTDS5xxChannel(_TekTDS5xxDataSource, OscilloscopeChannel):
+class _TekTDS5xxChannel(_TekTDS5xxDataSource, Oscilloscope.Channel):
 
     """
     Class representing a channel on the Tektronix TDS 5xx.

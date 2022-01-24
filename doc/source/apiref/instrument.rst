@@ -28,6 +28,13 @@ Instrument Base Classes
     :members:
     :undoc-members:
 
+:class:`Oscilloscope` - Abstract class for oscilloscope instruments
+===================================================================
+
+.. autoclass:: instruments.abstract_instruments.Oscilloscope
+    :members:
+    :undoc-members:
+
 :class:`SignalGenerator` - Abstract class for Signal Generators
 ===============================================================
 
