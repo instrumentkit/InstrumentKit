@@ -11,7 +11,7 @@
 # serve to show the default.
 
 import sys, os
-from instruments import __version__
+from instruments._version import version as __version__
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
