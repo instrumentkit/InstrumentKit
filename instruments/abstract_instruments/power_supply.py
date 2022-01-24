@@ -13,6 +13,13 @@ from instruments.abstract_instruments import Instrument
 
 
 class PowerSupply(Instrument, metaclass=abc.ABCMeta):
+    """
+    Abstract base class for power supply instruments.
+
+    All applicable concrete instruments should inherit from this ABC to
+    provide a consistent interface to the user.
+    """
+
     class Channel(metaclass=abc.ABCMeta):
         """
         Abstract base class for power supply output channels.
@@ -82,13 +89,6 @@ class PowerSupply(Instrument, metaclass=abc.ABCMeta):
         @abc.abstractmethod
         def output(self, newval):
             pass
-
-    """
-    Abstract base class for power supply instruments.
-
-    All applicable concrete instruments should inherit from this ABC to
-    provide a consistent interface to the user.
-    """
 
     # PROPERTIES #
 
