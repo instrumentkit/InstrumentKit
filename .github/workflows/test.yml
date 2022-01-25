@@ -50,7 +50,7 @@ jobs:
       uses: AndreMiras/coveralls-python-action@develop
       with:
         parallel: true
-        flag-name: Unit Test
+        github-token: ${{ secrets.github_token }}
 
   coverage:
     needs: test
