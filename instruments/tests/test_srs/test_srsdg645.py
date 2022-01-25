@@ -47,14 +47,14 @@ def test_srsdg645_channel_delay():
     """
     with expected_protocol(
         ik.srs.SRSDG645,
-        ["DLAY?2", "DLAY 3,2,60"],  # , "DLAY 5,4,10"],
+        ["DLAY?2", "DLAY 3,2,60", "DLAY 5,4,10"],
         ["0,42"],
     ) as ddg:
         ref, t = ddg.channel["A"].delay
         assert ref == ddg.Channels.T0
         assert abs((t - u.Quantity(42, "s")).magnitude) < 1e5
         ddg.channel["B"].delay = (ddg.channel["A"], u.Quantity(1, "minute"))
-        # ddg.channel["D"].delay = (ddg.channel["C"], 10)
+        ddg.channel["D"].delay = (ddg.channel["C"], 10)
 
 
 # DG645 #
