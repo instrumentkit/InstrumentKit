@@ -10,7 +10,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-from pkg_resources import get_distribution
+from importlib.metadata import version
 import os
 import sys
 
@@ -56,7 +56,7 @@ copyright = "2013-2022, Steven Casagrande"
 # built documents.
 #
 # The full release version
-release = get_distribution("instruments").version
+release = version("instruments")
 # The short X.Y version
 version = ".".join(release.split(".")[:2])
 
