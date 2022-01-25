@@ -11,7 +11,7 @@
 # serve to show the default.
 
 import sys, os
-from instruments._version import version as __version__
+from instruments._version import version, version_tuple
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -55,7 +55,7 @@ copyright = "2013-2022, Steven Casagrande"
 # built documents.
 #
 # The short X.Y version.
-version = __version__
+version = f"{version_tuple[0]}.{version_tuple[1]}"
 # The full version, including alpha/beta/rc tags.
 release = version
 
