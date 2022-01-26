@@ -38,10 +38,6 @@ from .config import load_instruments
 from .units import ureg as units
 
 # VERSION METADATA ###########################################################
-# In keeping with PEP-396, we define a version number of the form
-# {major}.{minor}[.{postrelease}]{prerelease-tag}
-
-__version__ = "0.6.0"
 
 __title__ = "instrumentkit"
 __description__ = "Test and measurement communication library"
