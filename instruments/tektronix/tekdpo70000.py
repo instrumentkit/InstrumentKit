@@ -9,11 +9,7 @@ import abc
 from enum import Enum
 import time
 
-from instruments.abstract_instruments import (
-    Oscilloscope,
-    OscilloscopeChannel,
-    OscilloscopeDataSource,
-)
+from instruments.abstract_instruments import Oscilloscope
 from instruments.generic_scpi import SCPIInstrument
 from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
@@ -178,7 +174,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
 
     # CLASSES #
 
-    class DataSource(OscilloscopeDataSource):
+    class DataSource(Oscilloscope.DataSource):
 
         """
         Class representing a data source (channel, math, or ref) on the
@@ -500,7 +496,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             )
             return rval
 
-    class Channel(DataSource, OscilloscopeChannel):
+    class Channel(DataSource, Oscilloscope.Channel):
 
         """
         Class representing a channel on the Tektronix DPO 70000.

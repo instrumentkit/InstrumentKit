@@ -136,14 +136,14 @@ def test_aguc2_ag_query_io_error(mocker):
 def test_aguc2_axis_init_enum(axis):
     """Initialize an axis externally with an enum."""
     with expected_protocol(ik.newport.AGUC2, [], [], sep="\r\n") as agl:
-        ax = ik.newport.agilis._Axis(agl, axis)
+        ax = ik.newport.agilis.AGUC2.Axis(agl, axis)
         assert ax._ax == axis.value
 
 
 def test_aguc2_axis_init_wrong_type():
     """Raise TypeError when not initialized from AGUC2 parent class."""
     with pytest.raises(TypeError) as err_info:
-        ik.newport.agilis._Axis(42, ik.newport.AGUC2.Axes.X)
+        ik.newport.agilis.AGUC2.Axis(42, ik.newport.AGUC2.Axes.X)
     err_msg = err_info.value.args[0]
     assert err_msg == "Don't do that."
 

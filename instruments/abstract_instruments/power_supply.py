@@ -12,86 +12,83 @@ from instruments.abstract_instruments import Instrument
 # CLASSES #####################################################################
 
 
-class PowerSupplyChannel(metaclass=abc.ABCMeta):
-
-    """
-    Abstract base class for power supply output channels.
-
-    All applicable concrete instruments should inherit from this ABC to
-    provide a consistent interface to the user.
-    """
-
-    # PROPERTIES #
-
-    @property
-    @abc.abstractmethod
-    def mode(self):
-        """
-        Gets/sets the output mode for the power supply channel. This is an
-        abstract method.
-
-        :type: `~enum.Enum`
-        """
-
-    @mode.setter
-    @abc.abstractmethod
-    def mode(self, newval):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def voltage(self):
-        """
-        Gets/sets the output voltage for the power supply channel. This is an
-        abstract method.
-
-        :type: `~pint.Quantity`
-        """
-
-    @voltage.setter
-    @abc.abstractmethod
-    def voltage(self, newval):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def current(self):
-        """
-        Gets/sets the output current for the power supply channel. This is an
-        abstract method.
-
-        :type: `~pint.Quantity`
-        """
-
-    @current.setter
-    @abc.abstractmethod
-    def current(self, newval):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def output(self):
-        """
-        Gets/sets the output status for the power supply channel. This is an
-        abstract method.
-
-        :type: `bool`
-        """
-
-    @output.setter
-    @abc.abstractmethod
-    def output(self, newval):
-        pass
-
-
 class PowerSupply(Instrument, metaclass=abc.ABCMeta):
-
     """
     Abstract base class for power supply instruments.
 
     All applicable concrete instruments should inherit from this ABC to
     provide a consistent interface to the user.
     """
+
+    class Channel(metaclass=abc.ABCMeta):
+        """
+        Abstract base class for power supply output channels.
+
+        All applicable concrete instruments should inherit from this ABC to
+        provide a consistent interface to the user.
+        """
+
+        # PROPERTIES #
+
+        @property
+        @abc.abstractmethod
+        def mode(self):
+            """
+            Gets/sets the output mode for the power supply channel. This is an
+            abstract method.
+
+            :type: `~enum.Enum`
+            """
+
+        @mode.setter
+        @abc.abstractmethod
+        def mode(self, newval):
+            pass
+
+        @property
+        @abc.abstractmethod
+        def voltage(self):
+            """
+            Gets/sets the output voltage for the power supply channel. This is an
+            abstract method.
+
+            :type: `~pint.Quantity`
+            """
+
+        @voltage.setter
+        @abc.abstractmethod
+        def voltage(self, newval):
+            pass
+
+        @property
+        @abc.abstractmethod
+        def current(self):
+            """
+            Gets/sets the output current for the power supply channel. This is an
+            abstract method.
+
+            :type: `~pint.Quantity`
+            """
+
+        @current.setter
+        @abc.abstractmethod
+        def current(self, newval):
+            pass
+
+        @property
+        @abc.abstractmethod
+        def output(self):
+            """
+            Gets/sets the output status for the power supply channel. This is an
+            abstract method.
+
+            :type: `bool`
+            """
+
+        @output.setter
+        @abc.abstractmethod
+        def output(self, newval):
+            pass
 
     # PROPERTIES #
 
@@ -104,7 +101,7 @@ class PowerSupply(Instrument, metaclass=abc.ABCMeta):
 
         This is an abstract method.
 
-        :rtype: `PowerSupplyChannel`
+        :rtype: `PowerSupply.Channel`
         """
         raise NotImplementedError
 

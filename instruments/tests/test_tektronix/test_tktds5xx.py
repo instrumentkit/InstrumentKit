@@ -385,17 +385,17 @@ def test_sources(states):
         for idx in range(4):
             if states[idx]:
                 active_sources.append(
-                    ik.tektronix.tektds5xx._TekTDS5xxChannel(inst, idx)
+                    ik.tektronix.tektds5xx.TekTDS5xx.Channel(inst, idx)
                 )
         for idx in range(4, 7):
             if states[idx]:
                 active_sources.append(
-                    ik.tektronix.tektds5xx._TekTDS5xxDataSource(inst, f"MATH{idx-3}")
+                    ik.tektronix.tektds5xx.TekTDS5xx.DataSource(inst, f"MATH{idx - 3}")
                 )
         for idx in range(7, 11):
             if states[idx]:
                 active_sources.append(
-                    ik.tektronix.tektds5xx._TekTDS5xxDataSource(inst, f"REF{idx-6}")
+                    ik.tektronix.tektds5xx.TekTDS5xx.DataSource(inst, f"REF{idx - 6}")
                 )
         # read active sources
         active_read = inst.sources

@@ -50,7 +50,7 @@ def test_data_source():
     ) as inst:
         # Channel as string
         inst.data_source = "CH1"
-        assert inst.data_source == ik.tektronix.tekdpo4104._TekDPO4104Channel(inst, 0)
+        assert inst.data_source == ik.tektronix.tekdpo4104.TekDPO4104.Channel(inst, 0)
 
         # Reference channel as enum
         class RefChannel(Enum):
@@ -60,14 +60,14 @@ def test_data_source():
 
         channel = RefChannel.channel.value
         inst.data_source = RefChannel.channel
-        assert inst.data_source == ik.tektronix.tekdpo4104._TekDPO4104DataSource(
+        assert inst.data_source == ik.tektronix.tekdpo4104.TekDPO4104.DataSource(
             inst, channel
         )
 
         # Set a math channel
         math_ch = inst.math
         inst.data_source = math_ch
-        assert inst.data_source == ik.tektronix.tekdpo4104._TekDPO4104DataSource(
+        assert inst.data_source == ik.tektronix.tekdpo4104.TekDPO4104.DataSource(
             inst, math_ch.name
         )
 
@@ -209,7 +209,7 @@ def test_data_source_ref_initialize(ref):
         ref_source = inst.ref[ref]
 
         # test instance
-        assert isinstance(ref_source, ik.tektronix.tekdpo4104._TekDPO4104DataSource)
+        assert isinstance(ref_source, ik.tektronix.tekdpo4104.TekDPO4104.DataSource)
 
         # test for parent
         assert ref_source._tek is inst
@@ -221,7 +221,7 @@ def test_data_source_math_initialize():
         math_source = inst.math
 
         # test instance
-        assert isinstance(math_source, ik.tektronix.tekdpo4104._TekDPO4104DataSource)
+        assert isinstance(math_source, ik.tektronix.tekdpo4104.TekDPO4104.DataSource)
 
         # test for parent
         assert math_source._tek is inst

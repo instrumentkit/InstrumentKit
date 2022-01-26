@@ -10,10 +10,7 @@ from enum import IntEnum, Enum
 
 from instruments.units import ureg as u
 
-from instruments.abstract_instruments import (
-    OpticalSpectrumAnalyzer,
-    OSAChannel,
-)
+from instruments.abstract_instruments import OpticalSpectrumAnalyzer
 from instruments.util_fns import (
     enum_property,
     unitful_property,
@@ -46,12 +43,12 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     # INNER CLASSES #
 
-    class Channel(OSAChannel):
+    class Channel(OpticalSpectrumAnalyzer.Channel):
 
         """
         Class representing the channels on the Yokogawa 6370.
 
-        This class inherits from `OSAChannel`.
+        This class inherits from `OpticalSpectrumAnalyzer.Channel`.
 
         .. warning:: This class should NOT be manually created by the user. It
             is designed to be initialized by the `Yokogawa6370` class.

@@ -38,264 +38,6 @@ from instruments.util_fns import ProxyList
 # CLASSES #####################################################################
 
 
-class _Axis:
-
-    """
-    Class representing one axis attached to a Controller. This will likely
-    work with the AG-UC8 controller as well.
-
-    .. warning:: This class should NOT be manually created by the user. It is
-        designed to be initialized by a Controller class
-    """
-
-    def __init__(self, cont, ax):
-        if not isinstance(cont, AGUC2):
-            raise TypeError("Don't do that.")
-
-        # set axis integer
-        if isinstance(ax, AGUC2.Axes):
-            self._ax = ax.value
-        else:
-            self._ax = ax
-
-        # set controller
-        self._cont = cont
-
-    # PROPERTIES #
-
-    @property
-    def axis_status(self):
-        """
-        Returns the status of the current axis.
-        """
-        resp = self._cont.ag_query(f"{int(self._ax)} TS")
-        if resp.find("TS") == -1:
-            return "Status code query failed."
-
-        resp = int(resp.replace(str(int(self._ax)) + "TS", ""))
-        status_message = agilis_status_message(resp)
-        return status_message
-
-    @property
-    def jog(self):
-        """
-        Start jog motion / get jog mode
-        Defined jog steps are defined with `step_amplitude` function (default
-        16). If a jog mode is supplied, the jog motion is started. Otherwise
-        the current jog mode is queried. Valid jog modes are:
-
-        -4 — Negative direction, 666 steps/s at defined step amplitude.
-        -3 — Negative direction, 1700 steps/s at max. step amplitude.
-        -2 — Negative direction, 100 step/s at max. step amplitude.
-        -1 — Negative direction, 5 steps/s at defined step amplitude.
-         0 — No move, go to READY state.
-         1 — Positive direction, 5 steps/s at defined step amplitude.
-         2 — Positive direction, 100 steps/s at max. step amplitude.
-         3 — Positive direction, 1700 steps/s at max. step amplitude.
-         4 — Positive direction, 666 steps/s at defined step amplitude.
-
-        :return: Jog motion set
-        :rtype: `int`
-        """
-        resp = self._cont.ag_query(f"{int(self._ax)} JA?")
-        return int(resp.split("JA")[1])
-
-    @jog.setter
-    def jog(self, mode):
-        mode = int(mode)
-        if mode < -4 or mode > 4:
-            raise ValueError("Jog mode out of range. Must be between -4 and " "4.")
-
-        self._cont.ag_sendcmd(f"{int(self._ax)} JA {mode}")
-
-    @property
-    def number_of_steps(self):
-        """
-        Returns the number of accumulated steps in forward direction minus
-        the number of steps in backward direction since powering the
-        controller or since the last ZP (zero position) command, whatever
-        was last.
-
-        Note:
-        The step size of the Agilis devices are not 100% repeatable and
-        vary between forward and backward direction. Furthermore, the step
-        size can be modified using the SU command. Consequently, the TP
-        command provides only limited information about the actual position
-        of the device. In particular, an Agilis device can be at very
-        different positions even though a TP command may return the same
-        result.
-
-        :return: Number of steps
-        :rtype: int
-        """
-        resp = self._cont.ag_query(f"{int(self._ax)} TP")
-        return int(resp.split("TP")[1])
-
-    @property
-    def move_relative(self):
-        """
-        Moves the axis by nn steps / Queries the status of the axis.
-        Steps must be given a number that can be converted to a signed integer
-        between -2,147,483,648 and 2,147,483,647.
-        If queried, command returns the current target position. At least this
-        is the expected behaviour, never worked with the rotation stage.
-        """
-        resp = self._cont.ag_query(f"{int(self._ax)} PR?")
-        return int(resp.split("PR")[1])
-
-    @move_relative.setter
-    def move_relative(self, steps):
-        steps = int(steps)
-        if steps < -2147483648 or steps > 2147483647:
-            raise ValueError(
-                "Number of steps are out of range. They must be "
-                "between -2,147,483,648 and 2,147,483,647"
-            )
-
-        self._cont.ag_sendcmd(f"{int(self._ax)} PR {steps}")
-
-    @property
-    def move_to_limit(self):
-        """
-        UNTESTED: SEE COMMENT ON TOP
-
-        The  command functions properly only with devices that feature a
-        limit switch like models AG-LS25, AG-M050L and AG-M100L.
-
-        Starts a jog motion at a defined speed to the limit and stops
-        automatically when the limit is activated. See `jog` command for
-        details on available modes.
-
-        Returns the distance of the current position to the limit in
-        1/1000th of the total travel.
-        """
-        resp = self._cont.ag_query(f"{int(self._ax)} MA?")
-        return int(resp.split("MA")[1])
-
-    @move_to_limit.setter
-    def move_to_limit(self, mode):
-        mode = int(mode)
-        if mode < -4 or mode > 4:
-            raise ValueError("Jog mode out of range. Must be between -4 and " "4.")
-
-        self._cont.ag_sendcmd(f"{int(self._ax)} MA {mode}")
-
-    @property
-    def step_amplitude(self):
-        """
-        Sets / Gets the step_amplitude.
-
-        Sets the step amplitude (step size) in positive and / or negative
-        direction. If the parameter is positive, it will set the step
-        amplitude in the forward direction. If the parameter is negative,
-        it will set the step amplitude in the backward direction. You can also
-        provide a tuple or list of two values (one positive, one negative),
-        which will set both values.
-        Valid values are between -50 and 50, except for 0.
-
-        :return: Tuple of first negative, then positive step amplitude
-            response.
-        :rtype: (`int`, `int`)
-        """
-        resp_neg = self._cont.ag_query(f"{int(self._ax)} SU-?")
-        resp_pos = self._cont.ag_query(f"{int(self._ax)} SU+?")
-        return int(resp_neg.split("SU")[1]), int(resp_pos.split("SU")[1])
-
-    @step_amplitude.setter
-    def step_amplitude(self, nns):
-        if not isinstance(nns, tuple) and not isinstance(nns, list):
-            nns = [nns]
-
-        # check all values for validity
-        for nn in nns:
-            nn = int(nn)
-            if nn < -50 or nn > 50 or nn == 0:
-                raise ValueError(
-                    "Step amplitude {} outside the valid range. "
-                    "It must be between -50 and -1 or between "
-                    "1 and 50.".format(nn)
-                )
-
-        for nn in nns:
-            self._cont.ag_sendcmd(f"{int(self._ax)} SU {int(nn)}")
-
-    @property
-    def step_delay(self):
-        """
-        Sets/gets the step delay of stepping mode. The delay applies for both
-        positive and negative directions. The delay is programmed as multiple
-        of 10µs. For example, a delay of 40 is equivalent to
-        40 x 10 µs = 400 µs. The maximum value of the parameter is equal to a
-        delay of 2 seconds between pulses. By default, after reset, the value
-        is 0.
-        Setter: value must be integer between 0 and 200000 included
-
-        :return: Step delay
-        :rtype: `int`
-        """
-        resp = self._cont.ag_query(f"{int(self._ax)} DL?")
-        return int(resp.split("DL")[1])
-
-    @step_delay.setter
-    def step_delay(self, nn):
-        nn = int(nn)
-        if nn < 0 or nn > 200000:
-            raise ValueError(
-                "Step delay is out of range. It must be between " "0 and 200000."
-            )
-
-        self._cont.ag_sendcmd(f"{int(self._ax)} DL {nn}")
-
-    # MODES #
-
-    def am_i_still(self, max_retries=5):
-        """
-        Function to test if an axis stands still. It queries the status of
-        the given axis and returns True (if axis is still) or False if it is
-        moving.
-        The reason this routine is implemented is because the status messages
-        can time out. If a timeout occurs, this routine will retry the query
-        until `max_retries` is reached. If query is still not successful, an
-        IOError will be raised.
-
-        :param int max_retries: Maximum number of retries
-
-        :return: True if the axis is still, False if the axis is moving
-        :rtype: bool
-        """
-        retries = 0
-
-        while retries < max_retries:
-            status = self.axis_status
-            if status == agilis_status_message(0):
-                return True
-            elif (
-                status == agilis_status_message(1)
-                or status == agilis_status_message(2)
-                or status == agilis_status_message(3)
-            ):
-                return False
-            else:
-                retries += 1
-
-        raise OSError(
-            "The function `am_i_still` ran out of maximum retries. "
-            "Could not query the status of the axis."
-        )
-
-    def stop(self):
-        """
-        Stops the axis. This is useful to interrupt a jogging motion.
-        """
-        self._cont.ag_sendcmd(f"{int(self._ax)} ST")
-
-    def zero_position(self):
-        """
-        Resets the step counter to zero. See `number_of_steps` for details.
-        """
-        self._cont.ag_sendcmd(f"{int(self._ax)} ZP")
-
-
 class AGUC2(Instrument):
 
     """
@@ -351,6 +93,263 @@ class AGUC2(Instrument):
         self._remote_mode = False
         self._sleep_time = 0.25
 
+    class Axis:
+
+        """
+        Class representing one axis attached to a Controller. This will likely
+        work with the AG-UC8 controller as well.
+
+        .. warning:: This class should NOT be manually created by the user. It is
+            designed to be initialized by a Controller class
+        """
+
+        def __init__(self, cont, ax):
+            if not isinstance(cont, AGUC2):
+                raise TypeError("Don't do that.")
+
+            # set axis integer
+            if isinstance(ax, AGUC2.Axes):
+                self._ax = ax.value
+            else:
+                self._ax = ax
+
+            # set controller
+            self._cont = cont
+
+        # PROPERTIES #
+
+        @property
+        def axis_status(self):
+            """
+            Returns the status of the current axis.
+            """
+            resp = self._cont.ag_query(f"{int(self._ax)} TS")
+            if resp.find("TS") == -1:
+                return "Status code query failed."
+
+            resp = int(resp.replace(str(int(self._ax)) + "TS", ""))
+            status_message = agilis_status_message(resp)
+            return status_message
+
+        @property
+        def jog(self):
+            """
+            Start jog motion / get jog mode
+            Defined jog steps are defined with `step_amplitude` function (default
+            16). If a jog mode is supplied, the jog motion is started. Otherwise
+            the current jog mode is queried. Valid jog modes are:
+
+            -4 — Negative direction, 666 steps/s at defined step amplitude.
+            -3 — Negative direction, 1700 steps/s at max. step amplitude.
+            -2 — Negative direction, 100 step/s at max. step amplitude.
+            -1 — Negative direction, 5 steps/s at defined step amplitude.
+             0 — No move, go to READY state.
+             1 — Positive direction, 5 steps/s at defined step amplitude.
+             2 — Positive direction, 100 steps/s at max. step amplitude.
+             3 — Positive direction, 1700 steps/s at max. step amplitude.
+             4 — Positive direction, 666 steps/s at defined step amplitude.
+
+            :return: Jog motion set
+            :rtype: `int`
+            """
+            resp = self._cont.ag_query(f"{int(self._ax)} JA?")
+            return int(resp.split("JA")[1])
+
+        @jog.setter
+        def jog(self, mode):
+            mode = int(mode)
+            if mode < -4 or mode > 4:
+                raise ValueError("Jog mode out of range. Must be between -4 and " "4.")
+
+            self._cont.ag_sendcmd(f"{int(self._ax)} JA {mode}")
+
+        @property
+        def number_of_steps(self):
+            """
+            Returns the number of accumulated steps in forward direction minus
+            the number of steps in backward direction since powering the
+            controller or since the last ZP (zero position) command, whatever
+            was last.
+
+            Note:
+            The step size of the Agilis devices are not 100% repeatable and
+            vary between forward and backward direction. Furthermore, the step
+            size can be modified using the SU command. Consequently, the TP
+            command provides only limited information about the actual position
+            of the device. In particular, an Agilis device can be at very
+            different positions even though a TP command may return the same
+            result.
+
+            :return: Number of steps
+            :rtype: int
+            """
+            resp = self._cont.ag_query(f"{int(self._ax)} TP")
+            return int(resp.split("TP")[1])
+
+        @property
+        def move_relative(self):
+            """
+            Moves the axis by nn steps / Queries the status of the axis.
+            Steps must be given a number that can be converted to a signed integer
+            between -2,147,483,648 and 2,147,483,647.
+            If queried, command returns the current target position. At least this
+            is the expected behaviour, never worked with the rotation stage.
+            """
+            resp = self._cont.ag_query(f"{int(self._ax)} PR?")
+            return int(resp.split("PR")[1])
+
+        @move_relative.setter
+        def move_relative(self, steps):
+            steps = int(steps)
+            if steps < -2147483648 or steps > 2147483647:
+                raise ValueError(
+                    "Number of steps are out of range. They must be "
+                    "between -2,147,483,648 and 2,147,483,647"
+                )
+
+            self._cont.ag_sendcmd(f"{int(self._ax)} PR {steps}")
+
+        @property
+        def move_to_limit(self):
+            """
+            UNTESTED: SEE COMMENT ON TOP
+
+            The  command functions properly only with devices that feature a
+            limit switch like models AG-LS25, AG-M050L and AG-M100L.
+
+            Starts a jog motion at a defined speed to the limit and stops
+            automatically when the limit is activated. See `jog` command for
+            details on available modes.
+
+            Returns the distance of the current position to the limit in
+            1/1000th of the total travel.
+            """
+            resp = self._cont.ag_query(f"{int(self._ax)} MA?")
+            return int(resp.split("MA")[1])
+
+        @move_to_limit.setter
+        def move_to_limit(self, mode):
+            mode = int(mode)
+            if mode < -4 or mode > 4:
+                raise ValueError("Jog mode out of range. Must be between -4 and " "4.")
+
+            self._cont.ag_sendcmd(f"{int(self._ax)} MA {mode}")
+
+        @property
+        def step_amplitude(self):
+            """
+            Sets / Gets the step_amplitude.
+
+            Sets the step amplitude (step size) in positive and / or negative
+            direction. If the parameter is positive, it will set the step
+            amplitude in the forward direction. If the parameter is negative,
+            it will set the step amplitude in the backward direction. You can also
+            provide a tuple or list of two values (one positive, one negative),
+            which will set both values.
+            Valid values are between -50 and 50, except for 0.
+
+            :return: Tuple of first negative, then positive step amplitude
+                response.
+            :rtype: (`int`, `int`)
+            """
+            resp_neg = self._cont.ag_query(f"{int(self._ax)} SU-?")
+            resp_pos = self._cont.ag_query(f"{int(self._ax)} SU+?")
+            return int(resp_neg.split("SU")[1]), int(resp_pos.split("SU")[1])
+
+        @step_amplitude.setter
+        def step_amplitude(self, nns):
+            if not isinstance(nns, tuple) and not isinstance(nns, list):
+                nns = [nns]
+
+            # check all values for validity
+            for nn in nns:
+                nn = int(nn)
+                if nn < -50 or nn > 50 or nn == 0:
+                    raise ValueError(
+                        "Step amplitude {} outside the valid range. "
+                        "It must be between -50 and -1 or between "
+                        "1 and 50.".format(nn)
+                    )
+
+            for nn in nns:
+                self._cont.ag_sendcmd(f"{int(self._ax)} SU {int(nn)}")
+
+        @property
+        def step_delay(self):
+            """
+            Sets/gets the step delay of stepping mode. The delay applies for both
+            positive and negative directions. The delay is programmed as multiple
+            of 10µs. For example, a delay of 40 is equivalent to
+            40 x 10 µs = 400 µs. The maximum value of the parameter is equal to a
+            delay of 2 seconds between pulses. By default, after reset, the value
+            is 0.
+            Setter: value must be integer between 0 and 200000 included
+
+            :return: Step delay
+            :rtype: `int`
+            """
+            resp = self._cont.ag_query(f"{int(self._ax)} DL?")
+            return int(resp.split("DL")[1])
+
+        @step_delay.setter
+        def step_delay(self, nn):
+            nn = int(nn)
+            if nn < 0 or nn > 200000:
+                raise ValueError(
+                    "Step delay is out of range. It must be between " "0 and 200000."
+                )
+
+            self._cont.ag_sendcmd(f"{int(self._ax)} DL {nn}")
+
+        # MODES #
+
+        def am_i_still(self, max_retries=5):
+            """
+            Function to test if an axis stands still. It queries the status of
+            the given axis and returns True (if axis is still) or False if it is
+            moving.
+            The reason this routine is implemented is because the status messages
+            can time out. If a timeout occurs, this routine will retry the query
+            until `max_retries` is reached. If query is still not successful, an
+            IOError will be raised.
+
+            :param int max_retries: Maximum number of retries
+
+            :return: True if the axis is still, False if the axis is moving
+            :rtype: bool
+            """
+            retries = 0
+
+            while retries < max_retries:
+                status = self.axis_status
+                if status == agilis_status_message(0):
+                    return True
+                elif (
+                    status == agilis_status_message(1)
+                    or status == agilis_status_message(2)
+                    or status == agilis_status_message(3)
+                ):
+                    return False
+                else:
+                    retries += 1
+
+            raise OSError(
+                "The function `am_i_still` ran out of maximum retries. "
+                "Could not query the status of the axis."
+            )
+
+        def stop(self):
+            """
+            Stops the axis. This is useful to interrupt a jogging motion.
+            """
+            self._cont.ag_sendcmd(f"{int(self._ax)} ST")
+
+        def zero_position(self):
+            """
+            Resets the step counter to zero. See `number_of_steps` for details.
+            """
+            self._cont.ag_sendcmd(f"{int(self._ax)} ZP")
+
     # ENUMS #
 
     class Axes(IntEnum):
@@ -379,10 +378,10 @@ class AGUC2(Instrument):
 
         See example in `AGUC2` for a more details
 
-        :rtype: `_Axis`
+        :rtype: `AGUC2.Axis`
         """
         self.enable_remote_mode = True
-        return ProxyList(self, _Axis, AGUC2.Axes)
+        return ProxyList(self, self.Axis, AGUC2.Axes)
 
     @property
     def enable_remote_mode(self):

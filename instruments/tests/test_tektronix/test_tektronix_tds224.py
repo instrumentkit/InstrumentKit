@@ -73,7 +73,7 @@ def test_tektds224_data_source(mock_time):
         ["MATH", "CH1"],
     ) as tek:
         assert tek.data_source == tek.math
-        assert tek.data_source == ik.tektronix.tektds224._TekTDS224Channel(tek, 0)
+        assert tek.data_source == ik.tektronix.tektds224.TekTDS224.Channel(tek, 0)
         tek.data_source = tek.math
 
         # assert that time.sleep is called
@@ -94,7 +94,7 @@ def test_tektds224_data_source_with_enum():
 
 def test_tektds224_channel():
     with expected_protocol(ik.tektronix.TekTDS224, [], []) as tek:
-        assert tek.channel[0] == ik.tektronix.tektds224._TekTDS224Channel(tek, 0)
+        assert tek.channel[0] == ik.tektronix.tektds224.TekTDS224.Channel(tek, 0)
 
 
 def test_tektds224_channel_coupling():

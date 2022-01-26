@@ -28,7 +28,7 @@ def test_srsdg645_channel_init():
     initialization if not coming from a DG class.
     """
     with pytest.raises(TypeError):
-        ik.srs.srsdg645._SRSDG645Channel(42, 0)
+        ik.srs.srsdg645.SRSDG645.Channel(42, 0)
 
 
 def test_srsdg645_channel_init_channel_value():
@@ -38,7 +38,7 @@ def test_srsdg645_channel_init_channel_value():
     """
     ddg = ik.srs.SRSDG645.open_test()  # test connection
     chan = ik.srs.srsdg645.SRSDG645.Channels.B  # select a channel manually
-    assert ik.srs.srsdg645._SRSDG645Channel(ddg, chan)._chan == 3
+    assert ik.srs.srsdg645.SRSDG645.Channel(ddg, chan)._chan == 3
 
 
 def test_srsdg645_channel_delay():
