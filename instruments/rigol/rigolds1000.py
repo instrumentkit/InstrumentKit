@@ -7,11 +7,7 @@ Provides support for Rigol DS-1000 series oscilloscopes.
 
 from enum import Enum
 
-from instruments.abstract_instruments import (
-    Oscilloscope,
-    OscilloscopeChannel,
-    OscilloscopeDataSource,
-)
+from instruments.abstract_instruments import Oscilloscope
 from instruments.generic_scpi import SCPIInstrument
 from instruments.util_fns import ProxyList, bool_property, enum_property
 
@@ -41,7 +37,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
 
     # INNER CLASSES #
 
-    class DataSource(OscilloscopeDataSource):
+    class DataSource(Oscilloscope.DataSource):
         """
         Class representing a data source (channel, math, or ref) on the
         Rigol DS1000
@@ -66,7 +62,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
             data = self._parent.binblockread(2)  # TODO: check width
             return data
 
-    class Channel(DataSource, OscilloscopeChannel):
+    class Channel(DataSource, Oscilloscope.Channel):
         """
         Class representing a channel on the Rigol DS1000.
 

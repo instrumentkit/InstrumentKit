@@ -26,7 +26,7 @@ def osc(monkeypatch):
 @pytest.fixture
 def osc_ch(monkeypatch):
     """Patch and return OscilloscopeChannel class for access."""
-    inst = ik.abstract_instruments.OscilloscopeChannel
+    inst = ik.abstract_instruments.Oscilloscope.Channel
     monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 
@@ -34,7 +34,7 @@ def osc_ch(monkeypatch):
 @pytest.fixture
 def osc_ds(monkeypatch):
     """Patch and return OscilloscopeDataSource class for access."""
-    inst = ik.abstract_instruments.OscilloscopeDataSource
+    inst = ik.abstract_instruments.Oscilloscope.DataSource
     monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 

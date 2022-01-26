@@ -26,7 +26,7 @@ def ps(monkeypatch):
 @pytest.fixture
 def ps_ch(monkeypatch):
     """Patch and return Power Supply Channel class for access."""
-    inst = ik.abstract_instruments.PowerSupplyChannel
+    inst = ik.abstract_instruments.PowerSupply.Channel
     monkeypatch.setattr(inst, "__abstractmethods__", set())
     return inst
 

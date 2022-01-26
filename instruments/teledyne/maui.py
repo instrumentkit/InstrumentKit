@@ -16,11 +16,7 @@ class.
 
 from enum import Enum
 
-from instruments.abstract_instruments import (
-    Oscilloscope,
-    OscilloscopeChannel,
-    OscilloscopeDataSource,
-)
+from instruments.abstract_instruments import Oscilloscope
 from instruments.optional_dep_finder import numpy
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units, enum_property, bool_property, ProxyList
@@ -194,7 +190,7 @@ class MAUI(Oscilloscope):
 
     # CLASSES #
 
-    class DataSource(OscilloscopeDataSource):
+    class DataSource(Oscilloscope.DataSource):
 
         """
         Class representing a data source (channel, math, ref) on a MAUI
@@ -317,7 +313,7 @@ class MAUI(Oscilloscope):
             """,
         )
 
-    class Channel(DataSource, OscilloscopeChannel):
+    class Channel(DataSource, Oscilloscope.Channel):
 
         """
         Class representing a channel on a MAUI oscilloscope.

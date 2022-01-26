@@ -13,44 +13,6 @@ from instruments.abstract_instruments import Instrument
 # CLASSES #####################################################################
 
 
-class OSAChannel(metaclass=abc.ABCMeta):
-
-    """
-    Abstract base class for physical channels on an optical spectrum analyzer.
-
-    All applicable concrete instruments should inherit from this ABC to
-    provide a consistent interface to the user.
-    """
-
-    # METHODS #
-
-    @abc.abstractmethod
-    def wavelength(self, bin_format=True):
-        """
-        Gets the x-axis of the specified data source channel. This is an
-        abstract property.
-
-        :param bool bin_format: If the waveform should be transfered in binary
-            (``True``) or ASCII (``False``) formats.
-        :return: The wavelength component of the waveform.
-        :rtype: `numpy.ndarray`
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def data(self, bin_format=True):
-        """
-        Gets the y-axis of the specified data source channel. This is an
-        abstract property.
-
-        :param bool bin_format: If the waveform should be transfered in binary
-            (``True``) or ASCII (``False``) formats.
-        :return: The y-component of the waveform.
-        :rtype: `numpy.ndarray`
-        """
-        raise NotImplementedError
-
-
 class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
 
     """
@@ -59,6 +21,42 @@ class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
     All applicable concrete instruments should inherit from this ABC to
     provide a consistent interface to the user.
     """
+
+    class Channel(metaclass=abc.ABCMeta):
+        """
+        Abstract base class for physical channels on an optical spectrum analyzer.
+
+        All applicable concrete instruments should inherit from this ABC to
+        provide a consistent interface to the user.
+        """
+
+        # METHODS #
+
+        @abc.abstractmethod
+        def wavelength(self, bin_format=True):
+            """
+            Gets the x-axis of the specified data source channel. This is an
+            abstract property.
+
+            :param bool bin_format: If the waveform should be transfered in binary
+                (``True``) or ASCII (``False``) formats.
+            :return: The wavelength component of the waveform.
+            :rtype: `numpy.ndarray`
+            """
+            raise NotImplementedError
+
+        @abc.abstractmethod
+        def data(self, bin_format=True):
+            """
+            Gets the y-axis of the specified data source channel. This is an
+            abstract property.
+
+            :param bool bin_format: If the waveform should be transfered in binary
+                (``True``) or ASCII (``False``) formats.
+            :return: The y-component of the waveform.
+            :rtype: `numpy.ndarray`
+            """
+            raise NotImplementedError
 
     # PROPERTIES #
 

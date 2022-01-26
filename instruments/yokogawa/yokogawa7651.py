@@ -10,10 +10,7 @@ from enum import IntEnum
 
 from instruments.units import ureg as u
 
-from instruments.abstract_instruments import (
-    PowerSupply,
-    PowerSupplyChannel,
-)
+from instruments.abstract_instruments import PowerSupply
 from instruments.abstract_instruments import Instrument
 from instruments.util_fns import assume_units, ProxyList
 
@@ -35,12 +32,12 @@ class Yokogawa7651(PowerSupply, Instrument):
 
     # INNER CLASSES #
 
-    class Channel(PowerSupplyChannel):
+    class Channel(PowerSupply.Channel):
 
         """
         Class representing the only channel on the Yokogawa 7651.
 
-        This class inherits from `PowerSupplyChannel`.
+        This class inherits from `PowerSupply.Channel`.
 
         .. warning:: This class should NOT be manually created by the user. It
             is designed to be initialized by the `Yokogawa7651` class.
