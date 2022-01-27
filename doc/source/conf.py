@@ -56,7 +56,7 @@ copyright = "2013-2022, Steven Casagrande"
 # built documents.
 #
 # The full release version
-release = version("instruments")
+release = version("instrumentkit")
 # The short X.Y version
 version = ".".join(release.split(".")[:2])
 
