@@ -36,15 +36,3 @@ from . import yokogawa
 
 from .config import load_instruments
 from .units import ureg as units
-
-# VERSION METADATA ###########################################################
-
-__title__ = "instrumentkit"
-__description__ = "Test and measurement communication library"
-__uri__ = "https://instrumentkit.readthedocs.org/"
-
-__author__ = "Steven Casagrande"
-__email__ = "scasagrande@galvant.ca"
-
-__license__ = "AGPLv3"
-__copyright__ = "Copyright (c) 2012-2022 Steven Casagrande"
