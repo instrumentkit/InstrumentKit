@@ -33,6 +33,8 @@ jobs:
             TOXENV: "py39"
           - python-version: 3.9
             TOXENV: "py39-numpy"
+          - python-version: "3.10"
+            TOXENV: "py310"
 
     steps:
     - uses: actions/checkout@v2
