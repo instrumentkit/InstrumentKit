@@ -1,12 +1,12 @@
 InstrumentKit
 =============
 
-.. image:: https://github.com/Galvant/InstrumentKit/workflows/Testing/badge.svg?branch=master
+.. image:: https://github.com/Galvant/InstrumentKit/workflows/Testing/badge.svg?branch=main
     :target: https://github.com/Galvant/InstrumentKit
     :alt: Github Actions build status
 
-.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/master.svg?maxAge=2592000
-    :target: https://coveralls.io/github/Galvant/InstrumentKit?branch=master
+.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/main.svg?maxAge=2592000
+    :target: https://coveralls.io/github/Galvant/InstrumentKit?branch=main
     :alt: Coveralls code coverage
 
 .. image:: https://readthedocs.org/projects/instrumentkit/badge/?version=latest
