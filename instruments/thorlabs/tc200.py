@@ -198,7 +198,11 @@ class TC200(Instrument):
         :rtype: `~pint.Quantity`
         """
         response = (
-            self.query("tset?").replace(" C", "").replace(" F", "").replace(" K", "")
+            self.query("tset?")
+            .replace(" Celsius", "")
+            .replace(" C", "")
+            .replace(" F", "")
+            .replace(" K", "")
         )
         return u.Quantity(float(response), u.degC)
 
