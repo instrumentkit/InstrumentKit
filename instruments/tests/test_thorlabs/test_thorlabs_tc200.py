@@ -110,6 +110,14 @@ def test_tc200_temperature_set():
         tc.temperature_set = u.Quantity(40, u.degC)
 
 
+def test_tc200_temperature_set_celsius():
+    """Ensure celsius is stripped if returned by instrument, see issue #331"""
+    with expected_protocol(
+        ik.thorlabs.TC200, ["tset?"], ["tset?", "30 Celsius", "> "], sep="\r"
+    ) as tc:
+        assert tc.temperature_set == u.Quantity(30.0, u.degC)
+
+
 def test_tc200_temperature_range():
     with pytest.raises(ValueError), expected_protocol(
         ik.thorlabs.TC200, ["tmax?"], ["tmax?", "40", "> "], sep="\r"
