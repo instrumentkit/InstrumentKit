@@ -1,12 +1,12 @@
 InstrumentKit
 =============
 
-.. image:: https://github.com/Galvant/InstrumentKit/workflows/Testing/badge.svg?branch=master
+.. image:: https://github.com/Galvant/InstrumentKit/workflows/Testing/badge.svg?branch=main
     :target: https://github.com/Galvant/InstrumentKit
     :alt: Github Actions build status
 
-.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/master.svg?maxAge=2592000
-    :target: https://coveralls.io/github/Galvant/InstrumentKit?branch=master
+.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/main.svg?maxAge=2592000
+    :target: https://coveralls.io/github/Galvant/InstrumentKit?branch=main
     :alt: Coveralls code coverage
 
 .. image:: https://readthedocs.org/projects/instrumentkit/badge/?version=latest
@@ -112,7 +112,7 @@ send, one can use the following functions to do so:
 Python Version Compatibility
 ----------------------------
 
-At this time, Python 3.6, 3.7, 3.8, and 3.9 are supported. Should you encounter
+At this time, Python 3.6, 3.7, 3.8, 3.9, and 3.10 are supported. Should you encounter
 any problems with this library that occur in one version or another, please
 do not hesitate to let us know.
 
