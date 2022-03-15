@@ -1485,6 +1485,7 @@ class APTMotorController(ThorLabsAPT):
                 pkt,
                 expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED,
                 timeout=self.motion_timeout,
+                expect_data_len=14,
             )
 
     _channel_type = MotorChannel
