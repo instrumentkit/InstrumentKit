@@ -1202,6 +1202,14 @@ def test_apt_mc_backlash_correction(init_kdc101):
                 param2=None,
                 dest=0x50,
                 source=0x01,
+                data=struct.pack("<Hl", 0x01, 1000),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
                 data=struct.pack("<Hl", 0x01, 1919),
             ).pack(),
         ],
@@ -1223,10 +1231,11 @@ def test_apt_mc_backlash_correction(init_kdc101):
             == u.Quantity(-20000, "counts") / apt.channel[0].scale_factors[0]
         )
         apt.channel[0].backlash_correction = 1000
+        apt.channel[0].backlash_correction = 1000 * u.counts
 
         # unitful backlash correction
         apt.channel[0].motor_model = "PRM1-Z8"
-        apt.channel[0].backlash_correction = u.Quantity(1, u.deg)
+        apt.channel[0].backlash_correction = 1 * u.deg
 
         # bad units
         with pytest.raises(ValueError):
