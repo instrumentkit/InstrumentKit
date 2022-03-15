@@ -1174,6 +1174,65 @@ def test_apt_mc_position(init_kdc101):
         )
 
 
+def test_apt_mc_backlash_correction(init_kdc101):
+    """Get / set backlash correction."""
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [
+            init_kdc101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_REQ_GENMOVEPARAMS,
+                param1=0x01,
+                param2=0x00,
+                dest=0x50,
+                source=0x01,
+                data=None,
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, 1000),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, 1919),
+            ).pack(),
+        ],
+        [
+            init_kdc101[1],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_GET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, -20000),
+            ).pack(),
+        ],
+        sep="",
+    ) as apt:
+        assert (
+            apt.channel[0].backlash_correction
+            == u.Quantity(-20000, "counts") / apt.channel[0].scale_factors[0]
+        )
+        apt.channel[0].backlash_correction = 1000
+
+        # unitful backlash correction
+        apt.channel[0].motor_model = "PRM1-Z8"
+        apt.channel[0].backlash_correction = u.Quantity(1, u.deg)
+
+        # bad units
+        with pytest.raises(ValueError):
+            apt.channel[0].backlash_correction = 10 * u.mm
+
+
 def test_apt_mc_position_encoder(init_kdc101):
     """Get unitful position of encoder, in counts."""
     with expected_protocol(

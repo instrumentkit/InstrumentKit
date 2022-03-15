@@ -1268,6 +1268,57 @@ class APTMotorController(ThorLabsAPT):
         # MOTOR COMMANDS #
 
         @property
+        def backlash_correction(self):
+            """Get the backlash correction, if stage is defined, unitful.
+
+            :return: Unitful quantity of backlash correction.
+            """
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.MOT_REQ_GENMOVEPARAMS,
+                param1=self._idx_chan,
+                param2=0x00,
+                dest=self._apt.destination,
+                source=0x01,
+                data=None,
+            )
+            response = self._apt.querypacket(
+                pkt,
+                expect=_cmds.ThorLabsCommands.MOT_GET_GENMOVEPARAMS,
+                expect_data_len=6,
+            )
+            # chan, pos
+            _, pos = struct.unpack("<Hl", response.data)
+            return u.Quantity(pos, "counts") / self.scale_factors[0]
+
+        @backlash_correction.setter
+        def backlash_correction(self, pos):
+            if not isinstance(pos, u.Quantity):
+                pos_ec = int(pos)
+            else:
+                if pos.units == u.counts:
+                    pos_ec = int(pos.magnitude)
+                else:
+                    scaled_pos = pos * self.scale_factors[0]
+                    # Force a unit error.
+                    try:
+                        pos_ec = int(scaled_pos.to(u.counts).magnitude)
+                    except:
+                        raise ValueError(
+                            "Provided units are not compatible "
+                            "with current motor scale factor."
+                        )
+            # create package to send
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=self._apt.destination,
+                source=0x01,
+                data=struct.pack("<Hl", self._idx_chan, pos_ec),
+            )
+            self._apt.sendpacket(pkt)
+
+        @property
         def status_bits(self):
             """
             Gets the status bits for the specified motor channel.
