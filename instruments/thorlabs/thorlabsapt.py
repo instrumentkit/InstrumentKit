@@ -1323,6 +1323,12 @@ class APTMotorController(ThorLabsAPT):
             """
             Gets the status bits for the specified motor channel.
 
+            .. note:: This command, as currently implemented, is only
+                available for certain devices and will result in an
+                ``OSError`` otherwise. Devices that work according to the
+                manual are: TSC001, KSC101, BSC10x, BSC20x, LTS150, LTS300,
+                MLJ050, MLJ150, TIM101, KIM101.
+
             :type: `dict`
             """
             # NOTE: the difference between MOT_REQ_STATUSUPDATE and
@@ -1337,6 +1343,7 @@ class APTMotorController(ThorLabsAPT):
             )
             # The documentation claims there are 14 data bytes, but it seems
             # there are sometimes some extra random ones...
+            # fixme: wrong expected datatype? MOT_GET_STATUSUPDATE expected
             resp_data = self._apt.querypacket(
                 pkt,
                 expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER,
