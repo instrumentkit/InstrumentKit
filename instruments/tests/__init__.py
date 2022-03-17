@@ -105,12 +105,18 @@ Got:
     #     """Only read {} bytes out of {}""".format(current, end)
 
 
-def unit_eq(a, b):
+def unit_eq(a, b, **kwargs):
     """
-    Asserts that two unitful quantites ``a`` and ``b``
-    are equal up to a small numerical threshold.
+    Asserts that two unitful quantites ``a`` and ``b`` are equal up to a small numerical
+    threshold. Keyword arguments ``kwargs`` are passed on to ``pytest.approx()``.
+
+    :param a: First quantity to compare to second.
+    :type a: `~pint.Quantity`
+    :param b: Second quantity to compare to first.
+    :type b: `~pint.Quantity`
+    :param kwargs: Keyword arguments, passed on to ``pytest.approx()``.
     """
-    assert a.magnitude == pytest.approx(b.magnitude)
+    assert a.magnitude == pytest.approx(b.magnitude, **kwargs)
     assert a.units == b.units, f"{a} and {b} have different units"
 
 
@@ -127,9 +133,14 @@ def make_name_test(ins_class, name_cmd="*IDN?"):
     return test
 
 
-def iterable_eq(a, b):
+def iterable_eq(a, b, **kwargs):
     """
-    Asserts that the contents of two iterables are the same.
+    Asserts that the contents of two iterables are the same. Keyword arguments
+    ``kwargs`` are passed on ``unit_eq``.
+
+    :param a: First iterable to compare to second.
+    :param b: Second iterable to compare to first.
+    :param kwargs: Keyword arguments, passed on to ``pytest.approx()``
     """
     if numpy and (isinstance(a, numpy.ndarray) or isinstance(b, numpy.ndarray)):
         # pylint: disable=unidiomatic-typecheck
@@ -141,6 +152,6 @@ def iterable_eq(a, b):
         ), f"Length of iterables is not the same, got {len(a)} and {len(b)}"
         assert (a == b).all()
     elif isinstance(a, u.Quantity) and isinstance(b, u.Quantity):
-        unit_eq(a, b)
+        unit_eq(a, b, **kwargs)
     else:
         assert a == b
