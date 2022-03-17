@@ -1269,9 +1269,28 @@ class APTMotorController(ThorLabsAPT):
 
         @property
         def backlash_correction(self):
-            """Get the backlash correction, if stage is defined, unitful.
+            """Get / set backlash correctionf or given stage.
+
+            If no units are given, ``u.counts`` are assumed. If you have
+            the stage defined (see example below), unitful values can be
+            used for setting the backlash correction, e.g., ``u.mm`` or
+            ``u.deg``.
 
             :return: Unitful quantity of backlash correction.
+
+            Example:
+                >>> import instruments as ik
+                >>> import instruments.units as u
+
+                >>> # load the controller, a KDC101 cube
+                >>> kdc = ik.thorlabs.APTMotorController.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # assign a channel to `ch`
+                >>> ch = kdc.channel[0]
+                >>> ch.motor_model = 'PRM1-Z8'  # select rotation stage
+
+                >>> ch.backlash_correction = 4 * u.deg  # set it to 4 degrees
+                >>> ch.backlash_correction  # read it back
+                <Quantity(4, 'degree')>
             """
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.MOT_REQ_GENMOVEPARAMS,
