@@ -18,7 +18,7 @@ from instruments.units import ureg as u
 import instruments as ik
 from instruments.thorlabs._packets import ThorLabsPacket, hw_info_data
 from instruments.thorlabs._cmds import ThorLabsCommands
-from instruments.tests import expected_protocol
+from instruments.tests import expected_protocol, unit_eq
 
 # TESTS ######################################################################
 
@@ -1264,8 +1264,7 @@ def test_apt_mc_backlash_correction_unitful(init_kdc101):
         apt.channel[0].backlash_correction = corr
 
         corr_received = apt.channel[0].backlash_correction
-        assert corr_received.magnitude == pytest.approx(corr.magnitude, abs=1e-3)
-        assert corr_received.units == corr.units
+        unit_eq(corr_received, corr, abs=1e-3)
 
 
 def test_apt_mc_backlash_correction_bad_units(init_kdc101):
