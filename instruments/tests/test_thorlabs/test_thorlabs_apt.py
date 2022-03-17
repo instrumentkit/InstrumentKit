@@ -1174,12 +1174,28 @@ def test_apt_mc_position(init_kdc101):
         )
 
 
-def test_apt_mc_backlash_correction(init_kdc101):
-    """Get / set backlash correction."""
+def test_apt_mc_backlash_correction_no_units(init_kdc101):
+    """Get / set backlash correction without units or as counts."""
     with expected_protocol(
         ik.thorlabs.APTMotorController,
         [
             init_kdc101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, 1000),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, -20000),
+            ).pack(),
             ThorLabsPacket(
                 message_id=ThorLabsCommands.MOT_REQ_GENMOVEPARAMS,
                 param1=0x01,
@@ -1187,30 +1203,6 @@ def test_apt_mc_backlash_correction(init_kdc101):
                 dest=0x50,
                 source=0x01,
                 data=None,
-            ).pack(),
-            ThorLabsPacket(
-                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
-                param1=None,
-                param2=None,
-                dest=0x50,
-                source=0x01,
-                data=struct.pack("<Hl", 0x01, 1000),
-            ).pack(),
-            ThorLabsPacket(
-                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
-                param1=None,
-                param2=None,
-                dest=0x50,
-                source=0x01,
-                data=struct.pack("<Hl", 0x01, 1000),
-            ).pack(),
-            ThorLabsPacket(
-                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
-                param1=None,
-                param2=None,
-                dest=0x50,
-                source=0x01,
-                data=struct.pack("<Hl", 0x01, 1919),
             ).pack(),
         ],
         [
@@ -1226,18 +1218,64 @@ def test_apt_mc_backlash_correction(init_kdc101):
         ],
         sep="",
     ) as apt:
-        assert (
-            apt.channel[0].backlash_correction
-            == u.Quantity(-20000, "counts") / apt.channel[0].scale_factors[0]
-        )
         apt.channel[0].backlash_correction = 1000
-        apt.channel[0].backlash_correction = 1000 * u.counts
+        apt.channel[0].backlash_correction = -20000 * u.counts
+        assert apt.channel[0].backlash_correction == u.Quantity(-20000, "counts")
 
-        # unitful backlash correction
+
+def test_apt_mc_backlash_correction_unitful(init_kdc101):
+    """Get / set backlash correction unitful."""
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [
+            init_kdc101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, 1919),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_REQ_GENMOVEPARAMS,
+                param1=0x01,
+                param2=0x00,
+                dest=0x50,
+                source=0x01,
+                data=None,
+            ).pack(),
+        ],
+        [
+            init_kdc101[1],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_GET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, 1919),
+            ).pack(),
+        ],
+        sep="",
+    ) as apt:
         apt.channel[0].motor_model = "PRM1-Z8"
-        apt.channel[0].backlash_correction = 1 * u.deg
+        corr = 1 * u.deg
+        apt.channel[0].backlash_correction = corr
 
-        # bad units
+        corr_received = apt.channel[0].backlash_correction
+        assert corr_received.magnitude == pytest.approx(corr.magnitude, abs=1e-3)
+        assert corr_received.units == corr.units
+
+
+def test_apt_mc_backlash_correction_bad_units(init_kdc101):
+    """Raise ValueError if incompatible units are used for backlash corr."""
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [init_kdc101[0]],
+        [init_kdc101[1]],
+        sep="",
+    ) as apt:
         with pytest.raises(ValueError):
             apt.channel[0].backlash_correction = 10 * u.mm
 
