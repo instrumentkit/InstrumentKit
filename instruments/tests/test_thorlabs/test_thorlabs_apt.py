@@ -18,7 +18,7 @@ from instruments.units import ureg as u
 import instruments as ik
 from instruments.thorlabs._packets import ThorLabsPacket, hw_info_data
 from instruments.thorlabs._cmds import ThorLabsCommands
-from instruments.tests import expected_protocol
+from instruments.tests import expected_protocol, unit_eq
 
 # TESTS ######################################################################
 
@@ -1174,6 +1174,111 @@ def test_apt_mc_position(init_kdc101):
         )
 
 
+def test_apt_mc_backlash_correction_no_units(init_kdc101):
+    """Get / set backlash correction without units or as counts."""
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [
+            init_kdc101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, 1000),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, -20000),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_REQ_GENMOVEPARAMS,
+                param1=0x01,
+                param2=0x00,
+                dest=0x50,
+                source=0x01,
+                data=None,
+            ).pack(),
+        ],
+        [
+            init_kdc101[1],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_GET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, -20000),
+            ).pack(),
+        ],
+        sep="",
+    ) as apt:
+        apt.channel[0].backlash_correction = 1000
+        apt.channel[0].backlash_correction = -20000 * u.counts
+        assert apt.channel[0].backlash_correction == u.Quantity(-20000, "counts")
+
+
+def test_apt_mc_backlash_correction_unitful(init_kdc101):
+    """Get / set backlash correction unitful."""
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [
+            init_kdc101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, 1919),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_REQ_GENMOVEPARAMS,
+                param1=0x01,
+                param2=0x00,
+                dest=0x50,
+                source=0x01,
+                data=None,
+            ).pack(),
+        ],
+        [
+            init_kdc101[1],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_GET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", 0x01, 1919),
+            ).pack(),
+        ],
+        sep="",
+    ) as apt:
+        apt.channel[0].motor_model = "PRM1-Z8"
+        corr = 1 * u.deg
+        apt.channel[0].backlash_correction = corr
+
+        corr_received = apt.channel[0].backlash_correction
+        unit_eq(corr_received, corr, abs=1e-3)
+
+
+def test_apt_mc_backlash_correction_bad_units(init_kdc101):
+    """Raise ValueError if incompatible units are used for backlash corr."""
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [init_kdc101[0]],
+        [init_kdc101[1]],
+        sep="",
+    ) as apt:
+        with pytest.raises(ValueError):
+            apt.channel[0].backlash_correction = 10 * u.mm
+
+
 def test_apt_mc_position_encoder(init_kdc101):
     """Get unitful position of encoder, in counts."""
     with expected_protocol(
@@ -1271,27 +1376,27 @@ def test_apt_mc_move(init_kdc101):
             init_kdc101[1],
             ThorLabsPacket(  # move complete message
                 message_id=ThorLabsCommands.MOT_MOVE_COMPLETED,
-                param1=0x01,
-                param2=0x00,
+                param1=None,
+                param2=None,
                 dest=0x50,
                 source=0x01,
-                data=None,
+                data=struct.pack("<HlHHL", 0x01, 1000, 205, 0, 0),
             ).pack(),
             ThorLabsPacket(  # move complete message
                 message_id=ThorLabsCommands.MOT_MOVE_COMPLETED,
-                param1=0x01,
-                param2=0x00,
+                param1=None,
+                param2=None,
                 dest=0x50,
                 source=0x01,
-                data=None,
+                data=struct.pack("<HlHHL", 0x01, -1000, 205, 0, 0),
             ).pack(),
             ThorLabsPacket(  # move complete message
                 message_id=ThorLabsCommands.MOT_MOVE_COMPLETED,
-                param1=0x01,
-                param2=0x00,
+                param1=None,
+                param2=None,
                 dest=0x50,
                 source=0x01,
-                data=None,
+                data=struct.pack("<HlHHL", 0x01, 1919, 205, 0, 0),
             ).pack(),
         ],
         sep="",

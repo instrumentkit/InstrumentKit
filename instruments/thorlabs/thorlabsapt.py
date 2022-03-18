@@ -1268,9 +1268,85 @@ class APTMotorController(ThorLabsAPT):
         # MOTOR COMMANDS #
 
         @property
+        def backlash_correction(self):
+            """Get / set backlash correctionf or given stage.
+
+            If no units are given, ``u.counts`` are assumed. If you have
+            the stage defined (see example below), unitful values can be
+            used for setting the backlash correction, e.g., ``u.mm`` or
+            ``u.deg``.
+
+            :return: Unitful quantity of backlash correction.
+
+            Example:
+                >>> import instruments as ik
+                >>> import instruments.units as u
+
+                >>> # load the controller, a KDC101 cube
+                >>> kdc = ik.thorlabs.APTMotorController.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # assign a channel to `ch`
+                >>> ch = kdc.channel[0]
+                >>> ch.motor_model = 'PRM1-Z8'  # select rotation stage
+
+                >>> ch.backlash_correction = 4 * u.deg  # set it to 4 degrees
+                >>> ch.backlash_correction  # read it back
+                <Quantity(4, 'degree')>
+            """
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.MOT_REQ_GENMOVEPARAMS,
+                param1=self._idx_chan,
+                param2=0x00,
+                dest=self._apt.destination,
+                source=0x01,
+                data=None,
+            )
+            response = self._apt.querypacket(
+                pkt,
+                expect=_cmds.ThorLabsCommands.MOT_GET_GENMOVEPARAMS,
+                expect_data_len=6,
+            )
+            # chan, pos
+            _, pos = struct.unpack("<Hl", response.data)
+            return u.Quantity(pos, "counts") / self.scale_factors[0]
+
+        @backlash_correction.setter
+        def backlash_correction(self, pos):
+            if not isinstance(pos, u.Quantity):
+                pos_ec = int(pos)
+            else:
+                if pos.units == u.counts:
+                    pos_ec = int(pos.magnitude)
+                else:
+                    scaled_pos = pos * self.scale_factors[0]
+                    # Force a unit error.
+                    try:
+                        pos_ec = int(scaled_pos.to(u.counts).magnitude)
+                    except:
+                        raise ValueError(
+                            "Provided units are not compatible "
+                            "with current motor scale factor."
+                        )
+            # create package to send
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.MOT_SET_GENMOVEPARAMS,
+                param1=None,
+                param2=None,
+                dest=self._apt.destination,
+                source=0x01,
+                data=struct.pack("<Hl", self._idx_chan, pos_ec),
+            )
+            self._apt.sendpacket(pkt)
+
+        @property
         def status_bits(self):
             """
             Gets the status bits for the specified motor channel.
+
+            .. note:: This command, as currently implemented, is only
+                available for certain devices and will result in an
+                ``OSError`` otherwise. Devices that work according to the
+                manual are: TSC001, KSC101, BSC10x, BSC20x, LTS150, LTS300,
+                MLJ050, MLJ150, TIM101, KIM101.
 
             :type: `dict`
             """
@@ -1286,6 +1362,7 @@ class APTMotorController(ThorLabsAPT):
             )
             # The documentation claims there are 14 data bytes, but it seems
             # there are sometimes some extra random ones...
+            # fixme: wrong expected datatype? MOT_GET_STATUSUPDATE expected
             resp_data = self._apt.querypacket(
                 pkt,
                 expect=_cmds.ThorLabsCommands.MOT_GET_POSCOUNTER,
@@ -1434,6 +1511,7 @@ class APTMotorController(ThorLabsAPT):
                 pkt,
                 expect=_cmds.ThorLabsCommands.MOT_MOVE_COMPLETED,
                 timeout=self.motion_timeout,
+                expect_data_len=14,
             )
 
     _channel_type = MotorChannel
