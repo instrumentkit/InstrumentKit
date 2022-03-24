@@ -1169,8 +1169,8 @@ class APTMotorController(ThorLabsAPT):
                 # TODO: Z8xx and Z6xx models. Need to add regex support to motor models, too.
                 "PRM1-Z8": (
                     u.Quantity(1919.64, "count/deg"),
-                    NotImplemented,
-                    NotImplemented,
+                    u.Quantity(42941.66, u.sec / u.deg),
+                    u.Quantity(14.66, u.sec ** 2 / u.deg),
                 ),
             },
         }
@@ -1334,6 +1334,131 @@ class APTMotorController(ThorLabsAPT):
                 dest=self._apt.destination,
                 source=0x01,
                 data=struct.pack("<Hl", self._idx_chan, pos_ec),
+            )
+            self._apt.sendpacket(pkt)
+
+        @property
+        def home_parameters(self):
+            """Get the home parameters for the motor channel.
+
+            Parameters are stage specific and not all parameters can be set
+            for every stage. For example, the MLS203 stage only allows the
+            homing velocity to be changed.
+
+            .. note:: When setting the quantity, pass `None` to values
+                that you want to leave unchanged (see example below).
+
+            .. note:: After changing the offset, the stage must be homed
+                in order to show the new offset in its values.
+
+            :return: Home Direction (1: forward/positive, 2 reverse/negative),
+                Limit Switch (1: hardware reverse, 4: hardware forward),
+                Home Velocity,
+                Offset distance
+            :rtype: Tuple[int, int, u.Quantity, u.Quantity]
+
+
+            Example:
+                >>> import instruments as ik
+                >>> import instruments.units as u
+
+                >>> # load the controller, a KDC101 cube
+                >>> kdc = ik.thorlabs.APTMotorController.open_serial("/dev/ttyUSB0", baud=115200)
+                >>> # assign a channel to `ch`
+                >>> ch = kdc.channel[0]
+                >>> ch.motor_model = 'PRM1-Z8'  # select rotation stage
+
+                >>> # set offset distance to 4 degrees, leave other values
+                >>> ch.home_parameters = None, None, None, 4 * u.deg
+                >>> ch.home_parameters  # read it back
+                (2, 1, <Quantity(9.99, 'degree / second')>, <Quantity(3.99, 'degree')>)
+            """
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.MOT_REQ_HOMEPARAMS,
+                param1=self._idx_chan,
+                param2=0x00,
+                dest=self._apt.destination,
+                source=0x01,
+                data=None,
+            )
+            response = self._apt.querypacket(
+                pkt,
+                expect=_cmds.ThorLabsCommands.MOT_GET_HOMEPARAMS,
+                expect_data_len=14,
+            )
+            # chan, home_dir, limit_switch, velocity, ,offset_dist
+            _, home_dir, lim_sw, vel, offset = struct.unpack("<HHHll", response.data)
+            return (
+                int(home_dir),
+                int(lim_sw),
+                u.Quantity(vel) / self.scale_factors[1],
+                u.Quantity(offset, "counts") / self.scale_factors[0],
+            )
+
+        @home_parameters.setter
+        def home_parameters(self, values):
+            values = list(values)
+            if len(values) != 4:
+                raise ValueError(
+                    "Home parameters muust be set with four values: "
+                    "Home direction, limit switch settings, velocity, and offset. "
+                    "For settings you want to leave untouched, pass `None`."
+                )
+
+            # replace values that are `None`
+            if None in values:
+                set_params = self.home_parameters
+                for it in range(len(values)):
+                    if values[it] is None:
+                        values[it] = set_params[it]
+
+            home_dir, lim_sw, velocity, offset = values
+            # check validity of unitful values
+            if not isinstance(velocity, u.Quantity):
+                velocity = int(velocity)
+            else:
+                # Ensure velocity is dimensionless
+                req_units = (1 / self.scale_factors[1]).units
+                try:
+                    velocity = int(
+                        (velocity.to(req_units) * self.scale_factors[1]).magnitude
+                    )
+                except:
+                    raise ValueError(
+                        "Provided units for velocity are not compatible "
+                        "with current motor scale factor."
+                    )
+            if not isinstance(offset, u.Quantity):
+                offset = int(offset)
+            else:
+                if offset.units == u.counts:
+                    offset = int(offset.magnitude)
+                else:
+                    scaled_vel = offset * self.scale_factors[0]
+                    # Force a unit error.
+                    try:
+                        offset = int(scaled_vel.to(u.counts).magnitude)
+                    except:
+                        raise ValueError(
+                            "Provided units for offset are not compatible "
+                            "with current motor scale factor."
+                        )
+
+                # create package to send
+            pkt = _packets.ThorLabsPacket(
+                message_id=_cmds.ThorLabsCommands.MOT_SET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=self._apt.destination,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll",
+                    self._idx_chan,
+                    int(home_dir),
+                    int(lim_sw),
+                    int(velocity),
+                    int(offset),
+                ),
             )
             self._apt.sendpacket(pkt)
 
