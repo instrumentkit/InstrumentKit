@@ -1404,6 +1404,64 @@ def test_apt_mc_home_parameters_set_with_none(init_kdc101):
         apt.channel[0].home_parameters = None, None, None, None
 
 
+def test_apt_mc_home_parameters_set_offset_to_zero(init_kdc101):
+    """Ensure setting offset to zero is not interpreted as `None`."""
+    home_direction = 1
+    limit_switch = 1
+    velocity = 1000
+    offset = 1250
+    offset_new = 0
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [
+            init_kdc101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_REQ_HOMEPARAMS,
+                param1=0x01,
+                param2=0x00,
+                dest=0x50,
+                source=0x01,
+                data=None,
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll",
+                    0x01,
+                    home_direction,
+                    limit_switch,
+                    velocity,
+                    offset_new,
+                ),
+            ).pack(),
+        ],
+        [
+            init_kdc101[1],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_GET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll",
+                    0x01,
+                    home_direction,
+                    limit_switch,
+                    velocity,
+                    offset,
+                ),
+            ).pack(),
+        ],
+        sep="",
+    ) as apt:
+        apt.channel[0].home_parameters = None, None, None, offset_new
+
+
 def test_apt_mc_home_parameters(init_kdc101):
     """Get / set home_parameters in unitful fashion."""
     home_direction = 1
