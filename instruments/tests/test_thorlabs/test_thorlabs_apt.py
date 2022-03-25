@@ -1279,6 +1279,227 @@ def test_apt_mc_backlash_correction_bad_units(init_kdc101):
             apt.channel[0].backlash_correction = 10 * u.mm
 
 
+def test_apt_mc_home_parameters_no_units(init_kdc101):
+    """Get / set home_parameters without units or as counts."""
+    home_direction = 1
+    limit_switch = 1
+    velocity = 100
+    offset = 7000
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [
+            init_kdc101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll", 0x01, home_direction, limit_switch, velocity, offset
+                ),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll", 0x01, home_direction, limit_switch, velocity, offset
+                ),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_REQ_HOMEPARAMS,
+                param1=0x01,
+                param2=0x00,
+                dest=0x50,
+                source=0x01,
+                data=None,
+            ).pack(),
+        ],
+        [
+            init_kdc101[1],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_GET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll", 0x01, home_direction, limit_switch, velocity, offset
+                ),
+            ).pack(),
+        ],
+        sep="",
+    ) as apt:
+        apt.channel[0].home_parameters = home_direction, limit_switch, velocity, offset
+        apt.channel[0].home_parameters = (
+            home_direction,
+            limit_switch,
+            velocity,
+            offset * u.counts,
+        )
+        params_rec = apt.channel[0].home_parameters
+        assert params_rec[0] == home_direction
+        assert params_rec[1] == limit_switch
+        assert params_rec[2] == velocity
+        unit_eq(params_rec[3], offset * u.count)
+
+
+def test_apt_mc_home_parameters_set_with_none(init_kdc101):
+    """Set home parameters with all `None` sends read back values."""
+    home_direction = 1
+    limit_switch = 1
+    velocity = 1000
+    offset = 1250
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [
+            init_kdc101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_REQ_HOMEPARAMS,
+                param1=0x01,
+                param2=0x00,
+                dest=0x50,
+                source=0x01,
+                data=None,
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll",
+                    0x01,
+                    home_direction,
+                    limit_switch,
+                    velocity,
+                    offset,
+                ),
+            ).pack(),
+        ],
+        [
+            init_kdc101[1],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_GET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll",
+                    0x01,
+                    home_direction,
+                    limit_switch,
+                    velocity,
+                    offset,
+                ),
+            ).pack(),
+        ],
+        sep="",
+    ) as apt:
+        apt.channel[0].home_parameters = None, None, None, None
+
+
+def test_apt_mc_home_parameters(init_kdc101):
+    """Get / set home_parameters in unitful fashion."""
+    home_direction = 1
+    limit_switch = 1
+    velocity = 1 * u.deg / u.s
+    velocity_enc = 42941
+    offset = 1 * u.deg
+    offset_enc = 1919
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [
+            init_kdc101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_SET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll",
+                    0x01,
+                    home_direction,
+                    limit_switch,
+                    velocity_enc,
+                    offset_enc,
+                ),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_REQ_HOMEPARAMS,
+                param1=0x01,
+                param2=0x00,
+                dest=0x50,
+                source=0x01,
+                data=None,
+            ).pack(),
+        ],
+        [
+            init_kdc101[1],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.MOT_GET_HOMEPARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack(
+                    "<HHHll",
+                    0x01,
+                    home_direction,
+                    limit_switch,
+                    velocity_enc,
+                    offset_enc,
+                ),
+            ).pack(),
+        ],
+        sep="",
+    ) as apt:
+        apt.channel[0].motor_model = "PRM1-Z8"
+        apt.channel[0].home_parameters = home_direction, limit_switch, velocity, offset
+
+        params_rec = apt.channel[0].home_parameters
+
+        assert params_rec[0] == home_direction
+        assert params_rec[1] == limit_switch
+        unit_eq(params_rec[2], velocity, abs=0.001)
+        unit_eq(params_rec[3], offset, abs=0.001)
+
+
+def test_apt_mc_home_parameters_wrong_values(init_kdc101):
+    """Raise a ValueError if wrong number of values are provided."""
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [init_kdc101[0]],
+        [init_kdc101[1]],
+        sep="",
+    ) as apt:
+        with pytest.raises(ValueError):
+            apt.channel[0].home_parameters = 1, 1, 1
+
+
+def test_apt_mc_home_parameters_bad_units(init_kdc101):
+    """Raise a ValueError if incompatible units are provided."""
+    with expected_protocol(
+        ik.thorlabs.APTMotorController,
+        [init_kdc101[0]],
+        [init_kdc101[1]],
+        sep="",
+    ) as apt:
+        # velocity
+        with pytest.raises(ValueError):
+            apt.channel[0].home_parameters = 1, 1, 1 * u.deg / u.sec, 1919
+
+        # offset
+        with pytest.raises(ValueError):
+            apt.channel[0].home_parameters = 1, 1, 42000, 1 * u.Hz
+
+
 def test_apt_mc_position_encoder(init_kdc101):
     """Get unitful position of encoder, in counts."""
     with expected_protocol(
