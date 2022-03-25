@@ -1407,7 +1407,7 @@ class APTMotorController(ThorLabsAPT):
             # replace values that are `None`
             if None in values:
                 set_params = self.home_parameters
-                values = [x if x else y for x, y in zip(values, set_params)]
+                values = [x if x is not None else y for x, y in zip(values, set_params)]
 
             home_dir, lim_sw, velocity, offset = values
             if isinstance(velocity, u.Quantity):
