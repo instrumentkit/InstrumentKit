@@ -1417,13 +1417,11 @@ class APTMotorController(ThorLabsAPT):
             if not isinstance(velocity, u.Quantity):
                 velocity = int(velocity)
             else:
-                # Ensure velocity is dimensionless
-                req_units = (1 / self.scale_factors[1]).units
-                try:
-                    velocity = int(
-                        (velocity.to(req_units) * self.scale_factors[1]).magnitude
-                    )
-                except:
+                # Ensure velocity is in appropriate units
+                velocity = (velocity * self.scale_factors[1]).to_reduced_units()
+                if velocity.dimensionless:
+                    velocity = int(velocity.magnitude)
+                else:
                     raise ValueError(
                         "Provided units for velocity are not compatible "
                         "with current motor scale factor."
