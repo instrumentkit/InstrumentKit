@@ -1397,7 +1397,6 @@ class APTMotorController(ThorLabsAPT):
 
         @home_parameters.setter
         def home_parameters(self, values):
-            values = list(values)
             if len(values) != 4:
                 raise ValueError(
                     "Home parameters muust be set with four values: "
@@ -1408,16 +1407,10 @@ class APTMotorController(ThorLabsAPT):
             # replace values that are `None`
             if None in values:
                 set_params = self.home_parameters
-                for it in range(len(values)):
-                    if values[it] is None:
-                        values[it] = set_params[it]
+                values = [x if x else y for x, y in zip(values, set_params)]
 
             home_dir, lim_sw, velocity, offset = values
-            # check validity of unitful values
-            if not isinstance(velocity, u.Quantity):
-                velocity = int(velocity)
-            else:
-                # Ensure velocity is in appropriate units
+            if isinstance(velocity, u.Quantity):
                 velocity = (velocity * self.scale_factors[1]).to_reduced_units()
                 if velocity.dimensionless:
                     velocity = int(velocity.magnitude)
@@ -1426,14 +1419,11 @@ class APTMotorController(ThorLabsAPT):
                         "Provided units for velocity are not compatible "
                         "with current motor scale factor."
                     )
-            if not isinstance(offset, u.Quantity):
-                offset = int(offset)
-            else:
+            if isinstance(offset, u.Quantity):
                 if offset.units == u.counts:
                     offset = int(offset.magnitude)
                 else:
                     scaled_vel = offset * self.scale_factors[0]
-                    # Force a unit error.
                     try:
                         offset = int(scaled_vel.to(u.counts).magnitude)
                     except:
