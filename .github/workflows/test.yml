@@ -51,6 +51,7 @@ jobs:
         TOXENV: ${{ matrix.TOXENV }}
       run: tox
     - name: Upload coverage to Codecov
+      if: github.repository_owner == 'instrumentkit'
       uses: codecov/codecov-action@v2
       env:
         TOXENV: ${{ matrix.TOXENV }}
