@@ -19,6 +19,7 @@ jobs:
     - name: Run static checks via pre-commit
       run: SKIP=no-commit-to-branch pre-commit run --all --show-diff-on-failure
   test:
+    if: github.repository_owner == 'instrumentkit'
     runs-on: ubuntu-latest
     strategy:
       matrix:
