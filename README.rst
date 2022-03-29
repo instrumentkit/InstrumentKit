@@ -1,12 +1,12 @@
 InstrumentKit
 =============
 
-.. image:: https://github.com/Galvant/InstrumentKit/workflows/Testing/badge.svg?branch=main
-    :target: https://github.com/Galvant/InstrumentKit
+.. image:: https://github.com/instrumentkit/InstrumentKit/workflows/Testing/badge.svg?branch=main
+    :target: https://github.com/instrumentkit/InstrumentKit
     :alt: Github Actions build status
 
-.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/main.svg?maxAge=2592000
-    :target: https://coveralls.io/github/Galvant/InstrumentKit?branch=main
+.. image:: https://img.shields.io/coveralls/instrumentkit/InstrumentKit/main.svg?maxAge=2592000
+    :target: https://coveralls.io/github/instrumentkit/InstrumentKit?branch=main
     :alt: Coveralls code coverage
 
 .. image:: https://readthedocs.org/projects/instrumentkit/badge/?version=latest
@@ -55,7 +55,7 @@ From Git:
 
 .. code-block:: console
 
-    $ git clone git@github.com:Galvant/InstrumentKit.git
+    $ git clone git@github.com:instrumentkit/InstrumentKit.git
     $ cd InstrumentKit
     $ python setup.py install
 
@@ -63,7 +63,7 @@ From Github using pip:
 
 .. code-block:: console
 
-    $ pip install -e git+https://www.github.com/Galvant/InstrumentKit.git#egg=instrumentkit
+    $ pip install -e git+https://www.github.com/instrumentkit/InstrumentKit.git#egg=instrumentkit
 
 From pypi using pip:
 
