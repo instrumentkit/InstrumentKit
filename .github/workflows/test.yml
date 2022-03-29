@@ -19,7 +19,6 @@ jobs:
     - name: Run static checks via pre-commit
       run: SKIP=no-commit-to-branch pre-commit run --all --show-diff-on-failure
   test:
-    if: github.repository_owner == 'instrumentkit'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -52,6 +51,7 @@ jobs:
         TOXENV: ${{ matrix.TOXENV }}
       run: tox
     - name: Upload coverage to Codecov
+      if: github.repository_owner == 'instrumentkit'
       uses: codecov/codecov-action@v2
       env:
         TOXENV: ${{ matrix.TOXENV }}
