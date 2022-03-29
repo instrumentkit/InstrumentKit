@@ -5,9 +5,9 @@ InstrumentKit
     :target: https://github.com/instrumentkit/InstrumentKit
     :alt: Github Actions build status
 
-.. image:: https://img.shields.io/coveralls/instrumentkit/InstrumentKit/main.svg?maxAge=2592000
-    :target: https://coveralls.io/github/instrumentkit/InstrumentKit?branch=main
-    :alt: Coveralls code coverage
+.. image:: https://codecov.io/gh/instrumentkit/InstrumentKit/branch/main/graph/badge.svg?token=Q2wcdW3t4A
+    :target: https://codecov.io/gh/instrumentkit/InstrumentKit
+    :alt: Codecov code coverage
 
 .. image:: https://readthedocs.org/projects/instrumentkit/badge/?version=latest
     :target: https://readthedocs.org/projects/instrumentkit/?badge=latest
