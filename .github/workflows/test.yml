@@ -50,18 +50,14 @@ jobs:
       env:
         TOXENV: ${{ matrix.TOXENV }}
       run: tox
-    - name: Submit to coveralls
-      uses: AndreMiras/coveralls-python-action@develop
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      env:
+        TOXENV: ${{ matrix.TOXENV }}
       with:
-        parallel: true
-        github-token: ${{ secrets.github_token }}
-
-  coverage:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-    - name: Coveralls Finished
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.github_token }}
-        parallel-finished: true
+        env_vars: TOXENV
+        fail_ci_if_error: true
+        flags: unittests
+        name: codecov-umbrella
+        verbose: true
+        files: ./coverage.xml
