@@ -452,7 +452,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             ret_val = [
                 u.Quantity(int(ret_val[0]), u.V),
                 u.Quantity(int(ret_val[1]), 1 / u.s),
-                u.Quantity(int(ret_val[2]), 1 / u.s ** 2),
+                u.Quantity(int(ret_val[2]), 1 / u.s**2),
             ]
             return ret_val
 
@@ -466,7 +466,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             # ensure units
             volt = int(assume_units(params[0], u.V).to(u.V).magnitude)
             rate = int(assume_units(params[1], 1 / u.s).to(1 / u.s).magnitude)
-            accl = int(assume_units(params[2], 1 / u.s ** 2).to(1 / u.s ** 2).magnitude)
+            accl = int(assume_units(params[2], 1 / u.s**2).to(1 / u.s**2).magnitude)
 
             # check parameters
             if volt < 85 or volt > 125:
@@ -654,7 +654,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                 int(ret_val[1]),
                 int(ret_val[2]),
                 u.Quantity(int(ret_val[3]), 1 / u.s),
-                u.Quantity(int(ret_val[4]), 1 / u.s ** 2),
+                u.Quantity(int(ret_val[4]), 1 / u.s**2),
             ]
 
             return ret_val
@@ -678,7 +678,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             steps_fwd = int(params[1])
             steps_bkw = int(params[2])
             rate = int(assume_units(params[3], 1 / u.s).to(1 / u.s).magnitude)
-            accl = int(assume_units(params[4], 1 / u.s ** 2).to(1 / u.s ** 2).magnitude)
+            accl = int(assume_units(params[4], 1 / u.s**2).to(1 / u.s**2).magnitude)
 
             # check parameters
             if mode != 1 and mode != 2:
@@ -1170,7 +1170,7 @@ class APTMotorController(ThorLabsAPT):
                 "PRM1-Z8": (
                     u.Quantity(1919.64, "count/deg"),
                     u.Quantity(42941.66, u.sec / u.deg),
-                    u.Quantity(14.66, u.sec ** 2 / u.deg),
+                    u.Quantity(14.66, u.sec**2 / u.deg),
                 ),
             },
         }

@@ -158,7 +158,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
 
     @acquire_averages.setter
     def acquire_averages(self, newval):
-        if newval not in [2 ** i for i in range(1, 9)]:
+        if newval not in [2**i for i in range(1, 9)]:
             raise ValueError(
                 "Number of averages {} not supported by instrument; "
                 "must be a power of 2 from 2 to 256.".format(newval)

@@ -152,7 +152,7 @@ class NewportESP301(Instrument):
 
             return assume_units(
                 float(self._newport_cmd("AC?", target=self.axis_id)),
-                self._units / (u.s ** 2),
+                self._units / (u.s**2),
             )
 
         @acceleration.setter
@@ -160,8 +160,8 @@ class NewportESP301(Instrument):
             if newval is None:
                 return
             newval = float(
-                assume_units(newval, self._units / (u.s ** 2))
-                .to(self._units / (u.s ** 2))
+                assume_units(newval, self._units / (u.s**2))
+                .to(self._units / (u.s**2))
                 .magnitude
             )
             self._newport_cmd("AC", target=self.axis_id, params=[newval])
@@ -177,7 +177,7 @@ class NewportESP301(Instrument):
             """
             return assume_units(
                 float(self._newport_cmd("AG?", target=self.axis_id)),
-                self._units / (u.s ** 2),
+                self._units / (u.s**2),
             )
 
         @deceleration.setter
@@ -185,8 +185,8 @@ class NewportESP301(Instrument):
             if newval is None:
                 return
             newval = float(
-                assume_units(newval, self._units / (u.s ** 2))
-                .to(self._units / (u.s ** 2))
+                assume_units(newval, self._units / (u.s**2))
+                .to(self._units / (u.s**2))
                 .magnitude
             )
             self._newport_cmd("AG", target=self.axis_id, params=[newval])
@@ -202,14 +202,14 @@ class NewportESP301(Instrument):
             """
             return assume_units(
                 float(self._newport_cmd("AE?", target=self.axis_id)),
-                self._units / (u.s ** 2),
+                self._units / (u.s**2),
             )
 
         @estop_deceleration.setter
         def estop_deceleration(self, decel):
             decel = float(
-                assume_units(decel, self._units / (u.s ** 2))
-                .to(self._units / (u.s ** 2))
+                assume_units(decel, self._units / (u.s**2))
+                .to(self._units / (u.s**2))
                 .magnitude
             )
             self._newport_cmd("AE", target=self.axis_id, params=[decel])
@@ -226,14 +226,14 @@ class NewportESP301(Instrument):
 
             return assume_units(
                 float(self._newport_cmd("JK?", target=self.axis_id)),
-                self._units / (u.s ** 3),
+                self._units / (u.s**3),
             )
 
         @jerk.setter
         def jerk(self, jerk):
             jerk = float(
-                assume_units(jerk, self._units / (u.s ** 3))
-                .to(self._units / (u.s ** 3))
+                assume_units(jerk, self._units / (u.s**3))
+                .to(self._units / (u.s**3))
                 .magnitude
             )
             self._newport_cmd("JK", target=self.axis_id, params=[jerk])
@@ -381,7 +381,7 @@ class NewportESP301(Instrument):
             """
             return assume_units(
                 float(self._newport_cmd("AU?", target=self.axis_id)),
-                self._units / (u.s ** 2),
+                self._units / (u.s**2),
             )
 
         @max_acceleration.setter
@@ -389,8 +389,8 @@ class NewportESP301(Instrument):
             if newval is None:
                 return
             newval = float(
-                assume_units(newval, self._units / (u.s ** 2))
-                .to(self._units / (u.s ** 2))
+                assume_units(newval, self._units / (u.s**2))
+                .to(self._units / (u.s**2))
                 .magnitude
             )
             self._newport_cmd("AU", target=self.axis_id, params=[newval])
@@ -410,8 +410,8 @@ class NewportESP301(Instrument):
         @max_deceleration.setter
         def max_deceleration(self, decel):
             decel = float(
-                assume_units(decel, self._units / (u.s ** 2))
-                .to(self._units / (u.s ** 2))
+                assume_units(decel, self._units / (u.s**2))
+                .to(self._units / (u.s**2))
                 .magnitude
             )
             self.max_acceleration = decel

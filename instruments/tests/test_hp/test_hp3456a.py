@@ -238,7 +238,7 @@ def test_hp3456a_input_range():
     with expected_protocol(
         ik.hp.HP3456a, ["HO0T4SO1", "R2W", "R3W"], [""], sep="\r"
     ) as dmm:
-        dmm.input_range = 10 ** -1 * u.volt
+        dmm.input_range = 10**-1 * u.volt
         dmm.input_range = 1e3 * u.ohm
         with pytest.raises(NotImplementedError):
             _ = dmm.input_range

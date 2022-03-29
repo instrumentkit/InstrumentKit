@@ -47,7 +47,7 @@ print(dmm.measure(dmm.Mode.ratio_dcv_dcv))
 print(dmm.measure(dmm.Mode.resistance_2wire))
 dmm.nplc = 1
 for i in range(-1, 4):
-    value = (10 ** i) * u.volt
+    value = (10**i) * u.volt
     dmm.input_range = value
     print(dmm.measure(dmm.Mode.dcv))
 

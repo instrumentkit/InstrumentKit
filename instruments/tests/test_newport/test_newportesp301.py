@@ -387,7 +387,7 @@ def test_axis_acceleration(mocker):
         mock_cmd = mocker.patch.object(axis, "_newport_cmd", return_value=value)
         axis.acceleration = value
         mock_cmd.assert_called_with("AC", target=1, params=[float(value)])
-        assert axis.acceleration == u.Quantity(value, axis._units / u.s ** 2)
+        assert axis.acceleration == u.Quantity(value, axis._units / u.s**2)
         mock_cmd.assert_called_with("AC?", target=1)
 
 
@@ -413,7 +413,7 @@ def test_axis_deceleration(mocker):
         mock_cmd = mocker.patch.object(axis, "_newport_cmd", return_value=value)
         axis.deceleration = value
         mock_cmd.assert_called_with("AG", target=1, params=[float(value)])
-        assert axis.deceleration == u.Quantity(value, axis._units / u.s ** 2)
+        assert axis.deceleration == u.Quantity(value, axis._units / u.s**2)
         mock_cmd.assert_called_with("AG?", target=1)
 
 
@@ -439,7 +439,7 @@ def test_axis_estop_deceleration(mocker):
         mock_cmd = mocker.patch.object(axis, "_newport_cmd", return_value=value)
         axis.estop_deceleration = value
         mock_cmd.assert_called_with("AE", target=1, params=[float(value)])
-        assert axis.estop_deceleration == u.Quantity(value, axis._units / u.s ** 2)
+        assert axis.estop_deceleration == u.Quantity(value, axis._units / u.s**2)
         mock_cmd.assert_called_with("AE?", target=1)
 
 
@@ -456,7 +456,7 @@ def test_axis_jerk(mocker):
         mock_cmd = mocker.patch.object(axis, "_newport_cmd", return_value=value)
         axis.jerk = value
         mock_cmd.assert_called_with("JK", target=1, params=[float(value)])
-        assert axis.jerk == u.Quantity(value, axis._units / u.s ** 3)
+        assert axis.jerk == u.Quantity(value, axis._units / u.s**3)
         mock_cmd.assert_called_with("JK?", target=1)
 
 
@@ -620,7 +620,7 @@ def test_axis_max_acceleration(mocker):
         mock_cmd = mocker.patch.object(axis, "_newport_cmd", return_value=value)
         axis.max_acceleration = value
         mock_cmd.assert_called_with("AU", target=1, params=[float(value)])
-        assert axis.max_acceleration == u.Quantity(value, axis._units / u.s ** 2)
+        assert axis.max_acceleration == u.Quantity(value, axis._units / u.s**2)
         mock_cmd.assert_called_with("AU?", target=1)
 
 
@@ -646,7 +646,7 @@ def test_axis_max_deceleration(mocker):
         mock_cmd = mocker.patch.object(axis, "_newport_cmd", return_value=value)
         axis.max_deceleration = value
         mock_cmd.assert_called_with("AU", target=1, params=[float(value)])
-        assert axis.max_deceleration == u.Quantity(value, axis._units / u.s ** 2)
+        assert axis.max_deceleration == u.Quantity(value, axis._units / u.s**2)
         mock_cmd.assert_called_with("AU?", target=1)
 
 
@@ -1867,15 +1867,15 @@ def test_axis_read_setup(mocker):
         "current": u.Quantity(4.0, u.A),
         "max_velocity": u.Quantity(5.0, u.mm / u.s),
         "encoder_resolution": u.Quantity(6.0, u.mm),
-        "acceleration": u.Quantity(7.0, u.mm / u.s ** 2),
-        "deceleration": u.Quantity(8.0, u.mm / u.s ** 2),
+        "acceleration": u.Quantity(7.0, u.mm / u.s**2),
+        "deceleration": u.Quantity(8.0, u.mm / u.s**2),
         "velocity": u.Quantity(9.0, u.mm / u.s),
-        "max_acceleration": u.Quantity(10.0, u.mm / u.s ** 2.0),
+        "max_acceleration": u.Quantity(10.0, u.mm / u.s**2.0),
         "homing_velocity": u.Quantity(11.0, u.mm / u.s),
         "jog_high_velocity": u.Quantity(12.0, u.mm / u.s),
         "jog_low_velocity": u.Quantity(13.0, u.mm / u.s),
-        "estop_deceleration": u.Quantity(14.0, u.mm / u.s ** 2.0),
-        "jerk": u.Quantity(14.0, u.mm / u.s ** 3.0),
+        "estop_deceleration": u.Quantity(14.0, u.mm / u.s**2.0),
+        "jerk": u.Quantity(14.0, u.mm / u.s**3.0),
         "proportional_gain": 15.0,  # last 1 removed at return
         "derivative_gain": 16.0,
         "integral_gain": 17.0,

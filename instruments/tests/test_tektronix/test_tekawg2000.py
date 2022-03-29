@@ -210,7 +210,7 @@ def test_upload_waveform(yzero, ymult, xincr, waveform):
     """Upload a waveform from the PC to the instrument."""
     # prep waveform
     waveform = numpy.array(waveform)
-    waveform_send = waveform * (2 ** 12 - 1)
+    waveform_send = waveform * (2**12 - 1)
     waveform_send = waveform_send.astype("<u2").tobytes()
     wfm_header_2 = str(len(waveform_send))
     wfm_header_1 = len(wfm_header_2)
