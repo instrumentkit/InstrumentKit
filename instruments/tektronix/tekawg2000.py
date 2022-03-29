@@ -257,7 +257,7 @@ class TekAWG2000(SCPIInstrument):
         self.sendcmd(f"WFMP:YMULT {ymult}")
         self.sendcmd(f"WFMP:XINCR {xincr}")
 
-        waveform *= 2 ** 12 - 1
+        waveform *= 2**12 - 1
         waveform = waveform.astype("<u2").tobytes()
         wfm_header_2 = str(len(waveform))
         wfm_header_1 = len(wfm_header_2)

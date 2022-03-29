@@ -484,14 +484,14 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             # TODO: incorperate the unit_string somehow
             if numpy:
                 return self.scale * (
-                    (TekDPO70000.VERT_DIVS / 2) * data.astype(float) / (2 ** 15)
+                    (TekDPO70000.VERT_DIVS / 2) * data.astype(float) / (2**15)
                     - self.position
                 )
 
             scale = self.scale
             position = self.position
             rval = tuple(
-                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2 ** 15) - position)
+                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2**15) - position)
                 for d in map(float, data)
             )
             return rval
@@ -624,14 +624,14 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
                 return (
                     scale
                     * (
-                        (TekDPO70000.VERT_DIVS / 2) * data.astype(float) / (2 ** 15)
+                        (TekDPO70000.VERT_DIVS / 2) * data.astype(float) / (2**15)
                         - position
                     )
                     + offset
                 )
 
             return tuple(
-                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2 ** 15) - position)
+                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2**15) - position)
                 + offset
                 for d in map(float, data)
             )

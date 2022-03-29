@@ -364,12 +364,12 @@ def test_apt_pia_channel_drive_op_parameters(init_kim101):
         assert apt.channel[0].drive_op_parameters == [
             u.Quantity(90, u.V),
             u.Quantity(500, 1 / u.s),
-            u.Quantity(5000, 1 / u.s ** 2),
+            u.Quantity(5000, 1 / u.s**2),
         ]
         apt.channel[0].drive_op_parameters = [
             u.Quantity(100, u.V),
             u.Quantity(1000, 1 / u.s),
-            u.Quantity(10000, 1 / u.s ** 2),
+            u.Quantity(10000, 1 / u.s**2),
         ]
 
 
@@ -491,14 +491,14 @@ def test_apt_pia_channel_jog_parameters(init_kim101):
             500,
             1000,
             u.Quantity(400, 1 / u.s),
-            u.Quantity(5000, 1 / u.s ** 2),
+            u.Quantity(5000, 1 / u.s**2),
         ]
         apt.channel[0].jog_parameters = [
             2,
             100,
             100,
             u.Quantity(1000, 1 / u.s),
-            u.Quantity(10000, 1 / u.s ** 2),
+            u.Quantity(10000, 1 / u.s**2),
         ]
 
         # invalid setter

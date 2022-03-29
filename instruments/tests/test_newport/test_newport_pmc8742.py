@@ -284,8 +284,8 @@ def test_axis_return_index_error(ax):
 @given(val=st.integers(min_value=1, max_value=200000))
 def test_axis_acceleration(val):
     """Set / get axis acceleration unitful and without units."""
-    val_unit = u.Quantity(val, u.s ** -2)
-    val_unit_other = val_unit.to(u.min ** -2)
+    val_unit = u.Quantity(val, u.s**-2)
+    val_unit_other = val_unit.to(u.min**-2)
     with expected_protocol(
         ik.newport.PicoMotorController8742,
         [f"1AC{val}", f"1AC{val}", "1AC?"],

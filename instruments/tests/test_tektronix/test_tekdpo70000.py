@@ -94,7 +94,7 @@ def test_data_source_read_waveform(channel, values):
     offset = 0.0
     scaled_values = [
         scale
-        * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2 ** 15) - position)
+        * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2**15) - position)
         + offset
         for v in values
     ]
@@ -105,7 +105,7 @@ def test_data_source_read_waveform(channel, values):
             * (
                 (ik.tektronix.TekDPO70000.VERT_DIVS / 2)
                 * values.astype(float)
-                / (2 ** 15)
+                / (2**15)
                 - position
             )
             + offset
@@ -167,7 +167,7 @@ def test_data_source_read_waveform_with_old_data_source():
     offset = 0.0
     scaled_values = [
         scale
-        * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2 ** 15) - position)
+        * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2**15) - position)
         + offset
         for v in values
     ]
@@ -177,7 +177,7 @@ def test_data_source_read_waveform_with_old_data_source():
             * (
                 (ik.tektronix.TekDPO70000.VERT_DIVS / 2)
                 * values.astype(float)
-                / (2 ** 15)
+                / (2**15)
                 - position
             )
             + offset
@@ -691,13 +691,13 @@ def test_math_scale_raw_data(values):
     position = -2.3
     expected_value = tuple(
         scale
-        * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2 ** 15) - position)
+        * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2**15) - position)
         for v in values
     )
     if numpy:
         values = numpy.array(values)
         expected_value = scale * (
-            (ik.tektronix.TekDPO70000.VERT_DIVS / 2) * values.astype(float) / (2 ** 15)
+            (ik.tektronix.TekDPO70000.VERT_DIVS / 2) * values.astype(float) / (2**15)
             - position
         )
 
@@ -951,7 +951,7 @@ def test_channel_scale_raw_data(values):
     offset = u.Quantity(0.0, u.V)
     expected_value = tuple(
         scale
-        * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2 ** 15) - position)
+        * ((ik.tektronix.TekDPO70000.VERT_DIVS / 2) * float(v) / (2**15) - position)
         for v in values
     )
     if numpy:
@@ -961,7 +961,7 @@ def test_channel_scale_raw_data(values):
             * (
                 (ik.tektronix.TekDPO70000.VERT_DIVS / 2)
                 * values.astype(float)
-                / (2 ** 15)
+                / (2**15)
                 - position
             )
             + offset
@@ -1045,7 +1045,7 @@ def test_acquire_mode_actual(value):
         assert inst.acquire_mode_actual == value
 
 
-@given(value=st.integers(min_value=0, max_value=2 ** 30 - 1))
+@given(value=st.integers(min_value=0, max_value=2**30 - 1))
 def test_acquire_num_acquisitions(value):
     """Get number of waveform acquisitions since start (query only)."""
     with expected_protocol(

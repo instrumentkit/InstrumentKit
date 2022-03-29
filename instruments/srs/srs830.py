@@ -28,7 +28,7 @@ from instruments.util_fns import (
 
 # CONSTANTS ###################################################################
 
-VALID_SAMPLE_RATES = [2.0 ** n for n in range(-4, 10)]
+VALID_SAMPLE_RATES = [2.0**n for n in range(-4, 10)]
 VALID_SAMPLE_RATES += ["trigger"]
 
 # CLASSES #####################################################################

@@ -161,11 +161,11 @@ class PicoMotorController8742(Instrument):
                 >>> ax = inst.axis[0]
                 >>> ax.acceleration = u.Quantity(500, 1/u.s**-2)
             """
-            return assume_units(int(self.query("AC?")), u.s ** -2)
+            return assume_units(int(self.query("AC?")), u.s**-2)
 
         @acceleration.setter
         def acceleration(self, value):
-            value = int(assume_units(value, u.s ** -2).to(u.s ** -2).magnitude)
+            value = int(assume_units(value, u.s**-2).to(u.s**-2).magnitude)
             if not 1 <= value <= 200000:
                 raise ValueError(
                     f"Acceleration must be between 1 and "
