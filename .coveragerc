@@ -1,3 +1,8 @@
+[paths]
+source =
+    src
+    */site-packages
+
 [report]
 omit =
     */python?.?/*
@@ -11,4 +16,8 @@ exclude_lines =
     raise AssertionError
 
 [run]
+branch = false
+parallel = true
+source =
+    instruments
 relative_files = True
