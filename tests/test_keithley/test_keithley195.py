@@ -27,13 +27,13 @@ from instruments.units import ureg as u
 # PYTEST FIXTURES FOR INITIALIZATION #
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def init():
     """Returns the initialization command that is sent to instrument."""
     return "YX\nG1DX"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def statusword():
     """Return a standard statusword for the status of the instrument."""
     trigger = b"1"  # talk_one_shot

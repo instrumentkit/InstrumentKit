@@ -6,6 +6,7 @@ Unit tests for the Newport ESP 301 axis controller
 # IMPORTS #####################################################################
 
 import time
+from unittest import mock
 
 from hypothesis import given, strategies as st
 import pytest
@@ -175,22 +176,22 @@ def test_reset(mocker):
 
 
 @given(prg_id=st.integers(min_value=1, max_value=100))
-def test_define_program(mocker, prg_id):
+def test_define_program(prg_id):
     """Define an empty program.
 
     Mock out the `_newport_cmd` routine. Already tested and not
     required.
     """
     with expected_protocol(ik.newport.NewportESP301, [], [], sep="\r") as inst:
-        mock_cmd = mocker.patch.object(inst, "_newport_cmd")
-        with inst.define_program(prg_id):
-            pass
-        calls = (
-            mocker.call("XX", target=prg_id),
-            mocker.call("EP", target=prg_id),
-            mocker.call("QP"),
-        )
-        mock_cmd.has_calls(calls)
+        with mock.patch.object(inst, "_newport_cmd") as mock_cmd:
+            with inst.define_program(prg_id):
+                pass
+            calls = (
+                mock.call("XX", target=prg_id),
+                mock.call("EP", target=prg_id),
+                mock.call("QP"),
+            )
+            mock_cmd.has_calls(calls)
 
 
 @given(prg_id=st.integers().filter(lambda x: x < 1 or x > 100))
@@ -244,16 +245,16 @@ def test_execute_bulk_command(mocker, errcheck):
 
 
 @given(prg_id=st.integers(min_value=1, max_value=100))
-def test_run_program(mocker, prg_id):
+def test_run_program(prg_id):
     """Run a program.
 
     Mock out the `_newport_cmd` routine. Already tested and not
     required.
     """
     with expected_protocol(ik.newport.NewportESP301, [], [], sep="\r") as inst:
-        mock_cmd = mocker.patch.object(inst, "_newport_cmd")
-        inst.run_program(prg_id)
-        mock_cmd.assert_called_with("EX", target=prg_id)
+        with mock.patch.object(inst, "_newport_cmd") as mock_cmd:
+            inst.run_program(prg_id)
+            mock_cmd.assert_called_with("EX", target=prg_id)
 
 
 @given(prg_id=st.integers().filter(lambda x: x < 1 or x > 100))
@@ -1690,7 +1691,7 @@ def test_axis_setup_axis_torque(mocker):
 
 
 @given(rmt_time=st.integers().filter(lambda x: x < 0 or x > 60000))
-def test_axis_setup_axis_torque_time_out_of_range(mocker, rmt_time):
+def test_axis_setup_axis_torque_time_out_of_range(rmt_time):
     """Raise ValueError when time is out of range.
 
     Mock out `_newport_cmd` since tested elsewhere.
@@ -1731,9 +1732,9 @@ def test_axis_setup_axis_torque_time_out_of_range(mocker, rmt_time):
         ik.newport.NewportESP301, [ax_init[0]], [ax_init[1]], sep="\r"
     ) as inst:
         axis = inst.axis[0]
-        mocker.patch.object(axis, "_newport_cmd")
-        mocker.patch.object(axis, "read_setup", return_value=True)
-        with pytest.raises(ValueError) as err_info:
+        with mock.patch.object(axis, "_newport_cmd"), mock.patch.object(
+            axis, "read_setup", return_value=True
+        ), pytest.raises(ValueError) as err_info:
             axis.setup_axis(
                 motor_type=motor_type,
                 current=current,
@@ -1772,7 +1773,7 @@ def test_axis_setup_axis_torque_time_out_of_range(mocker, rmt_time):
 
 
 @given(rmt_perc=st.integers().filter(lambda x: x < 0 or x > 100))
-def test_axis_setup_axis_torque_percentage_out_of_range(mocker, rmt_perc):
+def test_axis_setup_axis_torque_percentage_out_of_range(rmt_perc):
     """Raise ValueError when time is out of range.
 
     Mock out `_newport_cmd` since tested elsewhere.
@@ -1813,9 +1814,9 @@ def test_axis_setup_axis_torque_percentage_out_of_range(mocker, rmt_perc):
         ik.newport.NewportESP301, [ax_init[0]], [ax_init[1]], sep="\r"
     ) as inst:
         axis = inst.axis[0]
-        mocker.patch.object(axis, "_newport_cmd")
-        mocker.patch.object(axis, "read_setup", return_value=True)
-        with pytest.raises(ValueError) as err_info:
+        with mock.patch.object(axis, "_newport_cmd"), mock.patch.object(
+            axis, "read_setup", return_value=True
+        ), pytest.raises(ValueError) as err_info:
             axis.setup_axis(
                 motor_type=motor_type,
                 current=current,

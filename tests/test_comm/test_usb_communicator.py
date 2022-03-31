@@ -5,7 +5,8 @@ Unit tests for the USB communicator.
 
 # IMPORTS ####################################################################
 
-from hypothesis import given, strategies as st
+import math
+
 import pytest
 
 import usb.core
@@ -109,7 +110,7 @@ def test_terminator_wrong_type(inst):
     )
 
 
-@given(val=st.integers(min_value=1))
+@pytest.mark.parametrize("val", [1, 1000, math.inf])
 def test_timeout_get(val, inst):
     """Get a timeout from device (ms) and turn into s."""
     # mock timeout value of device
