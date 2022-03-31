@@ -276,7 +276,7 @@ def init_ksg101():
     return stdin, stdout
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def init_kpz001():
     """Return the send, receive value to initialize a KPZ001 unit."""
     stdin = ThorLabsPacket(

@@ -10,6 +10,7 @@ Tests for the Tektronix TDS 5xx series oscilloscope.
 from datetime import datetime
 import struct
 import time
+from unittest import mock
 
 from hypothesis import (
     given,
@@ -680,6 +681,7 @@ def test_display_clock_value_error():
 
 
 @given(data=st.binary(min_size=1, max_size=2147483647))
+@mock.patch.object(time, "sleep", return_value=None)
 def test_get_hardcopy(mocker, data):
     """Transfer data in binary from the instrument.
 
@@ -694,8 +696,6 @@ def test_get_hardcopy(mocker, data):
     in header are filled with zeros.
     Mocking out sleep to do nothing.
     """
-    # mock out time
-    mocker.patch.object(time, "sleep", return_value=None)
 
     # make data
     length_data = (len(data) - 8) * 8  # subtract header and color table

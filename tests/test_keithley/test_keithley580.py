@@ -29,13 +29,13 @@ from instruments.units import ureg as u
 # PYTEST FIXTURES FOR INITIALIZATION #
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def init():
     """Returns the initialization command that is sent to instrument."""
     return "Y:X:"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def create_statusword():
     """Create a function that can create a status word.
 
@@ -83,7 +83,7 @@ def create_statusword():
     return make_statusword
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def create_measurement():
     """Create a function that can create a measurement.
 
