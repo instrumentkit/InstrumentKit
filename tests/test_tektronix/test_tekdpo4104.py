@@ -355,7 +355,7 @@ def test_data_source_read_waveform_ascii(values, ymult, yzero, xzero, xincr):
 
         # manually calculate the values
         if numpy:
-            raw = numpy.array(values_str.split(","), dtype=numpy.float)
+            raw = numpy.array(values_str.split(","), dtype=float)
             x_calc = numpy.arange(ptcnt) * xincr + xzero
             y_calc = (raw - yoffs) * ymult + yzero
         else:

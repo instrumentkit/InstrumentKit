@@ -86,7 +86,7 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
                     raw = self._tek.query("CURVE?")
                     raw = raw.split(",")  # Break up comma delimited string
                     if numpy:
-                        raw = numpy.array(raw, dtype=numpy.float)  # Convert to ndarray
+                        raw = numpy.array(raw, dtype=float)  # Convert to ndarray
                     else:
                         raw = tuple(map(float, raw))
                 else:

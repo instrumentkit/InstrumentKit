@@ -269,7 +269,7 @@ class MAUI(Oscilloscope):
             # format the string to appropriate data
             retval = retval.replace('"', "").split()
             if numpy:
-                dat_val = numpy.array(retval, dtype=numpy.float)  # Convert to ndarray
+                dat_val = numpy.array(retval, dtype=float)  # Convert to ndarray
             else:
                 dat_val = tuple(map(float, retval))
 

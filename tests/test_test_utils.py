@@ -137,5 +137,5 @@ def test_iterable_eq_passes_two_numpy_array_quantities():
     """
     values = [1, 2, 3]
     a = numpy.array(values) * u.V
-    b = numpy.array(a) * u.V
+    b = numpy.array(values) * u.V
     iterable_eq(a, b)

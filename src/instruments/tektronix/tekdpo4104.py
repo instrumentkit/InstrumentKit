@@ -123,9 +123,7 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
                     raw = self._tek.query("CURVE?")
                     raw = raw.split(",")  # Break up comma delimited string
                     if numpy:
-                        raw = numpy.array(
-                            raw, dtype=numpy.float
-                        )  # Convert to numpy array
+                        raw = numpy.array(raw, dtype=float)  # Convert to numpy array
                     else:
                         raw = map(float, raw)
                 else:
