@@ -116,10 +116,16 @@ def test_loopbackcomm_read_raw_size_invalid():
         comm.read_raw(size=-2)
 
 
+@mock.patch("builtins.input")
+def test_loopbackcomm_read_raw_stdin(mock_input):
+    mock_input.return_value = "Returned string."
+    comm = LoopbackCommunicator()
+    assert comm.read_raw() == b"Returned string."
+
+
 def test_loopbackcomm_write_raw():
     mock_stdout = mock.MagicMock()
     comm = LoopbackCommunicator(stdout=mock_stdout)
-
     comm.write_raw(b"mock")
     mock_stdout.write.assert_called_with(b"mock")
 
