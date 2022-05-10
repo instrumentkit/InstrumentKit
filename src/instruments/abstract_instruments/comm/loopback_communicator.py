@@ -121,7 +121,7 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
             else:
                 raise ValueError("Must read a positive value of characters.")
         else:
-            input_var = input("Desired Response: ")
+            input_var = input("Desired Response: ").encode("utf-8")
         return input_var
 
     def write_raw(self, msg):
