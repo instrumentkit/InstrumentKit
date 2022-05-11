@@ -17,7 +17,7 @@ from instruments.util_fns import (
     unitless_property,
     bounded_unitful_property,
     ProxyList,
-    string_property
+    string_property,
 )
 
 
@@ -68,7 +68,9 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
             elif hasattr(limits, "__iter__") and len(limits) >= 2:
                 cmd = f":TRAC:Y? {self._name},{limits[0]+1},{limits[1]+1}"
             else:
-                raise AssertionError("limits has to be an iterable with at least two members")
+                raise AssertionError(
+                    "limits has to be an iterable with at least two members"
+                )
             self._parent.sendcmd(cmd)
             data = self._parent.binblockread(data_width=8, fmt="<d")
             self._parent._file.read_raw(1)  # pylint: disable=protected-access
@@ -85,7 +87,9 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
             elif hasattr(limits, "__iter__") and len(limits) >= 2:
                 cmd = f":TRAC:X? {self._name},{limits[0]+1},{limits[1]+1}"
             else:
-                raise AssertionError("limits has to be an iterable with at least two members")
+                raise AssertionError(
+                    "limits has to be an iterable with at least two members"
+                )
             self._parent.sendcmd(cmd)
             data = self._parent.binblockread(data_width=8, fmt="<d")
             self._parent._file.read_raw(1)  # pylint: disable=protected-access
@@ -126,12 +130,12 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
             Output: 'Manufacturer,Product,SerialNumber,FirmwareVersion'
             Sample: 'YOKOGAWA,AQ6370D,90Y403996,02.08'
             """,
-        readonly=True)
+        readonly=True,
+    )
 
     status = unitless_property(
-        "*STB",
-        doc="""The status byte of the device.""",
-        readonly=True)
+        "*STB", doc="""The status byte of the device.""", readonly=True
+    )
 
     operation_event = unitless_property(
         ":status:operation:event",
@@ -143,7 +147,8 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
             Bit 1: Program
             Bit 0: Sweep finished.
         """,
-        readonly=True)
+        readonly=True,
+    )
 
     @property
     def channel(self):
