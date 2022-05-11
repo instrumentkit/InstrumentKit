@@ -31,8 +31,30 @@ def test_channel_is_channel_class():
 
 
 def test_init():
-    with expected_protocol(ik.yokogawa.Yokogawa6370, [":FORMat:DATA REAL,64"], []) as _:
+    with expected_protocol(ik.yokogawa.Yokogawa6370,
+                           [":FORMat:DATA REAL,64"], []) as _:
         pass
+
+
+def test_id():
+    with expected_protocol(ik.yokogawa.Yokogawa6370,
+                           [":FORMat:DATA REAL,64", "*IDN?"],
+                           ["'YOKOGAWA,AQ6370D,x,02.08'"]) as inst:
+        assert inst.id == 'YOKOGAWA,AQ6370D,x,02.08'
+
+
+def test_status():
+    with expected_protocol(ik.yokogawa.Yokogawa6370,
+                           [":FORMat:DATA REAL,64", "*STB?"],
+                           ["7"]) as inst:
+        assert inst.status == 7
+
+
+def test_operation_event():
+    with expected_protocol(ik.yokogawa.Yokogawa6370,
+                           [":FORMat:DATA REAL,64", ":status:operation:event?"],
+                           ["7"]) as inst:
+        assert inst.operation_event == 7
 
 
 @given(
@@ -263,3 +285,15 @@ def test_start_sweep():
         [],
     ) as inst:
         inst.start_sweep()
+
+
+def test_analysis():
+    with expected_protocol(
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":CALC:DATA?",
+        ],
+        ["1,2,3,7.3,3.12314,.2345"],
+    ) as inst:
+        assert inst.analysis() == [1, 2, 3, 7.3, 3.12314, .2345]
