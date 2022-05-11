@@ -57,15 +57,35 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
         # METHODS #
 
-        def data(self, bin_format=True):
-            cmd = f":TRAC:Y? {self._name}"
+        def data(self, limits=None, bin_format=True):
+            """
+            Return the trace's level data.
+
+            :param limits: Range of samples to transfer. (0 to 50000)
+            """
+            if limits is None:
+                cmd = f":TRAC:Y? {self._name}"
+            elif hasattr(limits, "__iter__") and len(limits) >= 2:
+                cmd = f":TRAC:Y? {self._name},{limits[0]+1},{limits[1]+1}"
+            else:
+                raise AssertionError("limits has to be an iterable with at least two members")
             self._parent.sendcmd(cmd)
             data = self._parent.binblockread(data_width=8, fmt="<d")
             self._parent._file.read_raw(1)  # pylint: disable=protected-access
             return data
 
-        def wavelength(self, bin_format=True):
-            cmd = f":TRAC:X? {self._name}"
+        def wavelength(self, limits=None, bin_format=True):
+            """
+            Return the trace's wavelength data.
+
+            :param limits: Range of samples to transfer. (0 to 50000)
+            """
+            if limits is None:
+                cmd = f":TRAC:X? {self._name}"
+            elif hasattr(limits, "__iter__") and len(limits) >= 2:
+                cmd = f":TRAC:X? {self._name},{limits[0]+1},{limits[1]+1}"
+            else:
+                raise AssertionError("limits has to be an iterable with at least two members")
             self._parent.sendcmd(cmd)
             data = self._parent.binblockread(data_width=8, fmt="<d")
             self._parent._file.read_raw(1)  # pylint: disable=protected-access
@@ -211,17 +231,17 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     # METHODS #
 
-    def data(self):
+    def data(self, limits=None):
         """
         Function to query the active Trace data of the OSA.
         """
-        return self.channel[self.active_trace].data()
+        return self.channel[self.active_trace].data(limits=limits)
 
-    def wavelength(self):
+    def wavelength(self, limits=None):
         """
         Query the wavelength axis of the active trace.
         """
-        return self.channel[self.active_trace].wavelength()
+        return self.channel[self.active_trace].wavelength(limits=limits)
 
     def analysis(self):
         """Get the analysis data."""
