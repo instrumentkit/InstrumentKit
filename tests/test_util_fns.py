@@ -72,8 +72,9 @@ def mock_inst(mocker):
 
         int_property = int_property("42")
 
-        unitful_property_limited = unitful_property("42", u.m,
-                                                    valid_range=(1*u.m, 100*u.m))
+        unitful_property_limited = unitful_property(
+            "42", u.m, valid_range=(1 * u.m, 100 * u.m)
+        )
 
         unitful_property = unitful_property("42", u.m)
 
@@ -183,12 +184,16 @@ def test_ProxyList_invalid_idx():
         _ = proxy_list[10]  # Should raise IndexError
 
 
-@pytest.mark.parametrize("input, out", ((1, u.Quantity(1, "m")),
-                                        (5 * u.mm, u.Quantity(5, "mm")),
-                                        ("7.3 km", u.Quantity(7.3, "km")),
-                                        (u.Quantity(9, "nm"), 9 * u.nm),
-                                        ([1, 5], u.Quantity([1, 5], u.m)),
-                                        ))
+@pytest.mark.parametrize(
+    "input, out",
+    (
+        (1, u.Quantity(1, "m")),
+        (5 * u.mm, u.Quantity(5, "mm")),
+        ("7.3 km", u.Quantity(7.3, "km")),
+        (u.Quantity(9, "nm"), 9 * u.nm),
+        ([1, 5], u.Quantity([1, 5], u.m)),
+    ),
+)
 def test_assume_units_correct(input, out):
     unit_eq(assume_units(input, "m"), out)
 
@@ -314,7 +319,7 @@ class Test_unitful_property:
         assert mock_inst._sendcmd == f"42 {value:e}"
         mock_inst.spy_sendcmd.assert_called()
 
-    @pytest.mark.parametrize("value", (.1, 200, .1 * u.m, 200 * u.m))
+    @pytest.mark.parametrize("value", (0.1, 200, 0.1 * u.m, 200 * u.m))
     def test_unitful_property_sendcmd_limited_unfit(self, mock_inst, value):
         """Assert that unitful_property calls sendcmd, query of parent class.
         Here an input out of bounds for limited property."""
