@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+"""
+Unit tests for the HCP TC038
+"""
+
+# IMPORTS #####################################################################
+
+
+import struct
+
+from hypothesis import (
+    given,
+    strategies as st,
+)
+
+import instruments as ik
+from instruments.optional_dep_finder import numpy
+from tests import (
+    expected_protocol,
+    iterable_eq,
+    unit_eq
+)
+from instruments.units import ureg as u
+
+
+from instruments.hcp import TC038
+
+
+def test_sendcmd():
+    with expected_protocol(TC038, ["\x0201010x\x03"], []) as inst:
+        inst.sendcmd("x")
+
+
+def test_query():
+    with expected_protocol(TC038, ["\x0201010x\x03"], ["y"]) as inst:
+        assert inst.query("x") == "y"
+
+
+def test_setpoint():
+    with expected_protocol(TC038, ["\x0201010WRDD0120,01\x03"],
+                           ["\x020101OK00C8\0x3"]) as inst:
+        value = inst.setpoint
+        unit_eq(value, u.Quantity(20, u.degC))
+
+
+def test_setpoint_setter():
+    # Communication from manual.
+    with expected_protocol(TC038, ["\x0201010WWRD0120,01,00C8\x03"],
+                           ["\x020101OK\0x3"]) as inst:
+        inst.setpoint = 20
+
+
+def test_temperature():
+    # Communication from manual.
+    with expected_protocol(TC038, ["\x0201010WRDD0002,01\x03"],
+                           ["\x020101OK00C8\0x3"]) as inst:
+        value = inst.temperature
+        unit_eq(value, u.Quantity(20, u.degC))
