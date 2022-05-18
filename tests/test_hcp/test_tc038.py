@@ -6,18 +6,8 @@ Unit tests for the HCP TC038
 # IMPORTS #####################################################################
 
 
-import struct
-
-from hypothesis import (
-    given,
-    strategies as st,
-)
-
-import instruments as ik
-from instruments.optional_dep_finder import numpy
 from tests import (
     expected_protocol,
-    iterable_eq,
     unit_eq
 )
 from instruments.units import ureg as u
@@ -75,7 +65,8 @@ def test_set_monitored():
 
 def test_information():
     # Communication from manual.
-    with expected_protocol(TC038, ["\x0201010INF\x03"],
-                           ["\x020101OKUT150333 V01.R001111222233334444\x03"]) as inst:
+    with expected_protocol(
+            TC038, ["\x0201010INF6\x03"],
+            ["\x020101OKUT150333 V01.R001111222233334444\x03"]) as inst:
         value = inst.information
         assert value == "UT150333 V01.R001111222233334444"

@@ -137,8 +137,7 @@ class TC038(Instrument):
     @property
     def information(self):
         """Read the device information."""
-        # TODO laut Manual INF6
-        return self.query("INF")[7:-1]
+        return self.query("INF6")[7:-1]
 
     @staticmethod
     def _data_to_temp(data):
