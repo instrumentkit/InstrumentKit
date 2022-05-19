@@ -127,10 +127,10 @@ def test_unitful_property_valid_range():
 def test_unitful_property_valid_range_functions():
     class UnitfulMock(MockInstrument):
         def min_value(self):
-            return 0
+            return 0 * u.Hz
 
         def max_value(self):
-            return 10
+            return 10 * u.Hz
 
         unitful_property = unitful_property(
             "MOCK", u.hertz, valid_range=(min_value, max_value)
