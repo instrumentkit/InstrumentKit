@@ -27,9 +27,10 @@ class TC038(Instrument):
     application.
     """
 
-    registers = {'temperature': "D0002",
-                 'setpoint': "D0120",
-                 }
+    registers = {
+        "temperature": "D0002",
+        "setpoint": "D0120",
+    }
 
     def __init__(self, *args, **kwargs):
         """
@@ -65,8 +66,7 @@ class TC038(Instrument):
             the command, if necessary.
         """
         # 010 is CPU (01) and time to wait (0), which are fix
-        super().sendcmd(chr(2) + f"{self.addr:02}" + "010"
-                        + command + chr(3))
+        super().sendcmd(chr(2) + f"{self.addr:02}" + "010" + command + chr(3))
 
     def query(self, command):
         """
@@ -83,10 +83,9 @@ class TC038(Instrument):
         string
             response of the system.
         """
-        return super().query(chr(2) + f"{self.addr:02}" + "010"
-                             + command + chr(3))
+        return super().query(chr(2) + f"{self.addr:02}" + "010" + command + chr(3))
 
-    def set_monitored_quantity(self, quantity='temperature'):
+    def set_monitored_quantity(self, quantity="temperature"):
         """
         Configure the oven to monitor a certain `quantity`.
 
