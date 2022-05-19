@@ -72,10 +72,10 @@ def test_read_CRC_error():
 
 def test_read_address_error():
     with expected_protocol(
-            TC038D,
-            [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
-            [b"\x01\x83\x02\01\02"],
-            sep="",
+        TC038D,
+        [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
+        [b"\x01\x83\x02\01\02"],
+        sep="",
     ) as inst:
         with pytest.raises(ValueError):
             inst.temperature
@@ -83,10 +83,10 @@ def test_read_address_error():
 
 def test_read_elements_error():
     with expected_protocol(
-            TC038D,
-            [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
-            [b"\x01\x83\x03\01\02"],
-            sep="",
+        TC038D,
+        [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
+        [b"\x01\x83\x03\01\02"],
+        sep="",
     ) as inst:
         with pytest.raises(ValueError):
             inst.temperature
@@ -94,10 +94,10 @@ def test_read_elements_error():
 
 def test_read_any_error():
     with expected_protocol(
-            TC038D,
-            [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
-            [b"\x01\x43\x05\01\02"],
-            sep="",
+        TC038D,
+        [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
+        [b"\x01\x43\x05\01\02"],
+        sep="",
     ) as inst:
         with pytest.raises(ConnectionError):
             inst.temperature
