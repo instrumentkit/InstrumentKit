@@ -107,8 +107,8 @@ class TC038D(Instrument):
                     data.append(element >> i * 8 & 0xFF)
         else:
             raise ValueError(
-                    "Values has to be an integer or an iterable of "
-                    f"integers. values: {values}"
+                "Values has to be an integer or an iterable of "
+                f"integers. values: {values}"
             )
         data += self.CRC16(data)
         self._file.write_raw(bytes(data))
