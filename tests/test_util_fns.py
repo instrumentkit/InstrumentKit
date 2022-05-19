@@ -77,7 +77,7 @@ def mock_inst(mocker):
         )
 
         unitful_property_limited_numbers = unitful_property(
-            "42", u.m, valid_range=(1, 100.)
+            "42", u.m, valid_range=(1, 100.0)
         )
 
         unitful_property = unitful_property("42", u.m)
@@ -194,6 +194,7 @@ def test_ProxyList_invalid_idx():
         (1, u.Quantity(1, "m")),
         (5 * u.mm, u.Quantity(5, "mm")),
         ("7.3 km", u.Quantity(7.3, "km")),
+        ("7.5", u.Quantity(7.5, u.m)),
         (u.Quantity(9, "nm"), 9 * u.nm),
     ),
 )
@@ -339,7 +340,7 @@ class Test_unitful_property:
         assert mock_inst._sendcmd == f"42 {value.magnitude:e}"
         mock_inst.spy_sendcmd.assert_called()
 
-    @pytest.mark.parametrize("value", (13, 17., 55.5, 99))
+    @pytest.mark.parametrize("value", (13, 17.0, 55.5, 99))
     def test_unitful_property_sendcmd_limited_pass_ul(self, mock_inst, value):
         """Assert that unitful_property calls sendcmd, query of parent class.
         Here a numbers input fit for quantity limited property."""
@@ -365,7 +366,7 @@ class Test_unitful_property:
         assert mock_inst._sendcmd == f"42 {value.magnitude:e}"
         mock_inst.spy_sendcmd.assert_called()
 
-    @pytest.mark.parametrize("value", (13, 17., 55.5, 99))
+    @pytest.mark.parametrize("value", (13, 17.0, 55.5, 99))
     def test_unitful_property_sendcmd_limited_pass_ul2(self, mock_inst, value):
         """Assert that unitful_property calls sendcmd, query of parent class.
         Here a numbers input fit for numbers limited property."""
