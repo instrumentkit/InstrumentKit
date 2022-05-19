@@ -36,12 +36,68 @@ def test_write_multiple_CRC_error():
             inst.setpoint = u.Quantity(32.1, u.degC)
 
 
+def test_write_multiple_wrong_values():
+    with expected_protocol(
+        TC038D,
+        [],
+        [],
+        sep="",
+    ) as inst:
+        with pytest.raises(ValueError):
+            inst.writeMultiple(0x010A, 5.5)
+
+
+def test_write_multiple_Value_error():
+    with expected_protocol(
+        TC038D,
+        [b"\x01\x10\x01\x06\x00\x02\x04\x00\x00\x01A\xbf\xb5"],
+        [b"\x01\x90\x02\x06\x00"],
+        sep="",
+    ) as inst:
+        with pytest.raises(ValueError) as exc:
+            inst.setpoint = u.Quantity(32.1, u.degC)
+            assert str(exc) == "Wrong start address"
+
+
 def test_read_CRC_error():
     with expected_protocol(
         TC038D,
         [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
         [b"\x01\x03\x04\x00\x00\x03\xE8\x01\x02"],
         sep="",
+    ) as inst:
+        with pytest.raises(ConnectionError):
+            inst.temperature
+
+
+def test_read_address_error():
+    with expected_protocol(
+            TC038D,
+            [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
+            [b"\x01\x83\x02\01\02"],
+            sep="",
+    ) as inst:
+        with pytest.raises(ValueError):
+            inst.temperature
+
+
+def test_read_elements_error():
+    with expected_protocol(
+            TC038D,
+            [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
+            [b"\x01\x83\x03\01\02"],
+            sep="",
+    ) as inst:
+        with pytest.raises(ValueError):
+            inst.temperature
+
+
+def test_read_any_error():
+    with expected_protocol(
+            TC038D,
+            [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
+            [b"\x01\x43\x05\01\02"],
+            sep="",
     ) as inst:
         with pytest.raises(ConnectionError):
             inst.temperature
