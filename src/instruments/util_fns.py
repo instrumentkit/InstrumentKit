@@ -33,13 +33,14 @@ def assume_units(value, units):
         ``units``, depending on if ``value`` is unitful.
     :rtype: `Quantity`
     """
-    if isinstance(value, str):
+    if isinstance(value, u.Quantity):
+        return value
+    elif isinstance(value, str):
         value = u.Quantity(value)
         if value.dimensionless:
             return u.Quantity(value.magnitude, units)
-    elif not isinstance(value, u.Quantity):
-        return u.Quantity(value, units)
-    return value
+        return value
+    return u.Quantity(value, units)
 
 
 def setattr_expression(target, name_expr, value):
@@ -502,6 +503,8 @@ def unitful_property(
         if min_value is not None:
             if callable(min_value):
                 min_value = min_value(self)  # pylint: disable=not-callable
+            else:
+                min_value = assume_units(min_value, units)
             if newval < min_value:
                 raise ValueError(
                     f"Unitful quantity is too low. Got {newval}, "
@@ -510,6 +513,8 @@ def unitful_property(
         if max_value is not None:
             if callable(max_value):
                 max_value = max_value(self)  # pylint: disable=not-callable
+            else:
+                max_value = assume_units(max_value, units)
             if newval > max_value:
                 raise ValueError(
                     f"Unitful quantity is too high. Got {newval}, "
