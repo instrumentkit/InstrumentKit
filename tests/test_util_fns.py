@@ -23,6 +23,8 @@ from instruments.util_fns import (
     unitless_property,
 )
 
+from tests import unit_eq
+
 
 # FIXTURES ###################################################################
 
@@ -70,7 +72,15 @@ def mock_inst(mocker):
 
         int_property = int_property("42")
 
-        unitful_property = unitful_property("42", u.K)
+        unitful_property_limited = unitful_property(
+            "42", u.m, valid_range=(1 * u.m, 100 * u.m)
+        )
+
+        unitful_property_limited_numbers = unitful_property(
+            "42", u.m, valid_range=(1, 100.0)
+        )
+
+        unitful_property = unitful_property("42", u.m)
 
         string_property = string_property("'STRING'")
 
@@ -178,19 +188,18 @@ def test_ProxyList_invalid_idx():
         _ = proxy_list[10]  # Should raise IndexError
 
 
-def test_assume_units_correct():
-    m = u.Quantity(1, "m")
-
-    # Check that unitful quantities are kept unitful.
-    assert assume_units(m, "mm").to("mm").magnitude == 1000
-
-    # Check that raw scalars are made unitful.
-    assert assume_units(1, "m").to("mm").magnitude == 1000
-
-
-def test_assume_units_failures():
-    with pytest.raises(pint.errors.DimensionalityError):
-        assume_units(1, "m").to("s")
+@pytest.mark.parametrize(
+    "input, out",
+    (
+        (1, u.Quantity(1, "m")),
+        (5 * u.mm, u.Quantity(5, "mm")),
+        ("7.3 km", u.Quantity(7.3, "km")),
+        ("7.5", u.Quantity(7.5, u.m)),
+        (u.Quantity(9, "nm"), 9 * u.nm),
+    ),
+)
+def test_assume_units_correct(input, out):
+    unit_eq(assume_units(input, "m"), out)
 
 
 def test_setattr_expression_simple():
@@ -289,16 +298,82 @@ def test_int_property_sendcmd_query(mock_inst):
     mock_inst.spy_sendcmd.assert_called()
 
 
-def test_unitful_property_sendcmd_query(mock_inst):
-    """Assert that unitful_property calls sendcmd, query of parent class."""
-    # getter
-    assert mock_inst.unitful_property == u.Quantity(42, u.K)
-    mock_inst.spy_query.assert_called()
-    # setter
-    value = 13
-    mock_inst.unitful_property = u.Quantity(value, u.K)
-    assert mock_inst._sendcmd == f"42 {value:e}"
-    mock_inst.spy_sendcmd.assert_called()
+class Test_unitful_property:
+    def test_unitful_property_sendcmd_query(self, mock_inst):
+        """Assert that unitful_property calls sendcmd, query of parent class."""
+        # getter
+        assert mock_inst.unitful_property == u.Quantity(42, u.m)
+        mock_inst.spy_query.assert_called()
+        # setter
+        value = 13
+        mock_inst.unitful_property = u.Quantity(value, u.m)
+        assert mock_inst._sendcmd == f"42 {value:e}"
+        mock_inst.spy_sendcmd.assert_called()
+
+    def test_unitful_property_sendcmd_query_unitless(self, mock_inst):
+        """Assert that unitful_property calls sendcmd, query of parent class.
+        Here for a unitless input
+        """
+        # getter
+        assert mock_inst.unitful_property == u.Quantity(42, u.m)
+        mock_inst.spy_query.assert_called()
+        # setter
+        value = 13
+        mock_inst.unitful_property = value
+        assert mock_inst._sendcmd == f"42 {value:e}"
+        mock_inst.spy_sendcmd.assert_called()
+
+    @pytest.mark.parametrize("value", (0.1, 200, 0.1 * u.m, 200 * u.m))
+    def test_unitful_property_sendcmd_limited_unfit(self, mock_inst, value):
+        """Assert that unitful_property calls sendcmd, query of parent class.
+        Here an input out of bounds for quantity limited property."""
+        # setter
+        with pytest.raises(ValueError):
+            mock_inst.unitful_property_limited = value
+
+    @pytest.mark.parametrize("value", (13 * u.m, 17 * u.m, 55 * u.m))
+    def test_unitful_property_sendcmd_limited_pass_un(self, mock_inst, value):
+        """Assert that unitful_property calls sendcmd, query of parent class.
+        Here a quantity input fit for quantity limited property."""
+        # setter
+        mock_inst.unitful_property_limited = value
+        assert mock_inst._sendcmd == f"42 {value.magnitude:e}"
+        mock_inst.spy_sendcmd.assert_called()
+
+    @pytest.mark.parametrize("value", (13, 17.0, 55.5, 99))
+    def test_unitful_property_sendcmd_limited_pass_ul(self, mock_inst, value):
+        """Assert that unitful_property calls sendcmd, query of parent class.
+        Here a numbers input fit for quantity limited property."""
+        # setter
+        mock_inst.unitful_property_limited = value
+        assert mock_inst._sendcmd == f"42 {value:e}"
+        mock_inst.spy_sendcmd.assert_called()
+
+    @pytest.mark.parametrize("value", (0.1, 200, 0.1 * u.m, 200 * u.m))
+    def test_unitful_property_sendcmd_limited_unfit2(self, mock_inst, value):
+        """Assert that unitful_property calls sendcmd, query of parent class.
+        Here an input out of numbered bounds for limited property."""
+        # setter
+        with pytest.raises(ValueError):
+            mock_inst.unitful_property_limited_numbers = value
+
+    @pytest.mark.parametrize("value", (13 * u.m, 17 * u.m, 55 * u.m))
+    def test_unitful_property_sendcmd_limited_pass_un2(self, mock_inst, value):
+        """Assert that unitful_property calls sendcmd, query of parent class.
+        Here a quantity input fit for numbers limited property."""
+        # setter
+        mock_inst.unitful_property_limited_numbers = value
+        assert mock_inst._sendcmd == f"42 {value.magnitude:e}"
+        mock_inst.spy_sendcmd.assert_called()
+
+    @pytest.mark.parametrize("value", (13, 17.0, 55.5, 99))
+    def test_unitful_property_sendcmd_limited_pass_ul2(self, mock_inst, value):
+        """Assert that unitful_property calls sendcmd, query of parent class.
+        Here a numbers input fit for numbers limited property."""
+        # setter
+        mock_inst.unitful_property_limited_numbers = value
+        assert mock_inst._sendcmd == f"42 {value:e}"
+        mock_inst.spy_sendcmd.assert_called()
 
 
 def test_string_property_sendcmd_query(mock_inst):

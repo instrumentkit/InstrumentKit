@@ -33,9 +33,14 @@ def assume_units(value, units):
         ``units``, depending on if ``value`` is unitful.
     :rtype: `Quantity`
     """
-    if not isinstance(value, u.Quantity):
-        value = u.Quantity(value, units)
-    return value
+    if isinstance(value, u.Quantity):
+        return value
+    elif isinstance(value, str):
+        value = u.Quantity(value)
+        if value.dimensionless:
+            return u.Quantity(value.magnitude, units)
+        return value
+    return u.Quantity(value, units)
 
 
 def setattr_expression(target, name_expr, value):
@@ -493,10 +498,13 @@ def unitful_property(
         return u.Quantity(*split_unit_str(raw, units)).to(units)
 
     def _setter(self, newval):
+        newval = assume_units(newval, units).to(units)
         min_value, max_value = valid_range
         if min_value is not None:
             if callable(min_value):
                 min_value = min_value(self)  # pylint: disable=not-callable
+            else:
+                min_value = assume_units(min_value, units)
             if newval < min_value:
                 raise ValueError(
                     f"Unitful quantity is too low. Got {newval}, "
@@ -505,6 +513,8 @@ def unitful_property(
         if max_value is not None:
             if callable(max_value):
                 max_value = max_value(self)  # pylint: disable=not-callable
+            else:
+                max_value = assume_units(max_value, units)
             if newval > max_value:
                 raise ValueError(
                     f"Unitful quantity is too high. Got {newval}, "
@@ -512,7 +522,7 @@ def unitful_property(
                 )
         # Rescale to the correct unit before printing. This will also
         # catch bad units.
-        strval = format_code.format(assume_units(newval, units).to(units).magnitude)
+        strval = format_code.format(newval.magnitude)
         self.sendcmd(
             set_fmt.format(
                 command if set_cmd is None else set_cmd, _out_decor_fcn(strval)
