@@ -133,7 +133,7 @@ structure of this project.
 
 To run the tests against all supported version of Python, you will need to
 have the binary for each installed. The easiest way to accomplish this is
-to use the tool `pyenv<https://github.com/pyenv/pyenv>`_.
+to use the tool `pyenv <https://github.com/pyenv/pyenv>`_.
 
 With the required system packages installed, all tests can be run with ``tox``:
 
@@ -146,7 +146,7 @@ Pre-commit
 ----------
 
 A variety of static code checks are managed and executed via the tool
-`pre-commit<https://pre-commit.com/>`_. This only needs to be setup once
+`pre-commit <https://pre-commit.com/>`_. This only needs to be setup once
 and then it'll manage everything for you.
 
 .. code-block:: console
