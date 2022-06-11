@@ -27,7 +27,7 @@ class TC038(Instrument):
     application.
     """
 
-    registers = {
+    _registers = {
         "temperature": "D0002",
         "setpoint": "D0120",
     }
@@ -40,20 +40,24 @@ class TC038(Instrument):
 
         >>> import instruments as ik
         >>> import instruments.units as u
-        >>> inst = ik.hcp.TC038.open_visa('TCPIP0:192.168.0.35')
+        >>> inst = ik.hcp.TC038.open_serial('COM10')
         >>> inst.setpoint = 45.3
         >>> print(inst.temperature)
         """
         super().__init__(*args, **kwargs)
+        self.terminator = "\r"
         self.addr = 1
+        self._monitored_quantity = None
+        self.parity = serial.PARITY_EVEN
 
-    @classmethod
-    def open_serial(cls, *args, **kwargs):
-        """Configure the serial connection."""
-        inst = super().open_serial(*args, **kwargs)
-        inst._file._conn.parity = serial.PARITY_EVEN
-        inst._file._terminator = "\r"
-        return inst
+    @property
+    def parity(self):
+        """Gets / sets the communication parity."""
+        return self._file.parity
+
+    @parity.setter
+    def parity(self, newval):
+        self._file.parity = newval
 
     def sendcmd(self, command):
         """
@@ -85,18 +89,26 @@ class TC038(Instrument):
         """
         return super().query(chr(2) + f"{self.addr:02}" + "010" + command + chr(3))
 
-    def set_monitored_quantity(self, quantity="temperature"):
+    @property
+    def monitored_quantity(self):
+        """The monitored quantity."""
+        return self._monitored_quantity
+
+    @monitored_quantity.setter
+    def monitored_quantity(self, quantity="temperature"):
         """
         Configure the oven to monitor a certain `quantity`.
 
-        `quantity` may be any key of `registers`. Default is the current
+        `quantity` may be any key of `_registers`. Default is the current
         temperature in °C.
         """
+        assert quantity in self._registers.keys(), f"Quantity {quantity} is unknown."
         # WRS in order to setup to monitor a word
         # monitor 1 to 16 words
         # monitor the word in the given register
         # Additional registers are added with a separating space or comma.
-        self.query(command="WRS" + "01" + self.registers[quantity])
+        self.query(command="WRS" + "01" + self._registers[quantity])
+        self._monitored_quantity = quantity
 
     @property
     def setpoint(self):

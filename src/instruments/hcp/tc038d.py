@@ -41,7 +41,7 @@ class TC038D(Instrument):
 
         >>> import instruments as ik
         >>> import instruments.units as u
-        >>> inst = ik.hcp.TC038.open_visa('TCPIP0:192.168.0.35')
+        >>> inst = ik.hcp.TC038.open_serial('COM10')
         >>> inst.setpoint = 45.3
         >>> print(inst.temperature)
         """
