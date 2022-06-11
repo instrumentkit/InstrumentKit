@@ -51,7 +51,7 @@ def test_temperature():
 def test_monitored():
     # Communication from manual.
     with expected_protocol(
-            TC038, ["\x0201010WRM\x03"], ["\x020101OK00C8\x03"], sep="\r"
+        TC038, ["\x0201010WRM\x03"], ["\x020101OK00C8\x03"], sep="\r"
     ) as inst:
         value = inst.monitored_value
         unit_eq(value, u.Quantity(20, u.degC))
@@ -75,8 +75,10 @@ def test_set_monitored_wrong_input():
 def test_information():
     # Communication from manual.
     with expected_protocol(
-        TC038, ["\x0201010INF6\x03"],
-        ["\x020101OKUT150333 V01.R001111222233334444\x03"], sep="\r"
+        TC038,
+        ["\x0201010INF6\x03"],
+        ["\x020101OKUT150333 V01.R001111222233334444\x03"],
+        sep="\r",
     ) as inst:
         value = inst.information
         assert value == "UT150333 V01.R001111222233334444"
