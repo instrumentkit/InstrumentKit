@@ -12,8 +12,6 @@ from instruments.units import ureg as u
 from instruments.abstract_instruments.instrument import Instrument
 from instruments.util_fns import assume_units
 
-import serial
-
 # CLASSES #####################################################################
 
 
@@ -48,16 +46,7 @@ class TC038(Instrument):
         self.terminator = "\r"
         self.addr = 1
         self._monitored_quantity = None
-        self.parity = serial.PARITY_EVEN
-
-    @property
-    def parity(self):
-        """Gets / sets the communication parity."""
-        return self._file.parity
-
-    @parity.setter
-    def parity(self, newval):
-        self._file.parity = newval
+        self._file.parity = "E"  # serial.PARITY_EVEN
 
     def sendcmd(self, command):
         """

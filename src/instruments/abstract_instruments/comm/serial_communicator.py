@@ -90,6 +90,19 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
         newval = assume_units(newval, u.second).to(u.second).magnitude
         self._conn.timeout = newval
 
+    @property
+    def parity(self):
+        """
+        Gets / sets the communication parity.
+
+        :type: `str`
+        """
+        return self._conn.parity
+
+    @parity.setter
+    def parity(self, newval):
+        self._conn.parity = newval
+
     # FILE-LIKE METHODS #
 
     def close(self):
