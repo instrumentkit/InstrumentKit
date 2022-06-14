@@ -106,7 +106,7 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
         if size >= 0:
             return self._conn.recv(size)
         elif size == -1:
-            result = bytes()
+            result = b''
             while result.endswith(self._terminator.encode("utf-8")) is False:
                 c = self._conn.recv(1)
                 if c == b"":

@@ -116,7 +116,7 @@ class FileCommunicator(io.IOBase, AbstractCommunicator):
         if size >= 0:
             return self._filelike.read(size)
         elif size == -1:
-            result = bytes()
+            result = b''
             c = b""
             while c != self._terminator.encode("utf-8"):
                 c = self._filelike.read(1)
