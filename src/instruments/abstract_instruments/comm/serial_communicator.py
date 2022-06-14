@@ -112,7 +112,7 @@ class SerialCommunicator(io.IOBase, AbstractCommunicator):
             resp = self._conn.read(size)
             return resp
         elif size == -1:
-            result = b''
+            result = b""
             # If the terminator is empty, we can't use endswith, but must
             # read as many bytes as are available.
             # On the other hand, if terminator is nonempty, we can check
