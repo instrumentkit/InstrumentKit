@@ -28,13 +28,15 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     def __init__(self, conn):
         super().__init__(self)
 
+        self._terminator = None
+
         version = int(pyvisa.__version__.replace(".", "").ljust(3, "0"))
         # pylint: disable=no-member
         if (version < 160 and isinstance(conn, pyvisa.Instrument)) or (
             version >= 160 and isinstance(conn, pyvisa.Resource)
         ):
             self._conn = conn
-            self._terminator = "\n"
+            self.terminator = "\n"
         else:
             raise TypeError("VisaCommunicator must wrap a VISA Instrument.")
 
@@ -60,6 +62,19 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         )
 
     @property
+    def read_termination(self):
+        """Get / Set the read termination that is defined in pyvisa."""
+        return self._conn.read_termination
+
+    @read_termination.setter
+    def read_termination(self, newval):
+        if not isinstance(newval, str):
+            raise TypeError(
+                "Read terminator for VisaCommunicator must be specified as a string."
+            )
+        self._conn.read_termination = newval
+
+    @property
     def terminator(self):
         """
         Gets/sets the termination character used for VISA connections
@@ -72,14 +87,11 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     def terminator(self, newval):
         if not isinstance(newval, str):
             raise TypeError(
-                "Terminator for VisaCommunicator must be specified "
-                "as a single character string."
-            )
-        if len(newval) > 1:
-            raise ValueError(
-                "Terminator for VisaCommunicator must only be 1 " "character long."
+                "Terminator for VisaCommunicator must be specified as a string."
             )
         self._terminator = newval
+        self.read_termination = newval
+        self.write_termination = newval
 
     @property
     def timeout(self):
@@ -89,6 +101,19 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
     def timeout(self, newval):
         newval = assume_units(newval, u.second).to(u.second).magnitude
         self._conn.timeout = newval
+
+    @property
+    def write_termination(self):
+        """Get / Set the write termination that is defined in pyvisa."""
+        return self._conn.write_termination
+
+    @write_termination.setter
+    def write_termination(self, newval):
+        if not isinstance(newval, str):
+            raise TypeError(
+                "Write terminator for VisaCommunicator must be specified as a string."
+            )
+        self._conn.write_termination = newval
 
     # FILE-LIKE METHODS #
 
@@ -158,10 +183,10 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         VISA connections. This function is in turn wrapped by the concrete
         method `AbstractCommunicator.sendcmd` to provide consistent logging
         functionality across all communication layers.
+        Termination characters are automatically added by pyvisa.
 
         :param str msg: The command message to send to the instrument
         """
-        msg += self._terminator
         self.write(msg)
 
     def _query(self, msg, size=-1):
@@ -170,6 +195,7 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         VISA connections. This function is in turn wrapped by the concrete
         method `AbstractCommunicator.query` to provide consistent logging
         functionality across all communication layers.
+        Termination characters are automatically added by pyvisa.
 
         :param str msg: The query message to send to the instrument
         :param int size: The number of bytes to read back from the instrument
@@ -177,5 +203,4 @@ class VisaCommunicator(io.IOBase, AbstractCommunicator):
         :return: The instrument response to the query
         :rtype: `str`
         """
-        msg += self._terminator
         return self._conn.query(msg)
