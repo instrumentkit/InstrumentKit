@@ -51,11 +51,21 @@ def test_visacomm_address(visa_inst):
     assert err_msg == ("Changing addresses of a VISA Instrument is not supported.")
 
 
+def test_visacomm_read_termination_not_string(visa_inst):
+    """Raise TypeError if read termination is set with non-string character."""
+    comm = VisaCommunicator(visa_inst)
+    with pytest.raises(TypeError):
+        comm.read_termination = 42
+
+
 def test_visacomm_terminator(visa_inst):
-    """Get / Set terminator."""
+    """Get / Set terminator and ensure pyvisa takes the right communicator."""
     comm = VisaCommunicator(visa_inst)
     comm.terminator = "\r"
     assert comm.terminator == "\r"
+
+    assert comm.read_termination == "\r"
+    assert comm.write_termination == "\r"
 
 
 def test_visacomm_terminator_not_string(visa_inst):
@@ -64,19 +74,7 @@ def test_visacomm_terminator_not_string(visa_inst):
     with pytest.raises(TypeError) as err:
         comm.terminator = 42
     err_msg = err.value.args[0]
-    assert err_msg == (
-        "Terminator for VisaCommunicator must be specified as a single "
-        "character string."
-    )
-
-
-def test_visacomm_terminator_not_single_char(visa_inst):
-    """Raise ValueError if terminator longer than one character."""
-    comm = VisaCommunicator(visa_inst)
-    with pytest.raises(ValueError) as err:
-        comm.terminator = "\r\n"
-    err_msg = err.value.args[0]
-    assert err_msg == ("Terminator for VisaCommunicator must only be 1 character long.")
+    assert err_msg == ("Terminator for VisaCommunicator must be specified as a string.")
 
 
 def test_visacomm_timeout(visa_inst):
@@ -86,6 +84,13 @@ def test_visacomm_timeout(visa_inst):
     assert comm.timeout == u.Quantity(3, u.s)
     comm.timeout = u.Quantity(40000, u.ms)
     assert comm.timeout == u.Quantity(40, u.s)
+
+
+def test_visacomm_write_termination_not_string(visa_inst):
+    """Raise TypeError if write termination is set with non-string character."""
+    comm = VisaCommunicator(visa_inst)
+    with pytest.raises(TypeError):
+        comm.write_termination = 42
 
 
 def test_visacomm_close(visa_inst, mocker):
@@ -158,7 +163,7 @@ def test_visacomm_sendcmd(visa_inst, mocker):
     comm = VisaCommunicator(visa_inst)
     msg = "asdf"
     comm._sendcmd(msg)
-    mock_write.assert_called_with(msg + comm.terminator)
+    mock_write.assert_called_with(msg)
 
 
 def test_visacomm_query(visa_inst, mocker):
@@ -167,4 +172,4 @@ def test_visacomm_query(visa_inst, mocker):
     comm = VisaCommunicator(visa_inst)
     msg = "asdf"
     comm._query(msg)
-    mock_query.assert_called_with(msg + comm.terminator)
+    mock_query.assert_called_with(msg)
