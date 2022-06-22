@@ -57,24 +57,28 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
         # METHODS #
 
+        def _data(self, axis, limits=None, bin_format=True):
+            """Get data of `axis`."""
+            if limits is None:
+                cmd = f":TRAC:{axis}? {self._name}"
+            elif isinstance(limits, (tuple, list)) and len(limits) >= 2:
+                cmd = f":TRAC:{axis}? {self._name},{limits[0]+1},{limits[1]+1}"
+            else:
+                raise AssertionError(
+                    "limits has to be an list or tuple with at least two members"
+                )
+            self._parent.sendcmd(cmd)
+            data = self._parent.binblockread(data_width=8, fmt="<d")
+            self._parent._file.read_raw(1)  # pylint: disable=protected-access
+            return data
+
         def data(self, limits=None, bin_format=True):
             """
             Return the trace's level data.
 
             :param limits: Range of samples to transfer. (0 to 50000)
             """
-            if limits is None:
-                cmd = f":TRAC:Y? {self._name}"
-            elif hasattr(limits, "__iter__") and len(limits) >= 2:
-                cmd = f":TRAC:Y? {self._name},{limits[0]+1},{limits[1]+1}"
-            else:
-                raise AssertionError(
-                    "limits has to be an iterable with at least two members"
-                )
-            self._parent.sendcmd(cmd)
-            data = self._parent.binblockread(data_width=8, fmt="<d")
-            self._parent._file.read_raw(1)  # pylint: disable=protected-access
-            return data
+            return self._data("Y", limits=limits, bin_format=bin_format)
 
         def wavelength(self, limits=None, bin_format=True):
             """
@@ -82,18 +86,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
             :param limits: Range of samples to transfer. (0 to 50000)
             """
-            if limits is None:
-                cmd = f":TRAC:X? {self._name}"
-            elif hasattr(limits, "__iter__") and len(limits) >= 2:
-                cmd = f":TRAC:X? {self._name},{limits[0]+1},{limits[1]+1}"
-            else:
-                raise AssertionError(
-                    "limits has to be an iterable with at least two members"
-                )
-            self._parent.sendcmd(cmd)
-            data = self._parent.binblockread(data_width=8, fmt="<d")
-            self._parent._file.read_raw(1)  # pylint: disable=protected-access
-            return data
+            return self._data("X", limits=limits, bin_format=bin_format)
 
     # ENUMS #
 

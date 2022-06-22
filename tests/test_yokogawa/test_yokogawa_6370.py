@@ -18,6 +18,7 @@ from instruments.optional_dep_finder import numpy
 from tests import (
     expected_protocol,
     iterable_eq,
+    pytest,
 )
 from instruments.units import ureg as u
 
@@ -63,6 +64,65 @@ def test_operation_event():
 @given(
     values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
     channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces),
+    axis=st.sampled_from(['X', 'Y'])
+)
+def test_channel_private_data_wo_limits(values, channel, axis):
+    values_packed = b"".join(struct.pack("<d", value) for value in values)
+    values_len = str(len(values_packed)).encode()
+    values_len_of_len = str(len(values_len)).encode()
+    with expected_protocol(
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            f":TRAC:{axis}? {channel.value}",
+        ],
+        [b"#" + values_len_of_len + values_len + values_packed],
+    ) as inst:
+        values = tuple(values)
+        if numpy:
+            values = numpy.array(values, dtype="<d")
+        iterable_eq(inst.channel[channel]._data(axis), values)
+
+
+@given(
+    values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
+    channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces),
+    axis=st.sampled_from(['X', 'Y']),
+    start=st.integers(0, 25000),
+    length=st.integers(0, 25000),
+)
+def test_channel_private_data_with_limits(values, channel, axis, start, length):
+    values_packed = b"".join(struct.pack("<d", value) for value in values)
+    values_len = str(len(values_packed)).encode()
+    values_len_of_len = str(len(values_len)).encode()
+    with expected_protocol(
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            f":TRAC:{axis}? {channel.value},{start+1},{start+1+length}",
+        ],
+        [b"#" + values_len_of_len + values_len + values_packed],
+    ) as inst:
+        values = tuple(values)
+        if numpy:
+            values = numpy.array(values, dtype="<d")
+        iterable_eq(inst.channel[channel]._data(axis, (start, start+length)), values)
+
+
+@pytest.mark.parametrize("limits", ([5], "abc", (7,), 3))
+def test_channel_private_data_limit_error(limits):
+    with expected_protocol(
+        ik.yokogawa.Yokogawa6370,
+        [":FORMat:DATA REAL,64"],
+        []
+    ) as inst:
+        with pytest.raises(AssertionError):
+            inst.channel['A']._data("X", limits)
+
+
+@given(
+    values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
+    channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces),
 )
 def test_channel_data(values, channel):
     values_packed = b"".join(struct.pack("<d", value) for value in values)
@@ -94,14 +154,14 @@ def test_channel_wavelength(values, channel):
         ik.yokogawa.Yokogawa6370,
         [
             ":FORMat:DATA REAL,64",
-            f":TRAC:X? {channel.value}",
+            f":TRAC:X? {channel.value},1,501",
         ],
         [b"#" + values_len_of_len + values_len + values_packed],
     ) as inst:
         values = tuple(values)
         if numpy:
             values = numpy.array(values, dtype="<d")
-        iterable_eq(inst.channel[channel].wavelength(), values)
+        iterable_eq(inst.channel[channel].wavelength((0, 500)), values)
 
 
 @given(value=st.floats(min_value=600e-9, max_value=1700e-9))
@@ -300,3 +360,27 @@ def test_analysis():
         ["1,2,3,7.3,3.12314,.2345"],
     ) as inst:
         assert inst.analysis() == [1, 2, 3, 7.3, 3.12314, 0.2345]
+
+
+def test_abort():
+    with expected_protocol(
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            ":ABORT",
+        ],
+        [],
+    ) as inst:
+        inst.abort()
+
+
+def test_clear():
+    with expected_protocol(
+        ik.yokogawa.Yokogawa6370,
+        [
+            ":FORMat:DATA REAL,64",
+            "*CLS",
+        ],
+        [],
+    ) as inst:
+        inst.clear()
