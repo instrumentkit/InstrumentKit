@@ -16,6 +16,7 @@ from . import generic_scpi
 from . import fluke
 from . import gentec_eo
 from . import glassman
+from . import hcp
 from . import holzworth
 from . import hp
 from . import keithley
