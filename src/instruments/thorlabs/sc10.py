@@ -64,20 +64,27 @@ class SC10(Instrument):
         """
         return self.query("id?")
 
-    enable = bool_property(
-        "ens",
-        inst_true="1",
-        inst_false="0",
-        set_fmt="{}={}",
-        doc="""
+    @property
+    def enable(self):
+        """
         Gets/sets the shutter enable status, False for disabled, True if
         enabled
 
         If output enable is on (`True`), there is a voltage on the output.
-
+        :return: Status of the switch.
         :rtype: `bool`
-        """,
-    )
+
+        :raises TypeError: Unexpected type given when trying to enable.
+        """
+        return bool(int(self.query("ens?")))
+
+    @enable.setter
+    def enable(self, value):
+        if not isinstance(value, bool):
+            raise TypeError(f"Expected bool, got type {type(value)} instead.")
+        curr_status = self.enable
+        if curr_status != value:
+            self.sendcmd("ens")
 
     repeat = int_property(
         "rep",

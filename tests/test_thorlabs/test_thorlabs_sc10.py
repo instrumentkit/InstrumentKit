@@ -22,12 +22,25 @@ def test_sc10_name():
         assert sc.name == "bloopbloop"
 
 
-def test_sc10_enable():
+def test_sc10_enable_query():
     with expected_protocol(
-        ik.thorlabs.SC10, ["ens?", "ens=1"], ["ens?", "0", "> ens=1", "> "], sep="\r"
+        ik.thorlabs.SC10, ["ens?"], ["ens?", "0", "> "], sep="\r"
     ) as sc:
         assert sc.enable is False
-        sc.enable = True
+
+
+@pytest.mark.parametrize("status", [0, 1])
+@pytest.mark.parametrize("value", [0, 1])
+def test_sc10_enable_send(status, value):
+    host_to_ins = ["ens?"]
+    ins_to_host = ["ens?", f"{status}"]
+    if value != status:
+        host_to_ins.append("ens")
+        ins_to_host += ["> ens", "> "]
+    else:
+        ins_to_host.append("> ")
+    with expected_protocol(ik.thorlabs.SC10, host_to_ins, ins_to_host, sep="\r") as sc:
+        sc.enable = bool(value)
 
 
 def test_sc10_enable_invalid():
