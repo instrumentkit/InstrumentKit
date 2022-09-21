@@ -83,7 +83,7 @@ class SC10(Instrument):
         if not isinstance(value, bool):
             raise TypeError(f"Expected bool, got type {type(value)} instead.")
         curr_status = self.enable
-        if curr_status != value:
+        if curr_status is not value:
             self.sendcmd("ens")
 
     repeat = int_property(
