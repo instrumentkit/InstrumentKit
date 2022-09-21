@@ -73,6 +73,16 @@ def test_serialcomm_timeout():
     timeout.assert_called_with(1)
 
 
+def test_serialcomm_parity():
+    comm = SerialCommunicator(serial.Serial())
+
+    # Default parity should be NONE
+    assert comm.parity == serial.PARITY_NONE
+
+    comm.parity = serial.PARITY_EVEN
+    assert comm.parity == serial.PARITY_EVEN
+
+
 def test_serialcomm_close():
     comm = SerialCommunicator(serial.Serial())
     comm._conn = mock.MagicMock()

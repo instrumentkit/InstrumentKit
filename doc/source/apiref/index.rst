@@ -17,6 +17,7 @@ Contents:
     fluke
     gentec-eo
     glassman
+    hcp
     holzworth
     hp
     keithley
