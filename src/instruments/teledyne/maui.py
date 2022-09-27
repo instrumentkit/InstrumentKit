@@ -327,7 +327,7 @@ class MAUI(Oscilloscope):
             self._idx = idx + 1  # 1-based
 
             # Initialize as a data source with name C{}.
-            super(MAUI.Channel, self).__init__(self._parent, f"C{self._idx}")
+            super().__init__(self._parent, f"C{self._idx}")
 
         # ENUMS #
 
@@ -440,7 +440,7 @@ class MAUI(Oscilloscope):
             self._idx = idx + 1  # 1-based
 
             # Initialize as a data source with name C{}.
-            super(MAUI.Math, self).__init__(self._parent, f"F{self._idx}")
+            super().__init__(self._parent, f"F{self._idx}")
 
         # CLASSES #
 
