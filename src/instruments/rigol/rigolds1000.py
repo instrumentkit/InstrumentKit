@@ -86,9 +86,7 @@ class RigolDS1000Series(SCPIInstrument, Oscilloscope):
             self._idx = idx + 1  # Rigols are 1-based.
 
             # Initialize as a data source with name CHAN{}.
-            super().__init__(
-                self._parent, f"CHAN{self._idx}"
-            )
+            super().__init__(self._parent, f"CHAN{self._idx}")
 
         def sendcmd(self, cmd):
             """
