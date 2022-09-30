@@ -242,7 +242,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             self._idx = idx + 1  # 1-based.
 
             # Initialize as a data source with name MATH{}.
-            super(TekDPO70000.Math, self).__init__(parent, f"MATH{self._idx}")
+            super().__init__(parent, f"MATH{self._idx}")
 
         def sendcmd(self, cmd):
             """
@@ -512,7 +512,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             self._idx = idx + 1  # 1-based.
 
             # Initialize as a data source with name CH{}.
-            super(TekDPO70000.Channel, self).__init__(self._parent, f"CH{self._idx}")
+            super().__init__(self._parent, f"CH{self._idx}")
 
         def sendcmd(self, cmd):
             """

@@ -49,7 +49,7 @@ class MHS5200(FunctionGenerator):
 
         def __init__(self, mhs, idx):
             self._mhs = mhs
-            super(MHS5200.Channel, self).__init__(parent=mhs, name=idx)
+            super().__init__(parent=mhs, name=idx)
             # Use zero-based indexing for the external API, but one-based
             # for talking to the instrument.
             self._idx = idx + 1
