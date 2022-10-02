@@ -45,7 +45,7 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
             self._apt = apt
             # APT is 1-based, but we want the Python representation to be
             # 0-based.
-            self._idx_chan = idx_chan + 1
+            self._idx_chan = 2**idx_chan
 
         @property
         def enabled(self):
