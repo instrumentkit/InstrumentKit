@@ -36,6 +36,7 @@ class SRSCTC100(SCPIInstrument):
         "\xb0C": u.celsius,
         "W": u.watt,
         "V": u.volt,
+        "K": u.kelvin,
         "\xea": u.ohm,
         "": u.dimensionless,
     }
