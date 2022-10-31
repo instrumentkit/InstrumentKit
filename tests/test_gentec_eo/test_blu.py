@@ -467,5 +467,7 @@ def test_format_eight_length_values(value):
     and that it is correct to 1% with given number.
     """
     value_read = ik.gentec_eo.blu._format_eight(value)
-    assert value == pytest.approx(float(value_read), abs(value) / 100.0)
+    # The accuracy of the function breaks down at values close to 0
+    min_threshold = max((abs(value) * 0.01, 0.01))
+    assert value == pytest.approx(float(value_read), min_threshold)
     assert len(value_read) == 8

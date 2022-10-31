@@ -603,7 +603,7 @@ def test_measure(init, create_measurement, resistance):
         sep="\n",
     ) as inst:
         read_value = inst.measure()
-        assert read_value.magnitude == pytest.approx(resistance, rel=1e-5)
+        assert read_value.magnitude == pytest.approx(resistance, rel=1e-3)
         assert read_value.units == u.ohm
 
 
