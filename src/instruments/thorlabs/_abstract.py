@@ -84,9 +84,6 @@ class ThorLabsInstrument(Instrument):
             if resp or timeout is None:
                 break
             else:
-                # Prevent multiple reads before time.time() updates
-                # https://github.com/instrumentkit/InstrumentKit/issues/375
-                time.sleep(1e-32)
                 tic = time.time()
                 if tic - t_start > timeout:
                     break
