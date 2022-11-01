@@ -594,7 +594,7 @@ def test_parse_status_word_invalid_prefix(init):
 def test_measure(init, create_measurement, resistance):
     """Perform a resistance measurement."""
     # cap resistance at max of 11 character with given max_value
-    resistance_byte = bytes(f"{resistance:.3f}", "utf-8")
+    resistance_byte = bytes(f"{resistance:.6f}", "utf-8")
     measurement = create_measurement(resistance=resistance_byte)
     with expected_protocol(
         ik.keithley.Keithley580,
@@ -603,7 +603,7 @@ def test_measure(init, create_measurement, resistance):
         sep="\n",
     ) as inst:
         read_value = inst.measure()
-        assert read_value.magnitude == pytest.approx(resistance, rel=1.5e-3)
+        assert read_value.magnitude == pytest.approx(resistance, rel=1e-4)
         assert read_value.units == u.ohm
 
 
