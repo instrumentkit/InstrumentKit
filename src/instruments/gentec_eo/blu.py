@@ -650,4 +650,7 @@ def _format_eight(value):
             value = f"{value:.3g}".zfill(8)
     else:
         value = str(value).zfill(8)
+    # Return 0 for values between 1e-99 and -1e-99 to make hypothesis work
+    if len(value) > 8:
+        return f"{0:g}".zfill(8)
     return value

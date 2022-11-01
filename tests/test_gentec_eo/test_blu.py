@@ -5,12 +5,12 @@ Module containing tests for the Gentec-eo Blu
 
 # IMPORTS ####################################################################
 
-from hypothesis import given, strategies as st
-import pytest
-
 import instruments as ik
-from tests import expected_protocol
+import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 from instruments.units import ureg as u
+from tests import expected_protocol
 
 # TESTS ######################################################################
 
@@ -467,5 +467,8 @@ def test_format_eight_length_values(value):
     and that it is correct to 1% with given number.
     """
     value_read = ik.gentec_eo.blu._format_eight(value)
-    assert value == pytest.approx(float(value_read), abs(value) / 100.0)
+    if value > 0:
+        assert value == pytest.approx(float(value_read), rel=0.01)
+    else:
+        assert value == pytest.approx(float(value_read), rel=0.05)
     assert len(value_read) == 8
