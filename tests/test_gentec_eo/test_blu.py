@@ -5,10 +5,11 @@ Module containing tests for the Gentec-eo Blu
 
 # IMPORTS ####################################################################
 
-import instruments as ik
-import pytest
 from hypothesis import given
 from hypothesis import strategies as st
+import pytest
+
+import instruments as ik
 from instruments.units import ureg as u
 from tests import expected_protocol
 
