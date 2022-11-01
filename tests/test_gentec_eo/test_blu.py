@@ -286,7 +286,7 @@ def test_blu_user_offset_watts():
     """Get / set user offset in watts."""
     with expected_protocol(
         ik.gentec_eo.Blu,
-        ["*GMD", "*GUO", "*OFF000042.0"],  # get power mode
+        ["*GMD", "*GUO", "*OFF00000042"],  # get power mode
         ["Mode: 0", "User Offset : 1.500e-3", "ACK"],  # power mode watts
         sep="\r\n",
     ) as blu:
@@ -298,7 +298,7 @@ def test_blu_user_offset_joules():
     """Get / set user offset in joules."""
     with expected_protocol(
         ik.gentec_eo.Blu,
-        ["*GMD", "*GUO", "*OFF000042.0"],  # get power mode
+        ["*GMD", "*GUO", "*OFF00000042"],  # get power mode
         ["Mode: 2", "User Offset : 1.500e-3", "ACK"],  # power mode joules
         sep="\r\n",
     ) as blu:
@@ -310,7 +310,7 @@ def test_blu_user_offset_unitless():
     """Set user offset unitless."""
     with expected_protocol(
         ik.gentec_eo.Blu,
-        ["*OFF000042.0"],
+        ["*OFF00000042"],
         ["ACK"],
         sep="\r\n",
     ) as blu:
