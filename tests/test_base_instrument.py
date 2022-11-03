@@ -8,8 +8,6 @@ Module containing tests for the base Instrument class
 
 import socket
 import io
-import unittest
-from instruments.abstract_instruments import instrument
 import serial
 import usb.core
 from serial.tools.list_ports_common import ListPortInfo
