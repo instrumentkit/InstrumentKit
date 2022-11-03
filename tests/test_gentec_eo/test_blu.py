@@ -5,12 +5,13 @@ Module containing tests for the Gentec-eo Blu
 
 # IMPORTS ####################################################################
 
-from hypothesis import given, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
 import pytest
 
 import instruments as ik
-from tests import expected_protocol
 from instruments.units import ureg as u
+from tests import expected_protocol
 
 # TESTS ######################################################################
 
@@ -285,7 +286,7 @@ def test_blu_user_offset_watts():
     """Get / set user offset in watts."""
     with expected_protocol(
         ik.gentec_eo.Blu,
-        ["*GMD", "*GUO", "*OFF000042.0"],  # get power mode
+        ["*GMD", "*GUO", "*OFF00000042"],  # get power mode
         ["Mode: 0", "User Offset : 1.500e-3", "ACK"],  # power mode watts
         sep="\r\n",
     ) as blu:
@@ -297,7 +298,7 @@ def test_blu_user_offset_joules():
     """Get / set user offset in joules."""
     with expected_protocol(
         ik.gentec_eo.Blu,
-        ["*GMD", "*GUO", "*OFF000042.0"],  # get power mode
+        ["*GMD", "*GUO", "*OFF00000042"],  # get power mode
         ["Mode: 2", "User Offset : 1.500e-3", "ACK"],  # power mode joules
         sep="\r\n",
     ) as blu:
@@ -309,7 +310,7 @@ def test_blu_user_offset_unitless():
     """Set user offset unitless."""
     with expected_protocol(
         ik.gentec_eo.Blu,
-        ["*OFF000042.0"],
+        ["*OFF00000042"],
         ["ACK"],
         sep="\r\n",
     ) as blu:
@@ -467,5 +468,8 @@ def test_format_eight_length_values(value):
     and that it is correct to 1% with given number.
     """
     value_read = ik.gentec_eo.blu._format_eight(value)
-    assert value == pytest.approx(float(value_read), abs(value) / 100.0)
+    if value > 0:
+        assert value == pytest.approx(float(value_read), rel=0.01)
+    else:
+        assert value == pytest.approx(float(value_read), rel=0.05)
     assert len(value_read) == 8

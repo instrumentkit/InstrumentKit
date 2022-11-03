@@ -643,11 +643,10 @@ def _format_eight(value):
     :return: Value formatted to 8 characters
     :rtype: str
     """
-    if len(str(value)) > 8:
-        if value < 0:
-            value = f"{value:.2g}".zfill(8)  # make space for -
-        else:
-            value = f"{value:.3g}".zfill(8)
-    else:
-        value = str(value).zfill(8)
-    return value
+    if abs(value) < 1e-99:
+        return "0".zfill(8)
+
+    for p in range(8, 1, -1):
+        val = f"{value:.{p}g}".zfill(8)
+        if len(val) == 8:
+            return val
