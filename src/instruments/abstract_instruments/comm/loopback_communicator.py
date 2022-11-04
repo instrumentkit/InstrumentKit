@@ -88,7 +88,8 @@ class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
         Close connection to stdin
         """
         try:
-            self._stdin.close()
+            if self._stdin is not None:
+                self._stdin.close()
         except OSError:
             pass
 

@@ -10,6 +10,7 @@ import os
 import collections
 import socket
 import struct
+import typing_extensions
 import urllib.parse as parse
 
 from serial import SerialException
@@ -718,3 +719,9 @@ class Instrument:
         :return: Object representing the connected instrument.
         """
         return cls(FileCommunicator(filename))
+
+    def __enter__(self) -> typing_extensions.Self:
+        return self
+
+    def __exit__(self, *exc):
+        self._file.__exit__(*exc)

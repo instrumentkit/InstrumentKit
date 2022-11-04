@@ -484,6 +484,13 @@ def test_instrument_open_from_uri_invalid_scheme():
         _ = ik.Instrument.open_from_uri("foo://bar")
 
 
+@mock.patch("instruments.abstract_instruments.comm.LoopbackCommunicator.close")
+def test_instrument_context_manager(mock_close: mock.Mock):
+    with ik.Instrument.open_test():
+        pass
+    mock_close.assert_called()
+
+
 # INIT TESTS
 
 
