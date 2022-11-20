@@ -61,10 +61,10 @@ def test_operation_event():
         assert inst.operation_event == 7
 
 
+@pytest.mark.parametrize("axis", ("X", "Y"))
 @given(
     values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
     channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces),
-    axis=st.sampled_from(["X", "Y"]),
 )
 def test_channel_private_data_wo_limits(values, channel, axis):
     values_packed = b"".join(struct.pack("<d", value) for value in values)
@@ -84,10 +84,10 @@ def test_channel_private_data_wo_limits(values, channel, axis):
         iterable_eq(inst.channel[channel]._data(axis), values)
 
 
+@pytest.mark.parametrize("axis", ("X", "Y"))
 @given(
     values=st.lists(st.floats(allow_infinity=False, allow_nan=False), min_size=1),
     channel=st.sampled_from(ik.yokogawa.Yokogawa6370.Traces),
-    axis=st.sampled_from(["X", "Y"]),
     start=st.integers(0, 25000),
     length=st.integers(0, 25000),
 )
@@ -114,7 +114,7 @@ def test_channel_private_data_limit_error(limits):
     with expected_protocol(
         ik.yokogawa.Yokogawa6370, [":FORMat:DATA REAL,64"], []
     ) as inst:
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             inst.channel["A"]._data("X", limits)
 
 
