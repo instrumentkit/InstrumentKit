@@ -70,9 +70,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
             elif isinstance(limits, (tuple, list)) and len(limits) == 2:
                 cmd = f":TRAC:{axis}? {self._name},{limits[0]+1},{limits[1]+1}"
             else:
-                raise ValueError(
-                    "limits has to be a list or tuple with two members"
-                )
+                raise ValueError("limits has to be a list or tuple with two members")
             self._parent.sendcmd(cmd)
             data = self._parent.binblockread(data_width=8, fmt="<d")
             self._parent._file.read_raw(1)  # pylint: disable=protected-access
@@ -137,7 +135,8 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     )
 
     status = unitless_property(
-        "*STB", doc="""The status byte of the device.
+        "*STB",
+        doc="""The status byte of the device.
         Bit 7: Summary bit of operation status
         Bit 5: Summary bit of standard event status register
         Bit 4: “1” if the output buffer contains data
