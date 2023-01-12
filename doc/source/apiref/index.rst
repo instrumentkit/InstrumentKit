@@ -23,6 +23,7 @@ Contents:
     keithley
     lakeshore
     minghe
+    mettler_toledo
     newport
     ondax
     oxford
