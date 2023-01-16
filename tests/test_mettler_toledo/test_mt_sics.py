@@ -5,13 +5,22 @@ Tests for the Mettler Toledo Standard Interface Command Set (SICS).
 
 # IMPORTS #####################################################################
 
-import instruments as ik
-from tests import expected_protocol
+import pytest
 
+import instruments as ik
 from instruments.units import ureg as u
+from tests import expected_protocol
 
 
 # TESTS #######################################################################
+
+
+def test_clear_tare():
+    """Clear the tare value."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS, ["TAC"], ["TAC A"], "\r\n"
+    ) as inst:
+        inst.clear_tare()
 
 
 def test_reset():
@@ -20,6 +29,30 @@ def test_reset():
         ik.mettler_toledo.MTSICS, ["@"], ['@ A "123456789"'], "\r\n"
     ) as inst:
         inst.reset()
+
+
+def test_restart():
+    """Restart the balance."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS, ["R01"], ['R01 A "0123456789"'], "\r\n"
+    ) as inst:
+        inst.restart()
+
+
+def test_tare():
+    """Tare the balance."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS, ["T"], ["T A 2.486 g"], "\r\n"
+    ) as inst:
+        inst.tare()
+
+
+def test_tare_immediately():
+    """Tare the balance immediately."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS, ["TI"], ["TI A 1.234 g"], "\r\n"
+    ) as inst:
+        inst.tare_immediately()
 
 
 def test_zero():
@@ -34,7 +67,44 @@ def test_zero_immidiately():
         inst.zero_immediately()
 
 
+@pytest.mark.parametrize("err", ["I", "L", "+", "-"])
+def test_command_error_checking(err):
+    """Raise OSError if command encounters an error."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS, ["S"], [f"S {err}"], "\r\n"
+    ) as inst:
+        with pytest.raises(OSError):
+            inst.weight
+
+
+@pytest.mark.parametrize("err", ["ES", "ET", "EL"])
+def test_general_error_checking(err):
+    """Raise OSError if general error encountered."""
+    with expected_protocol(ik.mettler_toledo.MTSICS, ["S"], [f"{err}"], "\r\n") as inst:
+        with pytest.raises(OSError):
+            inst.weight
+
+
 # PROPERTIES #
+
+
+def test_name():
+    """Get / Set balance name."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS,
+        ['I10 "My Balance"', "I10"],
+        ['I10 A "Balance"', 'I10 A "My Balance"'],
+        "\r\n",
+    ) as inst:
+        inst.name = "My Balance"
+        assert inst.name == "My Balance"
+
+
+def test_name_too_long():
+    """Raise ValueError if name is too long."""
+    with expected_protocol(ik.mettler_toledo.MTSICS, [], [], "\r\n") as inst:
+        with pytest.raises(ValueError):
+            inst.name = "My Balance is too long"
 
 
 def test_mt_sics():
@@ -53,6 +123,18 @@ def test_serial_number():
         assert inst.serial_number == "0123456789"
 
 
+def test_tare_value():
+    """Set / get the tare value."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS,
+        ["TA 2.486 g", "TA"],
+        ["TA A 2.486 g", "TA A 2.486 g"],
+        "\r\n",
+    ) as inst:
+        inst.tare_value = u.Quantity(2.486, u.gram)
+        assert inst.tare_value == u.Quantity(2.486, u.gram)
+
+
 def test_weight():
     """Get the stable weight."""
     with expected_protocol(
@@ -67,3 +149,12 @@ def test_weigth_immediately():
         ik.mettler_toledo.MTSICS, ["SI"], ["S D 1.234 g"], "\r\n"
     ) as inst:
         assert inst.weight_immediately == u.Quantity(1.234, u.gram)
+
+
+def test_weight_immediately_dynamic_mode():
+    """Raise UserWarning if balance is in dynamic mode."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS, ["SI"], ["S D 1.234 g"], "\r\n"
+    ) as inst:
+        with pytest.warns(UserWarning):
+            _ = inst.weight_immediately
