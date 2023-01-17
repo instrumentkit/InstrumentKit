@@ -16,6 +16,7 @@ class MTSICS(Instrument):
     Standared Interface Command Set.
 
     Example usage:
+
     >>> import instruments as ik
     >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
     >>> inst.weight_stable
@@ -31,6 +32,7 @@ class MTSICS(Instrument):
         Clear the tare value.
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.clear_tare()
@@ -42,6 +44,7 @@ class MTSICS(Instrument):
         Reset the balance.
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.reset()
@@ -53,6 +56,7 @@ class MTSICS(Instrument):
         Tare the balance after stable weight is obtained.
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.tare()
@@ -64,6 +68,7 @@ class MTSICS(Instrument):
         Tare the balance immediately.
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.tare_immediately()
@@ -79,6 +84,7 @@ class MTSICS(Instrument):
         currently read and the tare value to zero.
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.zero()
@@ -90,6 +96,7 @@ class MTSICS(Instrument):
         Zero the balance immediately.
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.zero_immediately()
@@ -175,6 +182,7 @@ class MTSICS(Instrument):
             Version Level 3
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.mt_sics
@@ -193,6 +201,13 @@ class MTSICS(Instrument):
 
         :return: List of all implemented MT-SICS levels and commands
         :rtype: list
+
+        Example usage:
+
+        >>> import instruments as ik
+        >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
+        >>> in inst.mt_sics_commands
+        [["0", "I0"], ["1", "D"]]
         """
         timeout = self.timeout
         self.timeout = u.Quantity(0.1, u.s)
@@ -220,6 +235,7 @@ class MTSICS(Instrument):
         :raises ValueError: If name is longer than 20 characters.
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.name = "My Balance"
@@ -244,6 +260,7 @@ class MTSICS(Instrument):
         :rtype: str
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.serial_number
@@ -258,6 +275,7 @@ class MTSICS(Instrument):
         If no unit is given, grams are assumed.
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.tare_value = 1.0
@@ -282,6 +300,7 @@ class MTSICS(Instrument):
         :rtype: u.Quantity
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.weight
@@ -299,6 +318,7 @@ class MTSICS(Instrument):
         :rtype: u.Quantity
 
         Example usage:
+
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.weight_immediately
