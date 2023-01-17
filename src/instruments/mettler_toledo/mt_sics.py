@@ -48,17 +48,6 @@ class MTSICS(Instrument):
         """
         _ = self.query("@")
 
-    def restart(self):
-        """
-        Restart the balance (warm restart).
-
-        Example usage:
-        >>> import instruments as ik
-        >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
-        >>> inst.restart()
-        """
-        _ = self.query("R01")
-
     def tare(self):
         """
         Tare the balance after stable weight is obtained.
@@ -195,6 +184,34 @@ class MTSICS(Instrument):
         return retval
 
     @property
+    def mt_sics_commands(self):
+        """
+        Get MT-SICS commands.
+
+        Please refer to manual for information on the commands. Not all of these
+        commands are currently implemented in this class!
+
+        :return: List of all implemented MT-SICS levels and commands
+        :rtype: list
+        """
+        timeout = self.timeout
+        self.timeout = u.Quantity(0.1, u.s)
+
+        retlist = []
+        self.sendcmd("I0")
+        while True:
+            try:
+                lst = self.read().split()
+                if lst == []:  # data stream was empty
+                    break
+                retlist.append(lst)
+            except OSError:  # communication timed out
+                break
+        self.timeout = timeout
+        av_cmds = [[it[2], it[3].replace('"', "")] for it in retlist]
+        return av_cmds
+
+    @property
     def name(self):
         """Get / Set balance name.
 
@@ -253,7 +270,7 @@ class MTSICS(Instrument):
     @tare_value.setter
     def tare_value(self, value):
         value = assume_units(value, u.gram)
-        value.to(u.gram)
+        value = value.to(u.gram)
         _ = self.query(f"TA {value.magnitude} g")
 
     @property

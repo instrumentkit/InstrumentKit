@@ -31,14 +31,6 @@ def test_reset():
         inst.reset()
 
 
-def test_restart():
-    """Restart the balance."""
-    with expected_protocol(
-        ik.mettler_toledo.MTSICS, ["R01"], ['R01 A "0123456789"'], "\r\n"
-    ) as inst:
-        inst.restart()
-
-
 def test_tare():
     """Tare the balance."""
     with expected_protocol(
@@ -88,6 +80,36 @@ def test_general_error_checking(err):
 # PROPERTIES #
 
 
+def test_mt_sics():
+    """Get MT-SICS level and MT-SICS versions."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS, ["I1"], ["I1 A 01 2.00 2.00 2.00 1.0"], "\r\n"
+    ) as inst:
+        assert inst.mt_sics == ["01", "2.00", "2.00", "2.00", "1.0"]
+
+
+def test_mt_sics_commands():
+    """Get all available MT-SICS implemented commands."""
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS, ["I0"], ['0 B 0 "I0"\r\nI0 B 1 "D"'], "\r\n"
+    ) as inst:
+        assert inst.mt_sics_commands == [["0", "I0"], ["1", "D"]]
+
+
+def test_mt_sics_commands_timeout(mocker):
+    """Ensure that timeout error is caught appropriately."""
+    inst_class = ik.mettler_toledo.MTSICS
+    # mock reading raises timeout error
+    os_error_mock = mocker.Mock()
+    os_error_mock.side_effect = OSError
+    mocker.patch.object(inst_class, "read", os_error_mock)
+
+    with expected_protocol(inst_class, ["I0"], [], "\r\n") as inst:
+        timeout = inst.timeout
+        assert inst.mt_sics_commands == []
+        assert inst.timeout == timeout
+
+
 def test_name():
     """Get / Set balance name."""
     with expected_protocol(
@@ -105,14 +127,6 @@ def test_name_too_long():
     with expected_protocol(ik.mettler_toledo.MTSICS, [], [], "\r\n") as inst:
         with pytest.raises(ValueError):
             inst.name = "My Balance is too long"
-
-
-def test_mt_sics():
-    """Get MT-SICS level and MT-SICS versions."""
-    with expected_protocol(
-        ik.mettler_toledo.MTSICS, ["I1"], ["I1 A 01 2.00 2.00 2.00 1.0"], "\r\n"
-    ) as inst:
-        assert inst.mt_sics == ["01", "2.00", "2.00", "2.00", "1.0"]
 
 
 def test_serial_number():
