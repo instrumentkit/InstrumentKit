@@ -53,7 +53,7 @@ def test_zero():
         inst.zero()
 
 
-def test_zero_immidiately():
+def test_zero_immediately():
     """Zero the balance immediately."""
     with expected_protocol(ik.mettler_toledo.MTSICS, ["ZI"], ["ZI A"], "\r\n") as inst:
         inst.zero(immediately=True)
