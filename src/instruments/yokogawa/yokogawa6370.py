@@ -8,11 +8,10 @@ Provides support for the Yokogawa 6370 optical spectrum analyzer.
 
 from enum import IntEnum, Enum
 
-import socket
-
 from instruments.units import ureg as u
 
 from instruments.abstract_instruments import OpticalSpectrumAnalyzer
+from instruments.abstract_instruments.comm import SocketCommunicator
 from instruments.util_fns import (
     enum_property,
     unitful_property,
@@ -41,7 +40,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         super().__init__(*args, **kwargs)
 
         try:
-            if isinstance(self._file._conn, socket.socket):
+            if isinstance(self._file, SocketCommunicator):
                 self.terminator = "\r\n"  # TCP IP connection terminator
         except AttributeError:  # not every connection has a _conn attribute
             pass

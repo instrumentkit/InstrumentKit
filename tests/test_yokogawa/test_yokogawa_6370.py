@@ -8,7 +8,6 @@ Unit tests for the Yokogawa 6370
 
 import struct
 
-from unittest import mock
 from hypothesis import (
     given,
     strategies as st,
