@@ -11,6 +11,7 @@ from enum import IntEnum, Enum
 from instruments.units import ureg as u
 
 from instruments.abstract_instruments import OpticalSpectrumAnalyzer
+from instruments.abstract_instruments.comm import SocketCommunicator
 from instruments.util_fns import (
     enum_property,
     unitful_property,
@@ -29,6 +30,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     """
     The Yokogawa 6370 is a optical spectrum analyzer.
     Example usage:
+
     >>> import instruments as ik
     >>> import instruments.units as u
     >>> inst = ik.yokogawa.Yokogawa6370.open_visa('TCPIP0:192.168.0.35')
@@ -37,6 +39,10 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if isinstance(self._file, SocketCommunicator):
+            self.terminator = "\r\n"  # TCP IP connection terminator
+
         # Set data Format to binary
         self.sendcmd(":FORMat:DATA REAL,64")  # TODO: Find out where we want this
 
@@ -163,9 +169,11 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         Gets the specific channel object.
         This channel is accessed as a list in the following manner::
+
         >>> import instruments as ik
         >>> osa = ik.yokogawa.Yokogawa6370.open_gpibusb('/dev/ttyUSB0')
         >>> dat = osa.channel["A"].data # Gets the data of channel 0
+
         :rtype: `list`[`~Yokogawa6370.Channel`]
         """
         return ProxyList(self, Yokogawa6370.Channel, Yokogawa6370.Traces)
