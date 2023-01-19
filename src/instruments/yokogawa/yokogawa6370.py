@@ -30,6 +30,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     """
     The Yokogawa 6370 is a optical spectrum analyzer.
     Example usage:
+
     >>> import instruments as ik
     >>> import instruments.units as u
     >>> inst = ik.yokogawa.Yokogawa6370.open_visa('TCPIP0:192.168.0.35')
@@ -171,9 +172,11 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         Gets the specific channel object.
         This channel is accessed as a list in the following manner::
+
         >>> import instruments as ik
         >>> osa = ik.yokogawa.Yokogawa6370.open_gpibusb('/dev/ttyUSB0')
         >>> dat = osa.channel["A"].data # Gets the data of channel 0
+
         :rtype: `list`[`~Yokogawa6370.Channel`]
         """
         return ProxyList(self, Yokogawa6370.Channel, Yokogawa6370.Traces)
