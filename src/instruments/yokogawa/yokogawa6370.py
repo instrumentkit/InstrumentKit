@@ -8,6 +8,8 @@ Provides support for the Yokogawa 6370 optical spectrum analyzer.
 
 from enum import IntEnum, Enum
 
+import socket
+
 from instruments.units import ureg as u
 
 from instruments.abstract_instruments import OpticalSpectrumAnalyzer
@@ -37,6 +39,13 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        try:
+            if isinstance(self._file._conn, socket.socket):
+                self.terminator = "\r\n"  # TCP IP connection terminator
+        except AttributeError:  # not every connection has a _conn attribute
+            pass
+
         # Set data Format to binary
         self.sendcmd(":FORMat:DATA REAL,64")  # TODO: Find out where we want this
 

@@ -8,10 +8,12 @@ Unit tests for the Yokogawa 6370
 
 import struct
 
+from unittest import mock
 from hypothesis import (
     given,
     strategies as st,
 )
+import socket
 
 import instruments as ik
 from instruments.optional_dep_finder import numpy
@@ -21,6 +23,7 @@ from tests import (
     pytest,
 )
 from instruments.units import ureg as u
+from .. import mock
 
 
 # TESTS #######################################################################
@@ -43,6 +46,14 @@ def test_id():
         ["'YOKOGAWA,AQ6370D,x,02.08'"],
     ) as inst:
         assert inst.id == "YOKOGAWA,AQ6370D,x,02.08"
+
+
+@mock.patch("instruments.abstract_instruments.instrument.socket")
+def test_tcpip_connection_terminator(mock_socket):
+    """Ensure terminator is `\r\n` if connected via TCP-IP (issue #386)."""
+    mock_socket.socket.return_value.__class__ = socket.socket
+    inst = ik.yokogawa.Yokogawa6370.open_tcpip("127.0.0.1", port=1001)
+    assert inst.terminator == "\r\n"
 
 
 def test_status():
