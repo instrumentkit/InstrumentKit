@@ -40,11 +40,8 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        try:
-            if isinstance(self._file, SocketCommunicator):
-                self.terminator = "\r\n"  # TCP IP connection terminator
-        except AttributeError:  # not every connection has a _conn attribute
-            pass
+        if isinstance(self._file, SocketCommunicator):
+            self.terminator = "\r\n"  # TCP IP connection terminator
 
         # Set data Format to binary
         self.sendcmd(":FORMat:DATA REAL,64")  # TODO: Find out where we want this
