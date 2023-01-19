@@ -44,7 +44,7 @@ def test_tare_immediately():
     with expected_protocol(
         ik.mettler_toledo.MTSICS, ["TI"], ["TI A 1.234 g"], "\r\n"
     ) as inst:
-        inst.tare_immediately()
+        inst.tare(immediately=True)
 
 
 def test_zero():
@@ -56,7 +56,7 @@ def test_zero():
 def test_zero_immidiately():
     """Zero the balance immediately."""
     with expected_protocol(ik.mettler_toledo.MTSICS, ["ZI"], ["ZI A"], "\r\n") as inst:
-        inst.zero_immediately()
+        inst.zero(immediately=True)
 
 
 @pytest.mark.parametrize("err", ["I", "L", "+", "-"])

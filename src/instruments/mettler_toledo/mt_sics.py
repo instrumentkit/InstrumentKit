@@ -51,9 +51,12 @@ class MTSICS(Instrument):
         """
         _ = self.query("@")
 
-    def tare(self):
+    def tare(self, immediately=False):
         """
-        Tare the balance after stable weight is obtained.
+        Tare the balance.
+
+        :param bool immediately: Tare immediately if True, otherwise wait for stable
+            weight.
 
         Example usage:
 
@@ -61,21 +64,10 @@ class MTSICS(Instrument):
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.tare()
         """
-        _ = self.query("T")
+        msg = "TI" if immediately else "T"
+        _ = self.query(msg)
 
-    def tare_immediately(self):
-        """
-        Tare the balance immediately.
-
-        Example usage:
-
-        >>> import instruments as ik
-        >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
-        >>> inst.tare_immediately()
-        """
-        _ = self.query("TI")
-
-    def zero(self):
+    def zero(self, immediately=False):
         """
         Zero the balance after stable weight is obtained.
 
@@ -83,25 +75,17 @@ class MTSICS(Instrument):
         If the device is in standby mode, it is turned on. This function sets the
         currently read and the tare value to zero.
 
+        :param bool immediately: Zero immediately if True, otherwise wait for stable
+            weight.
+
         Example usage:
 
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.zero()
         """
-        _ = self.query("Z")
-
-    def zero_immediately(self):
-        """
-        Zero the balance immediately.
-
-        Example usage:
-
-        >>> import instruments as ik
-        >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
-        >>> inst.zero_immediately()
-        """
-        _ = self.query("ZI")
+        msg = "ZI" if immediately else "Z"
+        _ = self.query(msg)
 
     def query(self, cmd, size=-1):
         """
