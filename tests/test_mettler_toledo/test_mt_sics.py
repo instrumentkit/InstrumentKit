@@ -31,31 +31,35 @@ def test_reset():
         inst.reset()
 
 
-def test_tare():
+@pytest.mark.parametrize("mode", ik.mettler_toledo.MTSICS.WeightMode)
+def test_tare(mode):
     """Tare the balance."""
+    msg = "TI" if mode.value else "T"
     with expected_protocol(
-        ik.mettler_toledo.MTSICS, ["T"], ["T A 2.486 g"], "\r\n"
+        ik.mettler_toledo.MTSICS,
+        [f"{msg}", "T", "TI"],
+        [f"{msg} A 2.486 g", "T A 2.486 g", "TI A 2.486 g"],
+        "\r\n",
     ) as inst:
+        inst.weight_mode = mode
         inst.tare()
-
-
-def test_tare_immediately():
-    """Tare the balance immediately."""
-    with expected_protocol(
-        ik.mettler_toledo.MTSICS, ["TI"], ["TI A 1.234 g"], "\r\n"
-    ) as inst:
+        inst.tare(immediately=False)
         inst.tare(immediately=True)
 
 
-def test_zero():
+@pytest.mark.parametrize("mode", ik.mettler_toledo.MTSICS.WeightMode)
+def test_zero(mode):
     """Zero the balance."""
-    with expected_protocol(ik.mettler_toledo.MTSICS, ["Z"], ["Z A"], "\r\n") as inst:
+    msg = "ZI" if mode.value else "Z"
+    with expected_protocol(
+        ik.mettler_toledo.MTSICS,
+        [f"{msg}", "Z", "ZI"],
+        [f"{msg} A", "Z A", "ZI A"],
+        "\r\n",
+    ) as inst:
+        inst.weight_mode = mode
         inst.zero()
-
-
-def test_zero_immediately():
-    """Zero the balance immediately."""
-    with expected_protocol(ik.mettler_toledo.MTSICS, ["ZI"], ["ZI A"], "\r\n") as inst:
+        inst.zero(immediately=False)
         inst.zero(immediately=True)
 
 
@@ -149,20 +153,15 @@ def test_tare_value():
         assert inst.tare_value == u.Quantity(2.486, u.gram)
 
 
-def test_weight():
+@pytest.mark.parametrize("mode", ik.mettler_toledo.MTSICS.WeightMode)
+def test_weight(mode):
     """Get the stable weight."""
+    msg = "SI" if mode.value else "S"
     with expected_protocol(
-        ik.mettler_toledo.MTSICS, ["S"], ["S A 1.234 g"], "\r\n"
+        ik.mettler_toledo.MTSICS, [f"{msg}"], [f"{msg} A 1.234 g"], "\r\n"
     ) as inst:
+        inst.weight_mode = mode
         assert inst.weight == u.Quantity(1.234, u.gram)
-
-
-def test_weigth_immediately():
-    """Get the immediate weight."""
-    with expected_protocol(
-        ik.mettler_toledo.MTSICS, ["SI"], ["S D 1.234 g"], "\r\n"
-    ) as inst:
-        assert inst.weight_immediately == u.Quantity(1.234, u.gram)
 
 
 def test_weight_immediately_dynamic_mode():
@@ -170,5 +169,13 @@ def test_weight_immediately_dynamic_mode():
     with expected_protocol(
         ik.mettler_toledo.MTSICS, ["SI"], ["S D 1.234 g"], "\r\n"
     ) as inst:
+        inst.weight_mode = inst.WeightMode.immediately
         with pytest.warns(UserWarning):
-            _ = inst.weight_immediately
+            _ = inst.weight
+
+
+def test_weight_mode_type_error():
+    """Raise TypeError if weight mode is set with wrong type."""
+    with expected_protocol(ik.mettler_toledo.MTSICS, [], [], "\r\n") as inst:
+        with pytest.raises(TypeError):
+            inst.weight_mode = True

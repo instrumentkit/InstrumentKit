@@ -3,6 +3,7 @@
 Provides support for the Mettler Toledo balances via Standard Interface Command Set.
 """
 
+from enum import Enum
 import warnings
 
 from instruments.abstract_instruments import Instrument
@@ -19,13 +20,22 @@ class MTSICS(Instrument):
 
     >>> import instruments as ik
     >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
-    >>> inst.weight_stable
+    >>> inst.weight
     <Quantity(120.2, 'gram')>
     """
+
+    class WeightMode(Enum):
+        """
+        Enum class to select the weight mode.
+        """
+
+        stable = False
+        immediately = True
 
     def __init__(self, filelike):
         super().__init__(filelike)
         self.terminator = "\r\n"
+        self._weight_mode = MTSICS.WeightMode.stable
 
     def clear_tare(self):
         """
@@ -51,9 +61,12 @@ class MTSICS(Instrument):
         """
         _ = self.query("@")
 
-    def tare(self, immediately=False):
+    def tare(self, immediately=None):
         """
         Tare the balance.
+
+        The mode is dependent on the weight mode, however, can be overwritten with
+        the keyword `immediately`.
 
         :param bool immediately: Tare immediately if True, otherwise wait for stable
             weight.
@@ -64,16 +77,21 @@ class MTSICS(Instrument):
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.tare()
         """
+        if immediately is None:
+            immediately = self.weight_mode.value
         msg = "TI" if immediately else "T"
         _ = self.query(msg)
 
-    def zero(self, immediately=False):
+    def zero(self, immediately=None):
         """
         Zero the balance after stable weight is obtained.
 
         Terminates processes such as zero, tare, calibration and testing etc.
         If the device is in standby mode, it is turned on. This function sets the
         currently read and the tare value to zero.
+
+        The mode is dependent on the weight mode, however, can be overwritten with
+        the keyword `immediately`.
 
         :param bool immediately: Zero immediately if True, otherwise wait for stable
             weight.
@@ -84,6 +102,8 @@ class MTSICS(Instrument):
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
         >>> inst.zero()
         """
+        if immediately is None:
+            immediately = self.weight_mode.value
         msg = "ZI" if immediately else "Z"
         _ = self.query(msg)
 
@@ -278,9 +298,12 @@ class MTSICS(Instrument):
     @property
     def weight(self):
         """
-        Get the stable weight.
+        Get the weight.
 
-        :return: Stable weight
+        If you want to get the immediate (maybe unstable) weight, plese set the
+        weight mode accordingly.
+
+        :return: Weight
         :rtype: u.Quantity
 
         Example usage:
@@ -290,23 +313,33 @@ class MTSICS(Instrument):
         >>> inst.weight
         <Quantity(1.0, 'gram')>
         """
-        retval = self.query("S")
+        msg = "SI" if self.weight_mode.value else "S"
+        retval = self.query(msg)
         return u.Quantity(float(retval[0]), retval[1])
 
     @property
-    def weight_immediately(self):
-        """
-        Get the weight immediately, irrespective of balance stability.
+    def weight_mode(self):
+        """Get/set the weight mode.
 
-        :return: Immediate weight
-        :rtype: u.Quantity
+        By default, it starts in ``MTSICS.WeightMode.stable``.
+
+        :return: Weight mode
+        :rtype: MTSICS.WeightMode
+
+        :raises TypeError: Weight mode is not of type ``MTSICS.WeightMode``
 
         Example usage:
 
         >>> import instruments as ik
         >>> inst = ik.mettler_toledo.MTSICS.open_serial('/dev/ttyUSB0', 9600)
-        >>> inst.weight_immediately
-        <Quantity(1.0, 'gram')>
+        >>> inst.weight_mode = inst.WeightMode.immediately
+        >>> inst.weight_mode
+        <Weight.immediately>
         """
-        retval = self.query("SI")
-        return u.Quantity(float(retval[0]), retval[1])
+        return self._weight_mode
+
+    @weight_mode.setter
+    def weight_mode(self, value):
+        if not isinstance(value, MTSICS.WeightMode):
+            raise TypeError("Weight mode must be of type `MTSICS.WeightMode")
+        self._weight_mode = value
