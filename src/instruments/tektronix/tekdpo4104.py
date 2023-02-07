@@ -111,7 +111,6 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
 
             # Set the acquisition channel
             with self:
-
                 # TODO: move this out somewhere more appropriate.
                 old_dat_stop = self._tek.query("DAT:STOP?")
                 self._tek.sendcmd(f"DAT:STOP {10 ** 7}")

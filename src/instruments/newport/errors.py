@@ -99,7 +99,6 @@ class NewportError(IOError):
     }
 
     def __init__(self, errcode=None, timestamp=None):
-
         if timestamp is None:
             self._timestamp = datetime.datetime.now() - NewportError.start_time
         else:
