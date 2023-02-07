@@ -129,7 +129,6 @@ class TC200(Instrument):
         # There is no current error handling in the way that thorlabs
         # responds with errors
         if newval and not self.enable:
-
             response1 = self._file.query("ens")
             while response1 != ">":
                 response1 = self._file.read(1)

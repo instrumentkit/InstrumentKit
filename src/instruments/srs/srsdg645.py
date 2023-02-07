@@ -42,7 +42,6 @@ class SRSDG645(SCPIInstrument):
         """
 
         def __init__(self, parent, chan):
-
             if not isinstance(parent, SRSDG645):
                 raise TypeError("Don't do that.")
 

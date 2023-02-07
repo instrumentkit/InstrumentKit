@@ -79,7 +79,6 @@ class TekTDS224(SCPIInstrument, Oscilloscope):
                 or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
             """
             with self:
-
                 if not bin_format:
                     self._tek.sendcmd("DAT:ENC ASCI")
                     # Set the data encoding format to ASCII

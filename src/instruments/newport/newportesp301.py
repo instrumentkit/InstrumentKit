@@ -22,6 +22,7 @@ from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
 
+
 # pylint: disable=too-many-lines
 class NewportESP301(Instrument):
 
