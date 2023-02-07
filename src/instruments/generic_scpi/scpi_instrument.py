@@ -15,7 +15,6 @@ from instruments.util_fns import assume_units
 
 
 class SCPIInstrument(Instrument):
-
     r"""
     Base class for all SCPI-compliant instruments. Inherits from
     from `~instruments.Instrument`.

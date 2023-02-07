@@ -17,6 +17,7 @@ from instruments.abstract_instruments.comm import VisaCommunicator
 
 # pylint: disable=protected-access,redefined-outer-name
 
+
 # create a visa instrument
 @pytest.fixture()
 def visa_inst():

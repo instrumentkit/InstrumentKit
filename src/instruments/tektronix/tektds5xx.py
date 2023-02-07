@@ -138,7 +138,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
                 or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
             """
             with self:
-
                 if not bin_format:
                     # Set the data encoding format to ASCII
                     self._parent.sendcmd("DAT:ENC ASCI")

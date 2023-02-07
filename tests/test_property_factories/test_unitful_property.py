@@ -181,7 +181,6 @@ def test_unitful_property_input_decoration():
 
 def test_unitful_property_input_decoration_not_a_function():
     class UnitfulMock(MockInstrument):
-
         a = unitful_property("MOCK:A", u.hertz, input_decoration=float)
 
     mock_instrument = UnitfulMock({"MOCK:A?": ".123"})
@@ -206,7 +205,6 @@ def test_unitful_property_output_decoration():
 
 def test_unitful_property_output_decoration_not_a_function():
     class UnitfulMock(MockInstrument):
-
         a = unitful_property("MOCK:A", u.hertz, output_decoration=bool)
 
     mock_instrument = UnitfulMock()
