@@ -77,7 +77,7 @@ def test_tcpip_authentication(mock_socket, mocker):
     password = "my_password"
 
     _ = ik.yokogawa.Yokogawa6370.open_tcpip(
-        "127.0.0.1", 1234, username=username, password=password
+        "127.0.0.1", 1234, auth=(username, password)
     )
 
     calls = [mocker.call(f'open "{username}"'), mocker.call(f"{password}")]
@@ -99,7 +99,7 @@ def test_tcpip_authentication_error(mock_socket, mocker):
 
     with pytest.raises(ConnectionError):
         _ = ik.yokogawa.Yokogawa6370.open_tcpip(
-            "127.0.0.1", 1234, username=username, password=password
+            "127.0.0.1", 1234, auth=(username, password)
         )
 
 

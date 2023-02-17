@@ -120,7 +120,7 @@ def test_instrument_open_tcpip_auth_not_implemented(mock_socket, mock_socket_com
     mock_socket_comm.return_value.__class__ = SocketCommunicator
 
     with pytest.raises(NotImplementedError):
-        _ = ik.Instrument.open_tcpip("127.0.0.1", 1234, username="user", password="pwd")
+        _ = ik.Instrument.open_tcpip("127.0.0.1", 1234, auth=("user", "pwd"))
 
 
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")

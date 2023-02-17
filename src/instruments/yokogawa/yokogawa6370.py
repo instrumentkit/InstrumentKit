@@ -46,8 +46,12 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         # Set data Format to binary
         self.sendcmd(":FORMat:DATA REAL,64")  # TODO: Find out where we want this
 
-    def _authenticate(self, username, password):
-        # authenticate username, password are set
+    def _authenticate(self, auth):
+        """Authenticate with the instrument.
+
+        :param auth: Authentication tuple of (username, password)
+        """
+        username, password = auth
         _ = self.query(f'open "{username}"')
         resp = self.query(password)
         if "ready" not in resp.lower():

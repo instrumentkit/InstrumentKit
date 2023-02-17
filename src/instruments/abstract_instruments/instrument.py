@@ -72,15 +72,12 @@ class Instrument:
     def _ack_expected(self, msg=""):  # pylint: disable=unused-argument,no-self-use
         return None
 
-    def _authenticate(self, username, password):
+    def _authenticate(self, auth):
         """
-        Authenticate with username, password for establishing the communication
-        with the instrument.
+        Authenticate with credentials for establishing the communication with the
+        instrument.
 
-        :param username: Username
-        :type username: str
-        :param password: Password
-        :type username: str
+        :param auth: Credentials for authentication.
         """
         raise NotImplementedError
 
@@ -442,14 +439,14 @@ class Instrument:
             raise NotImplementedError("Invalid scheme or not yet " "implemented.")
 
     @classmethod
-    def open_tcpip(cls, host, port, username=None, password=""):
+    def open_tcpip(cls, host, port, auth=None):
         """
         Opens an instrument, connecting via TCP/IP to a given host and TCP port.
 
         :param str host: Name or IP address of the instrument.
         :param int port: TCP port on which the insturment is listening.
-        :param str username: Username for the instrument, if required.
-        :param str password: Password for the instrument, if required.
+        :param auth: Authentication credentials to establish connection.
+            Type depends on instrument and authentication method used.
 
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
@@ -461,8 +458,8 @@ class Instrument:
         conn = socket.socket()
         conn.connect((host, port))
 
-        if username:
-            cls._authenticate(cls, username, password)
+        if auth:
+            cls._authenticate(cls, auth)
 
         ret_cls = cls(SocketCommunicator(conn))
 
