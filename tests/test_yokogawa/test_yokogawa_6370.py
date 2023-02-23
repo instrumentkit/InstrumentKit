@@ -80,7 +80,7 @@ def test_tcpip_authentication(mock_socket, mocker):
         "127.0.0.1", 1234, auth=(username, password)
     )
 
-    calls = [mocker.call(f'open "{username}"'), mocker.call(f"{password}")]
+    calls = [mocker.call(f'OPEN "{username}"'), mocker.call(f"{password}")]
     mock_query.assert_has_calls(calls, any_order=False)
 
     assert call_order == [mock_query, mock_query, mock_sendcmd]

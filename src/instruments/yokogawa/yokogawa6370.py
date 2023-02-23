@@ -52,7 +52,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         :param auth: Authentication tuple of (username, password)
         """
         username, password = auth
-        _ = self.query(f'open "{username}"')
+        _ = self.query(f'OPEN "{username}"')
         resp = self.query(password)
         if "ready" not in resp.lower():
             raise ConnectionError("Could not authenticate with username / password")
