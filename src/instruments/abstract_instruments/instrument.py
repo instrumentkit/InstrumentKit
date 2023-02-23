@@ -50,7 +50,7 @@ class Instrument:
     connections via the supported hardware channels.
     """
 
-    def __init__(self, filelike):
+    def __init__(self, filelike, *args, **kwargs):
         # Check to make sure filelike is a subclass of AbstractCommunicator
         if isinstance(filelike, AbstractCommunicator):
             self._file = filelike
@@ -63,6 +63,11 @@ class Instrument:
         # Record if we're using the Loopback Communicator and put class in
         # testing mode so we can disable sleeps in class implementations
         self._testing = isinstance(self._file, LoopbackCommunicator)
+
+        # Authenticate with `auth` (supplied as keyword argument) if provided
+        auth = kwargs.get("auth", None)
+        if auth is not None:
+            self._authenticate(auth)
 
         self._prompt = None
         self._terminator = "\n"
@@ -458,10 +463,7 @@ class Instrument:
         conn = socket.socket()
         conn.connect((host, port))
 
-        if auth:
-            cls._authenticate(cls, auth)
-
-        ret_cls = cls(SocketCommunicator(conn))
+        ret_cls = cls(SocketCommunicator(conn), auth=auth)
 
         return ret_cls
 
