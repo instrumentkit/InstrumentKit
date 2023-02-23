@@ -64,11 +64,6 @@ class Instrument:
         # testing mode so we can disable sleeps in class implementations
         self._testing = isinstance(self._file, LoopbackCommunicator)
 
-        # Authenticate with `auth` (supplied as keyword argument) if provided
-        auth = kwargs.get("auth", None)
-        if auth is not None:
-            self._authenticate(auth)
-
         self._prompt = None
         self._terminator = "\n"
 

@@ -43,6 +43,11 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         if isinstance(self._file, SocketCommunicator):
             self.terminator = "\r\n"  # TCP IP connection terminator
 
+        # Authenticate with `auth` (supplied as keyword argument) if provided
+        auth = kwargs.get("auth", None)
+        if auth is not None:
+            self._authenticate(auth)
+
         # Set data Format to binary
         self.sendcmd(":FORMat:DATA REAL,64")  # TODO: Find out where we want this
 
