@@ -7,6 +7,7 @@ Provides support for the Yokogawa 6370 optical spectrum analyzer.
 
 
 from enum import IntEnum, Enum
+import hashlib
 
 from instruments.units import ureg as u
 
@@ -28,13 +29,20 @@ from instruments.util_fns import (
 class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     """
-    The Yokogawa 6370 is a optical spectrum analyzer.
+    The Yokogawa 6370 is an optical spectrum analyzer.
+
     Example usage:
 
     >>> import instruments as ik
     >>> import instruments.units as u
     >>> inst = ik.yokogawa.Yokogawa6370.open_visa('TCPIP0:192.168.0.35')
     >>> inst.start_wl = 1030e-9 * u.m
+
+    Example usage with TCP/IP connection and user authentication:
+
+    >>> import instruments as ik
+    >>> auth = ("username", "password")
+    >>> inst = ik.yokogawa.Yokogawa6370.open_tcpip("192.168.0.35", 10001, auth=auth)
     """
 
     def __init__(self, *args, **kwargs):
@@ -58,7 +66,12 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         username, password = auth
         _ = self.query(f'OPEN "{username}"')
-        resp = self.query(password)
+        resp = self.query("AUTHENTICATE CRAM-MD5 OK")
+        # hash it
+        pwd = hashlib.md5()
+        pwd.update(bytes(resp, "utf-8"))
+        pwd.update(bytes(password, "utf-8"))
+        resp = self.query(pwd.hexdigest())
         if "ready" not in resp.lower():
             raise ConnectionError("Could not authenticate with username / password")
 
