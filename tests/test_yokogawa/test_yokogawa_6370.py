@@ -5,7 +5,7 @@ Unit tests for the Yokogawa 6370
 
 # IMPORTS #####################################################################
 
-
+import hashlib
 import struct
 
 from hypothesis import (
@@ -80,10 +80,15 @@ def test_tcpip_authentication(mock_socket, mocker):
         "127.0.0.1", 1234, auth=(username, password)
     )
 
-    calls = [mocker.call(f'OPEN "{username}"'), mocker.call(f"{password}")]
+    pwd = hashlib.md5(bytes(f"ready{password}", "utf-8")).hexdigest()
+    calls = [
+        mocker.call(f'OPEN "{username}"'),
+        mocker.call("AUTHENTICATE CRAM-MD5 OK"),
+        mocker.call(f"{pwd}"),
+    ]
     mock_query.assert_has_calls(calls, any_order=False)
 
-    assert call_order == [mock_query, mock_query, mock_sendcmd]
+    assert call_order == [mock_query, mock_query, mock_query, mock_sendcmd]
 
 
 @mock.patch("instruments.abstract_instruments.instrument.socket")
@@ -92,7 +97,7 @@ def test_tcpip_authentication_error(mock_socket, mocker):
 
     mock_query = mocker.patch("instruments.yokogawa.Yokogawa6370.query")
 
-    mock_query.side_effect = ["asdf", "error"]
+    mock_query.side_effect = ["asdf", "asdf", "error"]  # three calls total
 
     username = "user"
     password = "my_password"
