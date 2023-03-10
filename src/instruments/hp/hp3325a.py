@@ -28,13 +28,12 @@ Originally contributed and copyright held by Scott Phillips (polygonguru@gmail.c
 An unrestricted license has been provided to the maintainers of the Instrument
 Kit project.
 """
-
+import math
 # IMPORTS #####################################################################
 
-from enum import Enum, IntEnum
+from enum import IntEnum
 
-from src.instruments.abstract_instruments.function_generator import FunctionGenerator
-from src.instruments.units import ureg as u
+from instruments.abstract_instruments.function_generator import FunctionGenerator
 
 # CLASSES #####################################################################
 
@@ -56,7 +55,6 @@ class HP3325a(FunctionGenerator):
         """
         super().__init__(filelike)
         self._channel_count = 1
-        # TODO - Verify this
         self.terminator = "\r\n"
 
     class Waveform(IntEnum):
@@ -73,14 +71,20 @@ class HP3325a(FunctionGenerator):
         negative_ramp = 5
 
     freq_scale = {"HZ": 1, "KH": 1E3, "MH": 1E6}
+    ampl_scale = {"VO": 1, "MV": 1E-3, "VR": math.sqrt(2.0), "MR": 1E-3*math.sqrt(2.0)}
 
     @property
     def amplitude(self):
-        return self.channel[0].amplitude
+        am_resp = self.query("IAM")
+        am_units = am_resp[-2:]
+        am_num = am_resp[:-2].replace("AM", "").strip()
+        return float(am_num * HP3325a.ampl_scale[am_units])
 
     @amplitude.setter
-    def amplitude(self, newval):
-        self.channel[0].amplitude = newval
+    def amplitude(self, new_amp):
+        freq_units = "VO"
+        freq_num = new_amp
+        self.sendcmd(f"AM{freq_num}{freq_units}")
 
     @property
     def frequency(self):
@@ -155,7 +159,7 @@ class HP3325a(FunctionGenerator):
 
     @marker_frequency.setter
     def marker_frequency(self, new_mf: bool):
-        self.sendcmd(f"MA{1 if new_am else 0}")
+        self.sendcmd(f"MA{1 if new_mf else 0}")
 
     def amplitude_calibration(self):
         self.sendcmd("AC")
@@ -179,7 +183,7 @@ class HP3325a(FunctionGenerator):
     def query_error(self) -> int:
         # TODO - Support ERR? on HP3325B which is more specific
         err_resp = self.query("IER")
-        return int(err_resp.replace("e","").replace("r","").strip())
+        return int(err_resp.replace("e", "").replace("r", "").strip())
 
 
 # UNITS #######################################################################
