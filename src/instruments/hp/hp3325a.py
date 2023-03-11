@@ -30,6 +30,7 @@ Kit project.
 """
 import math
 import typing
+
 # IMPORTS #####################################################################
 
 from enum import IntEnum
@@ -71,8 +72,13 @@ class HP3325a(FunctionGenerator):
         positive_ramp = 4
         negative_ramp = 5
 
-    freq_scale = {"HZ": 1, "KH": 1E3, "MH": 1E6}
-    ampl_scale = {"VO": 1, "MV": 1E-3, "VR": math.sqrt(2.0), "MR": 1E-3*math.sqrt(2.0)}
+    freq_scale = {"HZ": 1, "KH": 1e3, "MH": 1e6}
+    ampl_scale = {
+        "VO": 1,
+        "MV": 1e-3,
+        "VR": math.sqrt(2.0),
+        "MR": 1e-3 * math.sqrt(2.0),
+    }
 
     @property
     def amplitude(self):
@@ -92,7 +98,7 @@ class HP3325a(FunctionGenerator):
         fr_resp = self.query("IFR")
         freq_units = fr_resp[-2:]
         freq_num = fr_resp[:-2].replace("FR", "").strip()
-        return float(freq_num*HP3325a.freq_scale[freq_units])
+        return float(freq_num * HP3325a.freq_scale[freq_units])
 
     @frequency.setter
     def frequency(self, new_freq):
@@ -108,7 +114,9 @@ class HP3325a(FunctionGenerator):
         return HP3325a.Waveform(int(fu_resp))
 
     @function.setter
-    def function(self, new_waveform: typing.Union[Waveform, FunctionGenerator.Function]):
+    def function(
+        self, new_waveform: typing.Union[Waveform, FunctionGenerator.Function]
+    ):
         if type(new_waveform) is FunctionGenerator.Function:
             # Map to internal forms
             if new_waveform == FunctionGenerator.Function.arbitrary:
@@ -126,7 +134,9 @@ class HP3325a(FunctionGenerator):
             elif new_waveform == FunctionGenerator.Function.triangle:
                 new_waveform = HP3325a.Waveform.triangle
             else:
-                raise NotImplementedError(f"HP3325 does not support function {new_waveform}")
+                raise NotImplementedError(
+                    f"HP3325 does not support function {new_waveform}"
+                )
         self.sendcmd(f"FU{int(new_waveform)}")
 
     @property
@@ -135,7 +145,7 @@ class HP3325a(FunctionGenerator):
         of_resp = of_resp.replace("OF", "")
         of_units = of_resp[-2:]
         # TODO - Use internal units system of instrumentkit
-        return float(of_resp[:-2])*(1 if of_units == "VO" else 1000)
+        return float(of_resp[:-2]) * (1 if of_units == "VO" else 1000)
 
     @offset.setter
     def offset(self, new_offset):
@@ -145,7 +155,7 @@ class HP3325a(FunctionGenerator):
     @property
     def phase(self) -> float:
         ph_resp = self.query("IPH")
-        ph_resp = ph_resp.replace("PH", "").replace("DE","")
+        ph_resp = ph_resp.replace("PH", "").replace("DE", "")
         # TODO - Use internal units system of instrumentkit
         return float(ph_resp)
 
