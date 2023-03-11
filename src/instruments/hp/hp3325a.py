@@ -29,6 +29,7 @@ An unrestricted license has been provided to the maintainers of the Instrument
 Kit project.
 """
 import math
+import typing
 # IMPORTS #####################################################################
 
 from enum import IntEnum
@@ -107,7 +108,25 @@ class HP3325a(FunctionGenerator):
         return HP3325a.Waveform(int(fu_resp))
 
     @function.setter
-    def function(self, new_waveform: Waveform):
+    def function(self, new_waveform: typing.Union[Waveform, FunctionGenerator.Function]):
+        if type(new_waveform) is FunctionGenerator.Function:
+            # Map to internal forms
+            if new_waveform == FunctionGenerator.Function.arbitrary:
+                # TODO - If this is HP3325B, it might work
+                raise NotImplementedError("HP3325A does not support arbitrary source!")
+            elif new_waveform == FunctionGenerator.Function.noise:
+                raise NotImplementedError("HP3325A does not support arbitrary noise!")
+            elif new_waveform == FunctionGenerator.Function.ramp:
+                # TODO - Distinguish positive and negative ramp?
+                new_waveform = HP3325a.Waveform.positive_ramp
+            elif new_waveform == FunctionGenerator.Function.sinusoid:
+                new_waveform = HP3325a.Waveform.sine
+            elif new_waveform == FunctionGenerator.Function.square:
+                new_waveform = HP3325a.Waveform.square
+            elif new_waveform == FunctionGenerator.Function.triangle:
+                new_waveform = HP3325a.Waveform.triangle
+            else:
+                raise NotImplementedError(f"HP3325 does not support function {new_waveform}")
         self.sendcmd(f"FU{int(new_waveform)}")
 
     @property

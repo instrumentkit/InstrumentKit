@@ -8,6 +8,7 @@ fcngen._file.debug = True
 
 fcngen.amplitude = 2.0  # V
 fcngen.frequency = 512.53  # Hz
+fcngen.function = fcngen.Function.square
 
 print(f"Actual voltage={fcngen.amplitude} V")
 print(f"Actual frequency={fcngen.frequency} Hz")
