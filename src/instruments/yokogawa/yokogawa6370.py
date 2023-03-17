@@ -320,3 +320,10 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     def clear(self):
         """Clear status registers."""
         self.sendcmd("*CLS")
+
+    def query(self, cmd, size=-1):
+        """todo: remove"""
+        print(f"CMD: {cmd}")
+        retval = super().query(cmd, size=size)
+        print(f"RESP: {retval}")
+        return retval
