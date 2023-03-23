@@ -92,6 +92,43 @@ def test_tcpip_authentication(mock_socket, mocker):
 
 
 @mock.patch("instruments.abstract_instruments.instrument.socket")
+def test_tcpip_authentication_anonymous(mock_socket, mocker):
+    """Authenticate as anonymous user (any password accepted)."""
+    mock_socket.socket.return_value.__class__ = socket.socket
+
+    call_order = []
+
+    mock_query = mocker.patch("instruments.yokogawa.Yokogawa6370.query")
+    mock_sendcmd = mocker.patch("instruments.yokogawa.Yokogawa6370.sendcmd")
+
+    def query_return(*args, **kwargs):
+        """Return results and add to `call_order`."""
+        call_order.append(mock_query)
+        return "ready"
+
+    mock_query.side_effect = query_return
+    mock_sendcmd.side_effect = lambda *a, **kw: call_order.append(mock_sendcmd)
+
+    username = "anonymous"
+    password = "my_password"
+
+    _ = ik.yokogawa.Yokogawa6370.open_tcpip(
+        "127.0.0.1", 1234, auth=(username, password)
+    )
+
+    pwd = hashlib.md5(bytes(f"ready{password}", "utf-8")).hexdigest()
+    calls = [
+        mocker.call(f'OPEN "{username}"'),
+        mocker.call(
+            "AUTHENTICATE CRAM-MD5 OK"
+        ),  # this is the password since any is accepted
+    ]
+    mock_query.assert_has_calls(calls, any_order=False)
+
+    assert call_order == [mock_query, mock_query, mock_sendcmd]
+
+
+@mock.patch("instruments.abstract_instruments.instrument.socket")
 def test_tcpip_authentication_error(mock_socket, mocker):
     mock_socket.socket.return_value.__class__ = socket.socket
 
