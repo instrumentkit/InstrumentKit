@@ -67,7 +67,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         username, password = auth
         _ = self.query(f'OPEN "{username}"')
         resp = self.query(
-            "AUTHENTICATE CRAM-MD5 OK"
+            '"AUTHENTICATE CRAM-MD5 OK"'
         )  # if anonymous, this is the password, and it should return "ready"
 
         # hash it

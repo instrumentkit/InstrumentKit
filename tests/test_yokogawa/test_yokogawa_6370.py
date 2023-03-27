@@ -83,7 +83,7 @@ def test_tcpip_authentication(mock_socket, mocker):
     pwd = hashlib.md5(bytes(f"ready{password}", "utf-8")).hexdigest()
     calls = [
         mocker.call(f'OPEN "{username}"'),
-        mocker.call("AUTHENTICATE CRAM-MD5 OK"),
+        mocker.call('"AUTHENTICATE CRAM-MD5 OK"'),
         mocker.call(f"{pwd}"),
     ]
     mock_query.assert_has_calls(calls, any_order=False)
@@ -120,7 +120,7 @@ def test_tcpip_authentication_anonymous(mock_socket, mocker):
     calls = [
         mocker.call(f'OPEN "{username}"'),
         mocker.call(
-            "AUTHENTICATE CRAM-MD5 OK"
+            '"AUTHENTICATE CRAM-MD5 OK"'
         ),  # this is the password since any is accepted
     ]
     mock_query.assert_has_calls(calls, any_order=False)
