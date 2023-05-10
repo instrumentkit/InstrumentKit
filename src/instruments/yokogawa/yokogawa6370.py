@@ -66,16 +66,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         username, password = auth
         _ = self.query(f'OPEN "{username}"')
-        resp = self.query(
-            '"AUTHENTICATE CRAM-MD5 OK"'
-        )  # if anonymous, this is the password, and it should return "ready"
-
-        # hash it
-        if username.lower() != "anonymous":  # so we need an actual password
-            pwd = hashlib.md5()
-            pwd.update(bytes(resp, "utf-8"))
-            pwd.update(bytes(password, "utf-8"))
-            resp = self.query(pwd.hexdigest())
+        resp = self.query(f'"{password}"')
 
         if "ready" not in resp.lower():
             raise ConnectionError("Could not authenticate with username / password")

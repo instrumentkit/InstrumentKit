@@ -80,15 +80,13 @@ def test_tcpip_authentication(mock_socket, mocker):
         "127.0.0.1", 1234, auth=(username, password)
     )
 
-    pwd = hashlib.md5(bytes(f"ready{password}", "utf-8")).hexdigest()
     calls = [
         mocker.call(f'OPEN "{username}"'),
-        mocker.call('"AUTHENTICATE CRAM-MD5 OK"'),
-        mocker.call(f"{pwd}"),
+        mocker.call(f'"{password}"'),
     ]
     mock_query.assert_has_calls(calls, any_order=False)
 
-    assert call_order == [mock_query, mock_query, mock_query, mock_sendcmd]
+    assert call_order == [mock_query, mock_query, mock_sendcmd]
 
 
 @mock.patch("instruments.abstract_instruments.instrument.socket")
@@ -116,12 +114,9 @@ def test_tcpip_authentication_anonymous(mock_socket, mocker):
         "127.0.0.1", 1234, auth=(username, password)
     )
 
-    pwd = hashlib.md5(bytes(f"ready{password}", "utf-8")).hexdigest()
     calls = [
         mocker.call(f'OPEN "{username}"'),
-        mocker.call(
-            '"AUTHENTICATE CRAM-MD5 OK"'
-        ),  # this is the password since any is accepted
+        mocker.call(f'"{password}"'),  # this is the password since any is accepted
     ]
     mock_query.assert_has_calls(calls, any_order=False)
 
