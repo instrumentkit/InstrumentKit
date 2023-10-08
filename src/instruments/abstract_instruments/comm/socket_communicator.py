@@ -115,8 +115,6 @@ class SocketCommunicator(io.IOBase, AbstractCommunicator):
                         "a termination character."
                     )
                 result += c
-            # todo remove me
-            print(f"REC: {result}")
             return result[: -len(self._terminator)]
         else:
             raise ValueError("Must read a positive value of characters.")
