@@ -8,17 +8,7 @@ Module containing support for loading instruments from configuration files.
 
 import warnings
 
-try:
-    import ruamel.yaml as yaml
-except ImportError:
-    # Some versions of ruamel.yaml are named ruamel_yaml, so try that
-    # too.
-    #
-    # In either case, we've observed issues with pylint where it will raise
-    # a false positive from its import-error checker, so we locally disable
-    # it here. Once the cause for the false positive has been identified,
-    # the import-error check should be re-enabled.
-    import ruamel_yaml as yaml  # pylint: disable=import-error
+from ruamel.yaml import YAML
 
 from instruments.units import ureg as u
 from instruments.util_fns import setattr_expression, split_unit_str
@@ -67,7 +57,8 @@ def quantity_constructor(loader, node):
 
 # We avoid having to register !Q every time by doing as soon as the
 # relevant constructor is defined.
-yaml.add_constructor("!Q", quantity_constructor)
+yaml = YAML(typ="unsafe")
+yaml.Constructor.add_constructor("!Q", quantity_constructor)
 
 
 def load_instruments(conf_file_name, conf_path="/"):
@@ -139,16 +130,11 @@ def load_instruments(conf_file_name, conf_path="/"):
         such processing will occur independently of the value of ``conf_path``.
     """
 
-    if yaml is None:
-        raise ImportError(
-            "Could not import ruamel.yaml, which is required " "for this function."
-        )
-
     if isinstance(conf_file_name, str):
         with open(conf_file_name) as f:
-            conf_dict = yaml.load(f, Loader=yaml.Loader)
+            conf_dict = yaml.load(f)
     else:
-        conf_dict = yaml.load(conf_file_name, Loader=yaml.Loader)
+        conf_dict = yaml.load(conf_file_name)
 
     conf_dict = walk_dict(conf_dict, conf_path)
 
