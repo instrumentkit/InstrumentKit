@@ -20,7 +20,6 @@ from instruments.util_fns import assume_units
 
 
 class GPIBCommunicator(io.IOBase, AbstractCommunicator):
-
     """
     Communicates with a SocketCommunicator or SerialCommunicator object for
     use with Galvant Industries or Prologix GPIBUSB or GPIBETHERNET adapters.

@@ -16,7 +16,6 @@ from instruments.util_fns import enum_property, unitful_property
 
 
 class SCPIFunctionGenerator(FunctionGenerator, SCPIInstrument):
-
     """
     This class is used for communicating with generic SCPI-compliant
     function generators.

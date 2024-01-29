@@ -14,7 +14,6 @@ from instruments.abstract_instruments import Instrument
 
 
 class Oscilloscope(Instrument, metaclass=abc.ABCMeta):
-
     """
     Abstract base class for oscilloscope instruments.
 
@@ -49,7 +48,6 @@ class Oscilloscope(Instrument, metaclass=abc.ABCMeta):
             raise NotImplementedError
 
     class DataSource(metaclass=abc.ABCMeta):
-
         """
         Abstract base class for data sources (physical channels, math, ref) on
         an oscilloscope.

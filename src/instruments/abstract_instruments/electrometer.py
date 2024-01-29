@@ -14,7 +14,6 @@ from instruments.abstract_instruments import Instrument
 
 
 class Electrometer(Instrument, metaclass=abc.ABCMeta):
-
     """
     Abstract base class for electrometer instruments.
 

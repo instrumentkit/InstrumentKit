@@ -14,7 +14,6 @@ from instruments.abstract_instruments import Instrument
 
 
 class Multimeter(Instrument, metaclass=abc.ABCMeta):
-
     """
     Abstract base class for multimeter instruments.
 

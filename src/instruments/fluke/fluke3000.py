@@ -42,7 +42,6 @@ from instruments.units import ureg as u
 
 
 class Fluke3000(Multimeter):
-
     """The `Fluke3000` is an ecosystem of devices produced by Fluke that may be
     connected simultaneously to a Fluke PC3000 wireless adapter which exposes
     a serial port to the computer to send and receive commands.

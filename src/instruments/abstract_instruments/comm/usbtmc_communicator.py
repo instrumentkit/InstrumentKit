@@ -19,7 +19,6 @@ from instruments.units import ureg as u
 
 
 class USBTMCCommunicator(io.IOBase, AbstractCommunicator):
-
     """
     Wraps a USBTMC device. Arguments are passed to `usbtmc.Instrument`.
     """

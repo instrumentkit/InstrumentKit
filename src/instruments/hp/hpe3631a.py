@@ -51,7 +51,6 @@ from instruments.util_fns import (
 
 
 class HPe3631a(PowerSupply, PowerSupply.Channel, SCPIInstrument):
-
     """
     The HPe3631a is a three channels voltage/current supply.
     - Channel 1 is a positive +6V/5A channel (P6V)

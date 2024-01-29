@@ -35,7 +35,6 @@ VALID_SAMPLE_RATES += ["trigger"]
 
 
 class SRS830(SCPIInstrument):
-
     """
     Communicates with a Stanford Research Systems 830 Lock-In Amplifier.
 
@@ -79,7 +78,6 @@ class SRS830(SCPIInstrument):
     # ENUMS #
 
     class FreqSource(IntEnum):
-
         """
         Enum for the SRS830 frequency source settings.
         """
@@ -88,7 +86,6 @@ class SRS830(SCPIInstrument):
         internal = 1
 
     class Coupling(IntEnum):
-
         """
         Enum for the SRS830 channel coupling settings.
         """

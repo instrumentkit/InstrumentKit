@@ -24,7 +24,6 @@ LAKESHORE_TEMP_UNITS_INV = {v: k for k, v in LAKESHORE_TEMP_UNITS.items()}
 
 
 class Lakeshore475(SCPIInstrument):
-
     """
     The Lakeshore475 is a DSP Gaussmeter with field ranges from 35mG to 350kG.
 

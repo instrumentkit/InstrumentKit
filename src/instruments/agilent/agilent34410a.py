@@ -13,7 +13,6 @@ from instruments.units import ureg as u
 
 
 class Agilent34410a(SCPIMultimeter):  # pylint: disable=abstract-method
-
     """
     The Agilent 34410a is a very popular 6.5 digit DMM. This class should also
     cover the Agilent 34401a, 34411a, as well as the backwards compatability

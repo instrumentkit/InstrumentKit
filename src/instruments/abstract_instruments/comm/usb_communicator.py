@@ -20,7 +20,6 @@ from instruments.util_fns import assume_units
 
 
 class USBCommunicator(io.IOBase, AbstractCommunicator):
-
     """
     This communicator is used to wrap a pyusb connection object. This is
     typically *not* the suggested way to interact with a USB-connected

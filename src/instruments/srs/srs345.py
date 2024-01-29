@@ -18,7 +18,6 @@ from instruments.util_fns import enum_property, unitful_property
 
 
 class SRS345(SCPIInstrument, FunctionGenerator):
-
     """
     The SRS DS345 is a 30MHz function generator.
 

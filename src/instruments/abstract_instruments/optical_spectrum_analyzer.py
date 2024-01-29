@@ -14,7 +14,6 @@ from instruments.abstract_instruments import Instrument
 
 
 class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
-
     """
     Abstract base class for optical spectrum analyzer instruments.
 
