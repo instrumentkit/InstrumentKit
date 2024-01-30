@@ -16,7 +16,6 @@ from instruments.util_fns import bool_property, enum_property
 
 
 class Keithley6514(SCPIInstrument, Electrometer):
-
     """
     The `Keithley 6514`_ is an electrometer capable of doing sensitive current,
     charge, voltage and resistance measurements.

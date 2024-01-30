@@ -42,7 +42,6 @@ _DEFAULT_FORMATS.update({1: ">b", 2: ">h", 4: ">i"})
 
 
 class Instrument:
-
     """
     This is the base instrument class from which all others are derived from.
     It provides the basic implementation for all communication related

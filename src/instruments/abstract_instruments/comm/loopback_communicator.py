@@ -16,7 +16,6 @@ from instruments.abstract_instruments.comm import AbstractCommunicator
 
 
 class LoopbackCommunicator(io.IOBase, AbstractCommunicator):
-
     """
     Used to provide a loopback connection for an instrument class. The most
     common use cases for this communicator are writing unit tests, opening

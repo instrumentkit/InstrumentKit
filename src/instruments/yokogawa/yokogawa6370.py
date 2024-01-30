@@ -27,7 +27,6 @@ from instruments.util_fns import (
 
 
 class Yokogawa6370(OpticalSpectrumAnalyzer):
-
     """
     The Yokogawa 6370 is an optical spectrum analyzer.
 
@@ -74,7 +73,6 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     # INNER CLASSES #
 
     class Channel(OpticalSpectrumAnalyzer.Channel):
-
         """
         Class representing the channels on the Yokogawa 6370.
         This class inherits from `OpticalSpectrumAnalyzer.Channel`.

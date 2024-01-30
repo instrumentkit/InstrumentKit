@@ -23,7 +23,6 @@ from instruments.util_fns import (
 
 
 class SC10(Instrument):
-
     """
     The SC10 is a shutter controller, to be used with the Thorlabs SH05 and SH1.
     The user manual can be found here:
@@ -41,7 +40,6 @@ class SC10(Instrument):
     # ENUMS #
 
     class Mode(IntEnum):
-
         """
         Enum containing valid output modes of the SC10
         """

@@ -19,7 +19,6 @@ from instruments.util_fns import assume_units
 
 
 class SerialCommunicator(io.IOBase, AbstractCommunicator):
-
     """
     Wraps a `pyserial.Serial` object to add a few properties as well as
     handling of termination characters.

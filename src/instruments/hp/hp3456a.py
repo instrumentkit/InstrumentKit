@@ -42,7 +42,6 @@ from instruments.util_fns import assume_units, bool_property, enum_property
 
 
 class HP3456a(Multimeter):
-
     """The `HP3456a` is a 6 1/2 digit bench multimeter.
 
     It supports DCV, ACV, ACV + DCV, 2 wire Ohms, 4 wire Ohms, DCV/DCV Ratio,
@@ -69,7 +68,6 @@ class HP3456a(Multimeter):
     # ENUMS ##
 
     class MathMode(IntEnum):
-
         """
         Enum with the supported math modes
         """
@@ -86,7 +84,6 @@ class HP3456a(Multimeter):
         db = 9
 
     class Mode(Enum):
-
         """
         Enum containing the supported mode codes
         """
@@ -113,7 +110,6 @@ class HP3456a(Multimeter):
         oc_resistence_4wire = "S1F5"
 
     class Register(Enum):
-
         """
         Enum with the register names for all `HP3456a` internal registers.
         """
@@ -132,7 +128,6 @@ class HP3456a(Multimeter):
         z = "Z"
 
     class TriggerMode(IntEnum):
-
         """
         Enum with valid trigger modes.
         """
@@ -143,7 +138,6 @@ class HP3456a(Multimeter):
         hold = 4
 
     class ValidRange(Enum):
-
         """
         Enum with the valid ranges for voltage, resistance, and number of
         powerline cycles to integrate over.

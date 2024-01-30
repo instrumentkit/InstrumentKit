@@ -18,7 +18,6 @@ from instruments.util_fns import assume_units, ProxyList
 
 
 class Yokogawa7651(PowerSupply, Instrument):
-
     """
     The Yokogawa 7651 is a single channel DC power supply.
 
@@ -33,7 +32,6 @@ class Yokogawa7651(PowerSupply, Instrument):
     # INNER CLASSES #
 
     class Channel(PowerSupply.Channel):
-
         """
         Class representing the only channel on the Yokogawa 7651.
 

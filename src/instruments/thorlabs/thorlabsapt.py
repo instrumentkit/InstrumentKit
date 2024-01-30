@@ -27,7 +27,6 @@ logger.addHandler(logging.NullHandler())
 
 
 class ThorLabsAPT(_abstract.ThorLabsInstrument):
-
     """
     Generic ThorLabs APT hardware device controller. Communicates using the
     ThorLabs APT communications protocol, whose documentation is found in the
@@ -35,7 +34,6 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
     """
 
     class APTChannel:
-
         """
         Represents a channel within the hardware device. One device can have
         many channels, each labeled by an index.
@@ -260,7 +258,6 @@ class ThorLabsAPT(_abstract.ThorLabsInstrument):
 
 
 class APTPiezoDevice(ThorLabsAPT):
-
     """
     Generic ThorLabs APT piezo device, superclass of more specific piezo
     devices.
@@ -347,7 +344,6 @@ class APTPiezoDevice(ThorLabsAPT):
 
 
 class APTPiezoInertiaActuator(APTPiezoDevice):
-
     """Represent a Thorlabs APT piezo inertia actuator.
 
     Currently only the KIM piezo inertia actuator is implemented.
@@ -971,7 +967,6 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
 
 class APTPiezoStage(APTPiezoDevice):
-
     """
     Class representing a Thorlabs APT piezo stage
     """
@@ -1063,7 +1058,6 @@ class APTPiezoStage(APTPiezoDevice):
 
 
 class APTStrainGaugeReader(APTPiezoDevice):
-
     """
     Class representing a Thorlabs APT strain gauge reader.
 
@@ -1082,7 +1076,6 @@ class APTStrainGaugeReader(APTPiezoDevice):
 
 
 class APTMotorController(ThorLabsAPT):
-
     """
     Class representing a Thorlabs APT motor controller.
 
@@ -1109,7 +1102,6 @@ class APTMotorController(ThorLabsAPT):
     """
 
     class MotorChannel(ThorLabsAPT.APTChannel):
-
         """
         Class representing a single motor attached to a Thorlabs APT motor
         controller (`APTMotorController`).
@@ -1610,9 +1602,11 @@ class APTMotorController(ThorLabsAPT):
             # Now that we have our position as an integer number of encoder
             # counts, we're good to move.
             pkt = _packets.ThorLabsPacket(
-                message_id=_cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE
-                if absolute
-                else _cmds.ThorLabsCommands.MOT_MOVE_RELATIVE,
+                message_id=(
+                    _cmds.ThorLabsCommands.MOT_MOVE_ABSOLUTE
+                    if absolute
+                    else _cmds.ThorLabsCommands.MOT_MOVE_RELATIVE
+                ),
                 param1=None,
                 param2=None,
                 dest=self._apt.destination,

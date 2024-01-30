@@ -29,7 +29,6 @@ from instruments.util_fns import (
 
 
 class TekDPO70000(SCPIInstrument, Oscilloscope):
-
     """
     The Tektronix DPO70000 series  is a multi-channel oscilloscope with analog
     bandwidths ranging up to 33GHz.
@@ -52,7 +51,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
     # ENUMS #
 
     class AcquisitionMode(Enum):
-
         """
         Enum containing valid acquisition modes for the Tektronix 70000 series
         oscilloscopes.
@@ -66,7 +64,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         envelope = "ENV"
 
     class AcquisitionState(Enum):
-
         """
         Enum containing valid acquisition states for the Tektronix 70000 series
         oscilloscopes.
@@ -78,7 +75,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         stop = "STOP"
 
     class StopAfter(Enum):
-
         """
         Enum containing valid stop condition modes for the Tektronix 70000
         series oscilloscopes.
@@ -88,7 +84,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         sequence = "SEQ"
 
     class SamplingMode(Enum):
-
         """
         Enum containing valid sampling modes for the Tektronix 70000
         series oscilloscopes.
@@ -99,7 +94,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         interpolation_allowed = "IT"
 
     class HorizontalMode(Enum):
-
         """
         Enum containing valid horizontal scan modes for the Tektronix 70000
         series oscilloscopes.
@@ -110,7 +104,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         manual = "MAN"
 
     class WaveformEncoding(Enum):
-
         """
         Enum containing valid waveform encoding modes for the Tektronix 70000
         series oscilloscopes.
@@ -122,7 +115,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         binary = "BINARY"
 
     class BinaryFormat(Enum):
-
         """
         Enum containing valid binary formats for the Tektronix 70000
         series oscilloscopes (int, unsigned-int, floating-point).
@@ -133,7 +125,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         float = "FP"  # Single-precision!
 
     class ByteOrder(Enum):
-
         """
         Enum containing valid byte order (big-/little-endian) for the
         Tektronix 70000 series oscilloscopes.
@@ -143,7 +134,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
         big_endian = "MSB"
 
     class TriggerState(Enum):
-
         """
         Enum containing valid trigger states for the Tektronix 70000
         series oscilloscopes.
@@ -175,7 +165,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
     # CLASSES #
 
     class DataSource(Oscilloscope.DataSource):
-
         """
         Class representing a data source (channel, math, or ref) on the
         Tektronix DPO 70000.
@@ -227,7 +216,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
                 self._parent.data_source = self._old_dsrc
 
     class Math(DataSource):
-
         """
         Class representing a math channel on the Tektronix DPO 70000.
 
@@ -497,7 +485,6 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
             return rval
 
     class Channel(DataSource, Oscilloscope.Channel):
-
         """
         Class representing a channel on the Tektronix DPO 70000.
 
@@ -631,8 +618,7 @@ class TekDPO70000(SCPIInstrument, Oscilloscope):
                 )
 
             return tuple(
-                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2**15) - position)
-                + offset
+                scale * ((TekDPO70000.VERT_DIVS / 2) * d / (2**15) - position) + offset
                 for d in map(float, data)
             )
 
