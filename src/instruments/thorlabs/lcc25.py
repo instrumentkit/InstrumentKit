@@ -19,7 +19,6 @@ from instruments.util_fns import enum_property, bool_property, unitful_property
 
 
 class LCC25(Instrument):
-
     """
     The LCC25 is a controller for the thorlabs liquid crystal modules.
     it can set two voltages and then oscillate between them at a specific
@@ -40,7 +39,6 @@ class LCC25(Instrument):
     # ENUMS #
 
     class Mode(IntEnum):
-
         """
         Enum containing valid output modes of the LCC25
         """

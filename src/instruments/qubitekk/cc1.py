@@ -17,7 +17,6 @@ from instruments.util_fns import ProxyList, assume_units, split_unit_str
 
 
 class CC1(SCPIInstrument):
-
     """
     The CC1 is a hand-held coincidence counter.
 
@@ -89,7 +88,6 @@ class CC1(SCPIInstrument):
     # INNER CLASSES #
 
     class Channel:
-
         """
         Class representing a channel on the Qubitekk CC1.
         """

@@ -18,7 +18,6 @@ from instruments.util_fns import assume_units
 
 
 class ThorLabsInstrument(Instrument):
-
     """
     Generic class for ThorLabs instruments which require wrapping of
     commands and queries in packets.

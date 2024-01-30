@@ -42,7 +42,6 @@ from instruments.units import ureg as u
 
 
 class Keithley485(Instrument):
-
     """
     The Keithley Model 485 is a 4 1/2 digit resolution autoranging
     picoammeter with a +- 20000 count LCD. It is designed for low

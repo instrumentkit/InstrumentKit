@@ -29,7 +29,6 @@ hw_info_data = struct.Struct(
 
 
 class ThorLabsPacket:
-
     """
     This class is used to wrap data to-/from- the instrument. Because of the
     command protocol for some ThorLabs instruments, this helps get all the

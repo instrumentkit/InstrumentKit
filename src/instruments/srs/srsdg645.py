@@ -16,7 +16,6 @@ from instruments.util_fns import assume_units, ProxyList
 
 
 class SRSDG645(SCPIInstrument):
-
     """
     Communicates with a Stanford Research Systems DG645 digital delay generator,
     using the SCPI commands documented in the `user's guide`_.
@@ -33,7 +32,6 @@ class SRSDG645(SCPIInstrument):
     """
 
     class Channel:
-
         """
         Class representing a sensor attached to the SRS DG644.
 
@@ -97,7 +95,6 @@ class SRSDG645(SCPIInstrument):
     # ENUMS #
 
     class LevelPolarity(IntEnum):
-
         """
         Polarities for output levels.
         """
@@ -106,7 +103,6 @@ class SRSDG645(SCPIInstrument):
         negative = 0
 
     class Outputs(IntEnum):
-
         """
         Enumeration of valid outputs from the DDG.
         """
@@ -118,7 +114,6 @@ class SRSDG645(SCPIInstrument):
         GH = 4
 
     class Channels(IntEnum):
-
         """
         Enumeration of valid delay channels for the DDG.
         """
@@ -135,7 +130,6 @@ class SRSDG645(SCPIInstrument):
         H = 9
 
     class DisplayMode(IntEnum):
-
         """
         Enumeration of possible modes for the physical front-panel display.
         """
@@ -157,7 +151,6 @@ class SRSDG645(SCPIInstrument):
         burst_T0_config = 14
 
     class TriggerSource(IntEnum):
-
         """
         Enumeration of the different allowed trigger sources and modes.
         """
@@ -173,7 +166,6 @@ class SRSDG645(SCPIInstrument):
     # INNER CLASSES #
 
     class Output:
-
         """
         An output from the DDG.
         """

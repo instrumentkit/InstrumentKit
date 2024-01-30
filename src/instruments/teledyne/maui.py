@@ -28,7 +28,6 @@ from instruments.util_fns import assume_units, enum_property, bool_property, Pro
 
 
 class MAUI(Oscilloscope):
-
     """
     Medium to high-end Teledyne-Lecroy Oscilloscopes are shipped with
     the MAUI user interface. This class can be used to communicate with
@@ -116,7 +115,6 @@ class MAUI(Oscilloscope):
         width_50_neg = "WIDN"
 
     class TriggerState(Enum):
-
         """
         Enum containing valid trigger state for the oscilloscope.
         """
@@ -191,7 +189,6 @@ class MAUI(Oscilloscope):
     # CLASSES #
 
     class DataSource(Oscilloscope.DataSource):
-
         """
         Class representing a data source (channel, math, ref) on a MAUI
         oscilloscope.
@@ -314,7 +311,6 @@ class MAUI(Oscilloscope):
         )
 
     class Channel(DataSource, Oscilloscope.Channel):
-
         """
         Class representing a channel on a MAUI oscilloscope.
 
@@ -427,7 +423,6 @@ class MAUI(Oscilloscope):
             return self._parent.query(f"C{self._idx}:{cmd}", size=size)
 
     class Math(DataSource):
-
         """
         Class representing a function on a MAUI oscilloscope.
 
@@ -886,7 +881,6 @@ class MAUI(Oscilloscope):
             return self._parent.query(f"F{self._idx}:{cmd}", size=size)
 
     class Measurement:
-
         """
         Class representing a measurement on a MAUI oscilloscope.
 

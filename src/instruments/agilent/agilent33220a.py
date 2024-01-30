@@ -22,7 +22,6 @@ from instruments.util_fns import (
 
 
 class Agilent33220a(SCPIFunctionGenerator):
-
     """
     The `Agilent/Keysight 33220a`_ is a 20MHz function/arbitrary waveform
     generator. This model has been replaced by the Keysight 33500 series
@@ -45,7 +44,6 @@ class Agilent33220a(SCPIFunctionGenerator):
     # ENUMS #
 
     class Function(Enum):
-
         """
         Enum containing valid functions for the Agilent/Keysight 33220a
         """
@@ -59,7 +57,6 @@ class Agilent33220a(SCPIFunctionGenerator):
         user = "USER"
 
     class LoadResistance(Enum):
-
         """
         Enum containing valid load resistance for the Agilent/Keysight 33220a
         """
@@ -69,7 +66,6 @@ class Agilent33220a(SCPIFunctionGenerator):
         high_impedance = "INF"
 
     class OutputPolarity(Enum):
-
         """
         Enum containg valid output polarity modes for the
         Agilent/Keysight 33220a

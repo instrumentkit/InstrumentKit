@@ -45,7 +45,6 @@ from instruments.abstract_instruments import Instrument
 
 
 class Keithley580(Instrument):
-
     """
     The Keithley Model 580 is a 4 1/2 digit resolution autoranging
     micro-ohmmeter with a +- 20,000 count LCD. It is designed for low

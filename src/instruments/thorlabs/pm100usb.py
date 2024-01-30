@@ -25,7 +25,6 @@ logger.addHandler(logging.NullHandler())
 
 
 class PM100USB(SCPIInstrument):
-
     """
     Instrument class for the `ThorLabs PM100USB`_ power meter.
     Note that as this is an SCPI-compliant instrument, the properties and

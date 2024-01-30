@@ -30,7 +30,6 @@ UNITS_TEMPERATURE = ["temp"]
 
 
 class SCPIMultimeter(SCPIInstrument, Multimeter):
-
     """
     This class is used for communicating with generic SCPI-compliant
     multimeters.
@@ -45,7 +44,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
     # ENUMS ##
 
     class Mode(Enum):
-
         """
         Enum of valid measurement modes for (most) SCPI compliant multimeters
         """
@@ -64,7 +62,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         voltage_dc = "VOLT:DC"
 
     class TriggerMode(Enum):
-
         """
         Valid trigger sources for most SCPI Multimeters.
 
@@ -83,7 +80,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         bus = "BUS"
 
     class InputRange(Enum):
-
         """
         Valid device range parameters outside of directly specifying the range.
         """
@@ -94,7 +90,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         automatic = "AUTO"
 
     class Resolution(Enum):
-
         """
         Valid measurement resolution parameters outside of directly the
         resolution.
@@ -105,7 +100,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         default = "DEF"
 
     class TriggerCount(Enum):
-
         """
         Valid trigger count parameters outside of directly the value.
         """
@@ -116,7 +110,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         infinity = "INF"
 
     class SampleCount(Enum):
-
         """
         Valid sample count parameters outside of directly the value.
         """
@@ -126,7 +119,6 @@ class SCPIMultimeter(SCPIInstrument, Multimeter):
         default = "DEF"
 
     class SampleSource(Enum):
-
         """
         Valid sample source parameters.
 

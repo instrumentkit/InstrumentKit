@@ -42,7 +42,6 @@ from instruments.util_fns import assume_units
 
 
 class GlassmanFR(PowerSupply, PowerSupply.Channel):
-
     """
     The GlassmanFR is a single output power supply.
 

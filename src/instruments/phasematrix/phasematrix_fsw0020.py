@@ -14,7 +14,6 @@ from instruments.util_fns import assume_units
 
 
 class PhaseMatrixFSW0020(SingleChannelSG):
-
     """
     Communicates with a Phase Matrix FSW-0020 signal generator via the
     "Native SPI" protocol, supported on all FSW firmware versions.

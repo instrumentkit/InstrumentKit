@@ -20,7 +20,6 @@ from instruments.util_fns import (
 
 
 class HS9000(SignalGenerator):
-
     """
     Communicates with a `Holzworth HS-9000 series`_ multi-channel frequency
     synthesizer.

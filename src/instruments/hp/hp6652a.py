@@ -18,7 +18,6 @@ from instruments.util_fns import unitful_property, bool_property
 
 
 class HP6652a(PowerSupply, PowerSupply.Channel):
-
     """
     The HP6652a is a single output power supply.
 
