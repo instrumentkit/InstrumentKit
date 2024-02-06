@@ -55,9 +55,9 @@ def quantity_constructor(loader, node):
     return u.Quantity(*split_unit_str(value))
 
 
+yaml = YAML(typ="unsafe")
 # We avoid having to register !Q every time by doing as soon as the
 # relevant constructor is defined.
-yaml = YAML(typ="unsafe")
 yaml.Constructor.add_constructor("!Q", quantity_constructor)
 
 
