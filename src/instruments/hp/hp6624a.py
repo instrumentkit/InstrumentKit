@@ -19,7 +19,7 @@ class HP6624a(PowerSupply):
     The HP6624a is a multi-output power supply.
 
     This class can also be used for HP662xa, where x=1,2,3,4,7. Note that some
-    models have less channels then the HP6624 and it is up to the user to take
+    models have fewer channels than the HP6624, and it is up to the user to take
     this into account. This can be changed with the `~HP6624a.channel_count`
     property.
 

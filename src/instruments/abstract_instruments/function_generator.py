@@ -55,7 +55,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
         @property
         def frequency(self):
             """
-            Gets/sets the the output frequency of the function generator. This is
+            Gets/sets the output frequency of the function generator. This is
             an abstract property.
 
             :type: `~pint.Quantity`
@@ -225,7 +225,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
         Gets a channel object for the function generator. This should use
         `~instruments.util_fns.ProxyList` to achieve this.
 
-        The number of channels accessable depends on the value
+        The number of channels accessible depends on the value
         of FunctionGenerator._channel_count
 
         :rtype: `FunctionGenerator.Channel`
@@ -257,7 +257,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
     @property
     def frequency(self):
         """
-        Gets/sets the the output frequency of the function generator. This is
+        Gets/sets the output frequency of the function generator. This is
         an abstract property.
 
         :type: `~pint.Quantity`
