@@ -88,7 +88,6 @@ def test_enum_property_input_decoration_not_a_function():
         a = 1
 
     class EnumMock(MockInstrument):
-
         a = enum_property("MOCK:A", SillyEnum, input_decoration=int)
 
     mock_instrument = EnumMock({"MOCK:A?": "1"})
@@ -119,7 +118,6 @@ def test_enum_property_output_decoration_not_a_function():
         a = ".23"
 
     class EnumMock(MockInstrument):
-
         a = enum_property("MOCK:A", SillyEnum, output_decoration=float)
 
     mock_instrument = EnumMock()

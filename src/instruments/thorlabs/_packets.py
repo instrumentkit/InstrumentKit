@@ -29,7 +29,6 @@ hw_info_data = struct.Struct(
 
 
 class ThorLabsPacket:
-
     """
     This class is used to wrap data to-/from- the instrument. Because of the
     command protocol for some ThorLabs instruments, this helps get all the
@@ -40,7 +39,6 @@ class ThorLabsPacket:
     def __init__(
         self, message_id, param1=None, param2=None, dest=0x50, source=0x01, data=None
     ):
-
         if param1 is not None or param2 is not None:
             has_data = False
         elif data is not None:

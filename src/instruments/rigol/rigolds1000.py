@@ -15,7 +15,6 @@ from instruments.util_fns import ProxyList, bool_property, enum_property
 
 
 class RigolDS1000Series(SCPIInstrument, Oscilloscope):
-
     """
     The Rigol DS1000-series is a popular budget oriented oscilloscope
     that has featured wide adoption across hobbyist circles.

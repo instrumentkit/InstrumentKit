@@ -48,7 +48,6 @@ from instruments.util_fns import (
 
 
 class HP6632b(SCPIInstrument, HP6652a):
-
     """
     The HP6632b is a system dc power supply with an output rating of 0-20V/0-5A,
     precision low current measurement and low output noise.

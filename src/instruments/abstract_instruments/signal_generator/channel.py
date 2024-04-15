@@ -11,7 +11,6 @@ import abc
 
 
 class SGChannel(metaclass=abc.ABCMeta):
-
     """
     Python abstract base class representing a single channel for a signal
     generator.

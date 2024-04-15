@@ -14,7 +14,6 @@ from io import StringIO
 
 
 class MockInstrument:
-
     """
     Mock class that admits sendcmd/query but little else such that property
     factories can be tested by deriving from the class.

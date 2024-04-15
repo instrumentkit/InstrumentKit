@@ -22,9 +22,9 @@ from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
 
+
 # pylint: disable=too-many-lines
 class NewportESP301(Instrument):
-
     """
     Handles communication with the Newport ESP-301 multiple-axis motor
     controller using the protocol documented in the `user's guide`_.
@@ -44,7 +44,6 @@ class NewportESP301(Instrument):
         self.terminator = "\r"
 
     class Axis:
-
         """
         Encapsulates communication concerning a single axis
         of an ESP-301 controller. This class should not be
@@ -1163,7 +1162,6 @@ class NewportESP301(Instrument):
     # ENUMS #
 
     class HomeSearchMode(IntEnum):
-
         """
         Enum containing different search modes code
         """
@@ -1184,7 +1182,6 @@ class NewportESP301(Instrument):
         neg_index_signals = 6
 
     class MotorType(IntEnum):
-
         """
         Enum for different motor types.
         """
@@ -1196,7 +1193,6 @@ class NewportESP301(Instrument):
         commutated_brushless_servo = 4
 
     class Units(IntEnum):
-
         """
         Enum containing what `units` return means.
         """

@@ -16,7 +16,6 @@ from instruments.util_fns import assume_units, ProxyList
 
 
 class TekAWG2000(SCPIInstrument):
-
     """
     Communicates with a Tektronix AWG2000 series instrument using the SCPI
     commands documented in the user's guide.
@@ -25,7 +24,6 @@ class TekAWG2000(SCPIInstrument):
     # INNER CLASSES #
 
     class Channel:
-
         """
         Class representing a physical channel on the Tektronix AWG 2000
 

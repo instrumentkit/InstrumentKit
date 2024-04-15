@@ -17,7 +17,6 @@ from instruments.units import ureg as u
 
 
 class Keithley195(Multimeter):
-
     """
     The Keithley 195 is a 5 1/2 digit auto-ranging digital multimeter. You can
     find the full specifications list in the `Keithley 195 user's guide`_.

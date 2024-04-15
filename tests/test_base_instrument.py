@@ -113,6 +113,13 @@ def test_instrument_open_tcpip(mock_socket, mock_socket_comm):
     mock_socket_comm.assert_called_with(mock_socket.socket.return_value)
 
 
+def test_instrument_open_tcpip_auth_not_implemented():
+    """Ensure `_authenticate` exists and raises NotImplemented error if hit here."""
+    inst = ik.Instrument.open_test()
+    with pytest.raises(NotImplementedError):
+        inst._authenticate(auth=("user", "pwd"))
+
+
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial(mock_serial_manager):
     mock_serial_manager.new_serial_connection.return_value.__class__ = (

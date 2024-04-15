@@ -22,7 +22,6 @@ from instruments.util_fns import (
 
 
 class TC200(Instrument):
-
     """
     The TC200 is is a controller for the voltage across a heating element.
     It can also read in the temperature off of a thermistor and implements
@@ -43,7 +42,6 @@ class TC200(Instrument):
     # ENUMS #
 
     class Mode(IntEnum):
-
         """
         Enum containing valid output modes of the TC200.
         """
@@ -52,7 +50,6 @@ class TC200(Instrument):
         cycle = 1
 
     class Sensor(Enum):
-
         """
         Enum containing valid temperature sensor types for the TC200.
         """
@@ -129,7 +126,6 @@ class TC200(Instrument):
         # There is no current error handling in the way that thorlabs
         # responds with errors
         if newval and not self.enable:
-
             response1 = self._file.query("ens")
             while response1 != ">":
                 response1 = self._file.read(1)

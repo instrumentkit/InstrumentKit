@@ -13,7 +13,6 @@ from instruments.util_fns import ProxyList
 
 
 class Lakeshore340(SCPIInstrument):
-
     """
     The Lakeshore340 is a multi-sensor cryogenic temperature controller.
 
@@ -29,7 +28,6 @@ class Lakeshore340(SCPIInstrument):
     # INNER CLASSES ##
 
     class Sensor:
-
         """
         Class representing a sensor attached to the Lakeshore 340.
 

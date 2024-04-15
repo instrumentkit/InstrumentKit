@@ -19,7 +19,6 @@ from instruments.util_fns import assume_units, ProxyList
 
 
 class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
-
     """
     Abstract base class for function generator instruments.
 

@@ -15,7 +15,6 @@ import struct
 
 
 class AbstractCommunicator(metaclass=abc.ABCMeta):
-
     """
     Abstract base class for electrometer instruments.
 

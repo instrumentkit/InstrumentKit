@@ -15,7 +15,6 @@ from instruments.util_fns import assume_units
 
 
 class SCPIInstrument(Instrument):
-
     r"""
     Base class for all SCPI-compliant instruments. Inherits from
     from `~instruments.Instrument`.
@@ -161,7 +160,6 @@ class SCPIInstrument(Instrument):
     #       Another good use of this functionality would be to allow users to
     #       automatically check errors after each command or query.
     class ErrorCodes(IntEnum):
-
         """
         Enumeration describing error codes as defined by SCPI 1999.0.
         Error codes that are equal to 0 mod 100 are defined to be *generic*.

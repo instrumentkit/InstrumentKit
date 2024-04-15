@@ -39,7 +39,6 @@ from instruments.util_fns import ProxyList
 
 
 class AGUC2(Instrument):
-
     """
     Handles the communication with the AGUC2 controller using the serial
     connection.
@@ -94,7 +93,6 @@ class AGUC2(Instrument):
         self._sleep_time = 0.25
 
     class Axis:
-
         """
         Class representing one axis attached to a Controller. This will likely
         work with the AG-UC8 controller as well.

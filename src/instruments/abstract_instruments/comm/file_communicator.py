@@ -20,7 +20,6 @@ logger.addHandler(logging.NullHandler())
 
 
 class FileCommunicator(io.IOBase, AbstractCommunicator):
-
     """
     Wraps a `file` object, providing ``sendcmd`` and ``query`` methods,
     while passing everything else through.

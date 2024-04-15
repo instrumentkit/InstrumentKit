@@ -36,7 +36,6 @@ def _parent_property(prop_name, doc=""):
 
 
 class TekDPO4104(SCPIInstrument, Oscilloscope):
-
     """
     The Tektronix DPO4104 is a multi-channel oscilloscope with analog
     bandwidths ranging from 100MHz to 1GHz.
@@ -51,7 +50,6 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
     """
 
     class DataSource(Oscilloscope.DataSource):
-
         """
         Class representing a data source (channel, math, or ref) on the Tektronix
         DPO 4104.
@@ -111,7 +109,6 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
 
             # Set the acquisition channel
             with self:
-
                 # TODO: move this out somewhere more appropriate.
                 old_dat_stop = self._tek.query("DAT:STOP?")
                 self._tek.sendcmd(f"DAT:STOP {10 ** 7}")
@@ -163,7 +160,6 @@ class TekDPO4104(SCPIInstrument, Oscilloscope):
         y_offset = _parent_property("y_offset")
 
     class Channel(DataSource, Oscilloscope.Channel):
-
         """
         Class representing a channel on the Tektronix DPO 4104.
 

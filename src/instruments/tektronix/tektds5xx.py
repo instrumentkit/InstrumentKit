@@ -49,7 +49,6 @@ from instruments.util_fns import ProxyList
 
 
 class TekTDS5xx(SCPIInstrument, Oscilloscope):
-
     """
     Support for the TDS5xx series of oscilloscopes
      Implemented from:
@@ -60,7 +59,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
     """
 
     class Measurement:
-
         """
         Class representing a measurement channel on the Tektronix TDS5xx
         """
@@ -100,7 +98,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
             return self._data
 
     class DataSource(Oscilloscope.DataSource):
-
         """
         Class representing a data source (channel, math, or ref) on the Tektronix
         TDS 5xx.
@@ -138,7 +135,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
                 or if numpy is installed, `tuple`[`numpy.array`, `numpy.array`]
             """
             with self:
-
                 if not bin_format:
                     # Set the data encoding format to ASCII
                     self._parent.sendcmd("DAT:ENC ASCI")
@@ -182,7 +178,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
                 return x, y
 
     class Channel(DataSource, Oscilloscope.Channel):
-
         """
         Class representing a channel on the Tektronix TDS 5xx.
 
@@ -284,7 +279,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
     # ENUMS ##
 
     class Coupling(Enum):
-
         """
         Available coupling options for input sources and trigger
         """
@@ -294,7 +288,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         ground = "GND"
 
     class Bandwidth(Enum):
-
         """
         Bandwidth in MHz
         """
@@ -305,7 +298,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         FULL = "FUL"
 
     class Impedance(Enum):
-
         """
         Available options for input source impedance
         """
@@ -314,7 +306,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         OneMeg = "MEG"
 
     class Edge(Enum):
-
         """
         Available Options for trigger slope
         """
@@ -323,7 +314,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         Falling = "FALL"
 
     class Trigger(Enum):
-
         """
         Available Trigger sources
         (AUX not Available on TDS520A/TDS540A)
@@ -337,7 +327,6 @@ class TekTDS5xx(SCPIInstrument, Oscilloscope):
         LINE = "LINE"
 
     class Source(Enum):
-
         """
         Available Data sources
         """

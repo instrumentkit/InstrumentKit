@@ -19,7 +19,6 @@ from instruments.util_fns import assume_units
 
 
 class SocketCommunicator(io.IOBase, AbstractCommunicator):
-
     """
     Communicates with a socket and makes it look like a `file`. Note that this
     is used instead of `socket.makefile`, as that method does not support

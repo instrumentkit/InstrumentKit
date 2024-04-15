@@ -19,7 +19,6 @@ from instruments.units import ureg as u
 
 
 class VisaCommunicator(io.IOBase, AbstractCommunicator):
-
     """
     Communicates a connection exposed by the VISA library and exposes it as a
     file-like object.

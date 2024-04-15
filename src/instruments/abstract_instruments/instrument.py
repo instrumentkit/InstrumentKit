@@ -42,7 +42,6 @@ _DEFAULT_FORMATS.update({1: ">b", 2: ">h", 4: ">i"})
 
 
 class Instrument:
-
     """
     This is the base instrument class from which all others are derived from.
     It provides the basic implementation for all communication related
@@ -50,7 +49,7 @@ class Instrument:
     connections via the supported hardware channels.
     """
 
-    def __init__(self, filelike):
+    def __init__(self, filelike, *args, **kwargs):
         # Check to make sure filelike is a subclass of AbstractCommunicator
         if isinstance(filelike, AbstractCommunicator):
             self._file = filelike
@@ -71,6 +70,15 @@ class Instrument:
 
     def _ack_expected(self, msg=""):  # pylint: disable=unused-argument,no-self-use
         return None
+
+    def _authenticate(self, auth):
+        """
+        Authenticate with credentials for establishing the communication with the
+        instrument.
+
+        :param auth: Credentials for authentication.
+        """
+        raise NotImplementedError
 
     def sendcmd(self, cmd):
         """
@@ -430,12 +438,14 @@ class Instrument:
             raise NotImplementedError("Invalid scheme or not yet " "implemented.")
 
     @classmethod
-    def open_tcpip(cls, host, port):
+    def open_tcpip(cls, host, port, auth=None):
         """
         Opens an instrument, connecting via TCP/IP to a given host and TCP port.
 
         :param str host: Name or IP address of the instrument.
         :param int port: TCP port on which the insturment is listening.
+        :param auth: Authentication credentials to establish connection.
+            Type depends on instrument and authentication method used.
 
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
@@ -446,7 +456,10 @@ class Instrument:
         """
         conn = socket.socket()
         conn.connect((host, port))
-        return cls(SocketCommunicator(conn))
+
+        ret_cls = cls(SocketCommunicator(conn), auth=auth)
+
+        return ret_cls
 
     # pylint: disable=too-many-arguments
     @classmethod

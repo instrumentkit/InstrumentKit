@@ -21,7 +21,6 @@ logger.addHandler(logging.NullHandler())
 
 
 class VXI11Communicator(io.IOBase, AbstractCommunicator):
-
     """
     Wraps a VXI-11 device. Arguments are all essentially just passed
     to `vxi11.Instrument`.
