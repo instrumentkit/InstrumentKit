@@ -32,8 +32,8 @@ class MTSICS(Instrument):
         stable = False
         immediately = True
 
-    def __init__(self, filelike):
-        super().__init__(filelike)
+    def __init__(self, filelike, *args, **kwargs):
+        super().__init__(filelike, *args, **kwargs)
         self.terminator = "\r\n"
         self._weight_mode = MTSICS.WeightMode.stable
 
