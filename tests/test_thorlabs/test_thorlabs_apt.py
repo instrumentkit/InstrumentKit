@@ -607,6 +607,62 @@ def test_apt_pia_channel_move_abs(init_kim101, ch):
 
 
 @pytest.mark.parametrize("ch", channels)
+def test_apt_pia_channel_move_abs_single_mode(init_kim101, ch):
+    """Absolute movement of APT Piezo Inertia Actuator, first set to single mode.
+
+    Tested with KIM101 driver connected to PIM1 mirror mount.
+    First send single mode, test correct channel address, then switch back to
+    multi mode and test again.
+    """
+    ch_send_single = ch + 1
+    ch_send_multi = ch**2
+    with expected_protocol(
+        ik.thorlabs.APTPiezoInertiaActuator,
+        [
+            init_kim101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.PZMOT_SET_PARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<HH", 0x2B, ch_send_single),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.PZMOT_MOVE_ABSOLUTE,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", ch_send_single, 100),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.PZMOT_SET_PARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<HH", 0x2B, 0x00),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.PZMOT_MOVE_ABSOLUTE,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", ch_send_multi, 100),
+            ).pack(),
+        ],
+        [init_kim101[1]],
+        sep="",
+    ) as apt:
+        apt.channel[ch].enabled_single = True
+        apt.channel[ch].move_abs(100)
+        apt.channel[ch].enabled_single = False
+        apt.channel[ch].move_abs(100)
+
+
+@pytest.mark.parametrize("ch", channels)
 def test_apt_pia_channel_move_jog(init_kim101, ch):
     """Jog forward and reverse with APT Piezo Inertia Actuator.
 
