@@ -417,7 +417,7 @@ def test_lakeshore475_change_measurement_mode_mismatched_type():
         exc_msg = exc_info.value.args[0]
         assert (
             exc_msg == f"Mode setting must be a `Lakeshore475.Mode` "
-            f"value, got {type(42)} instead."
+            f"value, got {int} instead."
         )
         # check resolution
         with pytest.raises(TypeError) as exc_info:
@@ -431,7 +431,7 @@ def test_lakeshore475_change_measurement_mode_mismatched_type():
         assert (
             exc_msg == f"Filter type setting must be a "
             f"`Lakeshore475.Filter` value, "
-            f"got {type(42)} instead."
+            f"got {int} instead."
         )
         # check peak_mode
         with pytest.raises(TypeError) as exc_info:
@@ -440,7 +440,7 @@ def test_lakeshore475_change_measurement_mode_mismatched_type():
         assert (
             exc_msg == f"Peak measurement type setting must be a "
             f"`Lakeshore475.PeakMode` value, "
-            f"got {type(42)} instead."
+            f"got {int} instead."
         )
         # check peak_display
         with pytest.raises(TypeError) as exc_info:
@@ -449,7 +449,7 @@ def test_lakeshore475_change_measurement_mode_mismatched_type():
         assert (
             exc_msg == f"Peak display type setting must be a "
             f"`Lakeshore475.PeakDisplay` value, "
-            f"got {type(42)} instead."
+            f"got {int} instead."
         )
 
 
