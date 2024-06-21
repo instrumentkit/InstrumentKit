@@ -15,7 +15,6 @@ from instruments.util_fns import enum_property, bool_property, int_property, Pro
 
 
 class PicowattAVS47(SCPIInstrument):
-
     """
     The Picowatt AVS 47 is a resistance bridge used to measure the resistance
     of low-temperature sensors.
@@ -34,7 +33,6 @@ class PicowattAVS47(SCPIInstrument):
     # INNER CLASSES #
 
     class Sensor:
-
         """
         Class representing a sensor on the PicowattAVS47
 

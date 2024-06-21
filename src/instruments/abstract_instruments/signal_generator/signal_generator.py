@@ -14,7 +14,6 @@ from instruments.abstract_instruments import Instrument
 
 
 class SignalGenerator(Instrument, metaclass=abc.ABCMeta):
-
     """
     Python abstract base class for signal generators (eg microwave sources).
 

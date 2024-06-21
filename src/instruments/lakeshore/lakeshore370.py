@@ -13,7 +13,6 @@ from instruments.util_fns import ProxyList
 
 
 class Lakeshore370(SCPIInstrument):
-
     """
     The Lakeshore 370 is a multichannel AC resistance bridge for use in low
     temperature dilution refridgerator setups.
@@ -33,7 +32,6 @@ class Lakeshore370(SCPIInstrument):
     # INNER CLASSES ##
 
     class Channel:
-
         """
         Class representing a sensor attached to the Lakeshore 370.
 

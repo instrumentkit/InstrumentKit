@@ -17,7 +17,6 @@ from instruments.util_fns import ProxyList
 
 
 class SRSCTC100(SCPIInstrument):
-
     """
     Communicates with a Stanford Research Systems CTC-100 cryogenic temperature
     controller.
@@ -53,7 +52,6 @@ class SRSCTC100(SCPIInstrument):
         rox = "ROX"
 
     class Channel:
-
         """
         Represents an input or output channel on an SRS CTC-100 cryogenic
         temperature controller.

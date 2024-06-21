@@ -15,7 +15,6 @@ from instruments.util_fns import ProxyList, unitful_property, bool_property
 
 
 class HP6624a(PowerSupply):
-
     """
     The HP6624a is a multi-output power supply.
 

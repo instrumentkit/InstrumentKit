@@ -7,6 +7,7 @@ Provides support for the Yokogawa 6370 optical spectrum analyzer.
 
 
 from enum import IntEnum, Enum
+import hashlib
 
 from instruments.units import ureg as u
 
@@ -26,15 +27,21 @@ from instruments.util_fns import (
 
 
 class Yokogawa6370(OpticalSpectrumAnalyzer):
-
     """
-    The Yokogawa 6370 is a optical spectrum analyzer.
+    The Yokogawa 6370 is an optical spectrum analyzer.
+
     Example usage:
 
     >>> import instruments as ik
     >>> import instruments.units as u
     >>> inst = ik.yokogawa.Yokogawa6370.open_visa('TCPIP0:192.168.0.35')
     >>> inst.start_wl = 1030e-9 * u.m
+
+    Example usage with TCP/IP connection and user authentication:
+
+    >>> import instruments as ik
+    >>> auth = ("username", "password")
+    >>> inst = ik.yokogawa.Yokogawa6370.open_tcpip("192.168.0.35", 10001, auth=auth)
     """
 
     def __init__(self, *args, **kwargs):
@@ -43,13 +50,29 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         if isinstance(self._file, SocketCommunicator):
             self.terminator = "\r\n"  # TCP IP connection terminator
 
+        # Authenticate with `auth` (supplied as keyword argument) if provided
+        auth = kwargs.get("auth", None)
+        if auth is not None:
+            self._authenticate(auth)
+
         # Set data Format to binary
         self.sendcmd(":FORMat:DATA REAL,64")  # TODO: Find out where we want this
+
+    def _authenticate(self, auth):
+        """Authenticate with the instrument.
+
+        :param auth: Authentication tuple of (username, password)
+        """
+        username, password = auth
+        _ = self.query(f'OPEN "{username}"')
+        resp = self.query(f'"{password}"')
+
+        if "ready" not in resp.lower():
+            raise ConnectionError("Could not authenticate with username / password")
 
     # INNER CLASSES #
 
     class Channel(OpticalSpectrumAnalyzer.Channel):
-
         """
         Class representing the channels on the Yokogawa 6370.
         This class inherits from `OpticalSpectrumAnalyzer.Channel`.
@@ -291,3 +314,10 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     def clear(self):
         """Clear status registers."""
         self.sendcmd("*CLS")
+
+    def query(self, cmd, size=-1):
+        """todo: remove"""
+        print(f"CMD: {cmd}")
+        retval = super().query(cmd, size=size)
+        print(f"RESP: {retval}")
+        return retval

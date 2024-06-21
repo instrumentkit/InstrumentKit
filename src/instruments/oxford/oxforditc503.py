@@ -13,7 +13,6 @@ from instruments.util_fns import ProxyList
 
 
 class OxfordITC503(Instrument):
-
     """
     The Oxford ITC503 is a multi-sensor temperature controller.
 
@@ -33,7 +32,6 @@ class OxfordITC503(Instrument):
     # INNER CLASSES #
 
     class Sensor:
-
         """
         Class representing a probe sensor on the Oxford ITC 503.
 

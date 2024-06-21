@@ -16,7 +16,6 @@ from instruments.util_fns import bounded_unitful_property
 
 
 class Keithley6220(SCPIInstrument, PowerSupply):
-
     """
     The Keithley 6220 is a single channel constant current supply.
 

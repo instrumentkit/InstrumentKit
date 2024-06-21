@@ -191,7 +191,7 @@ def test_define_program(prg_id):
                 mock.call("EP", target=prg_id),
                 mock.call("QP"),
             )
-            mock_cmd.has_calls(calls)
+            mock_cmd.assert_has_calls(calls)
 
 
 @given(prg_id=st.integers().filter(lambda x: x < 1 or x > 100))

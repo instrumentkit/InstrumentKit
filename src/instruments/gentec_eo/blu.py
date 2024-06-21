@@ -1,6 +1,5 @@
 """Support for Gentec-EO Blu devices."""
 
-
 # IMPORTS #####################################################################
 
 from enum import Enum

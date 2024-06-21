@@ -17,7 +17,6 @@ from instruments.util_fns import ProxyList
 
 
 class Keithley2182(SCPIMultimeter):
-
     """
     The Keithley 2182 is a nano-voltmeter. You can find the full specifications
     list in the `user's guide`_.

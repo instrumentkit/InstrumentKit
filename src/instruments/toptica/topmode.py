@@ -19,7 +19,6 @@ from instruments.util_fns import ProxyList
 
 
 class TopMode(Instrument):
-
     """
     Communicates with a `Toptica Topmode`_ instrument.
 
@@ -48,7 +47,6 @@ class TopMode(Instrument):
     # ENUMS #
 
     class CharmStatus(IntEnum):
-
         """
         Enum containing valid charm statuses for the lasers
         """
@@ -61,7 +59,6 @@ class TopMode(Instrument):
     # INNER CLASSES #
 
     class Laser:
-
         """
         Class representing a laser on the Toptica Topmode.
 
