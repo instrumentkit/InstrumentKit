@@ -41,7 +41,6 @@ from instruments.abstract_instruments.function_generator import FunctionGenerato
 
 
 class HP3325a(FunctionGenerator):
-
     """The `HP3325a` is a 20Mhz Synthesizer / Function Generator.
 
     It supports sine-, square-, triangle-, ramp- waves across a wide range of frequencies. It also supports amplitude
@@ -60,7 +59,6 @@ class HP3325a(FunctionGenerator):
         self.terminator = "\r\n"
 
     class Waveform(IntEnum):
-
         """
         Enum with the supported math modes
         """
