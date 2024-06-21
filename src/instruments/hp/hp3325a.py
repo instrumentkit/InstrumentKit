@@ -28,22 +28,40 @@ Originally contributed and copyright held by Scott Phillips (polygonguru@gmail.c
 An unrestricted license has been provided to the maintainers of the Instrument
 Kit project.
 """
-import math
-import typing
 
 # IMPORTS #####################################################################
+import math
+from enum import Enum, IntEnum
 
-from enum import IntEnum
+from instruments.abstract_instruments import FunctionGenerator
+from instruments.units import ureg as u
+from instruments.util_fns import enum_property, unitful_property, bool_property
 
-from instruments.abstract_instruments.function_generator import FunctionGenerator
 
 # CLASSES #####################################################################
+
+def amplitude_parse(am_resp: str) -> float:
+    am_units = am_resp[-2:]
+    am_num = am_resp[:-2].replace("AM", "").strip()
+    return float(am_num * HP3325a.ampl_scale[am_units])
+
+
+def frequency_parse(fr_resp: str) -> float:
+    freq_units = fr_resp[-2:]
+    freq_num = fr_resp[:-2].replace("FR", "").strip()
+    return float(freq_num * HP3325a.freq_scale[freq_units])
+
+
+def offset_parse(of_resp: str) -> float:
+    of_resp = of_resp.replace("OF", "")
+    of_units = of_resp[-2:]
+    return float(of_resp[:-2]) * (1 if of_units == "VO" else 1000)
 
 
 class HP3325a(FunctionGenerator):
     """The `HP3325a` is a 20Mhz Synthesizer / Function Generator.
 
-    It supports sine-, square-, triangle-, ramp- waves across a wide range of frequencies. It also supports amplitude
+    It supports sine-, square-, triangle-, ramp-waves across a wide range of frequencies. It also supports amplitude
     and phase modulation, as well as DC-offset.
 
     `HP3325a` is a HPIB / pre-448.2 instrument.
@@ -62,13 +80,29 @@ class HP3325a(FunctionGenerator):
         """
         Enum with the supported math modes
         """
-
         dc_only = 0
         sine = 1
         square = 2
         triangle = 3
         positive_ramp = 4
         negative_ramp = 5
+
+    class FrequencyScale(Enum):
+        """
+        Enum with the supported frequency scales
+        """
+        hertz = 1
+        kilohertz = 1e3
+        megahertz = 1e6
+
+    class AmplitudeScale(Enum):
+        """
+        Enum with the supported amplitude scales
+        """
+        Volts = 1
+        Millivolts = 1e-3
+        Volts_RMS = math.sqrt(2.0)
+        Millivolts_RMS = 1e-3 * math.sqrt(2.0)
 
     freq_scale = {"HZ": 1, "KH": 1e3, "MH": 1e6}
     ampl_scale = {
@@ -78,115 +112,115 @@ class HP3325a(FunctionGenerator):
         "MR": 1e-3 * math.sqrt(2.0),
     }
 
-    @property
-    def amplitude(self):
-        am_resp = self.query("IAM")
-        am_units = am_resp[-2:]
-        am_num = am_resp[:-2].replace("AM", "").strip()
-        return float(am_num * HP3325a.ampl_scale[am_units])
+    # PROPERTIES ##
 
-    @amplitude.setter
-    def amplitude(self, new_amp):
-        freq_units = "VO"
-        freq_num = new_amp
-        self.sendcmd(f"AM{freq_num}{freq_units}")
+    generated_function = enum_property(
+        command="IFU",
+        enum=Waveform,
+        set_cmd="FU",
+        doc="""
+        Gets/sets the output function of the function generator
+        
+        type: `HP3325a.Waveform`
+        """,
+        input_decoration=int,
+        set_fmt="{}{}",
+    )
 
-    @property
-    def frequency(self):
-        fr_resp = self.query("IFR")
-        freq_units = fr_resp[-2:]
-        freq_num = fr_resp[:-2].replace("FR", "").strip()
-        return float(freq_num * HP3325a.freq_scale[freq_units])
+    ampltitude = unitful_property(
+        command="IAM",
+        units=u.volts,
+        set_cmd="AM",
+        format_code="{}",
+        doc="""
+        Gets/sets the amplitude of the output waveform
+        
+        :type: `float`
+        """,
+        input_decoration=amplitude_parse,
+        set_fmt="{}{}VO",
+    )
 
-    @frequency.setter
-    def frequency(self, new_freq):
-        # TODO - Do we need to scale by units?
-        freq_units = "HZ"
-        freq_num = new_freq
-        self.sendcmd(f"FR{freq_num}{freq_units}")
+    frequency = unitful_property(
+        command="IFR",
+        units=u.hertz,
+        set_cmd="FR",
+        format_code="{}",
+        doc="""
+        Gets/sets the frequency of the output waveform
+        
+        :type: `float`
+        """,
+        input_decoration=frequency_parse,
+        set_fmt="{}{}HZ",
+    )
 
-    @property
-    def function(self) -> Waveform:
-        fu_resp = self.query("IFU")
-        fu_resp = fu_resp.replace("FU", "")
-        return HP3325a.Waveform(int(fu_resp))
+    offset = unitful_property(
+        command="IOF",
+        units=u.volts,
+        set_cmd="OF",
+        format_code="{}",
+        doc="""
+        Gets/sets the offset of the output waveform
+        
+        :type: `float`
+        """,
+        input_decoration=offset_parse,
+        set_fmt="{}{}VO",
+    )
 
-    @function.setter
-    def function(
-        self, new_waveform: typing.Union[Waveform, FunctionGenerator.Function]
-    ):
-        if type(new_waveform) is FunctionGenerator.Function:
-            # Map to internal forms
-            if new_waveform == FunctionGenerator.Function.arbitrary:
-                # TODO - If this is HP3325B, it might work
-                raise NotImplementedError("HP3325A does not support arbitrary source!")
-            elif new_waveform == FunctionGenerator.Function.noise:
-                raise NotImplementedError("HP3325A does not support arbitrary noise!")
-            elif new_waveform == FunctionGenerator.Function.ramp:
-                # TODO - Distinguish positive and negative ramp?
-                new_waveform = HP3325a.Waveform.positive_ramp
-            elif new_waveform == FunctionGenerator.Function.sinusoid:
-                new_waveform = HP3325a.Waveform.sine
-            elif new_waveform == FunctionGenerator.Function.square:
-                new_waveform = HP3325a.Waveform.square
-            elif new_waveform == FunctionGenerator.Function.triangle:
-                new_waveform = HP3325a.Waveform.triangle
-            else:
-                raise NotImplementedError(
-                    f"HP3325 does not support function {new_waveform}"
-                )
-        self.sendcmd(f"FU{int(new_waveform)}")
+    phase = unitful_property(
+        command="IPH",
+        units=u.degrees,
+        set_cmd="PH",
+        format_code="{}",
+        doc="""
+        Gets/sets the phase of the output waveform
+        
+        :type: `float`
+        """,
+        input_decoration=lambda x: float(x.replace("PH", "").replace("DE", "").strip()),
+        set_fmt="{}{}DE",
+    )
 
-    @property
-    def offset(self) -> float:
-        of_resp = self.query("IOF")
-        of_resp = of_resp.replace("OF", "")
-        of_units = of_resp[-2:]
-        # TODO - Use internal units system of instrumentkit
-        return float(of_resp[:-2]) * (1 if of_units == "VO" else 1000)
+    high_voltage = bool_property(
+        command="IHV",
+        set_cmd="HV",
+        inst_true="1",
+        inst_false="0",
+        doc="""
+        Gets/sets the high voltage mode of the output waveform
+        
+        :type: `bool`
+        """,
+        set_fmt="{}{}",
+    )
 
-    @offset.setter
-    def offset(self, new_offset):
-        # TODO - Use internal units / better ranging
-        self.sendcmd(f"OF{new_offset}VO")
+    amplitude_modulation = bool_property(
+        command="IMA",
+        set_cmd="MA",
+        inst_true="1",
+        inst_false="0",
+        doc="""
+        Gets/sets the amplitude modulation mode of the output waveform
+        
+        :type: `bool`
+        """,
+        set_fmt="{}{}",
+    )
 
-    @property
-    def phase(self) -> float:
-        ph_resp = self.query("IPH")
-        ph_resp = ph_resp.replace("PH", "").replace("DE", "")
-        # TODO - Use internal units system of instrumentkit
-        return float(ph_resp)
-
-    @phase.setter
-    def phase(self, new_ph: float):
-        self.sendcmd(f"PH{new_ph}DE")
-
-    @property
-    def high_voltage(self) -> bool:
-        hv_resp = self.query("IHV")
-        return int(hv_resp[-1]) == 1
-
-    @high_voltage.setter
-    def high_voltage(self, new_hv: bool):
-        self.sendcmd(f"HV{1 if new_hv else 0}")
-
-    @property
-    def amplitude_modulation(self) -> bool:
-        hv_resp = self.query("IMA")
-        return int(hv_resp[-1]) == 1
-
-    @amplitude_modulation.setter
-    def amplitude_modulation(self, new_am: bool):
-        self.sendcmd(f"MA{1 if new_am else 0}")
-
-    @property
-    def marker_frequency(self) -> bool:
-        hv_resp = self.query("IMA")
-        return int(hv_resp[-1]) == 1
-
-    @marker_frequency.setter
-    def marker_frequency(self, new_mf: bool):
-        self.sendcmd(f"MA{1 if new_mf else 0}")
+    marker_frequency = bool_property(
+        command="IMA",
+        set_cmd="MA",
+        inst_true="1",
+        inst_false="0",
+        doc="""
+        Gets/sets the marker frequency mode of the output waveform
+        
+        :type: `bool`
+        """,
+        set_fmt="{}{}",
+    )
 
     def amplitude_calibration(self):
         self.sendcmd("AC")
