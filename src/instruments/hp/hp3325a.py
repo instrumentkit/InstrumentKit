@@ -41,6 +41,7 @@ from instruments.util_fns import enum_property, unitful_property, bool_property
 
 # CLASSES #####################################################################
 
+
 def amplitude_parse(am_resp: str) -> float:
     am_units = am_resp[-2:]
     am_num = am_resp[:-2].replace("AM", "").strip()
@@ -81,6 +82,7 @@ class HP3325a(FunctionGenerator):
         """
         Enum with the supported math modes
         """
+
         dc_only = 0
         sine = 1
         square = 2
@@ -92,6 +94,7 @@ class HP3325a(FunctionGenerator):
         """
         Enum with the supported frequency scales
         """
+
         hertz = 1
         kilohertz = 1e3
         megahertz = 1e6
@@ -100,6 +103,7 @@ class HP3325a(FunctionGenerator):
         """
         Enum with the supported amplitude scales
         """
+
         Volts = 1
         Millivolts = 1e-3
         Volts_RMS = math.sqrt(2.0)
@@ -121,7 +125,7 @@ class HP3325a(FunctionGenerator):
         set_cmd="FU",
         doc="""
         Gets/sets the output function of the function generator
-        
+
         type: `HP3325a.Waveform`
         """,
         input_decoration=int,
@@ -135,7 +139,7 @@ class HP3325a(FunctionGenerator):
         format_code="{}",
         doc="""
         Gets/sets the amplitude of the output waveform
-        
+
         :type: `float`
         """,
         input_decoration=amplitude_parse,
@@ -149,7 +153,7 @@ class HP3325a(FunctionGenerator):
         format_code="{}",
         doc="""
         Gets/sets the frequency of the output waveform
-        
+
         :type: `float`
         """,
         input_decoration=frequency_parse,
@@ -163,7 +167,7 @@ class HP3325a(FunctionGenerator):
         format_code="{}",
         doc="""
         Gets/sets the offset of the output waveform
-        
+
         :type: `float`
         """,
         input_decoration=offset_parse,
@@ -177,7 +181,7 @@ class HP3325a(FunctionGenerator):
         format_code="{}",
         doc="""
         Gets/sets the phase of the output waveform
-        
+
         :type: `float`
         """,
         input_decoration=lambda x: float(x.replace("PH", "").replace("DE", "").strip()),
@@ -191,7 +195,7 @@ class HP3325a(FunctionGenerator):
         inst_false="HV0",
         doc="""
         Gets/sets the high voltage mode of the output waveform
-        
+
         :type: `bool`
         """,
         set_fmt="{}{}",
@@ -204,7 +208,7 @@ class HP3325a(FunctionGenerator):
         inst_false="0",
         doc="""
         Gets/sets the amplitude modulation mode of the output waveform
-        
+
         :type: `bool`
         """,
         set_fmt="{}{}",
@@ -217,7 +221,7 @@ class HP3325a(FunctionGenerator):
         inst_false="0",
         doc="""
         Gets/sets the marker frequency mode of the output waveform
-        
+
         :type: `bool`
         """,
         set_fmt="{}{}",
