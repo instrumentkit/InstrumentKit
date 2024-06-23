@@ -208,7 +208,7 @@ def bool_property(
     """
 
     def _getter(self):
-        return self.query(command).strip() == inst_true
+        return self.query(command + "?").strip() == inst_true
 
     def _setter(self, newval):
         if not isinstance(newval, bool):
