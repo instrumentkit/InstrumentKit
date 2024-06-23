@@ -31,7 +31,7 @@ def test_hp3325a_high_voltage():
             "IHV",
         ],
         ["HV0"],
-        sep="\r\n"
+        sep="\r\n",
     ) as fcngen:
         assert not fcngen.high_voltage
 
@@ -53,6 +53,6 @@ def test_hp3325a_phase():
             "IPH",
         ],
         ["PH10DE"],
-        sep="\r\n"
+        sep="\r\n",
     ) as fcngen:
         assert fcngen.phase == u.Quantity(10, "deg")
