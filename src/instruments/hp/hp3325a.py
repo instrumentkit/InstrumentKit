@@ -33,6 +33,7 @@ Kit project.
 import math
 from enum import Enum, IntEnum
 
+from instruments import Instrument
 from instruments.abstract_instruments import FunctionGenerator
 from instruments.units import ureg as u
 from instruments.util_fns import enum_property, unitful_property, bool_property
@@ -114,7 +115,7 @@ class HP3325a(FunctionGenerator):
 
     # PROPERTIES ##
 
-    generated_function = enum_property(
+    function = enum_property(
         command="IFU",
         enum=Waveform,
         set_cmd="FU",
@@ -127,7 +128,7 @@ class HP3325a(FunctionGenerator):
         set_fmt="{}{}",
     )
 
-    ampltitude = unitful_property(
+    amplitude = unitful_property(
         command="IAM",
         units=u.volts,
         set_cmd="AM",
@@ -186,8 +187,8 @@ class HP3325a(FunctionGenerator):
     high_voltage = bool_property(
         command="IHV",
         set_cmd="HV",
-        inst_true="1",
-        inst_false="0",
+        inst_true="HV1",
+        inst_false="HV0",
         doc="""
         Gets/sets the high voltage mode of the output waveform
         
@@ -221,6 +222,14 @@ class HP3325a(FunctionGenerator):
         """,
         set_fmt="{}{}",
     )
+
+    def query(self, cmd, size=-1):
+        """
+        Query the instrument with the given command and return the response
+        """
+        # strip the question mark because HP3325A is too old for that
+        cmd = cmd.replace("?", "")
+        return Instrument.query(self, cmd, size)
 
     def amplitude_calibration(self):
         self.sendcmd("AC")
