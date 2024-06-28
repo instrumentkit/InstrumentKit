@@ -257,11 +257,4 @@ class HP3325a(FunctionGenerator):
     def query_error(self) -> int:
         # TODO - Support ERR? on HP3325B which is more specific
         err_resp = self.query("IER")
-        return int(err_resp.replace("e", "").replace("r", "").strip())
-
-
-# UNITS #######################################################################
-
-UNITS = {
-    None: 1,
-}
+        return int(err_resp.replace("E", "").replace("R", "").strip())
