@@ -97,9 +97,7 @@ def test_hp3325a_offset():
 def test_hp3325a_commands():
     with expected_protocol(
         ik.hp.hp3325a.HP3325a,
-        [
-            "AC", "AP", "IER"
-        ],
+        ["AC", "AP", "IER"],
         ["ER0"],
         sep="\r\n",
     ) as fcngen:
