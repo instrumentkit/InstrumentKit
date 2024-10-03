@@ -6,20 +6,24 @@ Provides an abstract base class for function generator instruments
 
 # IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
 
 import abc
 from enum import Enum
 
-from pint.errors import DimensionalityError
+from builtins import range
+from future.utils import with_metaclass
+import quantities as pq
 
 from instruments.abstract_instruments import Instrument
-from instruments.units import ureg as u
+import instruments.units as u
 from instruments.util_fns import assume_units, ProxyList
 
 # CLASSES #####################################################################
 
 
-class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
+class FunctionGenerator(with_metaclass(abc.ABCMeta, Instrument)):
 
     """
     Abstract base class for function generator instruments.
@@ -33,7 +37,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
         self._channel_count = 1
 
     # pylint:disable=protected-access
-    class Channel(metaclass=abc.ABCMeta):
+    class Channel(with_metaclass(abc.ABCMeta, object)):
         """
         Abstract base class for physical channels on a function generator.
 
@@ -59,7 +63,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
             Gets/sets the the output frequency of the function generator. This is
             an abstract property.
 
-            :type: `~pint.Quantity`
+            :type: `~quantities.Quantity`
             """
             if self._parent._channel_count == 1:
                 return self._parent.frequency
@@ -99,7 +103,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
             Gets/sets the output offset voltage of the function generator. This is
             an abstract property.
 
-            :type: `~pint.Quantity`
+            :type: `~quantities.Quantity`
             """
             if self._parent._channel_count == 1:
                 return self._parent.offset
@@ -119,7 +123,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
             Gets/sets the output phase of the function generator. This is an
             abstract property.
 
-            :type: `~pint.Quantity`
+            :type: `~quantities.Quantity`
             """
             if self._parent._channel_count == 1:
                 return self._parent.phase
@@ -153,32 +157,32 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
             If set with units of :math:`\\text{dBm}`, then no voltage mode can
             be passed.
 
-            If set with units of :math:`\\text{V}` as a `~pint.Quantity` or a
+            If set with units of :math:`\\text{V}` as a `~quantities.Quantity` or a
             `float` without a voltage mode, then the voltage mode is assumed to be
             peak-to-peak.
 
             :units: As specified, or assumed to be :math:`\\text{V}` if not
                 specified.
-            :type: Either a `tuple` of a `~pint.Quantity` and a
-                `FunctionGenerator.VoltageMode`, or a `~pint.Quantity`
+            :type: Either a `tuple` of a `~quantities.Quantity` and a
+                `FunctionGenerator.VoltageMode`, or a `~quantities.Quantity`
                 if no voltage mode applies.
             """
             mag, units = self._get_amplitude_()
 
             if units == self._parent.VoltageMode.dBm:
-                return u.Quantity(mag, u.dBm)
+                return pq.Quantity(mag, u.dBm)
 
-            return u.Quantity(mag, u.V), units
+            return pq.Quantity(mag, pq.V), units
 
         @amplitude.setter
         def amplitude(self, newval):
             # Try and rescale to dBm... if it succeeds, set the magnitude
             # and units accordingly, otherwise handle as a voltage.
             try:
-                newval_dbm = newval.to(u.dBm)
+                newval_dbm = newval.rescale(u.dBm)
                 mag = float(newval_dbm.magnitude)
                 units = self._parent.VoltageMode.dBm
-            except (AttributeError, ValueError, DimensionalityError):
+            except (AttributeError, ValueError):
                 # OK, we have volts. Now, do we have a tuple? If not, assume Vpp.
                 if not isinstance(newval, tuple):
                     mag = newval
@@ -187,7 +191,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
                     mag, units = newval
 
                 # Finally, convert the magnitude out to a float.
-                mag = float(assume_units(mag, u.V).to(u.V).magnitude)
+                mag = float(assume_units(mag, pq.V).rescale(pq.V).magnitude)
 
             self._set_amplitude_(mag, units)
 
@@ -211,36 +215,21 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
         """
         Enum containg valid output function modes for many function generators
         """
-        sinusoid = "SIN"
-        square = "SQU"
-        triangle = "TRI"
-        ramp = "RAMP"
-        noise = "NOIS"
-        arbitrary = "ARB"
+        sinusoid = 'SIN'
+        square = 'SQU'
+        triangle = 'TRI'
+        ramp = 'RAMP'
+        noise = 'NOIS'
+        arbitrary = 'ARB'
 
     @property
     def channel(self):
-        """
-        Gets a channel object for the function generator. This should use
-        `~instruments.util_fns.ProxyList` to achieve this.
-
-        The number of channels accessable depends on the value
-        of FunctionGenerator._channel_count
-
-        :rtype: `FunctionGenerator.Channel`
-        """
         return ProxyList(self, self.Channel, range(self._channel_count))
 
     # PASSTHROUGH PROPERTIES #
 
     @property
     def amplitude(self):
-        """
-        Gets/sets the output amplitude of the first channel
-        of the function generator
-
-        :type: `~pint.Quantity`
-        """
         return self.channel[0].amplitude
 
     @amplitude.setter
@@ -259,7 +248,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the the output frequency of the function generator. This is
         an abstract property.
 
-        :type: `~pint.Quantity`
+        :type: `~quantities.Quantity`
         """
         if self._channel_count > 1:
             return self.channel[0].frequency
@@ -299,7 +288,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the output offset voltage of the function generator. This is
         an abstract property.
 
-        :type: `~pint.Quantity`
+        :type: `~quantities.Quantity`
         """
         if self._channel_count > 1:
             return self.channel[0].offset
@@ -319,7 +308,7 @@ class FunctionGenerator(Instrument, metaclass=abc.ABCMeta):
         Gets/sets the output phase of the function generator. This is an
         abstract property.
 
-        :type: `~pint.Quantity`
+        :type: `~quantities.Quantity`
         """
         if self._channel_count > 1:
             return self.channel[0].phase

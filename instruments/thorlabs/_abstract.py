@@ -6,14 +6,16 @@ Defines a generic Thorlabs instrument to define some common functionality.
 
 # IMPORTS #####################################################################
 
+from __future__ import absolute_import
+from __future__ import division
 
 import time
-
-from instruments.units import ureg as u
 
 from instruments.thorlabs import _packets
 from instruments.abstract_instruments.instrument import Instrument
 from instruments.util_fns import assume_units
+
+from quantities import second
 
 # CLASSES #####################################################################
 
@@ -27,7 +29,7 @@ class ThorLabsInstrument(Instrument):
 
     def __init__(self, filelike):
         super(ThorLabsInstrument, self).__init__(filelike)
-        self.terminator = ""
+        self.terminator = ''
 
     def sendpacket(self, packet):
         """
@@ -72,8 +74,8 @@ class ThorLabsInstrument(Instrument):
         """
         t_start = time.time()
 
-        if timeout is not None:
-            timeout = assume_units(timeout, u.second).to('second').magnitude
+        if timeout:
+            timeout = assume_units(timeout, second).rescale('second').magnitude
 
         while True:
             self._file.write_raw(packet.pack())
