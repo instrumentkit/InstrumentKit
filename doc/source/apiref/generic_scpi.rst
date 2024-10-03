@@ -1,9 +1,9 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. _apiref-generic_scpi:
 .. currentmodule:: instruments.generic_scpi
-    
+
 ========================
 Generic SCPI Instruments
 ========================
@@ -14,7 +14,7 @@ Generic SCPI Instruments
 .. autoclass:: SCPIInstrument
     :members:
     :undoc-members:
-    
+
 :class:`SCPIMultimeter` - Generic multimeter using SCPI commands
 ================================================================
 
@@ -28,4 +28,3 @@ Generic SCPI Instruments
 .. autoclass:: SCPIFunctionGenerator
     :members:
     :undoc-members:
-

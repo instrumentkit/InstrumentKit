@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. _apiref:
-    
+
 InstrumentKit API Reference
 ===========================
 
@@ -17,11 +17,13 @@ Contents:
     fluke
     gentec-eo
     glassman
+    hcp
     holzworth
     hp
     keithley
     lakeshore
     minghe
+    mettler_toledo
     newport
     ondax
     oxford

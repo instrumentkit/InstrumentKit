@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.keithley
-    
+
 ========
 Keithley
 ========
@@ -20,7 +20,7 @@ Keithley
 .. autoclass:: Keithley485
     :members:
     :undoc-members:
-    
+
 :class:`Keithley580` Microohm Meter
 ===================================
 

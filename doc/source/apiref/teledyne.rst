@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.teledyne
-    
+
 ===============
 Teledyne-LeCroy
 ===============

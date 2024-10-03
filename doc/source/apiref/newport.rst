@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.newport
-    
+
 =======
 Newport
 =======
@@ -14,22 +14,10 @@ Newport
     :members:
     :undoc-members:
 
-.. autoclass:: _Axis
-    :members:
-    :undoc-members:
-
 :class:`NewportESP301` Motor Controller
 =======================================
 
 .. autoclass:: NewportESP301
-    :members:
-    :undoc-members:
-    
-.. autoclass:: NewportESP301Axis
-    :members:
-    :undoc-members:
-    
-.. autoclass:: NewportESP301HomeSearchMode
     :members:
     :undoc-members:
 
@@ -40,3 +28,9 @@ Newport
     :members:
     :undoc-members:
 
+:class:`PicoMotorController8742`
+================================
+
+.. autoclass:: PicoMotorController8742
+    :members:
+    :undoc-members:

@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.picowatt
-    
+
 ========
 Picowatt
 ========
@@ -13,4 +13,3 @@ Picowatt
 .. autoclass:: PicowattAVS47
     :members:
     :undoc-members:
-

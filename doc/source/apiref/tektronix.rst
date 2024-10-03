@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.tektronix
-    
+
 =========
 Tektronix
 =========
@@ -13,19 +13,11 @@ Tektronix
 .. autoclass:: TekAWG2000
     :members:
     :undoc-members:
-    
+
 :class:`TekDPO4104` Oscilloscope
 ================================
 
 .. autoclass:: TekDPO4104
-    :members:
-    :undoc-members:
-    
-.. autoclass:: _TekDPO4104DataSource
-    :members:
-    :undoc-members:
-    
-.. autoclass:: _TekDPO4104Channel
     :members:
     :undoc-members:
 

@@ -39,6 +39,42 @@ that InstrumentKit functionality such as :ref:`property_factories` work correctl
 for new instruments, and those that check that existing instruments produce
 correct protocols.
 
+tox Based Testing
+=================
+
+When submitting a PR, tests are run through the tool ``tox``. It helps to
+provide some isolation between your source code and test code, and gives you
+quick access to separate dedicated test venvs.
+
+While ``tox`` will setup and manage its virtual environments automatically,
+you will need a copy of each major version of Python you wish to test against.
+I suggest you use `pyenv`_ to do this. You can install this tool via the
+`pyenv-installer`_ tool. After installation, each Python version can be
+installed via the following pattern:
+
+.. code-block:: console
+
+    $ pyenv install 3.8.13
+
+Afterwards, you can use ``tox`` to run the tests under that specific Python
+environment:
+
+.. code-block:: console
+
+    $ tox -e py38,py38-numpy
+
+Here we have specified two ``tox`` environments that will be run: both under
+Python 3.8, one with ``numpy`` installed and the other without.
+
+``py38`` can be subsituted for other supported versions of Python, assuming
+they have been installed.
+
+You can also run all defined ``tox`` environments by simply running:
+
+.. code-block:: console
+
+    $ tox
+
 Mock Instruments
 ================
 
@@ -89,3 +125,5 @@ Protocol Assertion Functions
 .. autofunction:: expected_protocol
 
 .. _pytest: https://docs.pytest.org/en/latest/
+.. _pyenv: https://github.com/pyenv/pyenv
+.. _pyenv-installer: https://github.com/pyenv/pyenv-installer

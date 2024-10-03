@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.phasematrix
-    
+
 ===========
 PhaseMatrix
 ===========
@@ -13,4 +13,3 @@ PhaseMatrix
 .. autoclass:: PhaseMatrixFSW0020
     :members:
     :undoc-members:
-

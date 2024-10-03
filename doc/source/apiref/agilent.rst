@@ -1,8 +1,8 @@
 ..
     TODO: put documentation license header here.
-    
+
 .. currentmodule:: instruments.agilent
-    
+
 =======
 Agilent
 =======
@@ -13,7 +13,7 @@ Agilent
 .. autoclass:: Agilent33220a
     :members:
     :undoc-members:
-    
+
 :class:`Agilent34410a` Digital Multimeter
 =========================================
 

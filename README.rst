@@ -1,13 +1,13 @@
 InstrumentKit
 =============
 
-.. image:: https://img.shields.io/travis/Galvant/InstrumentKit/master.svg?maxAge=2592000
-    :target: https://travis-ci.org/Galvant/InstrumentKit
-    :alt: Travis-CI build status
+.. image:: https://github.com/instrumentkit/InstrumentKit/workflows/Testing/badge.svg?branch=main
+    :target: https://github.com/instrumentkit/InstrumentKit
+    :alt: Github Actions build status
 
-.. image:: https://img.shields.io/coveralls/Galvant/InstrumentKit/master.svg?maxAge=2592000
-    :target: https://coveralls.io/github/Galvant/InstrumentKit?branch=master
-    :alt: Coveralls code coverage
+.. image:: https://codecov.io/gh/instrumentkit/InstrumentKit/branch/main/graph/badge.svg?token=Q2wcdW3t4A
+    :target: https://codecov.io/gh/instrumentkit/InstrumentKit
+    :alt: Codecov code coverage
 
 .. image:: https://readthedocs.org/projects/instrumentkit/badge/?version=latest
     :target: https://readthedocs.org/projects/instrumentkit/?badge=latest
@@ -38,6 +38,7 @@ Supported means of communication are:
 - Read/write from unix files (``open_file``)
 - USBTMC (``open_usbtmc``)
 - VXI11 over Ethernet (``open_vxi11``)
+- Raw USB (``open_usb``)
 
 There is planned support for HiSLIP someday, but a good Python HiSLIP library will be needed first.
 
@@ -54,7 +55,7 @@ From Git:
 
 .. code-block:: console
 
-    $ git clone git@github.com:Galvant/InstrumentKit.git
+    $ git clone git@github.com:instrumentkit/InstrumentKit.git
     $ cd InstrumentKit
     $ python setup.py install
 
@@ -62,7 +63,7 @@ From Github using pip:
 
 .. code-block:: console
 
-    $ pip install -e git+https://www.github.com/Galvant/InstrumentKit.git#egg=instrumentkit
+    $ pip install -e git+https://www.github.com/instrumentkit/InstrumentKit.git#egg=instrumentkit
 
 From pypi using pip:
 
@@ -97,7 +98,7 @@ measurement reading:
 .. code-block:: python
 
     >>> reading = inst.measure(inst.Mode.voltage_dc)
-    >>> print("Value: {}, units: {}".format(reading.magnitude, reading.units))
+    >>> print(f"Value: {reading.magnitude}, units: {reading.units}")
 
 Due to the sheer number of commands most instruments support, not every single
 one is included in InstrumentKit. If there is a specific command you wish to
@@ -111,7 +112,7 @@ send, one can use the following functions to do so:
 Python Version Compatibility
 ----------------------------
 
-At this time, Python 3.6, 3.7, 3.8, and 3.9 are supported. Should you encounter
+At this time, Python  3.8, 3.9, 3.10, 3.11, and 3.12 are supported. Should you encounter
 any problems with this library that occur in one version or another, please
 do not hesitate to let us know.
 
@@ -132,7 +133,7 @@ structure of this project.
 
 To run the tests against all supported version of Python, you will need to
 have the binary for each installed. The easiest way to accomplish this is
-to use the tool `pyenv<https://github.com/pyenv/pyenv>_`.
+to use the tool `pyenv <https://github.com/pyenv/pyenv>`_.
 
 With the required system packages installed, all tests can be run with ``tox``:
 
@@ -140,6 +141,40 @@ With the required system packages installed, all tests can be run with ``tox``:
 
     $ pip install tox
     $ tox
+
+Pre-commit
+----------
+
+A variety of static code checks are managed and executed via the tool
+`pre-commit <https://pre-commit.com/>`_. This only needs to be setup once
+and then it'll manage everything for you.
+
+.. code-block:: console
+
+    $ pip install pre-commit
+    $ pre-commit install
+
+Afterwards, when you go to make a git commit, all the plugins (as specified
+by the configuration file ``.pre-commit-config.yaml``) will be executed against
+the files that have changed. If any plugins make changes to the files, the
+commit will abort, allowing you to add those changes to your changeset and
+try to commit again. This tool will gate CI, so be sure to let them run
+and pass!
+
+You can also run all the hooks against all the files by directly calling
+pre-commit, or though the ``tox`` environment:
+
+.. code-block:: console
+
+    $ pre-commit run --all
+
+or
+
+.. code-block:: console
+
+    $ tox -e precommit
+
+See the ``pre-commit`` documentation for more information.
 
 License
 -------

@@ -21,17 +21,28 @@ Getting Started
 
 To get started with development for InstrumentKit, a few additional supporting
 packages must be installed. The core development packages can be found in
-the supporting requirements file named ``dev-requirements.txt``. These will
-allow you to run the tests and check that all your code changes follow our
-linting rules (through `pylint`).
+`setup.cfg` under the `dev` extras dependencies. These will allow you to run
+the tests.
+
+This repo also contains a series of static code checks that are managed
+via ``pre-commit``. This tool, once setup, will manage running all of these
+checks prior to each commit on your local machine.::
+
+$ pip install pre-commit
+$ pre-commit install
+
+These checks are also run in CI, and must pass in order to generate
+a passing build. It is suggested that you install the git hooks, but
+they can be run manually on all files. See the ``pre-commit`` homepage
+for more information.
 
 Required Development Dependencies
 ---------------------------------
 
 Using ``pip``, these requirements can be obtained automatically by using the
-provided ``dev-requirements.txt``::
+provided project definitions::
 
-$ pip install -r dev-requirements.txt
+$ pip install -e .[dev]
 
 Optional Development Dependencies
 ---------------------------------

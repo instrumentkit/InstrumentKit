@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # <nbformat>3.0</nbformat>
 
 # <headingcell level=1>
@@ -11,7 +10,7 @@
 
 # <markdowncell>
 
-# In this example, we will demonstrate how to connect to a generic SCPI 
+# In this example, we will demonstrate how to connect to a generic SCPI
 # instrument and query its identification information.
 
 # <markdowncell>
@@ -24,7 +23,7 @@ import instruments as ik
 
 # <markdowncell>
 
-# Next, we open our connection to the instrument. Here we use the generic 
+# Next, we open our connection to the instrument. Here we use the generic
 # SCPIInstrument class and open the connection using the Galvant Industries'
 # GPIBUSB adapter. Our connection is made to the virtual serial port located at
 # /dev/ttyUSB0 and GPIB address 1
@@ -35,7 +34,7 @@ import instruments as ik
 
 # <codecell>
 
-inst = ik.generic_scpi.SCPIInstrument.open_gpibusb('/dev/ttyUSB0', 1)
+inst = ik.generic_scpi.SCPIInstrument.open_gpibusb("/dev/ttyUSB0", 1)
 
 # <markdowncell>
 
@@ -44,5 +43,4 @@ inst = ik.generic_scpi.SCPIInstrument.open_gpibusb('/dev/ttyUSB0', 1)
 
 # <codecell>
 
-print inst.name
-
+print(inst.name)

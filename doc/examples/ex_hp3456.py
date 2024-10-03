@@ -1,12 +1,11 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 import logging
 import time
 import instruments as ik
 import instruments.units as u
 
-dmm = ik.hp.HP3456a.open_gpibusb('/dev/ttyUSB0', 22)
+dmm = ik.hp.HP3456a.open_gpibusb("/dev/ttyUSB0", 22)
 logging.basicConfig(level=logging.DEBUG)
 dmm._file.debug = True
 dmm.trigger_mode = dmm.TriggerMode.hold
@@ -28,10 +27,10 @@ print(dmm.mean)
 
 # Read registers
 dmm.nplc = 10
-print("n = {}".format(dmm.number_of_readings))
-print("g = {}".format(dmm.number_of_digits))
-print("p = {}".format(dmm.nplc))
-print("d = {}".format(dmm.delay))
+print(f"n = {dmm.number_of_readings}")
+print(f"g = {dmm.number_of_digits}")
+print(f"p = {dmm.nplc}")
+print(f"d = {dmm.delay}")
 print(dmm.mean)
 print(dmm.variance)
 print(dmm.count)
@@ -48,7 +47,7 @@ print(dmm.measure(dmm.Mode.ratio_dcv_dcv))
 print(dmm.measure(dmm.Mode.resistance_2wire))
 dmm.nplc = 1
 for i in range(-1, 4):
-    value = (10 ** i) * u.volt
+    value = (10**i) * u.volt
     dmm.input_range = value
     print(dmm.measure(dmm.Mode.dcv))
 
@@ -72,4 +71,3 @@ dmm.filter = 1
 print(dmm.measure(dmm.Mode.dcv))
 dmm.autozero = 0
 print(dmm.measure(dmm.Mode.dcv))
-

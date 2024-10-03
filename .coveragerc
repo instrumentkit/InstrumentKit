@@ -1,3 +1,8 @@
+[paths]
+source =
+    src
+    */site-packages
+
 [report]
 omit =
     */python?.?/*
@@ -9,3 +14,10 @@ exclude_lines =
     if not self._testing:
     raise NotImplementedError
     raise AssertionError
+
+[run]
+branch = false
+parallel = true
+source =
+    instruments
+relative_files = True

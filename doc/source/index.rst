@@ -1,6 +1,6 @@
 ..
     TODO: put documentation license header here.
-    
+
 Welcome to InstrumentKit Library's documentation!
 =================================================
 
@@ -22,4 +22,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
