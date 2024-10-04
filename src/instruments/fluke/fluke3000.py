@@ -215,7 +215,7 @@ class Fluke3000(Multimeter):
             )  # PC 3000 can take a while to bind with wireless devices
             self.query_lines("rfdis", 3)  # Discover available modules and bind them
             self.timeout = timeout  # Restore default timeout
-            self.scan()  # Look for connected device
+            self.scan()  # Look for connected devices
 
         if not self.positions:
             raise ValueError("No `Fluke3000` modules available")

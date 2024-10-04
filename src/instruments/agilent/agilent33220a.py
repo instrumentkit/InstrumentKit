@@ -173,7 +173,7 @@ class Agilent33220a(SCPIFunctionGenerator):
         if isinstance(newval, self.LoadResistance):
             newval = newval.value
         else:
-            newval = assume_units(newval, u.ohm).rescale(u.ohm).magnitude
+            newval = assume_units(newval, u.ohm).to(u.ohm).magnitude
             if (newval < 0) or (newval > 10000):
                 raise ValueError("Load resistance must be between 0 and 10,000")
         self.sendcmd(f"OUTP:LOAD {newval}")
