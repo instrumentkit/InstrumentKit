@@ -86,9 +86,9 @@ class GlassmanFR(PowerSupply, PowerSupply.Channel):
         self.voltage_max = 50.0 * u.kilovolt
         self.current_max = 6.0 * u.milliamp
         self.polarity = +1
-        self._voltage = 0. * u.volt
-        self._current = 0. * u.amp
         self._device_timeout = False
+        self._voltage = 0.0 * u.volt
+        self._current = 0.0 * u.amp
         self.device_timeout = False
 
     # ENUMS ##
