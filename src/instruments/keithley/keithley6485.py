@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # keithley6485.py: Driver for the Keithley 6485 picoammeter
 #
@@ -41,7 +40,6 @@ from instruments.util_fns import bool_property
 
 
 class Keithley6485(SCPIInstrument):
-
     """
     The `Keithley 6485` is an electrometer capable of doing sensitive current,
     charge, voltage and resistance measurements.
@@ -61,28 +59,28 @@ class Keithley6485(SCPIInstrument):
         """
         Resets device to be read, disables zero check.
         """
-        super(Keithley6485, self).__init__(filelike)
+        super().__init__(filelike)
         self.reset()
         self.zero_check = False
 
     # PROPERTIES ##
 
     zero_check = bool_property(
-        'SYST:ZCH',
-        inst_true='ON',
-        inst_false='OFF',
+        "SYST:ZCH",
+        inst_true="ON",
+        inst_false="OFF",
         doc="""
         Gets/sets the zero checking status of the Keithley 6485.
-        """
+        """,
     )
 
     zero_correct = bool_property(
-        'SYST:ZCOR',
-        inst_true='ON',
-        inst_false='OFF',
+        "SYST:ZCOR",
+        inst_true="ON",
+        inst_false="OFF",
         doc="""
         Gets/sets the zero correcting status of the Keithley 6485.
-        """
+        """,
     )
 
     @property
@@ -93,13 +91,13 @@ class Keithley6485(SCPIInstrument):
         :type: `bool`
         """
         # pylint: disable=no-member
-        out = self.query('RANG:AUTO?')
-        return out == '1'
+        out = self.query("RANG:AUTO?")
+        return out == "1"
 
     @auto_range.setter
     def auto_range(self, newval):
         # pylint: disable=no-member
-        self.sendcmd('RANG:AUTO {}'.format('1' if newval else '0'))
+        self.sendcmd("RANG:AUTO {}".format("1" if newval else "0"))
 
     @property
     def input_range(self):
@@ -109,7 +107,7 @@ class Keithley6485(SCPIInstrument):
         :type: `~pint.Quantity`
         """
         # pylint: disable=no-member
-        out = self.query('RANG?')
+        out = self.query("RANG?")
         return float(out) * u.amp
 
     @input_range.setter
@@ -117,9 +115,8 @@ class Keithley6485(SCPIInstrument):
         # pylint: disable=no-member
         val = newval.to(u.amp).magnitude
         if val not in self._valid_range():
-            raise ValueError(
-                'Unexpected range limit for currently selected mode.')
-        self.sendcmd('RANG {:e}'.format(val))
+            raise ValueError("Unexpected range limit for currently selected mode.")
+        self.sendcmd(f"RANG {val:e}")
 
     # METHODS ##
 
@@ -129,14 +126,14 @@ class Keithley6485(SCPIInstrument):
         (So does not issue a trigger)
         Returns a tuple of the form (reading, timestamp, trigger_count)
         """
-        return self._parse_measurement(self.query('FETC?'))
+        return self._parse_measurement(self.query("FETC?"))
 
     def read_measurements(self):
         """
         Trigger and acquire readings using the current mode.
         Returns a tuple of the form (reading, timestamp, trigger_count)
         """
-        return self._parse_measurement(self.query('READ?'))
+        return self._parse_measurement(self.query("READ?"))
 
     def measure(self):
         """
@@ -154,7 +151,7 @@ class Keithley6485(SCPIInstrument):
     @staticmethod
     def _parse_measurement(ascii):
         # Split the string in three comma-separated parts (value, time, number of triggers)
-        vals = ascii.split(',')
+        vals = ascii.split(",")
         reading = float(vals[0][:-1]) * u.amp
         timestamp = float(vals[1]) * u.second
         trigger_count = int(float(vals[2]))
