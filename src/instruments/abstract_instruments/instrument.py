@@ -5,7 +5,6 @@ Provides the base Instrument class for all instruments.
 
 # IMPORTS #####################################################################
 
-
 import os
 import collections
 import socket
@@ -472,6 +471,7 @@ class Instrument:
         serial_number=None,
         timeout=3,
         write_timeout=3,
+        parity=None,
     ):
         """
         Opens an instrument, connecting via a physical or emulated serial port.
@@ -498,6 +498,8 @@ class Instrument:
             instrument before timing out.
         :param float write_timeout: Number of seconds to wait when writing to the
             instrument before timing out.
+        :param int parity: Choose the parity according to pyserial's
+            documentation or None for default.
 
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
@@ -555,7 +557,7 @@ class Instrument:
             )
 
         ser = serial_manager.new_serial_connection(
-            port, baud=baud, timeout=timeout, write_timeout=write_timeout
+            port, baud=baud, timeout=timeout, write_timeout=write_timeout, parity=parity
         )
         return cls(ser)
 
