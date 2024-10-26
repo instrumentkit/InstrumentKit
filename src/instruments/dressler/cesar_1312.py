@@ -21,7 +21,6 @@ class Cesar1312(Instrument):
     instrument to work.
 
     TODO: Check if instrument needs to be put into remote mode or not...
-    TODO: Example usage
 
     Example:
         >>> import serial
@@ -30,6 +29,9 @@ class Cesar1312(Instrument):
         >>> baud = 9600
         >>> parity = serial.PARITY_ODD
         >>> inst = ik.dressler.Cesar1312.open_serial(port, baud, parity=parity)
+        >>> inst.rf  # query RF state
+        False
+        >>> inst.rf = True  # turn RF on
     """
 
     class ControlMode(IntEnum):
@@ -123,18 +125,25 @@ class Cesar1312(Instrument):
             >>> inst.control_mode
             <ControlMode.Host: 2>
         """
-        cmd = 155
-        ret_val = self.query(self._make_pkg(cmd, None))
-        # FIXME: make this prettier once tests are in place
-        ret_val = int(ret_val.hex(), 16)
+        ret_val = self.query(self._make_pkg(155))
+        ret_val = int.from_bytes(ret_val, "little")
         return self.ControlMode(ret_val)
 
     @control_mode.setter
     def control_mode(self, value: ControlMode) -> None:
-        # FIXME:
-        data = value.value
-        cmd = 14
-        self.sendcmd(self._make_pkg(cmd, self._make_data(1, data)))
+        self.sendcmd(self._make_pkg(14, self._make_data(1, value.value)))
+
+    @property
+    def output_power(self) -> int:
+        """Set/get the setpoint of the device in W."""
+        ret_data = self.query(self._make_pkg(164))[:2]
+        return u.Quantity(int.from_bytes(ret_data, "little"), u.W)
+
+    @output_power.setter
+    def output_power(self, value: int) -> None:
+        value = assume_units(value, u.W).to(u.W)
+        data = self._make_data(2, int(value.magnitude))
+        self.sendcmd(self._make_pkg(8, data))
 
     @property
     def regulation_mode(self) -> RegulationMode:
@@ -150,17 +159,12 @@ class Cesar1312(Instrument):
             >>> inst.regulation_mode
             <RegulationMode.ForwardPower: 6>
         """
-        data = None
-        cmd = 154
-        data = self.query(self._make_pkg(cmd, data))
-        data = int(data.hex(), 16)
-        return self.RegulationMode(data)
+        data = self.query(self._make_pkg(154))
+        return self.RegulationMode(data[0])
 
     @regulation_mode.setter
     def regulation_mode(self, value: RegulationMode) -> None:
-        data = value.value
-        cmd = 3
-        self.sendcmd(self._make_pkg(cmd, self._make_data(1, data)))
+        self.sendcmd(self._make_pkg(3, self._make_data(1, value.value)))
 
     @property
     def rf(self) -> bool:
@@ -176,41 +180,13 @@ class Cesar1312(Instrument):
             >>> inst.rf
             True
         """
-        # FIXME:
-        raise NotImplementedError("Getting the RF state is not yet implemented.")
+        ret_data = self.query(self._make_pkg(162))
+        return bool(ret_data[0] & 0b00100000)
 
     @rf.setter
     def rf(self, value: bool) -> None:
         cmd = 2 if value else 1
-        pkg = self._make_pkg(cmd, None)
-        self.sendcmd(pkg)
-
-    @property
-    def setpoint(self) -> int:
-        """Set/get the setpoint of the device in W."""
-        # FIXME: Rename, clean up, unitful
-        cmd = 164
-        pkg = self._make_pkg(cmd, None)
-        ret_data = self.query(pkg)[:2]
-        # TODO: Check if this is correct.
-        return ret_data.to_bytes(2, "little")
-        # return struct.unpack("<H", ret_data)[0]
-
-    @setpoint.setter
-    def setpoint(self, value: int) -> None:
-        # FIXME: Rename, clean up
-        data = self._make_data(2, value)
-        cmd = 8
-        self.sendcmd(self._make_pkg(cmd, data))
-
-    @property
-    def status(self):  # TODO: DEFINE RETURN TYPE
-        """Get the status via cmd 162"""
-        # FIXME: see writeup from initial test...
-        cmd = 162
-        pkg = self._make_pkg(cmd, None)
-        ret_data = self.query(pkg)
-        return ret_data.hex(":").split(":")
+        self.sendcmd(self._make_pkg(cmd))
 
     # METHODS #
 
@@ -265,7 +241,9 @@ class Cesar1312(Instrument):
             pkg = header + cmd
             if optional_data_length:
                 pkg += optional_data_length
-            pkg += data
+
+            if data:
+                pkg += data
             pkg += checksum
 
             if self._calculate_checksum(pkg) == bytes([0x0]):
@@ -293,8 +271,7 @@ class Cesar1312(Instrument):
         if data:
             csr = int(data.hex(), 16)
             if csr != 0:
-                # FIXME: This should raise an exception instead
-                print(f"Warning: {self._csr_codes[csr]}")
+                raise OSError(f"{self._csr_codes.get(csr, 'Unknown error')}")
         else:
             raise ValueError("No data received from the device.")
 
@@ -332,7 +309,7 @@ class Cesar1312(Instrument):
         """
         data_length = len(data) if data else 0
 
-        header = self._pack_header(self.address, data_length)
+        header = self._pack_header(data_length)
 
         if data_length > 255:
             raise ValueError("Data length too long, must be <= 255.")
@@ -367,8 +344,7 @@ class Cesar1312(Instrument):
                 checksum ^= bt
         return bytes([checksum])
 
-    @staticmethod
-    def _pack_header(address: int, data_length: int):
+    def _pack_header(self, data_length: int) -> int:
         """Make the header of the package.
 
         :param int address: The address of the device.
@@ -376,10 +352,9 @@ class Cesar1312(Instrument):
 
         :return: The header as an integer.
         """
-        # FIXME: should return header as bytes, should read address from class
         if data_length > 6:
             data_length = 7  # need an extra byte for data length
-        return (address << 3) + data_length
+        return (self.address << 3) + data_length
 
     @staticmethod
     def _unpack_header(hdr: bytes) -> tuple[int]:

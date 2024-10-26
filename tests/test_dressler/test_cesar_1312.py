@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Tests for the Dressler Cesar 1312 RF generator."""
 
-from hypothesis import HealthCheck, given, settings, strategies as st
+from hypothesis import given, strategies as st
 import pytest
 
 import instruments as ik
@@ -52,27 +52,138 @@ def test_retries():
 # TEST INSTRUMENT PROPERTIES #
 
 
-def test_rf():
-    """Set/get the RF output state."""
-    RF_ON = bytes([0x08, 0x02, 0x0A])
-    RF_ON_ANSW = bytes([0x09, 0x02, 0x00, 0x0B])
-    RF_OFF = bytes([0x08, 0x01, 0x09])
-    RF_OFF_ANSW = bytes([0x09, 0x01, 0x00, 0x08])
+def test_control_mode():
+    """Get/set the control model."""
+    read_mode = bytes([0x08, 0x9B, 0x93])
+    read_mode_answ_front_panel = bytes([0x09, 0x9B, 0x06, 0x94])
+    set_mode_host = bytes([0x09, 0x0E, 0x02, 0x05])
+    set_mode_answ = bytes([0x09, 0x0E, 0x00, 0x07])
+    read_mode_answ_host = bytes([0x09, 0x9B, 0x02, 0x90])
     with expected_protocol(
         ik.dressler.Cesar1312,
-        [RF_ON, ACK, RF_OFF, ACK],
+        [
+            read_mode,
+            ACK,
+            set_mode_host,
+            ACK,
+            read_mode,
+            ACK,
+        ],
         [
             ACK,
-            RF_ON_ANSW,
+            read_mode_answ_front_panel,
             ACK,
-            RF_OFF_ANSW,
+            set_mode_answ,
+            ACK,
+            read_mode_answ_host,
         ],
         sep="",
     ) as rf:
-        # TODO: assert rf.rf == False
-        rf.rf = True
+        assert rf.control_mode == rf.ControlMode.FrontPanel
+        rf.control_mode = rf.ControlMode.Host
+        assert rf.control_mode == rf.ControlMode.Host
+
+
+def test_output_power():
+    """Get/set the output power of the RF generator."""
+    set_power_1kW = bytes([0x0A, 0x08, 0xE8, 0x03, 0xE9])
+    set_power_answ = bytes([0x09, 0x08, 0x00, 0x01])
+    read_power = bytes([0x08, 0xA4, 0xAC])
+    read_answ = bytes([0x0B, 0xA4, 0xE8, 0x03, 0x06, 0x42])
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            set_power_1kW,
+            ACK,
+            set_power_1kW,
+            ACK,
+            read_power,
+            ACK,
+        ],
+        [
+            ACK,
+            set_power_answ,
+            ACK,
+            set_power_answ,
+            ACK,
+            read_answ,
+        ],
+        sep="",
+    ) as rf:
+        rf.output_power = 1000
+        rf.output_power = u.Quantity(1, u.kW)
+        assert rf.output_power == u.Quantity(1000, u.W)
+
+
+def test_regulation_mode():
+    """Get/set regulation mode."""
+    read_mode = bytes([0x08, 0x9A, 0x92])
+    read_answ_load = bytes([0x09, 0x9A, 0x08, 0x9B])
+    set_mode_fwd = bytes([0x09, 0x03, 0x06, 0x0C])
+    set_mode_answ = bytes([0x09, 0x03, 0x00, 0x0A])
+    read_answ_fwd = bytes([0x09, 0x9A, 0x06, 0x95])
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            read_mode,
+            ACK,
+            set_mode_fwd,
+            ACK,
+            read_mode,
+            ACK,
+        ],
+        [
+            ACK,
+            read_answ_load,
+            ACK,
+            set_mode_answ,
+            ACK,
+            read_answ_fwd,
+        ],
+        sep="",
+    ) as rf:
+        assert rf.regulation_mode == rf.RegulationMode.ExternalPower
+        rf.regulation_mode = rf.RegulationMode.ForwardPower
+        assert rf.regulation_mode == rf.RegulationMode.ForwardPower
+
+
+def test_rf():
+    """Set/get the RF output state."""
+    rf_read = bytes([0x08, 0xA2, 0xAA])
+    rf_read_answ_on = bytes([0x0C, 0xA2, 0x20, 0x00, 0x00, 0x00, 0x8E])
+    rf_read_answ_off = bytes([0x0C, 0xA2, 0x00, 0x00, 0x00, 0x00, 0xAE])
+    rf_on = bytes([0x08, 0x02, 0x0A])
+    rf_on_answ = bytes([0x09, 0x02, 0x00, 0x0B])
+    rf_off = bytes([0x08, 0x01, 0x09])
+    rf_off_answ = bytes([0x09, 0x01, 0x00, 0x08])
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            rf_read,
+            ACK,
+            rf_off,
+            ACK,
+            rf_on,
+            ACK,
+            rf_read,
+            ACK,
+        ],
+        [
+            ACK,
+            rf_read_answ_off,
+            ACK,
+            rf_off_answ,
+            ACK,
+            rf_on_answ,
+            ACK,
+            rf_read_answ_on,
+        ],
+        sep="",
+    ) as rf:
+        assert not rf.rf
         rf.rf = False
-        # TODO: assert rf.rf == True
+        rf.rf = True
+        assert rf.rf
 
 
 # TEST PRIVATE METHODS #
@@ -170,7 +281,7 @@ def test_pack_header(addr, data_length):
         [],
     ) as rf:
         rf.address = addr
-        header = rf._pack_header(addr, data_length)
+        header = rf._pack_header(data_length)
         dl = 7 if data_length > 6 else data_length
         header_exp = (addr << 3) + dl
         assert header == header_exp
