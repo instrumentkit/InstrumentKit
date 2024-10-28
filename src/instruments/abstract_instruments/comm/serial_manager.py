@@ -9,6 +9,7 @@ pyserial connections can be open at the same time to the same serial port.
 
 # IMPORTS #####################################################################
 
+
 import weakref
 import serial
 
@@ -30,7 +31,7 @@ serialObjDict = weakref.WeakValueDictionary()
 # METHODS #####################################################################
 
 
-def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3, parity=None):
+def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3):
     """
     Return a `pyserial.Serial` connection object for the specified serial
     port address. The same object will be returned for identical port
@@ -46,26 +47,16 @@ def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3, parity=
         connection. Units are seconds.
     :param write_timeout: Communication timeout for writing to the serial
         port connection. Units are seconds.
-    :param parity: Parity setting for the serial port connection. If None,
-        defaults to `serial.PARITY_NONE`, which is the default for `pyserial`.
-
     :return: A :class:`SerialCommunicator` object wrapping the connection
     :rtype: `SerialCommunicator`
     """
     if not isinstance(port, str):
         raise TypeError("Serial port must be specified as a string.")
 
-    if parity is None:
-        parity = serial.PARITY_NONE
-
     if port not in serialObjDict or serialObjDict[port] is None:
         conn = SerialCommunicator(
             serial.Serial(
-                port,
-                baudrate=baud,
-                timeout=timeout,
-                writeTimeout=write_timeout,
-                parity=parity,
+                port, baudrate=baud, timeout=timeout, writeTimeout=write_timeout
             )
         )
         serialObjDict[port] = conn
