@@ -295,7 +295,7 @@ def test_unknown_command():
     ) as rf:
         with pytest.raises(OSError) as err:
             rf.sendcmd(rf._make_pkg(0))
-            assert "Command not implemented" in err.value.args[0]
+        assert "Command not implemented" in err.value.args[0]
 
 
 def test_device_returns_no_data():
@@ -316,7 +316,7 @@ def test_device_returns_no_data():
     ) as rf:
         with pytest.raises(ValueError) as err:
             rf.sendcmd(rf._make_pkg(0))
-            assert "No data received from the device" in err.value.args[0]
+        assert "No data received from the device" in err.value.args[0]
 
 
 def test_answer_longer_six_bytes():
