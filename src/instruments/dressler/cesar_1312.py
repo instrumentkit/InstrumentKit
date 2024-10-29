@@ -18,12 +18,12 @@ class Cesar1312(Instrument):
     """Communicate with the Dressler Cesar 1312 RF generator.
 
     Various connection options are available for different models.
-    This driver has been tested using the RS-232 option. Note that
-    you need to set the parity to `serial.PARITY_ODD` for this
-    instrument to work.
+    This driver has been tested using the RS-232 option.
+    Upon initialization, the instrument is automatically put into
+    odd parity communication mode (as required by the device).
 
-    TODO: Check if instrument needs to be put into remote mode or not...
-    TODO: Example usage
+    Note that you must set the control mode to `ControlMode.Host`
+    in order to send any commands from the computer to the device.
 
     Example:
         >>> import serial
@@ -31,6 +31,7 @@ class Cesar1312(Instrument):
         >>> port = '/dev/ttyUSB0'
         >>> baud = 9600
         >>> inst = ik.dressler.Cesar1312.open_serial(port, baud)
+        >>> inst.control_mode = inst.ControlMode.Host
         >>> inst.rf  # query RF state
         False
         >>> inst.rf = True  # turn on RF
