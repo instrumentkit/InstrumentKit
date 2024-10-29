@@ -30,8 +30,10 @@ class Cesar1312(Instrument):
         >>> import instruments as ik
         >>> port = '/dev/ttyUSB0'
         >>> baud = 9600
-        >>> parity = serial.PARITY_ODD
-        >>> inst = ik.dressler.Cesar1312.open_serial(port, baud, parity=parity)
+        >>> inst = ik.dressler.Cesar1312.open_serial(port, baud)
+        >>> inst.rf  # query RF state
+        False
+        >>> inst.rf = True  # turn on RF
     """
 
     class ControlMode(IntEnum):
@@ -127,22 +129,45 @@ class Cesar1312(Instrument):
             >>> inst.control_mode
             <ControlMode.Host: 2>
         """
-        cmd = 155
-        ret_val = self.query(self._make_pkg(cmd, None))
-        # FIXME: make this prettier once tests are in place
-        ret_val = int(ret_val.hex(), 16)
-        return self.ControlMode(ret_val)
+        data = self.query(self._make_pkg(155))
+        return self.ControlMode(data[0])
 
     @control_mode.setter
     def control_mode(self, value: ControlMode) -> None:
-        # FIXME:
-        data = value.value
-        cmd = 14
-        self.sendcmd(self._make_pkg(cmd, self._make_data(1, data)))
+        self.sendcmd(self._make_pkg(14, self._make_data(1, value.value)))
 
     @property
-    def reflected_power(self) -> int:
-        """Get the reflected power in W."""
+    def output_power(self) -> u.Quantity:
+        """Set/get the output power of the device in W.
+
+        :return: The output power in W for the defined mode.
+        :rtype: u.Quantity
+
+        Example:
+            >>> inst.output_power = 10 * u.W
+            >>> inst.output_power
+            <Quantity(10, 'watt')>
+        """
+        ret_data = self.query(self._make_pkg(164))[:2]
+        return u.Quantity(int.from_bytes(ret_data, "little"), u.W)
+
+    @output_power.setter
+    def output_power(self, value: u.Quantity) -> None:
+        value = assume_units(value, u.W).to(u.W)
+        data = self._make_data(2, int(value.magnitude))
+        self.sendcmd(self._make_pkg(8, data))
+
+    @property
+    def reflected_power(self) -> u.Quantity:
+        """Get the reflected power in W.
+
+        :return: The reflected power in W.
+        :rtype: u.Quantity
+
+        Example:
+            >>> inst.reflected_power
+            <Quantity(0, 'watt')>
+        """
         ret_data = self.query(self._make_pkg(166))
         return u.Quantity(int.from_bytes(ret_data, "little"), u.W)
 
@@ -160,17 +185,12 @@ class Cesar1312(Instrument):
             >>> inst.regulation_mode
             <RegulationMode.ForwardPower: 6>
         """
-        data = None
-        cmd = 154
-        data = self.query(self._make_pkg(cmd, data))
-        data = int(data.hex(), 16)
-        return self.RegulationMode(data)
+        data = self.query(self._make_pkg(154))
+        return self.RegulationMode(data[0])
 
     @regulation_mode.setter
     def regulation_mode(self, value: RegulationMode) -> None:
-        data = value.value
-        cmd = 3
-        self.sendcmd(self._make_pkg(cmd, self._make_data(1, data)))
+        self.sendcmd(self._make_pkg(3, self._make_data(1, value.value)))
 
     @property
     def rf(self) -> bool:
@@ -186,41 +206,13 @@ class Cesar1312(Instrument):
             >>> inst.rf
             True
         """
-        # FIXME:
-        raise NotImplementedError("Getting the RF state is not yet implemented.")
+        data = self.query(self._make_pkg(162))
+        return bool(data[0] & 0b00100000)
 
     @rf.setter
     def rf(self, value: bool) -> None:
         cmd = 2 if value else 1
-        pkg = self._make_pkg(cmd, None)
-        self.sendcmd(pkg)
-
-    @property
-    def setpoint(self) -> int:
-        """Set/get the setpoint of the device in W."""
-        # FIXME: Rename, clean up, unitful
-        cmd = 164
-        pkg = self._make_pkg(cmd, None)
-        ret_data = self.query(pkg)[:2]
-        # TODO: Check if this is correct.
-        return ret_data.to_bytes(2, "little")
-        # return struct.unpack("<H", ret_data)[0]
-
-    @setpoint.setter
-    def setpoint(self, value: int) -> None:
-        # FIXME: Rename, clean up
-        data = self._make_data(2, value)
-        cmd = 8
-        self.sendcmd(self._make_pkg(cmd, data))
-
-    @property
-    def status(self):  # TODO: DEFINE RETURN TYPE
-        """Get the status via cmd 162"""
-        # FIXME: see writeup from initial test...
-        cmd = 162
-        pkg = self._make_pkg(cmd, None)
-        ret_data = self.query(pkg)
-        return ret_data.hex(":").split(":")
+        self.sendcmd(self._make_pkg(cmd))
 
     # METHODS #
 
@@ -275,7 +267,9 @@ class Cesar1312(Instrument):
             pkg = header + cmd
             if optional_data_length:
                 pkg += optional_data_length
-            pkg += data
+
+            if data:
+                pkg += data
             pkg += checksum
 
             if self._calculate_checksum(pkg) == bytes([0x0]):
@@ -303,8 +297,9 @@ class Cesar1312(Instrument):
         if data:
             csr = int(data.hex(), 16)
             if csr != 0:
-                # FIXME: This should raise an exception instead
-                print(f"Warning: {self._csr_codes[csr]}")
+                raise OSError(
+                    f"{self._crs_codes.get(csr, 'Unknown error')} (CSR={csr})"
+                )
         else:
             raise ValueError("No data received from the device.")
 
@@ -342,7 +337,7 @@ class Cesar1312(Instrument):
         """
         data_length = len(data) if data else 0
 
-        header = self._pack_header(self.address, data_length)
+        header = self._pack_header(data_length)
 
         if data_length > 255:
             raise ValueError("Data length too long, must be <= 255.")
@@ -377,19 +372,16 @@ class Cesar1312(Instrument):
                 checksum ^= bt
         return bytes([checksum])
 
-    @staticmethod
-    def _pack_header(address: int, data_length: int):
+    def _pack_header(self, data_length: int):
         """Make the header of the package.
 
-        :param int address: The address of the device.
         :param int data_length: The length of the data. If > 6, will be set to 7.
 
         :return: The header as an integer.
         """
-        # FIXME: should return header as bytes, should read address from class
         if data_length > 6:
             data_length = 7  # need an extra byte for data length
-        return (address << 3) + data_length
+        return (self._address << 3) + data_length
 
     @staticmethod
     def _unpack_header(hdr: bytes) -> tuple[int]:

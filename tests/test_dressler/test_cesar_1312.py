@@ -24,6 +24,7 @@ def test_address():
         ik.dressler.Cesar1312,
         [],
         [],
+        sep="",
     ) as rf:
         assert rf.address == 0x01
         rf.address = 5
@@ -40,6 +41,7 @@ def test_retries():
         ik.dressler.Cesar1312,
         [],
         [],
+        sep="",
     ) as rf:
         assert rf.retries == 3
         rf.retries = 5
@@ -195,6 +197,7 @@ def test_make_pkg():
         ik.dressler.Cesar1312,
         [],
         [],
+        sep="",
     ) as rf:
         # simple query package with command 1
         pkg_exp = bytes([0b00001000, 0x01])
@@ -246,6 +249,7 @@ def test_make_pkg_error():
         ik.dressler.Cesar1312,
         [],
         [],
+        sep="",
     ) as rf:
         with pytest.raises(ValueError):
             rf._make_pkg(256, None)
@@ -262,6 +266,7 @@ def test_checksum(values):
         ik.dressler.Cesar1312,
         [],
         [],
+        sep="",
     ) as rf:
         checksum = rf._calculate_checksum(bts)[0]
         for val in bts:
@@ -279,6 +284,7 @@ def test_pack_header(addr, data_length):
         ik.dressler.Cesar1312,
         [],
         [],
+        sep="",
     ) as rf:
         rf.address = addr
         header = rf._pack_header(data_length)
@@ -295,6 +301,7 @@ def test_unpack_header(hdr_int):
         ik.dressler.Cesar1312,
         [],
         [],
+        sep="",
     ) as rf:
         addr, dl = rf._unpack_header(hdr)
         assert addr == hdr_int >> 3
