@@ -137,6 +137,21 @@ class Cesar1312(Instrument):
         self.sendcmd(self._make_pkg(14, self._make_data(1, value.value)))
 
     @property
+    def name(self) -> str:
+        """Get the supply type and size of the RF generator.
+
+        :return: The supply type and size.
+        :rtype: str
+
+        Example:
+            >>> inst.name
+            'CESAR_1312'
+        """
+        name_type = self.query(self._make_pkg(128)).decode("utf-8")
+        name_size = self.query(self._make_pkg(129)).decode("utf-8")
+        return f"{name_type}{name_size}"
+
+    @property
     def output_power(self) -> u.Quantity:
         """Set/get the output power of the device in W.
 
@@ -298,7 +313,7 @@ class Cesar1312(Instrument):
             csr = int(data.hex(), 16)
             if csr != 0:
                 raise OSError(
-                    f"{self._crs_codes.get(csr, 'Unknown error')} (CSR={csr})"
+                    f"{self._csr_codes.get(csr, 'Unknown error')} (CSR={csr})"
                 )
         else:
             raise ValueError("No data received from the device.")

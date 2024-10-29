@@ -14,6 +14,7 @@ Contents:
     instrument
     generic_scpi
     agilent
+    dressler
     fluke
     gentec-eo
     glassman

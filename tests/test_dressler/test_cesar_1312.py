@@ -86,6 +86,35 @@ def test_control_mode():
         assert rf.control_mode == rf.ControlMode.Host
 
 
+def test_name():
+    """Get the supply type and size."""
+    cmd_type = bytes([0x08, 0x80, 0x88])
+    ascii_type = b"CESAR"
+    ans_type = bytes([0x0D, 0x80]) + ascii_type
+    ans_type += checksum(ans_type)
+    cmd_size = bytes([0x08, 0x81, 0x89])
+    ascii_size = b"_1312"
+    ans_size = bytes([0x0D, 0x81]) + ascii_size
+    ans_size += checksum(ans_size)
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            cmd_type,
+            ACK,
+            cmd_size,
+            ACK,
+        ],
+        [
+            ACK,
+            ans_type,
+            ACK,
+            ans_size,
+        ],
+        sep="",
+    ) as rf:
+        assert rf.name == "CESAR_1312"
+
+
 def test_output_power():
     """Get/set the output power of the RF generator."""
     set_power_1kW = bytes([0x0A, 0x08, 0xE8, 0x03, 0xE9])
@@ -149,6 +178,22 @@ def test_regulation_mode():
         assert rf.regulation_mode == rf.RegulationMode.ForwardPower
 
 
+def test_reflected_power():
+    """Get the reflected power."""
+    read_send = bytes([0x08, 0xA6, 0xAE])
+    read_answ = bytes([0x0A, 0xA6, 0x01, 0x00, 0xAD])
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            read_send,
+            ACK,
+        ],
+        [ACK, read_answ],
+        sep="",
+    ) as rf:
+        assert rf.reflected_power == u.Quantity(1, u.W)
+
+
 def test_rf():
     """Set/get the RF output state."""
     rf_read = bytes([0x08, 0xA2, 0xAA])
@@ -186,6 +231,120 @@ def test_rf():
         rf.rf = False
         rf.rf = True
         assert rf.rf
+
+
+def test_rf_cmd_invalid():
+    """Raise OSError if acknowledgement of cmd fails after retries."""
+    rf_read = bytes([0x08, 0xA2, 0xAA])
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            rf_read,
+            rf_read,
+        ],
+        [
+            NAK,
+            NAK,
+        ],
+        sep="",
+    ) as rf:
+        rf.retries = 1
+        with pytest.raises(OSError):
+            rf.rf
+
+
+def test_rf_reply_invalid():
+    """Raise OSError if acknowledgement of reply fails after retries."""
+    rf_read = bytes([0x08, 0xA2, 0xAA])
+    rf_read_answ_on = bytes([0x0C, 0xA2, 0x20, 0x00, 0x00, 0x00, 0xFF])  # bad checksum
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            rf_read,
+            NAK,
+            NAK,
+        ],
+        [
+            ACK,
+            rf_read_answ_on,
+            rf_read_answ_on,
+            rf_read_answ_on,
+        ],
+        sep="",
+    ) as rf:
+        rf.retries = 2
+        with pytest.raises(OSError):
+            rf.rf
+
+
+def test_unknown_command():
+    """Raise OSError if an unknown command is sent."""
+    pkg_send = bytes([0x08, 0x00, 0x08])
+    pkg_rec = bytes([0x09, 0x80, 0x63, 0xEA])
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            pkg_send,
+            ACK,
+        ],
+        [
+            ACK,
+            pkg_rec,
+        ],
+        sep="",
+    ) as rf:
+        with pytest.raises(OSError) as err:
+            rf.sendcmd(rf._make_pkg(0))
+            assert "Command not implemented" in err.value.args[0]
+
+
+def test_device_returns_no_data():
+    """Raise ValueError if device returned no data."""
+    pkg_send = bytes([0x08, 0x00, 0x08])
+    pkg_rec = bytes([0x08, 0x80, 0x88])
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            pkg_send,
+            ACK,
+        ],
+        [
+            ACK,
+            pkg_rec,
+        ],
+        sep="",
+    ) as rf:
+        with pytest.raises(ValueError) as err:
+            rf.sendcmd(rf._make_pkg(0))
+            assert "No data received from the device" in err.value.args[0]
+
+
+def test_answer_longer_six_bytes():
+    """Ensure that answers with data >6 bytes are handled correctly.
+
+    Note: While the protocol describes this scenario and it is implemented
+    into the query, the whole command book does not offer a single command
+    where this case occurs. However, this might be different for other
+    models.
+    """
+    pkg_send = bytes([0x08, 0x00, 0x08])
+    rec_data = bytes([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08])
+    pkg_rec = bytes([0x0F, 0x00, 0x08]) + rec_data
+    pkg_rec += checksum(pkg_rec)
+    with expected_protocol(
+        ik.dressler.Cesar1312,
+        [
+            pkg_send,
+            ACK,
+        ],
+        [
+            ACK,
+            pkg_rec,
+        ],
+        sep="",
+    ) as rf:
+        data = rf.query(rf._make_pkg(0))
+        assert data == rec_data
 
 
 # TEST PRIVATE METHODS #
@@ -306,3 +465,11 @@ def test_unpack_header(hdr_int):
         addr, dl = rf._unpack_header(hdr)
         assert addr == hdr_int >> 3
         assert dl == hdr_int & 0b00000111
+
+
+def checksum(values: bytes) -> bytes:
+    """Calculate the checksum of the given values."""
+    checksum = 0x00
+    for val in values:
+        checksum ^= val
+    return bytes([checksum])
