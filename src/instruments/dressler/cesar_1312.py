@@ -29,7 +29,7 @@ class Cesar1312(Instrument):
         >>> import serial
         >>> import instruments as ik
         >>> port = '/dev/ttyUSB0'
-        >>> baud = 9600
+        >>> baud = 115200
         >>> inst = ik.dressler.Cesar1312.open_serial(port, baud)
         >>> inst.control_mode = inst.ControlMode.Host
         >>> inst.rf  # query RF state
