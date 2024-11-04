@@ -455,7 +455,7 @@ def test_pack_header(addr, data_length):
 @given(hdr_int=st.integers(min_value=0, max_value=255))
 def test_unpack_header(hdr_int):
     """Unpack a header to return address and data length."""
-    hdr = hdr_int.to_bytes(1)
+    hdr = hdr_int.to_bytes(1, "little")
     with expected_protocol(
         ik.dressler.Cesar1312,
         [],
