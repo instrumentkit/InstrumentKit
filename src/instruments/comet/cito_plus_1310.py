@@ -75,9 +75,20 @@ class CitoPlus1310(Instrument):
         :return: Forward power.
         :rtype: Quantity
         """
-        data = self.query(self._make_pkg(8022))
-        data = int.from_bytes(data, byteorder=self._byte_order) * u.W
-        return data
+        data = self.query(self._make_pkg(8021))
+        data = int.from_bytes(data, byteorder=self._byte_order)
+        return assume_units(data, u.mW).to(u.W)
+
+    @property
+    def load_power(self) -> u.Quantity:
+        """Get the actual load power of the generator in W.
+
+        :return: Load power.
+        :rtype: Quantity
+        """
+        data = self.query(self._make_pkg(8023))
+        data = int.from_bytes(data, byteorder=self._byte_order)
+        return assume_units(data, u.mW).to(u.W)
 
     @property
     def output_power(self) -> u.Quantity:
@@ -87,12 +98,14 @@ class CitoPlus1310(Instrument):
         :rtype: Quantity
         """
         data = self.query(self._make_pkg(1206))
-        data = int.from_bytes(data, byteorder=self._byte_order) * u.mW
-        return data.to(u.W)
+        data = int.from_bytes(data, byteorder=self._byte_order)
+        return assume_units(data, u.mW).to(u.W)
 
     @output_power.setter
     def output_power(self, value: u.Quantity) -> None:
         value = assume_units(value, u.W).to(u.mW)
+        if value < 1 * u.W:
+            value = 0 * u.W  # instrument can't set anything lower
         value = int(value.magnitude)
         self.sendcmd(self._make_pkg(1206, value))
 
@@ -103,9 +116,9 @@ class CitoPlus1310(Instrument):
         :return: Reflected power.
         :rtype: Quantity
         """
-        data = self.query(self._make_pkg(8021))
-        data = int.from_bytes(data, byteorder=self._byte_order) * u.W
-        return data
+        data = self.query(self._make_pkg(8022))
+        data = int.from_bytes(data, byteorder=self._byte_order)
+        return assume_units(data, u.mW).to(u.W)
 
     @property
     def regulation_mode(self) -> RegulationMode:
@@ -176,7 +189,9 @@ class CitoPlus1310(Instrument):
 
         # so it is a query and we expect data
         data_length = self._file.read_raw(1)
-        data = self._file.read_raw(int.from_bytes(data_length))
+        data = self._file.read_raw(
+            int.from_bytes(data_length, byteorder=self._byte_order)
+        )
         crc = self._file.read_raw(2)
 
         crc_exp = _crc16(hdr + data_length + data).to_bytes(

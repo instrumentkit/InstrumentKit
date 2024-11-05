@@ -40,7 +40,7 @@ def test_name():
 
 def test_forward_power():
     """Read forward power from instrument."""
-    cmd = bytes([0x0A, 0x41, 0x1F, 0x56, 0x00, 0x01])
+    cmd = bytes([0x0A, 0x41, 0x1F, 0x55, 0x00, 0x01])
     cmd = add_checksum(cmd)
     answ = bytes([0x0A, 0x41, 0x04, 0x00, 0x00, 0x03, 0xE8])  # 1000 W
     answ = add_checksum(answ)
@@ -50,7 +50,22 @@ def test_forward_power():
         [answ],
         sep="",
     ) as cito:
-        assert cito.forward_power == 1000 * u.W
+        assert cito.forward_power == 1000 * u.mW
+
+
+def test_load_power():
+    """Read forward power from instrument."""
+    cmd = bytes([0x0A, 0x41, 0x1F, 0x57, 0x00, 0x01])
+    cmd = add_checksum(cmd)
+    answ = bytes([0x0A, 0x41, 0x04, 0x00, 0x00, 0x03, 0xE8])  # 1000 W
+    answ = add_checksum(answ)
+    with expected_protocol(
+        ik.comet.CitoPlus1310,
+        [cmd],
+        [answ],
+        sep="",
+    ) as cito:
+        assert cito.load_power == 1000 * u.mW
 
 
 def test_output_power():
@@ -77,9 +92,23 @@ def test_output_power():
         assert cito.output_power == 1 * u.kW
 
 
+@given(pow=st.floats(min_value=0, max_value=1.0, exclude_max=True))
+def test_output_power_smaller_one(pow):
+    """Set output power values smaller than 1 W are set to zero."""
+    cmd_set_0W = bytes([0x0A, 0x42, 0x04, 0xB6, 0x00, 0x00, 0x00, 0x00])
+    cmd_set_0W = add_checksum(cmd_set_0W)
+    with expected_protocol(
+        ik.comet.CitoPlus1310,
+        [cmd_set_0W],
+        [cmd_set_0W],
+        sep="",
+    ) as cito:
+        cito.output_power = pow * u.W
+
+
 def test_reflected_power():
     """Read reflected power from instrument."""
-    cmd = bytes([0x0A, 0x41, 0x1F, 0x55, 0x00, 0x01])
+    cmd = bytes([0x0A, 0x41, 0x1F, 0x56, 0x00, 0x01])
     cmd = add_checksum(cmd)
     answ = bytes([0x0A, 0x41, 0x04, 0x00, 0x00, 0x03, 0xE8])  # 1000 W
     answ = add_checksum(answ)
@@ -89,7 +118,7 @@ def test_reflected_power():
         [answ],
         sep="",
     ) as cito:
-        assert cito.reflected_power == 1000 * u.W
+        assert cito.reflected_power == 1000 * u.mW
 
 
 def test_regulation_mode():
