@@ -15,6 +15,7 @@ Contents:
     generic_scpi
     agilent
     comet
+    dressler
     fluke
     gentec-eo
     glassman

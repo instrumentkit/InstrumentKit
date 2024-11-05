@@ -13,6 +13,7 @@ from .abstract_instruments import Instrument
 
 from . import agilent
 from . import comet
+from . import dressler
 from . import generic_scpi
 from . import fluke
 from . import gentec_eo
