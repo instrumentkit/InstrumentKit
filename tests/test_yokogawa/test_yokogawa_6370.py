@@ -5,7 +5,6 @@ Unit tests for the Yokogawa 6370
 
 # IMPORTS #####################################################################
 
-import hashlib
 import struct
 
 from hypothesis import (
@@ -15,7 +14,6 @@ from hypothesis import (
 import socket
 
 import instruments as ik
-from instruments.abstract_instruments.comm import SocketCommunicator
 from instruments.optional_dep_finder import numpy
 from tests import (
     expected_protocol,
@@ -31,6 +29,7 @@ from .. import mock
 
 def test_channel_is_channel_class():
     inst = ik.yokogawa.Yokogawa6370.open_test()
+    assert inst._channel_count == len(inst.Traces)
     assert isinstance(inst.channel["A"], inst.Channel) is True
 
 
