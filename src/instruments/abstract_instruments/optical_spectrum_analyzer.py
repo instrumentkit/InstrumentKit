@@ -140,7 +140,6 @@ class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
     def wavelength(self, bin_format=True):
         """
         Gets the x-axis of the specified data source channel. This is an
@@ -156,7 +155,6 @@ class OpticalSpectrumAnalyzer(Instrument, metaclass=abc.ABCMeta):
         else:
             raise NotImplementedError
 
-    @abc.abstractmethod
     def data(self, bin_format=True):
         """
         Gets the y-axis of the specified data source channel. This is an
