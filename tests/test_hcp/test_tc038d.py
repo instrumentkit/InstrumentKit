@@ -18,8 +18,8 @@ def test_write_multiple():
     # Communication from manual.
     with expected_protocol(
         TC038D,
-        [b"\x01\x10\x01\x0A\x00\x04\x08\x00\x00\x03\xE8\xFF\xFF\xFC\x18\x8D\xE9"],
-        [b"\x01\x10\x01\x0A\x00\x04\xE0\x34"],
+        [b"\x01\x10\x01\x0a\x00\x04\x08\x00\x00\x03\xe8\xff\xff\xfc\x18\x8d\xe9"],
+        [b"\x01\x10\x01\x0a\x00\x04\xe0\x34"],
         sep="",
     ) as inst:
         inst.writeMultiple(0x010A, [1000, -1000])
@@ -62,8 +62,8 @@ def test_write_multiple_Value_error():
 def test_read_CRC_error():
     with expected_protocol(
         TC038D,
-        [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
-        [b"\x01\x03\x04\x00\x00\x03\xE8\x01\x02"],
+        [b"\x01\x03\x00\x00\x00\x02\xc4\x0b"],
+        [b"\x01\x03\x04\x00\x00\x03\xe8\x01\x02"],
         sep="",
     ) as inst:
         with pytest.raises(ConnectionError):
@@ -73,7 +73,7 @@ def test_read_CRC_error():
 def test_read_address_error():
     with expected_protocol(
         TC038D,
-        [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
+        [b"\x01\x03\x00\x00\x00\x02\xc4\x0b"],
         [b"\x01\x83\x02\01\02"],
         sep="",
     ) as inst:
@@ -84,7 +84,7 @@ def test_read_address_error():
 def test_read_elements_error():
     with expected_protocol(
         TC038D,
-        [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
+        [b"\x01\x03\x00\x00\x00\x02\xc4\x0b"],
         [b"\x01\x83\x03\01\02"],
         sep="",
     ) as inst:
@@ -95,7 +95,7 @@ def test_read_elements_error():
 def test_read_any_error():
     with expected_protocol(
         TC038D,
-        [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
+        [b"\x01\x03\x00\x00\x00\x02\xc4\x0b"],
         [b"\x01\x43\x05\01\02"],
         sep="",
     ) as inst:
@@ -129,8 +129,8 @@ def test_temperature():
     # Tests readRegister as well.
     with expected_protocol(
         TC038D,
-        [b"\x01\x03\x00\x00\x00\x02\xC4\x0B"],
-        [b"\x01\x03\x04\x00\x00\x03\xE8\xFA\x8D"],
+        [b"\x01\x03\x00\x00\x00\x02\xc4\x0b"],
+        [b"\x01\x03\x04\x00\x00\x03\xe8\xfa\x8d"],
         sep="",
     ) as inst:
         value = inst.temperature
