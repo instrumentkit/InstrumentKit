@@ -6,8 +6,6 @@
 from enum import IntEnum
 from typing import Union
 
-import serial
-
 from instruments.abstract_instruments import Instrument
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units
@@ -23,11 +21,19 @@ class CitoPlus1310(Instrument):
     and that, according to the manual, communication over TCP/IP is
     different.
 
+    Important: Make sure that the correct parity is set in the instrument
+    and when calling the instrument. The default seems to be even parity.
+    Below example used even parity for the communication.
+    In general, all communication parameters (baud rate, parity, etc.) can
+    be set in the instrument itself. Below example just shows one possible
+    configuration.
+
     Example:
+        >>> import serial
         >>> import instruments as ik
         >>> port = '/dev/ttyUSB0'
-        >>> baud = 15200
-        >>> inst = ik.comet.CitoPlus1310.open_serial(port, baud)
+        >>> baud = 115200
+        >>> inst = ik.comet.CitoPlus1310.open_serial(port, baud, parity=serial.PARITY_EVEN)
         >>> inst.rf  # query RF state
         False
         >>> inst.rf = True  # turn on RF
@@ -42,7 +48,6 @@ class CitoPlus1310(Instrument):
 
     def __init__(self, filelike):
         super().__init__(filelike)
-        self._file.parity = serial.PARITY_EVEN
 
         self._address = 0x0A
 

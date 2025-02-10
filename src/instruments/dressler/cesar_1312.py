@@ -5,8 +5,6 @@
 from enum import IntEnum
 from typing import List, Tuple, Union
 
-import serial
-
 from instruments.abstract_instruments import Instrument
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units
@@ -19,8 +17,9 @@ class Cesar1312(Instrument):
 
     Various connection options are available for different models.
     This driver has been tested using the RS-232 option.
-    Upon initialization, the instrument is automatically put into
-    odd parity communication mode (as required by the device).
+    The instrument for which this driver was tested required
+    odd parity mode. You must provide the correct parity for your
+    device when opening the serial connection.
 
     Note that you must set the control mode to `ControlMode.Host`
     in order to send any commands from the computer to the device.
@@ -30,7 +29,7 @@ class Cesar1312(Instrument):
         >>> import instruments as ik
         >>> port = '/dev/ttyUSB0'
         >>> baud = 115200
-        >>> inst = ik.dressler.Cesar1312.open_serial(port, baud)
+        >>> inst = ik.dressler.Cesar1312.open_serial(port, baud, parity=serial.PARITY_ODD)
         >>> inst.control_mode = inst.ControlMode.Host
         >>> inst.rf  # query RF state
         False
@@ -53,8 +52,6 @@ class Cesar1312(Instrument):
 
     def __init__(self, filelike):
         super().__init__(filelike)
-
-        self._file.parity = serial.PARITY_ODD
 
         self._retries = 3
 
