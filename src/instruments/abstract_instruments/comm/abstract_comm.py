@@ -5,7 +5,6 @@ Provides an abstract base class for file-like communication layer classes
 
 # IMPORTS ####################################################################
 
-
 import abc
 import codecs
 import logging
@@ -37,9 +36,11 @@ class AbstractCommunicator(metaclass=abc.ABCMeta):
     # FORMATTING METHODS #
 
     def __repr__(self):
-        return "<{} object at 0x{:X} " "connected to {}>".format(
-            type(self).__name__, id(self), repr(self.address)
-        )
+        try:
+            addr = repr(self.address)
+        except:  # noqa: E722
+            addr = "unknown"
+        return f"<{type(self).__name__} object at 0x{id(self):X} connected to {addr}>"
 
     # CONCRETE PROPERTIES #
 
