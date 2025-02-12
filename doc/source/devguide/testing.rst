@@ -54,19 +54,19 @@ installed via the following pattern:
 
 .. code-block:: console
 
-    $ pyenv install 3.8.13
+    $ pyenv install 3.9.21
 
 Afterwards, you can use ``tox`` to run the tests under that specific Python
 environment:
 
 .. code-block:: console
 
-    $ tox -e py38,py38-numpy
+    $ tox -e py39,py39-numpy
 
 Here we have specified two ``tox`` environments that will be run: both under
 Python 3.8, one with ``numpy`` installed and the other without.
 
-``py38`` can be subsituted for other supported versions of Python, assuming
+``py39`` can be subsituted for other supported versions of Python, assuming
 they have been installed.
 
 You can also run all defined ``tox`` environments by simply running:
