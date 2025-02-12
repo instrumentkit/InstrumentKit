@@ -112,7 +112,7 @@ send, one can use the following functions to do so:
 Python Version Compatibility
 ----------------------------
 
-At this time, Python  3.8, 3.9, 3.10, 3.11, and 3.12 are supported. Should you encounter
+At this time, Python  3.9, 3.10, 3.11, 3.12, and 3.13 are supported. Should you encounter
 any problems with this library that occur in one version or another, please
 do not hesitate to let us know.
 

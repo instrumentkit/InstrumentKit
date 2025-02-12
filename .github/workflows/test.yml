@@ -23,8 +23,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - python-version: 3.8
-            TOXENV: "py38"
           - python-version: 3.9
             TOXENV: "py39"
           - python-version: 3.9
@@ -35,6 +33,8 @@ jobs:
             TOXENV: "py311"
           - python-version: "3.12"
             TOXENV: "py312"
+          - python-version: "3.13"
+            TOXENV: "py313"
     steps:
     - uses: actions/checkout@v4
       with:
