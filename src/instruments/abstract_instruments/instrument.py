@@ -472,6 +472,7 @@ class Instrument:
         serial_number=None,
         timeout=3,
         write_timeout=3,
+        **kwargs,
     ):
         """
         Opens an instrument, connecting via a physical or emulated serial port.
@@ -498,6 +499,8 @@ class Instrument:
             instrument before timing out.
         :param float write_timeout: Number of seconds to wait when writing to the
             instrument before timing out.
+        :param kwargs: Additional keyword arguments that will be passed on to
+            serial, e.g., `parity`.
 
         :rtype: `Instrument`
         :return: Object representing the connected instrument.
@@ -555,7 +558,7 @@ class Instrument:
             )
 
         ser = serial_manager.new_serial_connection(
-            port, baud=baud, timeout=timeout, write_timeout=write_timeout
+            port, baud=baud, timeout=timeout, write_timeout=write_timeout, **kwargs
         )
         return cls(ser)
 
