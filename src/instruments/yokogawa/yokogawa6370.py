@@ -7,7 +7,6 @@ Provides support for the Yokogawa 6370 optical spectrum analyzer.
 
 
 from enum import IntEnum, Enum
-import hashlib
 
 from instruments.units import ureg as u
 
@@ -46,6 +45,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._channel_count = len(self.Traces)
 
         if isinstance(self._file, SocketCommunicator):
             self.terminator = "\r\n"  # TCP IP connection terminator
