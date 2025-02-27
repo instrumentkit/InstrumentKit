@@ -29,7 +29,24 @@ class TPG36x(Instrument):
 
     def __init__(self, filelike):
         super().__init__(filelike)
+
         self._number_channels = 2
+
+        self._defined_cmd = {
+            "ETX": 3,
+            "ENQ": 5,
+            "ACK": 6,
+            "NAK": 21,
+        }
+
+        self.terminator = "\r\n"
+
+    class Language(IntEnum):
+        """Enum to get/set the language of the device."""
+
+        ENGLISH = 0
+        GERMAN = 1
+        FRENCH = 2
 
     class Channel:
         """
@@ -42,7 +59,7 @@ class TPG36x(Instrument):
         def __init__(self, parent, chan):
             if not isinstance(parent, TPG36x):
                 raise TypeError("Don't do that.")
-
+            self._chan = chan
             self._parent = parent
 
         @property
@@ -52,8 +69,8 @@ class TPG36x(Instrument):
 
             :rtype: `pint.Quantity`
             """
-            # TODO: Implement this!
-            pass
+            return self._parent.query(f"PR{self._chan+1}")
+            # FIXME: Do this unitful!!!
 
     @property
     def channel(self):
@@ -64,7 +81,27 @@ class TPG36x(Instrument):
 
         :rtype: `TPG36x.Channel`
         """
-        return ProxyList(self, self.Channel, TPG36x.Channels)
+        return ProxyList(self, self.Channel, range(self._number_channels))
+
+    @property
+    def language(self):
+        """
+        Get the language of the TPG36x.
+
+        :rtype: `TPG36x.Language`
+        """
+        val = int(self.query("LNG"))
+        return self.Language(val).name
+
+    @language.setter
+    def language(self, value):
+        """
+        Set the language of the TPG36x.
+
+        :param value: The language to set.
+        :type value: `TPG36x.Language`
+        """
+        self.sendcmd(f"LNG,{value.value}")
 
     @property
     def name(self):
@@ -102,3 +139,16 @@ class TPG36x(Instrument):
         :rtype: `pint.Quantity`
         """
         return self.channel[0].pressure
+
+    def query(self, cmd):
+        """
+        Query the TPG36x with the enquire command.
+
+        :return: The response from the TPG36x.
+        """
+        self.sendcmd(cmd)
+        self.write(chr(self._defined_cmd["ENQ"]))
+        return self.read()
+
+    def _ack_expected(self, msg=""):
+        return [chr(self._defined_cmd["ACK"])]
