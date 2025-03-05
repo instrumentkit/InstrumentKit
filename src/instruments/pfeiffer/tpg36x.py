@@ -41,12 +41,18 @@ class TPG36x(Instrument):
 
         self.terminator = "\r\n"
 
-    class Language(IntEnum):
+    class Language(Enum):
         """Enum to get/set the language of the device."""
 
         ENGLISH = 0
         GERMAN = 1
         FRENCH = 2
+
+    class PressureUnit(Enum):
+        """Enum for the pressure units (example)."""
+        MBAR = 0
+        TORR = 1
+        PASCAL = 2
 
     class Channel:
         """
@@ -65,12 +71,31 @@ class TPG36x(Instrument):
         @property
         def pressure(self):
             """
-            The pressure measured by the channel.
-
-            :rtype: `pint.Quantity`
+            The pressure measured by the channel, returned as a pint.Quantity
+            with the correct units attached (based on instrument settings).
             """
-            return self._parent.query(f"PR{self._chan+1}")
-            # FIXME: Do this unitful!!!
+            # Exemple de réponse brute : "0,+1.7377E+00"
+            raw_str = self._parent.query(f"PR{self._chan + 1}")
+
+            # On sépare le code d'état et la valeur
+            status_str, val_str = raw_str.split(',')
+
+            # Convertit la partie pression en float
+            val = float(val_str)  # => +1.7377E+00 -> 1.7377
+
+            # Récupère l'unité courante configurée
+            current_unit_enum_name = self._parent.pressure_unit  # "MBAR", "TORR", etc.
+
+            # On fait un "map" vers pint
+            if current_unit_enum_name == "MBAR":
+                return val * u.mbar
+            elif current_unit_enum_name == "TORR":
+                return val * u.torr
+            elif current_unit_enum_name == "PASCAL":
+                return val * u.pascal
+            else:
+                # fallback
+                return val * u.dimensionless
 
     @property
     def channel(self):
@@ -103,6 +128,35 @@ class TPG36x(Instrument):
         """
         self.sendcmd(f"LNG,{value.value}")
 
+
+    @property
+    def pressure_unit(self):
+        """
+        Get or set the unit of the TPG36x (global to the instrument).
+
+        :rtype: str (the name of the enum, e.g. "MBAR", "TORR", "PASCAL", etc.)
+        """
+        val = self.query("UNI")
+        val = int(val)
+        return self.PressureUnit(val).name
+        #the doc may be send just 0, 1, 2, ... so we need to convert it in int
+
+    @pressure_unit.setter
+    def pressure_unit(self, new_unit):
+        """
+        Set the unit of the TPG36x.
+
+        :param new_unit: The unit to set, e.g. TPG36x.PressureUnit.MBAR
+                         ou simplement la string "MBAR".
+        """
+        # Like that the code can accept enum or a string
+        if isinstance(new_unit, str):
+            # We suppose "MBAR", "TORR", "PASCAL"
+            new_unit = self.PressureUnit[new_unit.upper()]
+        cmd_val = new_unit.value
+        self.sendcmd(f"UNI,{cmd_val}")
+
+
     @property
     def name(self):
         """
@@ -110,8 +164,7 @@ class TPG36x(Instrument):
 
         :rtype: str
         """
-        # TODO: Implement this.
-        pass
+        return self.query("AYT").split(",")[0]
 
     @property
     def number_channels(self):
