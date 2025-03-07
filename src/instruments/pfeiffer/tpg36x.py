@@ -41,6 +41,12 @@ class TPG36x(Instrument):
 
         self.terminator = "\r\n"
 
+    class EthernetMode(Enum):
+        """Enum go get/set the ethernet mode of the device when configuring."""
+
+        DHCP = 0
+        STATIC = 1
+
     class Language(Enum):
         """Enum to get/set the language of the device."""
 
@@ -48,8 +54,9 @@ class TPG36x(Instrument):
         GERMAN = 1
         FRENCH = 2
 
-    class PressureUnit(Enum):
+    class Unit(Enum):
         """Enum for the pressure units (example)."""
+
         MBAR = 0
         TORR = 1
         PASCAL = 2
@@ -73,29 +80,34 @@ class TPG36x(Instrument):
             """
             The pressure measured by the channel, returned as a pint.Quantity
             with the correct units attached (based on instrument settings).
+
+            This routine also does error checking on the pressure reading and raises
+            an IOError with adequate message if, e.g., no sensor is connected to the
+            channel.
+
+            :return: Pressure on given channel.
+            :rtype: `u.Quantity`
             """
-            # Exemple de réponse brute : "0,+1.7377E+00"
-            raw_str = self._parent.query(f"PR{self._chan + 1}")
+            status_msgs = {
+                0: "OK",
+                1: "Underrange",
+                2: "Overrange",
+                3: "Sensor error",
+                4: "Sensor off",
+                5: "No sensor",
+                6: "Identification error",
+            }
 
-            # On sépare le code d'état et la valeur
-            status_str, val_str = raw_str.split(',')
+            raw_str = self._parent.query(f"PR{self._chan + 1}")  # ex: "0,+1.7377E+00"
+            status_str, val_str = raw_str.split(",")
+            status = int(status_str)
+            val = float(val_str)
+            current_unit = self._parent.unit
 
-            # Convertit la partie pression en float
-            val = float(val_str)  # => +1.7377E+00 -> 1.7377
+            if status != 0:
+                raise OSError(status_msgs.get(status, "Unknown error"))
 
-            # Récupère l'unité courante configurée
-            current_unit_enum_name = self._parent.pressure_unit  # "MBAR", "TORR", etc.
-
-            # On fait un "map" vers pint
-            if current_unit_enum_name == "MBAR":
-                return val * u.mbar
-            elif current_unit_enum_name == "TORR":
-                return val * u.torr
-            elif current_unit_enum_name == "PASCAL":
-                return val * u.pascal
-            else:
-                # fallback
-                return val * u.dimensionless
+            return val * u.Quantity(current_unit.name.lower())
 
     @property
     def channel(self):
@@ -109,6 +121,29 @@ class TPG36x(Instrument):
         return ProxyList(self, self.Channel, range(self._number_channels))
 
     @property
+    def ethernet_configuration(self):
+        """
+        Get / set the ethernet configuration of the TPG36x.
+
+        :return: List of the current configuration:
+            0. Configuration enum `TPG36x.EthernetMode`
+            1. IP address as string
+            2. Subnet mask as string
+            3. Gateway as string
+        """
+        return_list = self.query("ETH").split(",")
+        return_list[0] = self.EthernetMode(int(return_list[0]))
+        return return_list
+
+    @ethernet_configuration.setter
+    def ethernet_configuration(self, value):
+        if not isinstance(value, list) or len(value) != 4:
+            raise ValueError("The ethernet configuration must be a list of 4 elements.")
+        if not isinstance(value[0], self.EthernetMode):
+            raise ValueError("The first element must be an EthernetMode.")
+        self.sendcmd(f"ETH,{value[0].value},{value[1]},{value[2]},{value[3]}")
+
+    @property
     def language(self):
         """
         Get the language of the TPG36x.
@@ -116,7 +151,7 @@ class TPG36x(Instrument):
         :rtype: `TPG36x.Language`
         """
         val = int(self.query("LNG"))
-        return self.Language(val).name
+        return self.Language(val)
 
     @language.setter
     def language(self, value):
@@ -128,34 +163,15 @@ class TPG36x(Instrument):
         """
         self.sendcmd(f"LNG,{value.value}")
 
-
     @property
-    def pressure_unit(self):
+    def mac_address(self):
         """
-        Get or set the unit of the TPG36x (global to the instrument).
+        Get the MAC address of the TPG36x.
 
-        :rtype: str (the name of the enum, e.g. "MBAR", "TORR", "PASCAL", etc.)
+        :return: MAC address of the TPG36x.
+        :rtype: str
         """
-        val = self.query("UNI")
-        val = int(val)
-        return self.PressureUnit(val).name
-        #the doc may be send just 0, 1, 2, ... so we need to convert it in int
-
-    @pressure_unit.setter
-    def pressure_unit(self, new_unit):
-        """
-        Set the unit of the TPG36x.
-
-        :param new_unit: The unit to set, e.g. TPG36x.PressureUnit.MBAR
-                         ou simplement la string "MBAR".
-        """
-        # Like that the code can accept enum or a string
-        if isinstance(new_unit, str):
-            # We suppose "MBAR", "TORR", "PASCAL"
-            new_unit = self.PressureUnit[new_unit.upper()]
-        cmd_val = new_unit.value
-        self.sendcmd(f"UNI,{cmd_val}")
-
+        return self.query("MAC")
 
     @property
     def name(self):
@@ -192,6 +208,25 @@ class TPG36x(Instrument):
         :rtype: `pint.Quantity`
         """
         return self.channel[0].pressure
+
+    @property
+    def unit(self):
+        """
+        Get or set the unit of the TPG36x (global to the instrument).
+
+        :return: The current unit.
+        :rtype: `TPG36x.Unit`
+        """
+        val = self.query("UNI")
+        val = int(val)
+        return self.Unit(val)
+
+    @unit.setter
+    def unit(self, new_unit):
+        if isinstance(new_unit, str):
+            new_unit = self.Unit[new_unit.upper()]
+        cmd_val = new_unit.value
+        self.sendcmd(f"UNI,{cmd_val}")
 
     def query(self, cmd):
         """
