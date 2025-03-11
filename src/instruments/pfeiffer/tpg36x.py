@@ -44,8 +44,8 @@ class TPG36x(Instrument):
     class EthernetMode(Enum):
         """Enum go get/set the ethernet mode of the device when configuring."""
 
-        DHCP = 0
-        STATIC = 1
+        STATIC = 0
+        DHCP = 1
 
     class Language(Enum):
         """Enum to get/set the language of the device."""
@@ -68,6 +68,13 @@ class TPG36x(Instrument):
         .. warning:: This class should NOT be manually created by the user. It is
             designed to be initialized by the `TPG36x` class.
         """
+
+        class SensorStatus(Enum):
+            """Enum to get the status of the sensor."""
+
+            CANNOT_TURN_ON_OFF = 0
+            OFF = 1
+            ON = 2
 
         def __init__(self, parent, chan):
             if not isinstance(parent, TPG36x):
@@ -109,6 +116,29 @@ class TPG36x(Instrument):
 
             return val * u.Quantity(current_unit.name.lower())
 
+        @property
+        def status(self):
+            """
+            Get/set the status of a channel (sensor).
+
+            :return: The status of the sensor.
+            :rtype: `TPG36x.Channel.SensorStatus`
+            """
+            val = self._parent.query("SEN")
+            val = int(val.split(",")[self._chan])
+            return self.SensorStatus(val)
+
+        @status.setter
+        def status(self, value):
+            if not isinstance(value, self.SensorStatus):
+                raise ValueError("The status must be a SensorStatus enum.")
+            if value == self.SensorStatus.CANNOT_TURN_ON_OFF:
+                raise ValueError("You cannot set the status to this value.")
+            status_to_send = [0 for _ in range(self._parent.number_channels)]
+            status_to_send[self._chan] = value.value
+            status_to_send_str = ",".join([str(x) for x in status_to_send])
+            self._parent.sendcmd(f"SEN,{status_to_send_str}")
+
     @property
     def channel(self):
         """
@@ -125,6 +155,11 @@ class TPG36x(Instrument):
         """
         Get / set the ethernet configuration of the TPG36x.
 
+        .. note:: If you set the configuration to DHCP, you can simply send
+            `TPG36x.EthernetMode.DHCP` as the sole value. To set it to static,
+            you must provide a list of 4 elements: `[EthernetMode, IP, Subnet, Gateway]`.
+            The types are as follows: `TPG36x.EthernetMode`, `str`, `str`, `str`.
+
         :return: List of the current configuration:
             0. Configuration enum `TPG36x.EthernetMode`
             1. IP address as string
@@ -137,10 +172,32 @@ class TPG36x(Instrument):
 
     @ethernet_configuration.setter
     def ethernet_configuration(self, value):
-        if not isinstance(value, list) or len(value) != 4:
-            raise ValueError("The ethernet configuration must be a list of 4 elements.")
-        if not isinstance(value[0], self.EthernetMode):
+        if not isinstance(value, list) or len(value) != 4:  # check for correct format
+            if value == self.EthernetMode.DHCP:  # DHCP is a special case
+                value = [self.EthernetMode.DHCP, "0.0.0.0", "0.0.0.0", "0.0.0.0"]
+            else:
+                raise ValueError(
+                    "The ethernet configuration must be a list of 4 elements."
+                )
+        if not isinstance(value[0], self.EthernetMode):  # check for correct type
             raise ValueError("The first element must be an EthernetMode.")
+
+        for addr in value[1:]:
+            try:
+                addr = addr.split(".")
+                if len(addr) != 4:
+                    raise ValueError(
+                        f"Address {addr} must have 4 parts, not {len(addr)}"
+                    )
+                for part in addr:
+                    if not 0 <= int(part) <= 255:
+                        raise ValueError(
+                            f"Each part of the address {addr} must be between 0 and 255."
+                        )
+            except ValueError:
+                raise ValueError(
+                    f"The address {addr} must be a string of 4 numbers separated by dots."
+                )
         self.sendcmd(f"ETH,{value[0].value},{value[1]},{value[2]},{value[3]}")
 
     @property
