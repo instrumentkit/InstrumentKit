@@ -43,15 +43,14 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
     >>> inst = ik.yokogawa.Yokogawa6370.open_tcpip("192.168.0.35", 10001, auth=auth)
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, filelike, auth=None):
+        super().__init__(filelike)
         self._channel_count = len(self.Traces)
 
         if isinstance(self._file, SocketCommunicator):
             self.terminator = "\r\n"  # TCP IP connection terminator
 
-        # Authenticate with `auth` (supplied as keyword argument) if provided
-        auth = kwargs.get("auth", None)
+        # Authenticate with `auth`
         if auth is not None:
             self._authenticate(auth)
 

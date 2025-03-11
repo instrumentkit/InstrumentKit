@@ -457,7 +457,10 @@ class Instrument:
         conn = socket.socket()
         conn.connect((host, port))
 
-        ret_cls = cls(SocketCommunicator(conn), auth=auth)
+        if auth is None:
+            ret_cls = cls(SocketCommunicator(conn))
+        else:
+            ret_cls = cls(SocketCommunicator(conn), auth=auth)
 
         return ret_cls
 

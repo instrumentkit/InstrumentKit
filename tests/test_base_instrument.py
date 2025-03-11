@@ -120,6 +120,30 @@ def test_instrument_open_tcpip_auth_not_implemented():
         inst._authenticate(auth=("user", "pwd"))
 
 
+@pytest.mark.parametrize("auth", [None, ("user", "pwd")])
+@mock.patch("instruments.abstract_instruments.instrument.SocketCommunicator")
+@mock.patch("instruments.abstract_instruments.instrument.socket")
+def test_instrument_open_tcpip_passing_on_auth(
+    mock_socket, mock_socket_comm, auth, mocker
+):
+    """Ensure auth only passed on if not None, see issue #439."""
+    mock_socket.socket.return_value.__class__ = socket.socket
+    mock_socket_comm.return_value.__class__ = SocketCommunicator
+
+    # spy on the __init__ method of the Instrument class
+    inst_spy = mocker.spy(ik.abstract_instruments.instrument.Instrument, "__init__")
+
+    _ = ik.Instrument.open_tcpip("127.0.0.1", 1234, auth=auth)
+
+    call_list = inst_spy.mock_calls
+    auth_kwarg = {"auth": auth}
+
+    if auth is not None:
+        assert auth_kwarg in call_list[0]
+    else:
+        assert auth_kwarg not in call_list[0]
+
+
 @mock.patch("instruments.abstract_instruments.instrument.serial_manager")
 def test_instrument_open_serial(mock_serial_manager):
     mock_serial_manager.new_serial_connection.return_value.__class__ = (
