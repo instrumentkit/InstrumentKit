@@ -5,7 +5,7 @@ Driver for the Pfeiffer TPG36x vacumm gauge controller.
 
 # IMPORTS #####################################################################
 
-from enum import Enum, IntEnum
+from enum import Enum
 
 from instruments.abstract_instruments import Instrument
 from instruments.units import ureg as u
@@ -60,6 +60,9 @@ class TPG36x(Instrument):
         MBAR = 0
         TORR = 1
         PASCAL = 2
+        MICRON = 3
+        HPASCAL = 4
+        VOLT = 5
 
     class Channel:
         """
@@ -109,10 +112,11 @@ class TPG36x(Instrument):
             status_str, val_str = raw_str.split(",")
             status = int(status_str)
             val = float(val_str)
-            current_unit = self._parent.unit
 
             if status != 0:
                 raise OSError(status_msgs.get(status, "Unknown error"))
+
+            current_unit = self._parent.unit
 
             return val * u.Quantity(current_unit.name.lower())
 
@@ -194,7 +198,7 @@ class TPG36x(Instrument):
                         raise ValueError(
                             f"Each part of the address {addr} must be between 0 and 255."
                         )
-            except ValueError:
+            except (ValueError, AttributeError):
                 raise ValueError(
                     f"The address {addr} must be a string of 4 numbers separated by dots."
                 )
