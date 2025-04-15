@@ -22,9 +22,11 @@ class TPG36x(Instrument):
     version (TPG361), set the `number_channels` property to 1.
 
     Example usage:
-
-        TODO:
-
+        >>> import instruments as ik
+        >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+        >>> ch = inst.channel[0]
+        >>> ch.pressure
+        0.02 * u.mbar
     """
 
     def __init__(self, filelike):
@@ -55,7 +57,7 @@ class TPG36x(Instrument):
         FRENCH = 2
 
     class Unit(Enum):
-        """Enum for the pressure units (example)."""
+        """Enum for the pressure units."""
 
         MBAR = 0
         TORR = 1
@@ -97,6 +99,13 @@ class TPG36x(Instrument):
 
             :return: Pressure on given channel.
             :rtype: `u.Quantity`
+
+            Example:
+                >>> import instruments as ik
+                >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+                >>> ch = inst.channel[0]
+                >>> ch.pressure
+                0.02 * u.mbar
             """
             status_msgs = {
                 0: "OK",
@@ -127,6 +136,13 @@ class TPG36x(Instrument):
 
             :return: The status of the sensor.
             :rtype: `TPG36x.Channel.SensorStatus`
+
+            Example:
+                >>> import instruments as ik
+                >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+                >>> ch = inst.channel[0]
+                >>> ch.status
+                SensorStatus.ON
             """
             val = self._parent.query("SEN")
             val = int(val.split(",")[self._chan])
@@ -151,6 +167,11 @@ class TPG36x(Instrument):
         Note that the channel number is pythonic, i.e., the first channel is 0.
 
         :rtype: `TPG36x.Channel`
+
+        Example:
+            >>> import instruments as ik
+            >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+            >>> ch = inst.channel[0]
         """
         return ProxyList(self, self.Channel, range(self._number_channels))
 
@@ -169,6 +190,13 @@ class TPG36x(Instrument):
             1. IP address as string
             2. Subnet mask as string
             3. Gateway as string
+
+        Example:
+            >>> import instruments as ik
+            >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+            >>> inst.ethernet_configuration = [inst.EthernetMode.STATIC, "192.168.1.42", "255.255.255.0", "192.168.1.1"]
+           >>> inst.ethernet_configuration
+            [inst.EthernetMode.STATIC, "192.168.1.42", "255.255.255.0", "192.168.1.1"]
         """
         return_list = self.query("ETH").split(",")
         return_list[0] = self.EthernetMode(int(return_list[0]))
@@ -207,21 +235,21 @@ class TPG36x(Instrument):
     @property
     def language(self):
         """
-        Get the language of the TPG36x.
+        Get/set the language of the TPG36x.
 
         :rtype: `TPG36x.Language`
+
+        Example:
+            >>> import instruments as ik
+            >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+            >>> inst.language
+            Language.ENGLISH
         """
         val = int(self.query("LNG"))
         return self.Language(val)
 
     @language.setter
     def language(self, value):
-        """
-        Set the language of the TPG36x.
-
-        :param value: The language to set.
-        :type value: `TPG36x.Language`
-        """
         self.sendcmd(f"LNG,{value.value}")
 
     @property
@@ -231,6 +259,12 @@ class TPG36x(Instrument):
 
         :return: MAC address of the TPG36x.
         :rtype: str
+
+        Example:
+            >>> import instruments as ik
+            >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+            >>> inst.mac_address
+            "00:1A:2B:3C:4D:5E"
         """
         return self.query("MAC")
 
@@ -240,6 +274,12 @@ class TPG36x(Instrument):
         Get the name from the TPG36x.
 
         :rtype: str
+
+        Example:
+            >>> import instruments as ik
+            >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+            >>> inst.name
+            "TPG 362"
         """
         return self.query("AYT").split(",")[0]
 
@@ -248,7 +288,16 @@ class TPG36x(Instrument):
         """
         The number of channels on the TPG36x.
 
+        This defaults to two channels. Set this to 1 if you have a one gauge
+        instrument, i.e., a TPG361.
+
         :rtype: int
+
+        Example:
+            >>> import instruments as ik
+            >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+            >>> inst.number_channels
+            2
         """
         return self._number_channels
 
@@ -267,16 +316,28 @@ class TPG36x(Instrument):
         method on it.
 
         :rtype: `pint.Quantity`
+
+        Example:
+            >>> import instruments as ik
+            >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+            >>> inst.pressure
+            0.02 * u.mbar
         """
         return self.channel[0].pressure
 
     @property
     def unit(self):
         """
-        Get or set the unit of the TPG36x (global to the instrument).
+        Get/set the unit of the TPG36x (global to the instrument).
 
         :return: The current unit.
         :rtype: `TPG36x.Unit`
+
+        Example:
+            >>> import instruments as ik
+            >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
+            >>> inst.unit
+            Unit.MBAR
         """
         val = self.query("UNI")
         val = int(val)
