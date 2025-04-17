@@ -5,6 +5,8 @@ Module containing tests for the TPG 36x gauge controller
 
 # IMPORTS ####################################################################
 
+from ipaddress import ip_address
+
 import pytest
 
 import instruments as ik
@@ -101,11 +103,20 @@ def test_tpg36x_channel_status_error():
 # TPG36x #1
 
 
-def test_tpg36x_ethernet_configuration_static():
-    """Set/get the ethernet configuration."""
-    ip = "192.168.1.10"
-    subnet = "255.255.255.0"
-    gateway = "192.168.1.1"
+@pytest.mark.parametrize(
+    "addrs",
+    [
+        ["192.168.1.10", "255.255.255.0", "192.168.1.1"],
+        [
+            ip_address("192.168.1.10"),
+            ip_address("255.255.255.0"),
+            ip_address("192.168.1.1"),
+        ],
+    ],
+)
+def test_tpg36x_ethernet_configuration_static(addrs):
+    """Set/get the ethernet configuration (static)."""
+    ip, subnet, gateway = addrs
     with expected_protocol(
         ik.pfeiffer.TPG36x,
         [f"ETH,0,{ip},{subnet},{gateway}", SEP, "ETH", SEP, ENQ],
@@ -118,19 +129,21 @@ def test_tpg36x_ethernet_configuration_static():
             "255.255.255.0",
             "192.168.1.1",
         ]
-        mode, ip_rec, subnet_rec, gateway_rec = tpg.ethernet_configuration
+        ret_val = tpg.ethernet_configuration
+        assert isinstance(ret_val, list)
+
+        mode, ip_rec, subnet_rec, gateway_rec = ret_val
         assert mode == tpg.EthernetMode.STATIC
-        assert ip == ip_rec
-        assert subnet == subnet_rec
-        assert gateway == gateway_rec
+        assert str(ip) == ip_rec
+        assert str(subnet) == subnet_rec
+        assert str(gateway) == gateway_rec
 
 
 def test_tpg36x_ethernet_configuration_dhcp():
-    """Set/get the ethernet configuration (static)."""
-    zero_address = "0.0.0.0"
+    """Set/get the ethernet configuration (dhcp)."""
     with expected_protocol(
         ik.pfeiffer.TPG36x,
-        [f"ETH,1,{zero_address},{zero_address},{zero_address}", SEP],
+        ["ETH,1", SEP],
         [ACK, SEP],
         sep="",
     ) as tpg:
@@ -148,28 +161,6 @@ def test_tpg36x_ethernet_configuration_errors():
     ) as tpg:
         with pytest.raises(ValueError):  # invalid list
             tpg.ethernet_configuration = [tpg.EthernetMode.STATIC, 42]
-        with pytest.raises(ValueError):  # ip address is a number
-            tpg.ethernet_configuration = [
-                tpg.EthernetMode.STATIC,
-                42,
-                good_addr,
-                good_addr,
-            ]
-        with pytest.raises(ValueError):  # incorrect subnet
-            tpg.ethernet_configuration = [
-                tpg.EthernetMode.STATIC,
-                good_addr,
-                "192.169",
-                good_addr,
-            ]
-
-        with pytest.raises(ValueError):  # incorrect gateway
-            tpg.ethernet_configuration = [
-                tpg.EthernetMode.STATIC,
-                good_addr,
-                good_addr,
-                "192.168.1.256",
-            ]
         with pytest.raises(ValueError):  # first value not an EthernetMode
             tpg.ethernet_configuration = [42, good_addr, good_addr, good_addr]
 

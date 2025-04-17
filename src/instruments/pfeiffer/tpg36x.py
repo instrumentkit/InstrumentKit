@@ -6,6 +6,7 @@ Driver for the Pfeiffer TPG36x vacumm gauge controller.
 # IMPORTS #####################################################################
 
 from enum import Enum
+import ipaddress
 
 from instruments.abstract_instruments import Instrument
 from instruments.units import ureg as u
@@ -26,7 +27,7 @@ class TPG36x(Instrument):
         >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
         >>> ch = inst.channel[0]
         >>> ch.pressure
-        0.02 * u.mbar
+        4.7634 millibar
     """
 
     def __init__(self, filelike):
@@ -105,7 +106,7 @@ class TPG36x(Instrument):
                 >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
                 >>> ch = inst.channel[0]
                 >>> ch.pressure
-                0.02 * u.mbar
+                4.7634 millibar
             """
             status_msgs = {
                 0: "OK",
@@ -180,23 +181,23 @@ class TPG36x(Instrument):
         """
         Get / set the ethernet configuration of the TPG36x.
 
-        .. note:: If you set the configuration to DHCP, you can simply send
+        .. note:: If you set the configuration to DHCP, you should simply send
             `TPG36x.EthernetMode.DHCP` as the sole value. To set it to static,
             you must provide a list of 4 elements: `[EthernetMode, IP, Subnet, Gateway]`.
             The types are as follows: `TPG36x.EthernetMode`, `str`, `str`, `str`.
 
         :return: List of the current configuration:
             0. Configuration enum `TPG36x.EthernetMode`
-            1. IP address as string
-            2. Subnet mask as string
-            3. Gateway as string
+            1. IP address as string (or `ipaddress.ip_address`)
+            2. Subnet mask as string (or `ipaddress.ip_address`)
+            3. Gateway as string (or `ipaddress.ip_address`)
 
         Example:
             >>> import instruments as ik
             >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
             >>> inst.ethernet_configuration = [inst.EthernetMode.STATIC, "192.168.1.42", "255.255.255.0", "192.168.1.1"]
            >>> inst.ethernet_configuration
-            [inst.EthernetMode.STATIC, "192.168.1.42", "255.255.255.0", "192.168.1.1"]
+            [<EthernetMode.STATIC: 0>, "192.168.1.42", "255.255.255.0", "192.168.1.1"]
         """
         return_list = self.query("ETH").split(",")
         return_list[0] = self.EthernetMode(int(return_list[0]))
@@ -206,7 +207,8 @@ class TPG36x(Instrument):
     def ethernet_configuration(self, value):
         if not isinstance(value, list) or len(value) != 4:  # check for correct format
             if value == self.EthernetMode.DHCP:  # DHCP is a special case
-                value = [self.EthernetMode.DHCP, "0.0.0.0", "0.0.0.0", "0.0.0.0"]
+                self.sendcmd(f"ETH,{value.value}")
+                return
             else:
                 raise ValueError(
                     "The ethernet configuration must be a list of 4 elements."
@@ -215,21 +217,8 @@ class TPG36x(Instrument):
             raise ValueError("The first element must be an EthernetMode.")
 
         for addr in value[1:]:
-            try:
-                addr = addr.split(".")
-                if len(addr) != 4:
-                    raise ValueError(
-                        f"Address {addr} must have 4 parts, not {len(addr)}"
-                    )
-                for part in addr:
-                    if not 0 <= int(part) <= 255:
-                        raise ValueError(
-                            f"Each part of the address {addr} must be between 0 and 255."
-                        )
-            except (ValueError, AttributeError):
-                raise ValueError(
-                    f"The address {addr} must be a string of 4 numbers separated by dots."
-                )
+            _ = ipaddress.ip_address(addr)  # check for valid IP address
+
         self.sendcmd(f"ETH,{value[0].value},{value[1]},{value[2]},{value[3]}")
 
     @property
@@ -279,7 +268,7 @@ class TPG36x(Instrument):
             >>> import instruments as ik
             >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
             >>> inst.name
-            "TPG 362"
+            "TPG362"
         """
         return self.query("AYT").split(",")[0]
 
