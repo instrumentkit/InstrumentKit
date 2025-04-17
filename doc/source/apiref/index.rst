@@ -29,6 +29,7 @@ Contents:
     newport
     ondax
     oxford
+    pfeiffer
     phasematrix
     picowatt
     qubitekk

@@ -28,6 +28,7 @@ from . import minghe
 from . import newport
 from . import oxford
 from . import phasematrix
+from . import pfeiffer
 from . import picowatt
 from . import qubitekk
 from . import rigol
