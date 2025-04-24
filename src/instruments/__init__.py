@@ -33,6 +33,7 @@ from . import picowatt
 from . import qubitekk
 from . import rigol
 from . import srs
+from . import sunpower
 from . import tektronix
 from . import teledyne
 from . import thorlabs

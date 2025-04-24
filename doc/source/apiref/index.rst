@@ -35,6 +35,7 @@ Contents:
     qubitekk
     rigol
     srs
+    sunpower
     tektronix
     teledyne
     thorlabs
