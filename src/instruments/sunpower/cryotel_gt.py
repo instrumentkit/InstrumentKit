@@ -6,6 +6,7 @@ Driver for the Sunpower CryoTel GT generation 2 cryocooler.
 # IMPORTS #####################################################################
 
 import warnings
+import time  # fixme
 
 from enum import Enum
 
@@ -48,6 +49,27 @@ class CryoTelGT(Instrument):
         POWER = 0
         TEMPERATURE = 2
 
+    class ThermostatStatus(Enum):
+        """
+        Thermostat status for the CryoTel GT.
+
+        Off means that the thermostat is open and the cryocooler is shutting down or
+        shut down.
+        """
+
+        OFF = 0
+        ON = 1
+
+    class StopMode(Enum):
+        """
+        Stop mode for the cryocooler. `HOST` means that the start/stop command can
+        be controlled from the host computer. `DIGIO` means that the start/stop command
+        can be set from the digital input/output pin 1 on the cryocooler.
+        """
+
+        HOST = 0
+        DIGIO = 1
+
     def __init__(self, filelike):
         super().__init__(filelike)
 
@@ -60,7 +82,27 @@ class CryoTelGT(Instrument):
             32: "Temperature Sensor Error",
         }
 
-        self.terminator = "\r"  # FIXME: Unclear if this is correct
+        self.terminator = "\r"
+
+    @property
+    def at_temperature_band(self):
+        """
+        Get/set the temperature band of the CryoTel GT in Kelvin.
+
+        Returns the temperature band within the green LED and "At Temperature" pin on
+        the I/O connector will be activated.
+
+        If no unit is provided, Kelvin are assumed.
+
+        :return: The current temperature band in Kelvin.
+        """
+        ret_val = self.query("SET TBAND")
+        return float(ret_val) * u.K
+
+    @at_temperature_band.setter
+    def at_temperature_band(self, value):
+        value = assume_units(value, u.K).to(u.K)
+        self.query("SET TBAND", value.magnitude)
 
     @property
     def control_mode(self):
@@ -74,7 +116,7 @@ class CryoTelGT(Instrument):
 
         :return: The current control mode.
         """
-        ret_val = int(self.query("SET PID"))
+        ret_val = int(float(self.query("SET PID")))
         return self.ControlMode(ret_val)
 
     @control_mode.setter
@@ -86,7 +128,41 @@ class CryoTelGT(Instrument):
         self.query("SET PID", value.value)
 
     @property
-    def power_current(self):
+    def ki(self):
+        """Set/get the integral constant of the temperature control loop.
+
+        The default integral constant is 1.0 and will be reset to this value if the
+        reset method is called.
+
+        :return: The current integral constant.
+        :rtype: float
+        """
+        ret_val = self.query("SET KI")
+        return float(ret_val)
+
+    @ki.setter
+    def ki(self, value):
+        _ = self.query("SET KI", value)
+
+    @property
+    def kp(self):
+        """Set/get the proportional constant of the temperature control loop.
+
+        The default proportional constant is 50.0 and will be reset to this value if the
+        reset method is called.
+
+        :return: The current proportional constant.
+        :rtype: float
+        """
+        ret_val = self.query("SET KP")
+        return float(ret_val)
+
+    @kp.setter
+    def kp(self, value):
+        _ = self.query("SET KP", value)
+
+    @property
+    def power(self):
         """
         Get the current power in Watts.
 
@@ -109,6 +185,46 @@ class CryoTelGT(Instrument):
         min_power = float(ret_vals[1]) * u.W
         current_power = float(ret_vals[2]) * u.W
         return max_power, min_power, current_power
+
+    @property
+    def power_max(self):
+        """
+        Get/set the maximum user defined power in Watts.
+
+        The cooler will automatically limit the power to a safe value if this number
+        exceeds the maximum allowable power.
+
+        :return: The maximum user defined power in Watts.
+        """
+        ret_val = self.query("SET MAX")
+        return float(ret_val) * u.W
+
+    @power_max.setter
+    def power_max(self, value):
+        value = assume_units(value, u.W).to(u.W)
+        if value.magnitude < 0 or value.magnitude > 999.99:
+            raise ValueError("Maximum power must be between 0 and 999.99 Watts.")
+        self.query("SET MAX", value.magnitude)
+
+    @property
+    def power_min(self):
+        """
+        Get/set the minimum user defined power in Watts.
+
+        The cooler will automatically limit the power to a safe value if this number
+        exceeds the minimum allowable power.
+
+        :return: The minimum user defined power in Watts.
+        """
+        ret_val = self.query("SET MIN")
+        return float(ret_val) * u.W
+
+    @power_min.setter
+    def power_min(self, value):
+        value = assume_units(value, u.W).to(u.W)
+        if value.magnitude < 0 or value.magnitude > 999.99:
+            raise ValueError("Minimum power must be between 0 and 999.99 Watts.")
+        self.query("SET MIN", value.magnitude)
 
     @property
     def power_set(self):
@@ -139,11 +255,11 @@ class CryoTelGT(Instrument):
     @property
     def serial_number(self):
         """
-        Get the serial number of the CryoTel GT.
+        Get the serial number and revision of the CryoTel GT.
 
-        :return: The serial number as a string.
+        :return: List of serial number string and revision string.
         """
-        return self.query("SERIAL")
+        return self.query_multiline("SERIAL", 2)
 
     @property
     def state(self):
@@ -158,7 +274,7 @@ class CryoTelGT(Instrument):
         return self.query_multiline("STATE", 14)
 
     @property
-    def temperature_current(self):
+    def temperature(self):
         """
         Get the current temperature in Kelvin.
 
@@ -186,6 +302,38 @@ class CryoTelGT(Instrument):
         value = assume_units(value, u.K).to(u.K)
         self.query("SET TTARGET", value.magnitude)
 
+    @property
+    def thermostat(self):
+        """Get/set the thermostat mode of the CryoTel GT.
+
+        Set this to `True` to enable the thermostat mode, or `False` to disable it.
+
+        :return: The current thermostat mode state.
+        :rtype: bool
+        """
+        ret_val = int(float(self.query("SET TSTATM")))
+        return bool(ret_val)
+
+    @thermostat.setter
+    def thermostat(self, value):
+        if not isinstance(value, bool):
+            raise ValueError("Invalid thermostat mode. Use True or False.")
+        self.query("SET TSTATM", int(value))
+
+    @property
+    def thermostat_status(self):
+        """
+        Get the current thermostat status of the CryoTel GT.
+
+        Returns `ThermostatStatus.ON` if the thermostat is enabled, and `ThermostatStatus.OFF`
+        if it is disabled.
+
+        :return: The current thermostat status.
+        :rtype: ThermostatStatus
+        """
+        ret_val = int(float(self.query("TSTAT")))
+        return self.ThermostatStatus(ret_val)
+
     # CryoCooler Methods
 
     def reset(self):
@@ -199,6 +347,42 @@ class CryoTelGT(Instrument):
         Save the current control mode as the default control mode.
         """
         _ = self.query("SAVE PID")
+
+    @property
+    def stop(self):
+        """
+        Get/set the stop state of the CryoTel GT.
+
+        Valid options are `True` (stop) and `False` (start).
+
+        :return: The current stop state.
+        """
+        ret_val = int(float(self.query("SET SSTOP")))
+        return bool(ret_val)
+
+    @stop.setter
+    def stop(self, value):
+        if not isinstance(value, bool):
+            raise ValueError("Invalid stop state. Use True or False.")
+        self.query("SET SSTOP", int(value))
+
+    @property
+    def stop_mode(self):
+        """
+        Get/set the stop mode of the CryoTel GT.
+
+        Valid options are `StopMode.HOST` and `StopMode.DIGIO`.
+
+        :return: The current stop mode.
+        """
+        ret_val = int(float(self.query("SET SSTOPM")))
+        return self.StopMode(ret_val)
+
+    @stop_mode.setter
+    def stop_mode(self, value):
+        if not isinstance(value, self.StopMode):
+            raise ValueError("Invalid stop mode. Use StopMode.HOST or StopMode.DIGIO.")
+        self.query("SET SSTOPM", value.value)
 
     # Driver methods
 
@@ -220,14 +404,14 @@ class CryoTelGT(Instrument):
         """
         if value is None:
             self.sendcmd(command)
-            return self.read()
+            return self.read().strip()
         else:
             if isinstance(value, float):
                 value_to_send = f"{value:.2f}"
             else:
                 value_to_send = str(value)
             self.sendcmd(f"{command}={value_to_send}")
-            ret_val = self.read()
+            ret_val = self.read().strip()
             if float(ret_val) != value:
                 warnings.warn(
                     f"Set value {value} does not match returned value {ret_val}."
@@ -245,5 +429,14 @@ class CryoTelGT(Instrument):
         :return: The response from the cooler as a list of lines.
         """
         self.sendcmd(command)
-        ret_val = [self.read() for _ in range(num_lines)]
+        ret_val = [self.read().strip() for _ in range(num_lines)]
         return ret_val
+
+    def sendcmd(self, command):
+        """
+        Send a command to the cooler.
+
+        :param command: The command to send to the cooler.
+        """
+        self._file.sendcmd(command)
+        _ = self.read()  # echo
