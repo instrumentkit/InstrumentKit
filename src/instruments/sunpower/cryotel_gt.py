@@ -5,10 +5,9 @@ Driver for the Sunpower CryoTel GT generation 2 cryocooler.
 
 # IMPORTS #####################################################################
 
-import warnings
-import time  # fixme
-
+from collections import OrderedDict
 from enum import Enum
+import warnings
 
 from instruments.abstract_instruments import Instrument
 from instruments.units import ureg as u
@@ -73,14 +72,16 @@ class CryoTelGT(Instrument):
     def __init__(self, filelike):
         super().__init__(filelike)
 
-        self._error_codes = {
-            1: "Over Current",
-            2: "Jumper Error",
-            4: "Serial Error",
-            8: "Non-volatile Memory Error",
-            16: "Watchdog Error",
-            32: "Temperature Sensor Error",
-        }
+        self._error_codes = OrderedDict(
+            {
+                1: "Over Current",
+                2: "Jumper Error",
+                4: "Serial Error",
+                8: "Non-volatile Memory Error",
+                16: "Watchdog Error",
+                32: "Temperature Sensor Error",
+            }
+        )
 
         self.terminator = "\r"
 
@@ -102,7 +103,7 @@ class CryoTelGT(Instrument):
     @at_temperature_band.setter
     def at_temperature_band(self, value):
         value = assume_units(value, u.K).to(u.K)
-        self.query("SET TBAND", value.magnitude)
+        self.query("SET TBAND", float(value.magnitude))
 
     @property
     def control_mode(self):
@@ -128,6 +129,22 @@ class CryoTelGT(Instrument):
         self.query("SET PID", value.value)
 
     @property
+    def errors(self):
+        """Get any error codes from the CryoTel GT.
+
+        Only error codes that are currently active will be added to the
+        list. If no error codes are active, an empty list is returned.
+
+        :return: List of human readable strings.
+        """
+        ret_val = int(self.query("ERROR"), 2)
+        errors = []
+        for errcode, errstr in self._error_codes.items():
+            if ret_val & errcode:
+                errors.append(errstr)
+        return errors
+
+    @property
     def ki(self):
         """Set/get the integral constant of the temperature control loop.
 
@@ -142,7 +159,7 @@ class CryoTelGT(Instrument):
 
     @ki.setter
     def ki(self, value):
-        _ = self.query("SET KI", value)
+        _ = self.query("SET KI", float(value))
 
     @property
     def kp(self):
@@ -159,7 +176,7 @@ class CryoTelGT(Instrument):
 
     @kp.setter
     def kp(self, value):
-        _ = self.query("SET KP", value)
+        _ = self.query("SET KP", float(value))
 
     @property
     def power(self):
@@ -204,7 +221,7 @@ class CryoTelGT(Instrument):
         value = assume_units(value, u.W).to(u.W)
         if value.magnitude < 0 or value.magnitude > 999.99:
             raise ValueError("Maximum power must be between 0 and 999.99 Watts.")
-        self.query("SET MAX", value.magnitude)
+        self.query("SET MAX", float(value.magnitude))
 
     @property
     def power_min(self):
@@ -224,7 +241,7 @@ class CryoTelGT(Instrument):
         value = assume_units(value, u.W).to(u.W)
         if value.magnitude < 0 or value.magnitude > 999.99:
             raise ValueError("Minimum power must be between 0 and 999.99 Watts.")
-        self.query("SET MIN", value.magnitude)
+        self.query("SET MIN", float(value.magnitude))
 
     @property
     def power_set(self):
@@ -250,7 +267,7 @@ class CryoTelGT(Instrument):
         value = assume_units(value, u.W).to(u.W)
         if value.magnitude < 0 or value.magnitude > 999.99:
             raise ValueError("Power setpoint must be between 0 and 999.99 Watts.")
-        self.query("SET PWOUT", value.magnitude)
+        self.query("SET PWOUT", float(value.magnitude))
 
     @property
     def serial_number(self):
@@ -300,7 +317,7 @@ class CryoTelGT(Instrument):
     @temperature_set.setter
     def temperature_set(self, value):
         value = assume_units(value, u.K).to(u.K)
-        self.query("SET TTARGET", value.magnitude)
+        self.query("SET TTARGET", float(value.magnitude))
 
     @property
     def thermostat(self):
@@ -333,20 +350,6 @@ class CryoTelGT(Instrument):
         """
         ret_val = int(float(self.query("TSTAT")))
         return self.ThermostatStatus(ret_val)
-
-    # CryoCooler Methods
-
-    def reset(self):
-        """
-        Reset the CryoTel GT to factory defaults.
-        """
-        _ = self.query_multiline("RESET=F", 2)
-
-    def save_control_mode(self):
-        """
-        Save the current control mode as the default control mode.
-        """
-        _ = self.query("SAVE PID")
 
     @property
     def stop(self):
@@ -383,6 +386,20 @@ class CryoTelGT(Instrument):
         if not isinstance(value, self.StopMode):
             raise ValueError("Invalid stop mode. Use StopMode.HOST or StopMode.DIGIO.")
         self.query("SET SSTOPM", value.value)
+
+    # CryoCooler Methods
+
+    def reset(self):
+        """
+        Reset the CryoTel GT to factory defaults.
+        """
+        _ = self.query_multiline("RESET=F", 2)
+
+    def save_control_mode(self):
+        """
+        Save the current control mode as the default control mode.
+        """
+        _ = self.query("SAVE PID")
 
     # Driver methods
 
