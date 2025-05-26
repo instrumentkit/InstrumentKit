@@ -34,9 +34,9 @@ class CryoTelGT(Instrument):
     Example usage:
         >>> import instruments as ik
         >>> inst = ik.sunpower.CryoTelGT.open_serial("/dev/ttyACM0", 4800)
-        >>> inst.temperature_current
+        >>> inst.temperature
         82.0 Kelvin
-        >>> inst.temperature_set
+        >>> inst.temperature_setpoint
         77.0 Kelvin
     """
 
@@ -244,7 +244,7 @@ class CryoTelGT(Instrument):
         self.query("SET MIN", float(value.magnitude))
 
     @property
-    def power_set(self):
+    def power_setpoint(self):
         """
         Get/set the setpoint power in Watts.
 
@@ -262,8 +262,8 @@ class CryoTelGT(Instrument):
         ret_val = self.query("SET PWOUT")
         return float(ret_val) * u.W
 
-    @power_set.setter
-    def power_set(self, value):
+    @power_setpoint.setter
+    def power_setpoint(self, value):
         value = assume_units(value, u.W).to(u.W)
         if value.magnitude < 0 or value.magnitude > 999.99:
             raise ValueError("Power setpoint must be between 0 and 999.99 Watts.")
@@ -301,7 +301,7 @@ class CryoTelGT(Instrument):
         return float(ret_val) * u.K
 
     @property
-    def temperature_set(self):
+    def temperature_setpoint(self):
         """
         Get/set the setpoint temperature in Kelvin.
 
@@ -314,8 +314,8 @@ class CryoTelGT(Instrument):
         ret_val = self.query("SET TTARGET")
         return float(ret_val) * u.K
 
-    @temperature_set.setter
-    def temperature_set(self, value):
+    @temperature_setpoint.setter
+    def temperature_setpoint(self, value):
         value = assume_units(value, u.K).to(u.K)
         self.query("SET TTARGET", float(value.magnitude))
 

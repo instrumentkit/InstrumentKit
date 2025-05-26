@@ -50,13 +50,12 @@ def test_errors():
     """Get the error codes of the CryoTel GT and return error strings."""
     with expected_protocol(
         ik.sunpower.CryoTelGT,
-        ["ERROR"],  # , "ERROR", "ERROR"],
-        # ["ERROR", "100000", "ERROR", "000000", "ERROR", "011001"],
-        ["ERROR", "011001"],
+        ["ERROR", "ERROR", "ERROR"],
+        ["ERROR", "100000", "ERROR", "000000", "ERROR", "011001"],
         sep="\r",
     ) as ct:
-        # assert ct.errors == ["Temperature Sensor Error"]
-        # assert ct.errors == []
+        assert ct.errors == ["Temperature Sensor Error"]
+        assert ct.errors == []
         assert ct.errors == [
             "Over Current",
             "Non-volatile Memory Error",
@@ -149,7 +148,7 @@ def test_power_min():
             ct.power_min = -10 * u.W
 
 
-def test_power_set():
+def test_power_setpoint():
     """Get/set the power setpoint of the CryoTel GT."""
     with expected_protocol(
         ik.sunpower.CryoTelGT,
@@ -157,14 +156,14 @@ def test_power_set():
         ["SET PWOUT", "0.00", "SET PWOUT=100.00", "100.00", "SET PWOUT", "100.00"],
         sep="\r",
     ) as ct:
-        assert ct.power_set == 0 * u.W
-        ct.power_set = 100 * u.W
-        assert ct.power_set == 100 * u.W
+        assert ct.power_setpoint == 0 * u.W
+        ct.power_setpoint = 100 * u.W
+        assert ct.power_setpoint == 100 * u.W
 
         with pytest.raises(ValueError):
-            ct.power_set = 1000 * u.W
+            ct.power_setpoint = 1000 * u.W
         with pytest.raises(ValueError):
-            ct.power_set = -10 * u.W
+            ct.power_setpoint = -10 * u.W
 
 
 def test_serial_number():
@@ -217,7 +216,7 @@ def test_temperature():
         assert ct.temperature == 72.89 * u.K
 
 
-def test_temperature_set():
+def test_temperature_setpoint():
     """Get/set the temperature setpoint of the CryoTel GT."""
     with expected_protocol(
         ik.sunpower.CryoTelGT,
@@ -232,9 +231,9 @@ def test_temperature_set():
         ],
         sep="\r",
     ) as ct:
-        assert ct.temperature_set == 0 * u.K
-        ct.temperature_set = 100 * u.K
-        assert ct.temperature_set == 100 * u.K
+        assert ct.temperature_setpoint == 0 * u.K
+        ct.temperature_setpoint = 100 * u.K
+        assert ct.temperature_setpoint == 100 * u.K
 
 
 def test_thermostat():
@@ -331,6 +330,6 @@ def test_query_warning():
         sep="\r",
     ) as ct:
         with pytest.warns(UserWarning) as warn:
-            ct.temperature_set = 0 * u.K
+            ct.temperature_setpoint = 0 * u.K
             assert "Set value 0" in warn[0].message.args[0]
             assert "returned value 77" in warn[0].message.args[0]
