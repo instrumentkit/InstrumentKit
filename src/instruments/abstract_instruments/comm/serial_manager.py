@@ -31,7 +31,7 @@ serialObjDict = weakref.WeakValueDictionary()
 # METHODS #####################################################################
 
 
-def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3):
+def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3, **kwargs):
     """
     Return a `pyserial.Serial` connection object for the specified serial
     port address. The same object will be returned for identical port
@@ -56,7 +56,11 @@ def new_serial_connection(port, baud=460800, timeout=3, write_timeout=3):
     if port not in serialObjDict or serialObjDict[port] is None:
         conn = SerialCommunicator(
             serial.Serial(
-                port, baudrate=baud, timeout=timeout, writeTimeout=write_timeout
+                port,
+                baudrate=baud,
+                timeout=timeout,
+                writeTimeout=write_timeout,
+                **kwargs
             )
         )
         serialObjDict[port] = conn

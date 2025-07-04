@@ -7,6 +7,13 @@
 Lakeshore
 =========
 
+:class:`Lakeshore336` Cryogenic Temperature Controller
+======================================================
+
+.. autoclass:: Lakeshore336
+    :members:
+    :undoc-members:
+
 :class:`Lakeshore340` Cryogenic Temperature Controller
 ======================================================
 
