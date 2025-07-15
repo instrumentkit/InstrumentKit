@@ -42,7 +42,6 @@ class NewportESP301(Instrument):
         self._command_list = []
         self._bulk_query_resp = ""
         self.terminator = "\r"
-        
 
     class Axis:
         """
@@ -870,7 +869,7 @@ class NewportESP301(Instrument):
             """
             self._newport_cmd("MT", target=self.axis_id)
 
-        def move_indefinitely(self, direction: str = '+'):
+        def move_indefinitely(self, direction: str = "+"):
             """
             Move until told to stop in the direction ("+" or "-") passed.
             """
