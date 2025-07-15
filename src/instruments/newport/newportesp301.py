@@ -84,7 +84,7 @@ class NewportESP301(Instrument):
 
             self._controller = controller
             self._axis_id = axis_id + 1
-            #self._direction = "+"
+
             self._units = self.units
 
         # CONTEXT MANAGERS ##
@@ -139,19 +139,6 @@ class NewportESP301(Instrument):
             :type: `bool`
             """
             return bool(int(self._newport_cmd("MD?", target=self.axis_id)))
-
-        # @property
-        # def direction(self):
-        #     """
-        #     Either '+' or '-' depending on last velocity sign.
-        #     """
-        #     return self._direction
-
-        # @direction.setter
-        # def direction(self, sign):
-        #     if sign not in ('+', '-'):
-        #         raise ValueError("Direction must be '+' or '-'")
-        #         self._direction = sign
 
         @property
         def acceleration(self):
@@ -266,7 +253,6 @@ class NewportESP301(Instrument):
 
         @velocity.setter
         def velocity(self, velocity):
-            #self._direction = '+' if velocity > 0 else '-'
             velocity = abs(velocity)
             velocity = float(
                 assume_units(velocity, self._units / (u.s))
@@ -1010,7 +996,6 @@ class NewportESP301(Instrument):
             self.voltage = kwargs.get("voltage")
             self.units = int(kwargs.get("units"))
             self.encoder_resolution = kwargs.get("encoder_resolution")
-            #self.direction = kwargs.get("direction")
             self.max_acceleration = kwargs.get("max_acceleration")
             self.max_velocity = kwargs.get("max_velocity")
             self.max_base_velocity = kwargs.get("max_base_velocity")
@@ -1099,7 +1084,6 @@ class NewportESP301(Instrument):
             config["full_step_resolution"] = self.full_step_resolution
             config["position_display_resolution"] = self.position_display_resolution
             config["current"] = self.current
-            #config["direction"] = self.direction
             config["max_velocity"] = self.max_velocity
             config["encoder_resolution"] = self.encoder_resolution
             config["acceleration"] = self.acceleration
