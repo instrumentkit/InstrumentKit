@@ -888,7 +888,7 @@ class NewportESP301(Instrument):
             """
             Move until told to stop in the direction ("+" or "-") passed.
             """
-            if direction is not in ("+", "-"):
+            if direction not in ("+", "-"):
                 raise ValueError("Direction must be '+' or '-'")
             self._newport_cmd(f"MV{direction}", target=self.axis_id)
 
