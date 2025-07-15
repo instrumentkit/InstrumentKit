@@ -84,7 +84,7 @@ class NewportESP301(Instrument):
 
             self._controller = controller
             self._axis_id = axis_id + 1
-            self.direction = "+"
+            self._direction = "+"
             self._units = self.units
 
         # CONTEXT MANAGERS ##
@@ -145,13 +145,13 @@ class NewportESP301(Instrument):
             """
             Either '+' or '-' depending on last velocity sign.
             """
-            return self.direction
+            return self._direction
 
         @direction.setter
         def direction(self, sign):
             if sign not in ('+', '-'):
                 raise ValueError("Direction bust be '+' or '-'")
-                self.direction = sign
+                self._direction = sign
 
         @property
         def acceleration(self):
@@ -266,7 +266,7 @@ class NewportESP301(Instrument):
 
         @velocity.setter
         def velocity(self, velocity):
-            self.direction = '+' if velocity > 0 else '-'
+            self._direction = '+' if velocity > 0 else '-'
             velocity = abs(velocity)
             velocity = float(
                 assume_units(velocity, self._units / (u.s))
@@ -888,7 +888,7 @@ class NewportESP301(Instrument):
             """
             Move until told to stop
             """
-            self._newport_cmd(f"MV{self.direction}", target=self.axis_id)
+            self._newport_cmd(f"MV{self._direction}", target=self.axis_id)
 
         def abort_motion(self):
             """
