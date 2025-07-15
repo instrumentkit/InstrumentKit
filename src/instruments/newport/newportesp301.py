@@ -84,7 +84,7 @@ class NewportESP301(Instrument):
 
             self._controller = controller
             self._axis_id = axis_id + 1
-            self._direction = "+"
+            #self._direction = "+"
             self._units = self.units
 
         # CONTEXT MANAGERS ##
@@ -140,18 +140,18 @@ class NewportESP301(Instrument):
             """
             return bool(int(self._newport_cmd("MD?", target=self.axis_id)))
 
-        @property
-        def direction(self):
-            """
-            Either '+' or '-' depending on last velocity sign.
-            """
-            return self._direction
+        # @property
+        # def direction(self):
+        #     """
+        #     Either '+' or '-' depending on last velocity sign.
+        #     """
+        #     return self._direction
 
-        @direction.setter
-        def direction(self, sign):
-            if sign not in ('+', '-'):
-                raise ValueError("Direction bust be '+' or '-'")
-                self._direction = sign
+        # @direction.setter
+        # def direction(self, sign):
+        #     if sign not in ('+', '-'):
+        #         raise ValueError("Direction must be '+' or '-'")
+        #         self._direction = sign
 
         @property
         def acceleration(self):
@@ -266,7 +266,7 @@ class NewportESP301(Instrument):
 
         @velocity.setter
         def velocity(self, velocity):
-            self._direction = '+' if velocity > 0 else '-'
+            #self._direction = '+' if velocity > 0 else '-'
             velocity = abs(velocity)
             velocity = float(
                 assume_units(velocity, self._units / (u.s))
@@ -884,11 +884,13 @@ class NewportESP301(Instrument):
             """
             self._newport_cmd("MT", target=self.axis_id)
 
-        def move_indefinitely(self):
+        def move_indefinitely(self, direction: str = '+'):
             """
-            Move until told to stop
+            Move until told to stop in the direction ("+" or "-") passed.
             """
-            self._newport_cmd(f"MV{self._direction}", target=self.axis_id)
+            if direction is not in ("+", "-"):
+                raise ValueError("Direction must be '+' or '-'")
+            self._newport_cmd(f"MV{direction}", target=self.axis_id)
 
         def abort_motion(self):
             """
@@ -971,7 +973,6 @@ class NewportESP301(Instrument):
             * 'voltage' = motor voltage (V)
             * 'units' = set units (see NewportESP301.Units)(U)
             * 'encoder_resolution' = value of encoder step in terms of (U)
-            * 'direction' = sign of velocity ('+' or '-')
             * 'max_velocity' = maximum velocity (U/s)
             * 'max_base_velocity' =  maximum working velocity (U/s)
             * 'homing_velocity' = homing speed (U/s)
@@ -1009,7 +1010,7 @@ class NewportESP301(Instrument):
             self.voltage = kwargs.get("voltage")
             self.units = int(kwargs.get("units"))
             self.encoder_resolution = kwargs.get("encoder_resolution")
-            self.direction = kwargs.get("direction")
+            #self.direction = kwargs.get("direction")
             self.max_acceleration = kwargs.get("max_acceleration")
             self.max_velocity = kwargs.get("max_velocity")
             self.max_base_velocity = kwargs.get("max_base_velocity")
@@ -1098,7 +1099,7 @@ class NewportESP301(Instrument):
             config["full_step_resolution"] = self.full_step_resolution
             config["position_display_resolution"] = self.position_display_resolution
             config["current"] = self.current
-            config["direction"] = self.direction
+            #config["direction"] = self.direction
             config["max_velocity"] = self.max_velocity
             config["encoder_resolution"] = self.encoder_resolution
             config["acceleration"] = self.acceleration
