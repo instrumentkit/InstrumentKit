@@ -133,7 +133,7 @@ class LCC25(Instrument):
     voltage1 = unitful_property(
         "volt1",
         u.V,
-        format_code="{:.1f}",
+        format_code="{:.3f}",
         set_fmt="{}={}",
         valid_range=(0, 25),
         doc="""
@@ -148,7 +148,7 @@ class LCC25(Instrument):
     voltage2 = unitful_property(
         "volt2",
         u.V,
-        format_code="{:.1f}",
+        format_code="{:.3f}",
         set_fmt="{}={}",
         valid_range=(0, 25),
         doc="""
@@ -163,7 +163,7 @@ class LCC25(Instrument):
     min_voltage = unitful_property(
         "min",
         u.V,
-        format_code="{:.1f}",
+        format_code="{:.3f}",
         set_fmt="{}={}",
         valid_range=(0, 25),
         doc="""
@@ -178,7 +178,7 @@ class LCC25(Instrument):
     max_voltage = unitful_property(
         "max",
         u.V,
-        format_code="{:.1f}",
+        format_code="{:.3f}",
         set_fmt="{}={}",
         valid_range=(0, 25),
         doc="""
@@ -209,7 +209,7 @@ class LCC25(Instrument):
     increment = unitful_property(
         "increment",
         units=u.V,
-        format_code="{:.1f}",
+        format_code="{:.3f}",
         set_fmt="{}={}",
         valid_range=(0, None),
         doc="""
