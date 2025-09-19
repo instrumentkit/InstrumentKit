@@ -57,19 +57,25 @@ From Git:
 
     $ git clone git@github.com:instrumentkit/InstrumentKit.git
     $ cd InstrumentKit
-    $ python setup.py install
+    $ pip install -e .
 
 From Github using pip:
 
 .. code-block:: console
 
-    $ pip install -e git+https://www.github.com/instrumentkit/InstrumentKit.git#egg=instrumentkit
+    $ pip install -e git+https://www.github.com/instrumentkit/InstrumentKit.git
 
-From pypi using pip:
+From pypi using pip (the latest stable release):
 
 .. code-block:: console
 
     $ pip install instrumentkit
+
+From pypi using pip (the latest pre-release):
+
+.. code-block:: console
+
+    $ pip install instrumentkit --pre
 
 
 Usage Example
