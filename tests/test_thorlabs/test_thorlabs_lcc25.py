@@ -115,8 +115,8 @@ def test_tc200_remote_invalid_type():
 def test_lcc25_voltage1():
     with expected_protocol(
         ik.thorlabs.LCC25,
-        ["volt1?", "volt1=10.0"],
-        ["volt1?", "20", "> volt1=10.0", "> "],
+        ["volt1?", "volt1=10.000"],
+        ["volt1?", "20", "> volt1=10.000", "> "],
         sep="\r",
     ) as lcc:
         unit_eq(lcc.voltage1, u.Quantity(20, "V"))
@@ -134,9 +134,9 @@ def test_lcc25_voltage2():
         ik.thorlabs.LCC25,
         [
             "volt2?",
-            "volt2=10.0",
+            "volt2=10.000",
         ],
-        ["volt2?", "20", "> volt2=10.0", "> "],
+        ["volt2?", "20", "> volt2=10.000", "> "],
         sep="\r",
     ) as lcc:
         unit_eq(lcc.voltage2, u.Quantity(20, "V"))
@@ -146,8 +146,8 @@ def test_lcc25_voltage2():
 def test_lcc25_minvoltage():
     with expected_protocol(
         ik.thorlabs.LCC25,
-        ["min?", "min=10.0"],
-        ["min?", "20", "> min=10.0", "> "],
+        ["min?", "min=10.000"],
+        ["min?", "20", "> min=10.000", "> "],
         sep="\r",
     ) as lcc:
         unit_eq(lcc.min_voltage, u.Quantity(20, "V"))
@@ -157,8 +157,8 @@ def test_lcc25_minvoltage():
 def test_lcc25_maxvoltage():
     with expected_protocol(
         ik.thorlabs.LCC25,
-        ["max?", "max=10.0"],
-        ["max?", "20", "> max=10.0", "> "],
+        ["max?", "max=10.000"],
+        ["max?", "20", "> max=10.000", "> "],
         sep="\r",
     ) as lcc:
         unit_eq(lcc.max_voltage, u.Quantity(20, "V"))
@@ -186,8 +186,8 @@ def test_lcc25_dwell_positive():
 def test_lcc25_increment():
     with expected_protocol(
         ik.thorlabs.LCC25,
-        ["increment?", "increment=10.0"],
-        ["increment?", "20", "> increment=10.0", "> "],
+        ["increment?", "increment=10.000"],
+        ["increment?", "20", "> increment=10.000", "> "],
         sep="\r",
     ) as lcc:
         unit_eq(lcc.increment, u.Quantity(20, "V"))
