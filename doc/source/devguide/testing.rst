@@ -84,7 +84,7 @@ Expected Protocols
 ==================
 
 As an example of asserting correctness of implemented protocols, let's consider
-a simple test case for :class:`instruments.srs.SRSDG645``::
+a simple test case for :class:`instruments.srs.SRSDG645`::
 
 	def test_srsdg645_output_level():
 	    """
