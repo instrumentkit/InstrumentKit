@@ -452,16 +452,16 @@ class PicoMotorController8742(Instrument):
             string of the mask itself. The following values are equivalent:
             3, 0b11, "11"
 
-            Bit 0:
-                Value 0: Perform auto motor detection. Check and set motor
-                         type automatically when commanded to move.
-                Value 1: Do not perform auto motor detection on move.
-            Bit 1:
-                Value 0: Do not scan for motors connected to controllers upon
-                         reboot (Performs ‘MC’ command upon power-up, reset or
-                         reboot).
-                Value 1: Scan for motors connected to controller upon power-up
-                         or reset.
+            - Bit 0:
+                - Value 0: Perform auto motor detection. Check and set motor
+                           type automatically when commanded to move.
+                - Value 1: Do not perform auto motor detection on move.
+            - Bit 1:
+                - Value 0: Do not scan for motors connected to controllers upon
+                           reboot (Performs ‘MC’ command upon power-up, reset or
+                           reboot).
+                - Value 1: Scan for motors connected to controller upon power-up
+                           or reset.
 
             :return: Bitmask of the controller configuration.
             :rtype: str, binary configuration
@@ -684,16 +684,16 @@ class PicoMotorController8742(Instrument):
         the settings afterward if you would like to do so. See
         `save_settings`.
 
-        Bit 0:
-            Value 0: Perform auto motor detection. Check and set motor
-                     type automatically when commanded to move.
-            Value 1: Do not perform auto motor detection on move.
-        Bit 1:
-            Value 0: Do not scan for motors connected to controllers upon
-                     reboot (Performs ‘MC’ command upon power-up, reset or
-                     reboot).
-            Value 1: Scan for motors connected to controller upon power-up
-                     or reset.
+        - Bit 0:
+            - Value 0: Perform auto motor detection. Check and set motor
+                       type automatically when commanded to move.
+            - Value 1: Do not perform auto motor detection on move.
+        - Bit 1:
+            - Value 0: Do not scan for motors connected to controllers upon
+                       reboot (Performs ‘MC’ command upon power-up, reset or
+                       reboot).
+            - Value 1: Scan for motors connected to controller upon power-up
+                       or reset.
 
         :return: Bitmask of the controller configuration.
         :rtype: str
