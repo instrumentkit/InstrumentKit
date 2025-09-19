@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: no-commit-to-branch
         args: [--branch, main]
@@ -16,4 +16,4 @@ repos:
     rev: v3.20.0
     hooks:
       - id: pyupgrade
-        args: [ --py36-plus ]
+        args: [ --py39-plus ]

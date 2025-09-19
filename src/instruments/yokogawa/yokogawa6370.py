@@ -75,6 +75,7 @@ class Yokogawa6370(OpticalSpectrumAnalyzer):
         """
         Class representing the channels on the Yokogawa 6370.
         This class inherits from `OpticalSpectrumAnalyzer.Channel`.
+
         .. warning:: This class should NOT be manually created by the user. It
             is designed to be initialized by the `Yokogawa6370` class.
         """

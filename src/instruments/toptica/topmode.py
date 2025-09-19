@@ -63,7 +63,7 @@ class TopMode(Instrument):
         Class representing a laser on the Toptica Topmode.
 
         .. warning:: This class should NOT be manually created by the user. It
-        is designed to be initialized by the `Topmode` class.
+            is designed to be initialized by the `Topmode` class.
         """
 
         def __init__(self, parent, idx):

@@ -113,7 +113,7 @@ class CryoTelGT(Instrument):
         Valid options are `ControlMode.POWER` and `ControlMode.TEMPERATURE`.
 
         .. note:: The set control mode will be reset after a power cycle unless you also
-        call the `save_control_mode()` method.
+            call the `save_control_mode()` method.
 
         :return: The current control mode.
         """

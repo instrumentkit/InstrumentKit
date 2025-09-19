@@ -102,7 +102,7 @@ class Cesar1312(Instrument):
         return self._retries
 
     @retries.setter
-    def retries(self, value: int) -> Tuple[int, int, bytes]:
+    def retries(self, value: int) -> tuple[int, int, bytes]:
         if value < 0:
             raise ValueError("Retries must be greater than or equal to 0.")
         self._retries = value
@@ -317,7 +317,7 @@ class Cesar1312(Instrument):
             raise ValueError("No data received from the device.")
 
     def _make_data(
-        self, length: Union[int, List[int]], data: Union[int, List[int]]
+        self, length: Union[int, list[int]], data: Union[int, list[int]]
     ) -> bytes:
         """Create the data bytes for the package.
 
@@ -397,7 +397,7 @@ class Cesar1312(Instrument):
         return (self._address << 3) + data_length
 
     @staticmethod
-    def _unpack_header(hdr: bytes) -> Tuple[int]:
+    def _unpack_header(hdr: bytes) -> tuple[int]:
         """Parse the header and return address and data length.
 
         :param bytes hdr: The header byte.

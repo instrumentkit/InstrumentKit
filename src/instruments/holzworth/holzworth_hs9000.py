@@ -34,7 +34,7 @@ class HS9000(SignalGenerator):
         Class representing a physical channel on the Holzworth HS9000
 
         .. warning:: This class should NOT be manually created by the user. It
-        is designed to be initialized by the `HS9000` class.
+            is designed to be initialized by the `HS9000` class.
         """
 
         def __init__(self, hs, idx_chan):

@@ -443,7 +443,7 @@ class MAUI(Oscilloscope):
             """
             Sets the operator for a given channel.
             Most operators need a source `src`. If the source is given
-            as an integer, it is assume that the a signal channel is
+            as an integer, it is assumed that a signal channel is
             requested. If you want to select another math channel for
             example, you will need to specify the source as a tuple:
             Example: `src=('f', 0)` would represent the first function
@@ -454,10 +454,10 @@ class MAUI(Oscilloscope):
             possibilities.
 
             .. note:: Your oscilloscope might not have all functions
-            that are described here. Also: Not all possibilities are
-            currently implemented. However, extension of this
-            functionality should be simple when following the given
-            structure
+                that are described here. Also: Not all possibilities are
+                currently implemented. However, extension of this
+                functionality should be simple when following the given
+                structure
             """
 
             def __init__(self, parent):
@@ -1247,14 +1247,14 @@ class MAUI(Oscilloscope):
         """Sets / Gets the trigger source.
 
         .. note:: The `TriggerSource` class is dynamically generated
-        when the number of channels is switched. The above shown class
-        is only the default! Channels are added and removed, as
-        required.
+            when the number of channels is switched. The above shown class
+            is only the default! Channels are added and removed, as
+            required.
 
         .. warning:: If a trigger type is currently set on the
             oscilloscope that is not implemented in this class,
             setting the source will fail. The oscilloscope is set up
-            such that the the trigger type and source are set at the
+            such that the trigger type and source are set at the
             same time. However, for convenience, these two properties
             are split apart here.
 

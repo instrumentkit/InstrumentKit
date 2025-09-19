@@ -1,6 +1,76 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=61.2", "setuptools_scm>=9.2"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "instrumentkit"
+description = "Test and measurement communication library"
+authors = [{name = "Steven Casagrande", email = "stevencasagrande@gmail.com"}]
+license = {text = "AGPLv3"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Manufacturing",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "pint>=0.21.0",
+    "pyserial>=3.3",
+    "python-usbtmc",
+    "python-vxi11>=0.8",
+    "pyusb>=1.0",
+    "pyvisa>=1.9",
+    "ruamel.yaml>=0.18",
+    "typing_extensions>=4.0.1",
+    "standard-xdrlib;python_version>='3.13'",
+]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.rst"
+content-type = "text/x-rst"
+
+[project.urls]
+Homepage = "https://www.github.com/instrumentkit/InstrumentKit"
+
+[project.optional-dependencies]
+numpy = ["numpy"]
+dev = [
+    "coverage",
+    "hypothesis~=6.139.2",
+    "mock",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-xdist",
+    "pytest~=8.4.0",
+    "pyvisa-sim",
+    "six",
+]
+docs = [
+    "sphinx~=8.2.0",
+    "sphinx_rtd_theme"
+]
+
+[tool.setuptools]
+include-package-data = true
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.distutils.bdist_wheel]
+universal = 1
 
 [tool.setuptools_scm]
 write_to = "src/instruments/_version.py"

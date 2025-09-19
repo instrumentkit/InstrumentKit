@@ -445,23 +445,23 @@ class PicoMotorController8742(Instrument):
             """Get / set configuration of some of the controller’s features.
 
             Configuration is given as a bit mask. If changed, please save
-            the settings afterwards if you would like to do so. See
+            the settings afterward if you would like to do so. See
             `save_settings`.
 
             The bitmask to be set can be either given as a number, or as a
             string of the mask itself. The following values are equivalent:
             3, 0b11, "11"
 
-            Bit 0:
-                Value 0: Perform auto motor detection. Check and set motor
-                    type automatically when commanded to move.
-                Value 1: Do not perform auto motor detection on move.
-            Bit 1:
-                Value 0: Do not scan for motors connected to controllers upon
-                    reboot (Performs ‘MC’ command upon power-up, reset or
-                    reboot).
-                Value 1: Scan for motors connected to controller upon power-up
-                    or reset.
+            - Bit 0:
+                - Value 0: Perform auto motor detection. Check and set motor
+                           type automatically when commanded to move.
+                - Value 1: Do not perform auto motor detection on move.
+            - Bit 1:
+                - Value 0: Do not scan for motors connected to controllers upon
+                           reboot (Performs ‘MC’ command upon power-up, reset or
+                           reboot).
+                - Value 1: Scan for motors connected to controller upon power-up
+                           or reset.
 
             :return: Bitmask of the controller configuration.
             :rtype: str, binary configuration
@@ -547,12 +547,12 @@ class PicoMotorController8742(Instrument):
             saved in its non-volatile memory. It is useful when, for example,
             the user has been exploring and changing parameters (e.g., velocity)
             but then chooses to reload from previously stored, qualified
-            settings. Note that “*RCL 0” command just restores the working
+            settings. Note that `*RCL 0` command just restores the working
             parameters to factory default settings. It does not change the
             settings saved in EEPROM.
 
             :param value: 0 -> Recall factory default,
-                1 -> Recall last saved settings
+                          1 -> Recall last saved settings
             :type int:
             """
             self.sendcmd(f"*RCL{1 if value else 0}", axs=False)
@@ -564,7 +564,7 @@ class PicoMotorController8742(Instrument):
             hard reset, see the `purge` command.
 
             ..note:: It might take up to 30 seconds to re-establish
-            communications via TCP/IP
+                communications via TCP/IP
             """
             self.sendcmd("*RST", axs=False)
 
@@ -681,19 +681,19 @@ class PicoMotorController8742(Instrument):
         """Get / set configuration of some of the controller’s features.
 
         Configuration is given as a bit mask. If changed, please save
-        the settings afterwards if you would like to do so. See
+        the settings afterward if you would like to do so. See
         `save_settings`.
 
-        Bit 0:
-            Value 0: Perform auto motor detection. Check and set motor
-                type automatically when commanded to move.
-            Value 1: Do not perform auto motor detection on move.
-        Bit 1:
-            Value 0: Do not scan for motors connected to controllers upon
-                reboot (Performs ‘MC’ command upon power-up, reset or
-                reboot).
-            Value 1: Scan for motors connected to controller upon power-up
-                or reset.
+        - Bit 0:
+            - Value 0: Perform auto motor detection. Check and set motor
+                       type automatically when commanded to move.
+            - Value 1: Do not perform auto motor detection on move.
+        - Bit 1:
+            - Value 0: Do not scan for motors connected to controllers upon
+                       reboot (Performs ‘MC’ command upon power-up, reset or
+                       reboot).
+            - Value 1: Scan for motors connected to controller upon power-up
+                       or reset.
 
         :return: Bitmask of the controller configuration.
         :rtype: str
@@ -944,7 +944,7 @@ class PicoMotorController8742(Instrument):
             Bit:    Value: (True: 1, False: 0)
             0       Address conflict?
             1:      Controller with address 1 exists?
-                ...
+            <...>
             31:      Controller with address 31 exists
 
         Bits 1—31 are one-to-one mapped to controller addresses 1—31. The
@@ -1026,6 +1026,7 @@ class PicoMotorController8742(Instrument):
         Scans the RS-485 network for connected controllers and set the
         addresses automatically. Three possible scan modes can be
         selected:
+
         Mode 0:
             Primary controller scans the network but does not resolve
             any address conflicts.
@@ -1086,7 +1087,7 @@ class PicoMotorController8742(Instrument):
         saved in its non-volatile memory. It is useful when, for example,
         the user has been exploring and changing parameters (e.g., velocity)
         but then chooses to reload from previously stored, qualified
-        settings. Note that “*RCL 0” command just restores the working
+        settings. Note that `*RCL 0` command just restores the working
         parameters to factory default settings. It does not change the
         settings saved in EEPROM.
 

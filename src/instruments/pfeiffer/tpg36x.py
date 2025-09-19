@@ -196,7 +196,7 @@ class TPG36x(Instrument):
             >>> import instruments as ik
             >>> inst = ik.pfeiffer.TPG36x.open_serial("/dev/ttyUSB0", 9600)
             >>> inst.ethernet_configuration = [inst.EthernetMode.STATIC, "192.168.1.42", "255.255.255.0", "192.168.1.1"]
-           >>> inst.ethernet_configuration
+            >>> inst.ethernet_configuration
             [<EthernetMode.STATIC: 0>, "192.168.1.42", "255.255.255.0", "192.168.1.1"]
         """
         return_list = self.query("ETH").split(",")
