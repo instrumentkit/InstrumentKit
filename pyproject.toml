@@ -47,12 +47,12 @@ Homepage = "https://www.github.com/instrumentkit/InstrumentKit"
 numpy = ["numpy"]
 dev = [
     "coverage",
-    "hypothesis~=6.98.2",
+    "hypothesis~=6.139.2",
     "mock",
     "pytest-cov",
     "pytest-mock",
     "pytest-xdist",
-    "pytest~=8.0.0",
+    "pytest~=8.4.0",
     "pyvisa-sim",
     "six",
 ]
