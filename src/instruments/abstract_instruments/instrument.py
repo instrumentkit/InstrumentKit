@@ -256,8 +256,8 @@ class Instrument:
         channel related work.
 
         .. seealso:: `Instrument.sendcmd` if you wish to send a string to the
-        instrument, while still having InstrumentKit handle termination
-        characters and other communication channel related work.
+            instrument, while still having InstrumentKit handle termination
+            characters and other communication channel related work.
 
         :param str msg: String that will be written to the filelike object
             (`Instrument._file`) attached to this instrument.

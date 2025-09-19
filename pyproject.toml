@@ -56,6 +56,10 @@ dev = [
     "pyvisa-sim",
     "six",
 ]
+docs = [
+    "sphinx~=8.2.0",
+    "sphinx_rtd_theme"
+]
 
 [tool.setuptools]
 include-package-data = true

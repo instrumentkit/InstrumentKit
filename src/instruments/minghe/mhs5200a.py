@@ -112,7 +112,7 @@ class MHS5200(FunctionGenerator):
             Gets/Sets the frequency of this channel.
 
             :units: As specified (if a `~pint.Quantity`) or assumed to be
-            of units hertz.
+                of units hertz.
             :type: `~pint.Quantity`
             """
             query = f":r{self._chan}f"
@@ -152,7 +152,7 @@ class MHS5200(FunctionGenerator):
             Gets/Sets the phase of this channel.
 
             :units: As specified (if a `~pint.Quantity`) or assumed to be
-            of degrees.
+                of degrees.
             :type: `~pint.Quantity`
             """
             # need to convert
@@ -201,10 +201,10 @@ class MHS5200(FunctionGenerator):
 
         For instance, this would print the counts of the first channel::
 
-        >>> import instruments as ik
-        >>> mhs = ik.minghe.MHS5200.open_serial(vid=1027, pid=24577,
-        baud=19200, timeout=1)
-        >>> print(mhs.channel[0].frequency)
+            >>> import instruments as ik
+            >>> mhs = ik.minghe.MHS5200.open_serial(vid=1027, pid=24577,
+            baud=19200, timeout=1)
+            >>> print(mhs.channel[0].frequency)
 
         :rtype: `list`[`MHS5200.Channel`]
         """

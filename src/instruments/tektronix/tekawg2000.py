@@ -28,7 +28,7 @@ class TekAWG2000(SCPIInstrument):
         Class representing a physical channel on the Tektronix AWG 2000
 
         .. warning:: This class should NOT be manually created by the user. It
-        is designed to be initialized by the `TekAWG2000` class.
+            is designed to be initialized by the `TekAWG2000` class.
         """
 
         def __init__(self, tek, idx):
@@ -99,7 +99,7 @@ class TekAWG2000(SCPIInstrument):
             Gets/sets the frequency of the specified channel when using the built-in
             function generator.
 
-            ::units: As specified (if a `~pint.Quantity`) or assumed to be
+            :units: As specified (if a `~pint.Quantity`) or assumed to be
                 of units Hertz.
             :type: `~pint.Quantity` with units Hertz.
             """
