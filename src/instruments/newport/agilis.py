@@ -427,12 +427,13 @@ class AGUC2(Instrument):
 
         Returns the limit switch status of the controller. Possible returns
         are:
-        - PH0: No limit switch is active
-        - PH1: Limit switch of axis #1 (X) is active,
-               limit switch of axis #2 (Y)  is not active
-        - PH2: Limit switch of axis #2 (Y) is active,
-               limit switch of axis #1 (X) is not active
-        - PH3: Limit switches of axis #1 (X) and axis #2 (Y) are active
+
+            - PH0: No limit switch is active
+            - PH1: Limit switch of axis #1 (X) is active,
+                   limit switch of axis #2 (Y)  is not active
+            - PH2: Limit switch of axis #2 (Y) is active,
+                   limit switch of axis #1 (X) is not active
+            - PH3: Limit switches of axis #1 (X) and axis #2 (Y) are active
 
         If device has no limit switch, this routine always returns PH0
         """
@@ -443,7 +444,7 @@ class AGUC2(Instrument):
     @property
     def sleep_time(self):
         """
-        The device often times out. Therefore a sleep time can be set. The
+        The device often times out. Therefore, a sleep time can be set. The
         routine will wait for this amount (in seconds) every time after a
         command or a query are sent.
         Setting the sleep time: Give time in seconds

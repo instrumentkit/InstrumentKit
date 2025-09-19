@@ -497,7 +497,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
             """Get / Set single axis enabled.
 
             .. note:: Enabling multi channels for KIM101 is defined in
-            the controller class.
+                the controller class.
 
             :return: Axis status enabled.
             :rtype: bool

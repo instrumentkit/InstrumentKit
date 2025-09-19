@@ -552,7 +552,7 @@ class PicoMotorController8742(Instrument):
             settings saved in EEPROM.
 
             :param value: 0 -> Recall factory default,
-                1 -> Recall last saved settings
+                          1 -> Recall last saved settings
             :type int:
             """
             self.sendcmd(f"*RCL{1 if value else 0}", axs=False)
@@ -564,7 +564,7 @@ class PicoMotorController8742(Instrument):
             hard reset, see the `purge` command.
 
             ..note:: It might take up to 30 seconds to re-establish
-            communications via TCP/IP
+                communications via TCP/IP
             """
             self.sendcmd("*RST", axs=False)
 
@@ -944,7 +944,7 @@ class PicoMotorController8742(Instrument):
             Bit:    Value: (True: 1, False: 0)
             0       Address conflict?
             1:      Controller with address 1 exists?
-                ...
+            <...>
             31:      Controller with address 31 exists
 
         Bits 1—31 are one-to-one mapped to controller addresses 1—31. The
@@ -1026,6 +1026,7 @@ class PicoMotorController8742(Instrument):
         Scans the RS-485 network for connected controllers and set the
         addresses automatically. Three possible scan modes can be
         selected:
+
         Mode 0:
             Primary controller scans the network but does not resolve
             any address conflicts.
