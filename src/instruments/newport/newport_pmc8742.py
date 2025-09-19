@@ -445,7 +445,7 @@ class PicoMotorController8742(Instrument):
             """Get / set configuration of some of the controller’s features.
 
             Configuration is given as a bit mask. If changed, please save
-            the settings afterwards if you would like to do so. See
+            the settings afterward if you would like to do so. See
             `save_settings`.
 
             The bitmask to be set can be either given as a number, or as a
@@ -454,14 +454,14 @@ class PicoMotorController8742(Instrument):
 
             Bit 0:
                 Value 0: Perform auto motor detection. Check and set motor
-                    type automatically when commanded to move.
+                         type automatically when commanded to move.
                 Value 1: Do not perform auto motor detection on move.
             Bit 1:
                 Value 0: Do not scan for motors connected to controllers upon
-                    reboot (Performs ‘MC’ command upon power-up, reset or
-                    reboot).
+                         reboot (Performs ‘MC’ command upon power-up, reset or
+                         reboot).
                 Value 1: Scan for motors connected to controller upon power-up
-                    or reset.
+                         or reset.
 
             :return: Bitmask of the controller configuration.
             :rtype: str, binary configuration
@@ -547,7 +547,7 @@ class PicoMotorController8742(Instrument):
             saved in its non-volatile memory. It is useful when, for example,
             the user has been exploring and changing parameters (e.g., velocity)
             but then chooses to reload from previously stored, qualified
-            settings. Note that “*RCL 0” command just restores the working
+            settings. Note that `*RCL 0` command just restores the working
             parameters to factory default settings. It does not change the
             settings saved in EEPROM.
 
@@ -681,19 +681,19 @@ class PicoMotorController8742(Instrument):
         """Get / set configuration of some of the controller’s features.
 
         Configuration is given as a bit mask. If changed, please save
-        the settings afterwards if you would like to do so. See
+        the settings afterward if you would like to do so. See
         `save_settings`.
 
         Bit 0:
             Value 0: Perform auto motor detection. Check and set motor
-                type automatically when commanded to move.
+                     type automatically when commanded to move.
             Value 1: Do not perform auto motor detection on move.
         Bit 1:
             Value 0: Do not scan for motors connected to controllers upon
-                reboot (Performs ‘MC’ command upon power-up, reset or
-                reboot).
+                     reboot (Performs ‘MC’ command upon power-up, reset or
+                     reboot).
             Value 1: Scan for motors connected to controller upon power-up
-                or reset.
+                     or reset.
 
         :return: Bitmask of the controller configuration.
         :rtype: str
@@ -1087,7 +1087,7 @@ class PicoMotorController8742(Instrument):
         saved in its non-volatile memory. It is useful when, for example,
         the user has been exploring and changing parameters (e.g., velocity)
         but then chooses to reload from previously stored, qualified
-        settings. Note that “*RCL 0” command just restores the working
+        settings. Note that `*RCL 0` command just restores the working
         parameters to factory default settings. It does not change the
         settings saved in EEPROM.
 

@@ -141,11 +141,11 @@ class AGUC2(Instrument):
             -3 — Negative direction, 1700 steps/s at max. step amplitude.
             -2 — Negative direction, 100 step/s at max. step amplitude.
             -1 — Negative direction, 5 steps/s at defined step amplitude.
-             0 — No move, go to READY state.
-             1 — Positive direction, 5 steps/s at defined step amplitude.
-             2 — Positive direction, 100 steps/s at max. step amplitude.
-             3 — Positive direction, 1700 steps/s at max. step amplitude.
-             4 — Positive direction, 666 steps/s at defined step amplitude.
+            +0 — No move, go to READY state.
+            +1 — Positive direction, 5 steps/s at defined step amplitude.
+            +2 — Positive direction, 100 steps/s at max. step amplitude.
+            +3 — Positive direction, 1700 steps/s at max. step amplitude.
+            +4 — Positive direction, 666 steps/s at defined step amplitude.
 
             :return: Jog motion set
             :rtype: `int`
