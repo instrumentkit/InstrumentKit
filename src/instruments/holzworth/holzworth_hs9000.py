@@ -35,6 +35,7 @@ class HS9000(SignalGenerator):
 
         .. warning:: This class should NOT be manually created by the user. It
         is designed to be initialized by the `HS9000` class.
+
         """
 
         def __init__(self, hs, idx_chan):
