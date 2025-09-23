@@ -17,8 +17,6 @@ class PscEth(Instrument):
     PSC-ETH-2 ethernet interface.
 
     For communication, make sure the device is set to "ethernet" mode.
-    This setting seems to be reset when the device is power-cycled and cannot be
-    set remotely.
 
     Example:
         >>> import instruments as ik
@@ -43,7 +41,7 @@ class PscEth(Instrument):
         return self.query("*IDN?")
 
     @property
-    def current_limit(self) -> Tuple["PscEth.LimitStatus", u.Quantity]:
+    def current_limit(self) -> tuple["PscEth.LimitStatus", u.Quantity]:
         """Get the current limit status.
 
         :return: A tuple of the current limit status and the current limit value.
@@ -55,7 +53,7 @@ class PscEth(Instrument):
         return ls, assume_units(float(val), u.A)
 
     @property
-    def voltage_limit(self) -> Tuple["PscEth.LimitStatus", u.Quantity]:
+    def voltage_limit(self) -> tuple["PscEth.LimitStatus", u.Quantity]:
         """Get the voltage limit status.
 
         :return: A tuple of the voltage limit status and the voltage limit value.
@@ -182,6 +180,10 @@ class PscEth(Instrument):
         """Reset the instrument to default settings."""
         self.sendcmd("*RST")
 
+    def save(self) -> None:
+        """Save the current settings to non-volatile memory."""
+        self.sendcmd("*SAV")
+
     def set_current_limit(
         self, stat: "PscEth.LimitStatus", val: Union[float, u.Quantity] = 0
     ) -> None:
@@ -196,5 +198,22 @@ class PscEth(Instrument):
             raise TypeError("stat must be of type PscEth.LimitStatus")
         val = assume_units(val, u.A).to(u.A).magnitude
         cmd = f"SYST:LIM:CUR {val:.15f},{stat.name}"
+        print(cmd)
+        self.sendcmd(cmd)
+
+    def set_voltage_limit(
+        self, stat: "PscEth.LimitStatus", val: Union[float, u.Quantity] = 0
+    ) -> None:
+        """Set the voltage limit.
+
+        :param stat: The limit status to set.
+        :type stat: `PscEth.LimitStatus`
+        :param val: The voltage limit value to set. Only requiered when turning it on.
+        :type val: `float` (assumes volts) or `~pint.Quantity`
+        """
+        if not isinstance(stat, PscEth.LimitStatus):
+            raise TypeError("stat must be of type PscEth.LimitStatus")
+        val = assume_units(val, u.V).to(u.V).magnitude
+        cmd = f"SYST:LIM:VOL {val:.15f},{stat.name}"
         print(cmd)
         self.sendcmd(cmd)
