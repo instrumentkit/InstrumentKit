@@ -95,7 +95,7 @@ class PscEth(Instrument):
     )
 
     current_measure = unitful_property(
-        "MEAS:CURR?",
+        "MEAS:CURR",
         u.A,
         format_code="{:.15f}",
         readonly=True,
@@ -149,7 +149,7 @@ class PscEth(Instrument):
     )
 
     voltage_measure = unitful_property(
-        "MEAS:VOLT?",
+        "MEAS:VOLT",
         u.V,
         format_code="{:.15f}",
         readonly=True,
@@ -198,7 +198,6 @@ class PscEth(Instrument):
             raise TypeError("stat must be of type PscEth.LimitStatus")
         val = assume_units(val, u.A).to(u.A).magnitude
         cmd = f"SYST:LIM:CUR {val:.15f},{stat.name}"
-        print(cmd)
         self.sendcmd(cmd)
 
     def set_voltage_limit(
@@ -215,5 +214,4 @@ class PscEth(Instrument):
             raise TypeError("stat must be of type PscEth.LimitStatus")
         val = assume_units(val, u.V).to(u.V).magnitude
         cmd = f"SYST:LIM:VOL {val:.15f},{stat.name}"
-        print(cmd)
         self.sendcmd(cmd)
