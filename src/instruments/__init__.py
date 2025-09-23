@@ -12,6 +12,7 @@ from . import abstract_instruments
 from .abstract_instruments import Instrument
 
 from . import agilent
+from . import aimtti
 from . import comet
 from . import dressler
 from . import delta_elektronika
