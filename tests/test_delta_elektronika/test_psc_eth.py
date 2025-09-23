@@ -11,9 +11,7 @@ from tests import expected_protocol, make_name_test, unit_eq
 # TEST CLASS PROPERTIES #
 
 
-def test_name():
-    """Get the instrument name."""
-    make_name_test(ik.delta_elektronika.PscEth)
+test_psc_eth_device_name = make_name_test(ik.delta_elektronika.PscEth)
 
 
 def test_current_limit():
