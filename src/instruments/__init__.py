@@ -15,6 +15,7 @@ from . import agilent
 from . import aimtti
 from . import comet
 from . import dressler
+from . import delta_elektronika
 from . import generic_scpi
 from . import fluke
 from . import gentec_eo
