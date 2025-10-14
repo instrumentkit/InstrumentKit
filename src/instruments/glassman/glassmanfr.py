@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# hpe3631a.py: Driver for the Glassman FR Series Power Supplies
+# glassmanfr.py: Driver for the Glassman FR Series Power Supplies
 #
 # © 2019 Francois Drielsma (francois.drielsma@gmail.com).
 #
@@ -89,6 +89,7 @@ class GlassmanFR(PowerSupply, PowerSupply.Channel):
         self._device_timeout = False
         self._voltage = 0.0 * u.volt
         self._current = 0.0 * u.amp
+        self.device_timeout = False
 
     # ENUMS ##
 
@@ -159,7 +160,9 @@ class GlassmanFR(PowerSupply, PowerSupply.Channel):
 
     @voltage.setter
     def voltage(self, newval):
-        self.set_status(voltage=assume_units(newval, u.volt))
+        voltage = assume_units(newval, u.volt)
+        self.set_status(voltage=voltage)
+        self._voltage = voltage
 
     @property
     def current(self):
@@ -173,7 +176,9 @@ class GlassmanFR(PowerSupply, PowerSupply.Channel):
 
     @current.setter
     def current(self, newval):
-        self.set_status(current=assume_units(newval, u.amp))
+        current = assume_units(newval, u.amp)
+        self.set_status(current=current)
+        self._current = current
 
     @property
     def voltage_sense(self):
