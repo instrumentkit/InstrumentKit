@@ -271,7 +271,7 @@ class Instrument:
         as EOL terminators naturally can not be used in binary transfers.
 
         The format is as follows:
-        #{number of following digits:1-9}{num of bytes to be read}{data bytes}
+        #{number of following digits:1-F}{num of bytes to be read}{data bytes}
 
         :param int data_width: Specify the number of bytes wide each data
             point is. One of [1,2,4].
@@ -291,7 +291,7 @@ class Instrument:
             )
         else:
             # Read in the num of digits for next part
-            digits = int(self._file.read_raw(1))
+            digits = int(self._file.read_raw(1), 16)
 
             # Read in the num of bytes to be read
             num_of_bytes = int(self._file.read_raw(digits))
@@ -313,7 +313,7 @@ class Instrument:
                     tries -= 1
                 if tries == 0:
                     raise OSError(
-                        "Did not read in the required number of bytes"
+                        "Did not read in the required number of bytes "
                         "during binblock read. Got {}, expected "
                         "{}".format(len(data), num_of_bytes)
                     )
