@@ -137,9 +137,9 @@ class TC038D(Instrument):
     @setpoint.setter
     def setpoint(self, value):
         """Set the setpoint in °C."""
-        number = assume_units(value, u.degC).to(u.degC).magnitude
+        value = assume_units(value, u.degC).to(u.degC)
         value = int(round(value.to("degC").magnitude * 10, 0))
-        self.writeMultiple(0x106, int(round(number * 10)))
+        self.writeMultiple(0x106, int(round(value)))
 
     @property
     def temperature(self):
