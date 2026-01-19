@@ -17,7 +17,6 @@ from instruments.util_fns import (
     assume_units,
 )
 
-
 # CLASSES #####################################################################
 
 

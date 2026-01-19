@@ -14,7 +14,6 @@ from instruments.units import ureg as u
 import instruments as ik
 from tests import expected_protocol
 
-
 # TESTS #######################################################################
 
 

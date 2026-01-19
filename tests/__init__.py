@@ -85,17 +85,13 @@ def expected_protocol(ins_class, host_to_ins, ins_to_host, sep="\n", repeat=1):
 
     yield ins_class.open_test(stdin, stdout)
 
-    assert (
-        stdout.getvalue() == host_to_ins
-    ), """Expected:
+    assert stdout.getvalue() == host_to_ins, """Expected:
 
 {}
 
 Got:
 
-{}""".format(
-        repr(host_to_ins), repr(stdout.getvalue())
-    )
+{}""".format(repr(host_to_ins), repr(stdout.getvalue()))
 
     # current = stdin.tell()
     # stdin.seek(0, 2)

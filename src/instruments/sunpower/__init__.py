@@ -3,5 +3,4 @@
 Module containing Sunpower instruments
 """
 
-
 from .cryotel_gt import CryoTelGT

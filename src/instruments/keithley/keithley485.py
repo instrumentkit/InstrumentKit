@@ -427,7 +427,7 @@ class Keithley485(Instrument):
 
         :rtype: `~pint.Quantity`
         """
-        (status, function, base, current) = unpack(
+        status, function, base, current = unpack(
             "@1c2s1c10s", bytes(measurement, "utf-8")
         )
 

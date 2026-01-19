@@ -3,7 +3,6 @@
 Provides support for the TC038 AC crystal oven by HC Photonics.
 """
 
-
 # IMPORTS #####################################################################
 
 

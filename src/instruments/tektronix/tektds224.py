@@ -15,7 +15,6 @@ from instruments.optional_dep_finder import numpy
 from instruments.util_fns import ProxyList
 from instruments.units import ureg as u
 
-
 # CLASSES #####################################################################
 
 

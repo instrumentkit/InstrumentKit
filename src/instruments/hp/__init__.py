@@ -3,7 +3,6 @@
 Module containing HP instruments
 """
 
-
 from .hp3325a import HP3325a
 from .hp3456a import HP3456a
 from .hp6624a import HP6624a

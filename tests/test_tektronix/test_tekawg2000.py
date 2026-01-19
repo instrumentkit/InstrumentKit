@@ -16,7 +16,6 @@ from instruments.optional_dep_finder import numpy
 from tests import expected_protocol, make_name_test
 from instruments.units import ureg as u
 
-
 # TESTS #######################################################################
 
 # pylint: disable=protected-access

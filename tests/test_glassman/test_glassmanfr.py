@@ -11,7 +11,6 @@ import instruments as ik
 from tests import expected_protocol
 from instruments.units import ureg as u
 
-
 # TESTS ######################################################################
 
 # pylint: disable=protected-access

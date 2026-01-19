@@ -29,6 +29,7 @@ Originally contributed and copyright held by Francois Drielsma
 An unrestricted license has been provided to the maintainers of the Instrument
 Kit project.
 """
+
 # IMPORTS #####################################################################
 
 from struct import unpack
@@ -385,7 +386,7 @@ class GlassmanFR(PowerSupply, PowerSupply.Channel):
 
         :rtype: `dict`
         """
-        (voltage, current, monitors) = unpack("@3s3s3x1c2x", bytes(response, "utf-8"))
+        voltage, current, monitors = unpack("@3s3s3x1c2x", bytes(response, "utf-8"))
 
         try:
             voltage = self._parse_voltage(voltage)

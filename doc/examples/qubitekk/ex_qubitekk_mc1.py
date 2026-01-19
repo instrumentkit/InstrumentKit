@@ -5,7 +5,6 @@ from time import sleep
 from instruments.qubitekk import MC1
 import instruments.units as u
 
-
 if __name__ == "__main__":
     mc1 = MC1.open_serial(vid=1027, pid=24577, baud=9600, timeout=1)
     mc1.step_size = 25 * u.ms

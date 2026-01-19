@@ -3,5 +3,4 @@
 Module containing Toptica instruments
 """
 
-
 from .topmode import TopMode

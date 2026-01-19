@@ -12,7 +12,6 @@ import pytest
 
 from instruments.thorlabs import _packets
 
-
 # TESTS ######################################################################
 
 

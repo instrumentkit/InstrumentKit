@@ -3,7 +3,6 @@
 Module containing communication layers
 """
 
-
 from .abstract_comm import AbstractCommunicator
 
 from .file_communicator import FileCommunicator

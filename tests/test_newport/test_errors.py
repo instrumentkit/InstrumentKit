@@ -10,7 +10,6 @@ import datetime
 
 from instruments.newport.errors import NewportError
 
-
 # TESTS ######################################################################
 
 

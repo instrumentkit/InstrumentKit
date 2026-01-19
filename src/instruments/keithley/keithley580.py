@@ -457,7 +457,7 @@ class Keithley580(Instrument):
 
         :rtype: `dict`
         """
-        (status, polarity, drycircuit, drive, resistance) = struct.unpack(
+        status, polarity, drycircuit, drive, resistance = struct.unpack(
             "@4c11s", measurement
         )
 
