@@ -10,7 +10,6 @@ import pytest
 
 import instruments as ik
 
-
 # TESTS ######################################################################
 
 

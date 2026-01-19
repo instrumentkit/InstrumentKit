@@ -13,7 +13,6 @@ from instruments.units import ureg as u
 from instruments.abstract_instruments import PowerSupply
 from instruments.util_fns import unitful_property, bool_property
 
-
 # CLASSES #####################################################################
 
 

@@ -3,7 +3,6 @@
 Module containing Thorlabs instruments
 """
 
-
 from .thorlabsapt import (
     ThorLabsAPT,
     APTPiezoInertiaActuator,

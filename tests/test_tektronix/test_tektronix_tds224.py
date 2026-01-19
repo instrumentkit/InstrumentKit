@@ -150,7 +150,7 @@ def test_tektds224_data_source_read_waveform():
         data = tuple(range(5))
         if numpy:
             data = numpy.array([0, 1, 2, 3, 4])
-        (x, y) = tek.channel[1].read_waveform()
+        x, y = tek.channel[1].read_waveform()
         iterable_eq(x, data)
         iterable_eq(y, data)
 

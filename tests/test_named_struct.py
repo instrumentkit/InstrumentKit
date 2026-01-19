@@ -13,7 +13,6 @@ import hypothesis.strategies as st
 
 from instruments.named_struct import Field, StringField, Padding, NamedStruct
 
-
 # TESTS ######################################################################
 
 # We disable pylint warnings that are not as applicable for unit tests.

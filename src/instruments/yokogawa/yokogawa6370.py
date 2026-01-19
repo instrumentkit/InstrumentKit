@@ -21,7 +21,6 @@ from instruments.util_fns import (
     string_property,
 )
 
-
 # CLASSES #####################################################################
 
 

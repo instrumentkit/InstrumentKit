@@ -15,7 +15,6 @@ import instruments as ik
 from instruments.thorlabs import _packets
 from tests import expected_protocol
 
-
 # TESTS ######################################################################
 
 

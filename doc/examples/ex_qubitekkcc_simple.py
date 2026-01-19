@@ -6,7 +6,6 @@ from sys import platform as _platform
 import instruments as ik
 import instruments.units as u
 
-
 if __name__ == "__main__":
     # open connection to coincidence counter. If you are using Windows, this will be a com port. On linux, it will show
     # up in /dev/ttyusb

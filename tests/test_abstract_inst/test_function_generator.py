@@ -12,7 +12,6 @@ from instruments.units import ureg as u
 import instruments as ik
 from tests import expected_protocol, unit_eq
 
-
 # TESTS ######################################################################
 
 # pylint: disable=missing-function-docstring,redefined-outer-name,protected-access

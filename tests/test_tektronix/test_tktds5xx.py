@@ -3,7 +3,6 @@
 Tests for the Tektronix TDS 5xx series oscilloscope.
 """
 
-
 # IMPORTS #####################################################################
 
 
@@ -25,7 +24,6 @@ from tests import (
     iterable_eq,
     make_name_test,
 )
-
 
 # TESTS #######################################################################
 

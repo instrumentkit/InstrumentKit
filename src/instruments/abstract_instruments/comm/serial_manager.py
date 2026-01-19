@@ -15,7 +15,6 @@ import serial
 
 from instruments.abstract_instruments.comm import SerialCommunicator
 
-
 # GLOBALS #####################################################################
 
 # We want to only *weakly* hold references to serial ports, to allow for them

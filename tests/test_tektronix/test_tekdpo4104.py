@@ -22,7 +22,6 @@ from tests import (
     make_name_test,
 )
 
-
 # TESTS #######################################################################
 
 # pylint: disable=protected-access

@@ -25,7 +25,6 @@ from instruments.util_fns import (
 
 from tests import unit_eq
 
-
 # FIXTURES ###################################################################
 
 

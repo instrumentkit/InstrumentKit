@@ -3,5 +3,4 @@
 Module containing Glassman power supplies
 """
 
-
 from .glassmanfr import GlassmanFR

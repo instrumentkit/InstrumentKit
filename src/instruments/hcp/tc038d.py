@@ -3,7 +3,6 @@
 Provides support for the TC038 AC crystal oven by HC Photonics.
 """
 
-
 # IMPORTS #####################################################################
 
 
@@ -11,7 +10,6 @@ from instruments.units import ureg as u
 
 from instruments.abstract_instruments.instrument import Instrument
 from instruments.util_fns import assume_units
-
 
 # CLASSES #####################################################################
 

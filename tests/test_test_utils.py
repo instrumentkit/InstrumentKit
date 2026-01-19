@@ -12,7 +12,6 @@ from instruments.optional_dep_finder import numpy
 from tests import iterable_eq
 from instruments.units import ureg as u
 
-
 # TESTS #######################################################################
 
 

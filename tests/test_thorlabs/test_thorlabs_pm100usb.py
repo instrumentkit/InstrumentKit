@@ -15,7 +15,6 @@ import pytest
 import instruments as ik
 from tests import expected_protocol
 
-
 # TESTS ######################################################################
 
 

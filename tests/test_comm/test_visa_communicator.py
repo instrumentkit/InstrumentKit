@@ -12,7 +12,6 @@ import pyvisa
 from instruments.units import ureg as u
 from instruments.abstract_instruments.comm import VisaCommunicator
 
-
 # TEST CASES #################################################################
 
 # pylint: disable=protected-access,redefined-outer-name

@@ -19,7 +19,6 @@ from instruments.newport.errors import NewportError
 from instruments.units import ureg as u
 from instruments.util_fns import assume_units, ProxyList
 
-
 # CLASSES #####################################################################
 
 

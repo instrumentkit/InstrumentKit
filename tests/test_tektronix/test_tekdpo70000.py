@@ -24,7 +24,6 @@ from tests import (
 )
 from instruments.units import ureg as u
 
-
 # TESTS #######################################################################
 
 # pylint: disable=too-many-lines,protected-access

@@ -11,7 +11,6 @@ import pytest
 from instruments.util_fns import bool_property
 from . import MockInstrument
 
-
 # TEST CASES #################################################################
 
 # pylint: disable=missing-docstring

@@ -6,7 +6,6 @@ Module containing tests for the base instruments package
 
 import instruments._version as ik_version_file
 
-
 # TEST CASES #################################################################
 
 

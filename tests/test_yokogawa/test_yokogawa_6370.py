@@ -23,7 +23,6 @@ from tests import (
 from instruments.units import ureg as u
 from .. import mock
 
-
 # TESTS #######################################################################
 
 
