@@ -21,6 +21,7 @@ from instruments.util_fns import assume_units
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
+
 # CLASSES #####################################################################
 
 # pylint: disable=too-many-lines
@@ -375,6 +376,15 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
         on the Thorlabs APT controller.
         """
 
+        def __init__(self, apt, idx_chan):
+            """Initialize speicaltiez with Piezo channels."""
+            super().__init__(apt, idx_chan)
+            self._idx_chan_initial = idx_chan
+            if apt._is_multi:
+                self._idx_chan = 2**idx_chan
+            else:
+                self._idx_chan = idx_chan + 1
+
         # PROPERTIES #
 
         @property
@@ -547,6 +557,10 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
                     "controller is a {}.".format(self._apt.model_number)
                 )
 
+            if newval:
+                self._idx_chan = self._idx_chan_initial + 1  # single mode
+            else:
+                self._idx_chan = self._idx_chan_initial**2  # multi mode
             param = self._idx_chan if newval else 0x00
             pkt = _packets.ThorLabsPacket(
                 message_id=_cmds.ThorLabsCommands.PZMOT_SET_PARAMS,
@@ -868,6 +882,7 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
             self._apt.sendpacket(pkt)
 
+    _is_multi = True  # activated until user changes it
     _channel_type = PiezoChannel
 
     # PROPERTIES #
@@ -943,10 +958,13 @@ class APTPiezoInertiaActuator(APTPiezoDevice):
 
         if mode == 0:
             param = 0x00
+            self._is_multi = False
         elif mode == 1:
             param = 0x05
+            self._is_multi = True
         elif mode == 2:
             param = 0x06
+            self._is_multi = True
         else:
             raise ValueError(
                 "Please select a valid mode: 0 - all "

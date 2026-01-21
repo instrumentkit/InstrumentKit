@@ -31,6 +31,8 @@ hw_types_setup = (
     (3, "Unknown type: 3"),
 )
 
+channels = [0, 1, 2, 3]  # Possible channels for multi-channel instrument
+
 
 @pytest.mark.parametrize("hw_type", hw_types_setup)
 def test_apt_hw_info(hw_type):
@@ -324,11 +326,13 @@ def init_kpz001():
 # CHANNELS #
 
 
-def test_apt_pia_channel_drive_op_parameters(init_kim101):
+@pytest.mark.parametrize("ch", channels)
+def test_apt_pia_channel_drive_op_parameters(init_kim101, ch):
     """Test the drive op parameters for the APT Piezo Inertia Actuator.
 
     Tested with KIM101 driver connected to PIM1 mirror mount.
     """
+    ch_send = 2**ch
     with expected_protocol(
         ik.thorlabs.APTPiezoInertiaActuator,
         [
@@ -336,7 +340,7 @@ def test_apt_pia_channel_drive_op_parameters(init_kim101):
             ThorLabsPacket(  # receive a package
                 message_id=ThorLabsCommands.PZMOT_REQ_PARAMS,
                 param1=0x07,
-                param2=0x01,
+                param2=ch_send,
                 dest=0x50,
                 source=0x01,
                 data=None,
@@ -347,7 +351,7 @@ def test_apt_pia_channel_drive_op_parameters(init_kim101):
                 param2=None,
                 dest=0x50,
                 source=0x01,
-                data=struct.pack("<HHHll", 0x07, 0x01, 100, 1000, 10000),
+                data=struct.pack("<HHHll", 0x07, ch_send, 100, 1000, 10000),
             ).pack(),
         ],
         [
@@ -356,17 +360,17 @@ def test_apt_pia_channel_drive_op_parameters(init_kim101):
                 message_id=ThorLabsCommands.PZMOT_GET_PARAMS,
                 dest=0x01,
                 source=0x50,
-                data=struct.pack("<HHHll", 0x07, 0x01, 90, 500, 5000),
+                data=struct.pack("<HHHll", 0x07, ch_send, 90, 500, 5000),
             ).pack(),
         ],
         sep="",
     ) as apt:
-        assert apt.channel[0].drive_op_parameters == [
+        assert apt.channel[ch].drive_op_parameters == [
             u.Quantity(90, u.V),
             u.Quantity(500, 1 / u.s),
             u.Quantity(5000, 1 / u.s**2),
         ]
-        apt.channel[0].drive_op_parameters = [
+        apt.channel[ch].drive_op_parameters = [
             u.Quantity(100, u.V),
             u.Quantity(1000, 1 / u.s),
             u.Quantity(10000, 1 / u.s**2),
@@ -449,11 +453,13 @@ def test_apt_pia_channel_enabled_single_wrong_controller(init_tim101):
             apt.channel[0].enabled_single = True
 
 
-def test_apt_pia_channel_jog_parameters(init_kim101):
+@pytest.mark.parametrize("ch", channels)
+def test_apt_pia_channel_jog_parameters(init_kim101, ch):
     """Test the jog parameters for the APT Piezo Inertia Actuator.
 
     Tested with KIM101 driver connected to PIM1 mirror mount.
     """
+    ch_send = 2**ch
     with expected_protocol(
         ik.thorlabs.APTPiezoInertiaActuator,
         [
@@ -461,7 +467,7 @@ def test_apt_pia_channel_jog_parameters(init_kim101):
             ThorLabsPacket(  # receive a package
                 message_id=ThorLabsCommands.PZMOT_REQ_PARAMS,
                 param1=0x2D,
-                param2=0x01,
+                param2=ch_send,
                 dest=0x50,
                 source=0x01,
                 data=None,
@@ -472,7 +478,7 @@ def test_apt_pia_channel_jog_parameters(init_kim101):
                 param2=None,
                 dest=0x50,
                 source=0x01,
-                data=struct.pack("<HHHllll", 0x2D, 0x01, 2, 100, 100, 1000, 10000),
+                data=struct.pack("<HHHllll", 0x2D, ch_send, 2, 100, 100, 1000, 10000),
             ).pack(),
         ],
         [
@@ -481,19 +487,19 @@ def test_apt_pia_channel_jog_parameters(init_kim101):
                 message_id=ThorLabsCommands.PZMOT_GET_PARAMS,
                 dest=0x01,
                 source=0x50,
-                data=struct.pack("<HHHllll", 0x2D, 0x01, 1, 500, 1000, 400, 5000),
+                data=struct.pack("<HHHllll", 0x2D, ch_send, 1, 500, 1000, 400, 5000),
             ).pack(),
         ],
         sep="",
     ) as apt:
-        assert apt.channel[0].jog_parameters == [
+        assert apt.channel[ch].jog_parameters == [
             1,
             500,
             1000,
             u.Quantity(400, 1 / u.s),
             u.Quantity(5000, 1 / u.s**2),
         ]
-        apt.channel[0].jog_parameters = [
+        apt.channel[ch].jog_parameters = [
             2,
             100,
             100,
@@ -503,21 +509,21 @@ def test_apt_pia_channel_jog_parameters(init_kim101):
 
         # invalid setter
         with pytest.raises(TypeError):
-            apt.channel[0].jog_parameters = 3.14
+            apt.channel[ch].jog_parameters = 3.14
         # list out of range
         with pytest.raises(ValueError):
-            apt.channel[0].jog_parameters = [42, 42]
+            apt.channel[ch].jog_parameters = [42, 42]
         # invalid parameters
         with pytest.raises(ValueError):
-            apt.channel[0].jog_parameters = [0, 100, 100, 1000, 10000]
+            apt.channel[ch].jog_parameters = [0, 100, 100, 1000, 10000]
         with pytest.raises(ValueError):
-            apt.channel[0].jog_parameters = [2, 0, 100, 1000, 10000]
+            apt.channel[ch].jog_parameters = [2, 0, 100, 1000, 10000]
         with pytest.raises(ValueError):
-            apt.channel[0].jog_parameters = [2, 100, 2500, 1000, 10000]
+            apt.channel[ch].jog_parameters = [2, 100, 2500, 1000, 10000]
         with pytest.raises(ValueError):
-            apt.channel[0].jog_parameters = [2, 100, 100, 2500, 10000]
+            apt.channel[ch].jog_parameters = [2, 100, 100, 2500, 10000]
         with pytest.raises(ValueError):
-            apt.channel[0].jog_parameters = [2, 100, 100, 1000, 100001]
+            apt.channel[ch].jog_parameters = [2, 100, 100, 1000, 100001]
 
 
 def test_apt_pia_channel_jog_parameters_invalid_controller(init_tim101):
@@ -531,11 +537,13 @@ def test_apt_pia_channel_jog_parameters_invalid_controller(init_tim101):
             apt.channel[0].jog_parameters = [2, 100, 100, 1000, 1000]
 
 
-def test_apt_pia_channel_position_count(init_kim101):
+@pytest.mark.parametrize("ch", channels)
+def test_apt_pia_channel_position_count(init_kim101, ch):
     """Get / Set position count for APT Piezo Inertia Actuator.
 
     Tested with KIM101 driver connected to PIM1 mirror mount.
     """
+    ch_send = 2**ch
     with expected_protocol(
         ik.thorlabs.APTPiezoInertiaActuator,
         [
@@ -543,7 +551,7 @@ def test_apt_pia_channel_position_count(init_kim101):
             ThorLabsPacket(  # receive a package
                 message_id=ThorLabsCommands.PZMOT_REQ_PARAMS,
                 param1=0x05,
-                param2=0x01,
+                param2=ch_send,
                 dest=0x50,
                 source=0x01,
                 data=None,
@@ -554,7 +562,7 @@ def test_apt_pia_channel_position_count(init_kim101):
                 param2=None,
                 dest=0x50,
                 source=0x01,
-                data=struct.pack("<HHll", 0x05, 0x03, 100, 0x00),
+                data=struct.pack("<HHll", 0x05, ch_send, 100, 0x00),
             ).pack(),
         ],
         [
@@ -563,20 +571,22 @@ def test_apt_pia_channel_position_count(init_kim101):
                 message_id=ThorLabsCommands.PZMOT_GET_PARAMS,
                 dest=0x01,
                 source=0x50,
-                data=struct.pack("<HHll", 0x05, 0x01, 0, 0),
+                data=struct.pack("<HHll", 0x05, ch_send, 0, 0),
             ).pack(),
         ],
         sep="",
     ) as apt:
-        assert apt.channel[0].position_count == 0
-        apt.channel[2].position_count = 100
+        assert apt.channel[ch].position_count == 0
+        apt.channel[ch].position_count = 100
 
 
-def test_apt_pia_channel_move_abs(init_kim101):
+@pytest.mark.parametrize("ch", channels)
+def test_apt_pia_channel_move_abs(init_kim101, ch):
     """Absolute movement of APT Piezo Inertia Actuator.
 
     Tested with KIM101 driver connected to PIM1 mirror mount.
     """
+    ch_send = 2**ch
     with expected_protocol(
         ik.thorlabs.APTPiezoInertiaActuator,
         [
@@ -587,27 +597,85 @@ def test_apt_pia_channel_move_abs(init_kim101):
                 param2=None,
                 dest=0x50,
                 source=0x01,
-                data=struct.pack("<Hl", 0x01, 100),
+                data=struct.pack("<Hl", ch_send, 100),
             ).pack(),
         ],
         [init_kim101[1]],
         sep="",
     ) as apt:
-        apt.channel[0].move_abs(100)
+        apt.channel[ch].move_abs(100)
 
 
-def test_apt_pia_channel_move_jog(init_kim101):
+@pytest.mark.parametrize("ch", channels)
+def test_apt_pia_channel_move_abs_single_mode(init_kim101, ch):
+    """Absolute movement of APT Piezo Inertia Actuator, first set to single mode.
+
+    Tested with KIM101 driver connected to PIM1 mirror mount.
+    First send single mode, test correct channel address, then switch back to
+    multi mode and test again.
+    """
+    ch_send_single = ch + 1
+    ch_send_multi = ch**2
+    with expected_protocol(
+        ik.thorlabs.APTPiezoInertiaActuator,
+        [
+            init_kim101[0],
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.PZMOT_SET_PARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<HH", 0x2B, ch_send_single),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.PZMOT_MOVE_ABSOLUTE,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", ch_send_single, 100),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.PZMOT_SET_PARAMS,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<HH", 0x2B, 0x00),
+            ).pack(),
+            ThorLabsPacket(
+                message_id=ThorLabsCommands.PZMOT_MOVE_ABSOLUTE,
+                param1=None,
+                param2=None,
+                dest=0x50,
+                source=0x01,
+                data=struct.pack("<Hl", ch_send_multi, 100),
+            ).pack(),
+        ],
+        [init_kim101[1]],
+        sep="",
+    ) as apt:
+        apt.channel[ch].enabled_single = True
+        apt.channel[ch].move_abs(100)
+        apt.channel[ch].enabled_single = False
+        apt.channel[ch].move_abs(100)
+
+
+@pytest.mark.parametrize("ch", channels)
+def test_apt_pia_channel_move_jog(init_kim101, ch):
     """Jog forward and reverse with APT Piezo Inertia Actuator.
 
     Tested with KIM101 driver connected to PIM1 mirror mount.
     """
+    ch_send = 2**ch
     with expected_protocol(
         ik.thorlabs.APTPiezoInertiaActuator,
         [
             init_kim101[0],
             ThorLabsPacket(  # forward
                 message_id=ThorLabsCommands.PZMOT_MOVE_JOG,
-                param1=0x01,
+                param1=ch_send,
                 param2=0x01,
                 dest=0x50,
                 source=0x01,
@@ -615,7 +683,7 @@ def test_apt_pia_channel_move_jog(init_kim101):
             ).pack(),
             ThorLabsPacket(  # reverse
                 message_id=ThorLabsCommands.PZMOT_MOVE_JOG,
-                param1=0x01,
+                param1=ch_send,
                 param2=0x02,
                 dest=0x50,
                 source=0x01,
@@ -625,8 +693,8 @@ def test_apt_pia_channel_move_jog(init_kim101):
         [init_kim101[1]],
         sep="",
     ) as apt:
-        apt.channel[0].move_jog()
-        apt.channel[0].move_jog("rev")
+        apt.channel[ch].move_jog()
+        apt.channel[ch].move_jog("rev")
 
 
 def test_apt_pia_channel_move_jog_stop(init_kim101):
