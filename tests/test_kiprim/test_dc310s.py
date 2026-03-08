@@ -27,6 +27,11 @@ def test_name():
         assert psu.name == "KIPRIM DC310S"
 
 
+def test_name_single_field_reply():
+    with expected_protocol(ik.kiprim.DC310S, ["*IDN?"], ["DC310S"], sep="\n") as psu:
+        assert psu.name == "DC310S"
+
+
 def test_voltage():
     with expected_protocol(
         ik.kiprim.DC310S, ["VOLT 5.000", "VOLT?"], ["5.000"], sep="\n"
