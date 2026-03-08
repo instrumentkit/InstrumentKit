@@ -24,6 +24,7 @@ from . import hcp
 from . import holzworth
 from . import hp
 from . import keithley
+from . import kiprim
 from . import lakeshore
 from . import mettler_toledo
 from . import minghe

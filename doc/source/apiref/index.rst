@@ -24,6 +24,7 @@ Contents:
     holzworth
     hp
     keithley
+    kiprim
     lakeshore
     minghe
     mettler_toledo
