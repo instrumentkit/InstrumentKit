@@ -13,4 +13,3 @@ OWON
 .. autoclass:: OWONSDS1104
     :members:
     :undoc-members:
-
