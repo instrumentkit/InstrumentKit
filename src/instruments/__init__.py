@@ -30,6 +30,7 @@ from . import mettler_toledo
 from . import minghe
 from . import newport
 from . import oxford
+from . import owon
 from . import phasematrix
 from . import pfeiffer
 from . import picowatt
