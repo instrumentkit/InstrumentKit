@@ -13,9 +13,15 @@ from enum import Enum
 import json
 import re
 import struct
+import time
 from typing import Any
 
 import usb.core
+import usb.util
+try:
+    import libusb_package
+except ImportError:  # pragma: no cover - optional runtime helper
+    libusb_package = None
 
 from instruments.abstract_instruments import Oscilloscope
 from instruments.abstract_instruments.comm import USBCommunicator
@@ -78,18 +84,18 @@ _TIMEBASE_TOKENS = {
     100e-6: "100us",
     200e-6: "200us",
     500e-6: "500us",
-    1e-3: "1ms",
-    2e-3: "2ms",
-    5e-3: "5ms",
+    1e-3: "1.0ms",
+    2e-3: "2.0ms",
+    5e-3: "5.0ms",
     10e-3: "10ms",
     20e-3: "20ms",
     50e-3: "50ms",
     100e-3: "100ms",
     200e-3: "200ms",
     500e-3: "500ms",
-    1.0: "1s",
-    2.0: "2s",
-    5.0: "5s",
+    1.0: "1.0s",
+    2.0: "2.0s",
+    5.0: "5.0s",
     10.0: "10s",
     20.0: "20s",
     50.0: "50s",
@@ -461,7 +467,17 @@ class _OWONPromptUSBCommunicator(USBCommunicator):  # pylint: disable=abstract-m
 
     def _query(self, msg, size=-1):
         self._sendcmd(msg)
-        return self.read_binary(size).decode("utf-8")
+        return self.read(size, encoding="utf-8")
+
+    def close(self):
+        """
+        Close the communicator without forcing a USB device reset.
+
+        Resetting the OWON scope on every close can trigger a full device
+        re-enumeration on Windows and is unnecessarily disruptive during probe
+        attempts that fail partway through initialization.
+        """
+        usb.util.dispose_resources(self._dev)
 
 
 @dataclass(frozen=True)
@@ -804,32 +820,77 @@ class OWONSDS1104(
         super().__init__(filelike)
         self._file.timeout = 1 * u.second
 
+    def close(self):
+        """
+        Closes the underlying transport if it exposes a close method.
+        """
+        close_method = getattr(self._file, "close", None)
+        if callable(close_method):
+            close_method()
+
     @classmethod
-    def open_usb(cls, vid=DEFAULT_USB_VID, pid=DEFAULT_USB_PID, timeout=1 * u.second):
+    def open_usb(
+        cls,
+        vid=DEFAULT_USB_VID,
+        pid=DEFAULT_USB_PID,
+        timeout=1 * u.second,
+        enable_scpi=True,
+        ignore_scpi_failure=True,
+        settle_time=0.25,
+    ):
         """
         Opens an SDS1104-family scope using the default raw USB VID/PID.
 
         A best-effort OWON-family SCPI enable handshake is attempted after the
         communicator is opened.
         """
-        dev = usb.core.find(idVendor=vid, idProduct=pid)
+        backend = None
+        if libusb_package is not None:
+            try:
+                backend = libusb_package.get_libusb1_backend()
+            except Exception:
+                backend = None
+
+        dev = usb.core.find(idVendor=vid, idProduct=pid, backend=backend)
         if dev is None:
             raise OSError("No such device found.")
 
         inst = cls(_OWONPromptUSBCommunicator(dev))
         inst.timeout = assume_units(timeout, u.second)
-        inst._enable_scpi_mode()
+        inst._file.flush_input()
+        time.sleep(0.1)
+        if enable_scpi:
+            ok = inst.ensure_scpi_mode(strict=not ignore_scpi_failure, settle_time=settle_time)
+            if not ok and not ignore_scpi_failure:
+                inst.close()
+                raise OSError("OWON SDS1104 SCPI enable handshake failed.")
         return inst
 
-    def _enable_scpi_mode(self):
+    def ensure_scpi_mode(self, strict=False, settle_time=0.25):
         """
         Best-effort OWON-family SCPI enable handshake.
         """
+        original_timeout = self.timeout
         try:
+            self._file.flush_input()
             self._file.write_raw(b":SDSLSCPI#")
-            return _clean_reply(self._file.read()) == ":SCPION"
-        except OSError:
+            time.sleep(max(float(settle_time), 0.0))
+            self.timeout = 0.5 * u.second
+            reply = self._file.read()
+            self._file.flush_input()
+            return ":SCPION" in _clean_reply(reply)
+        except (usb.core.USBTimeoutError, usb.core.USBError, OSError):
+            if strict:
+                raise
             return False
+        finally:
+            self.timeout = original_timeout
+
+    def _enable_scpi_mode(self, settle_time=0.25):
+        """
+        Backward-compatible alias for the public SCPI-mode helper.
+        """
+        return self.ensure_scpi_mode(strict=False, settle_time=settle_time)
 
     def _binary_query(self, command):
         """
