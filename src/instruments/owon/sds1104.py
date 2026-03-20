@@ -18,6 +18,7 @@ from typing import Any
 
 import usb.core
 import usb.util
+
 try:
     import libusb_package
 except ImportError:  # pragma: no cover - optional runtime helper
@@ -860,7 +861,9 @@ class OWONSDS1104(
         inst._file.flush_input()
         time.sleep(0.1)
         if enable_scpi:
-            ok = inst.ensure_scpi_mode(strict=not ignore_scpi_failure, settle_time=settle_time)
+            ok = inst.ensure_scpi_mode(
+                strict=not ignore_scpi_failure, settle_time=settle_time
+            )
             if not ok and not ignore_scpi_failure:
                 inst.close()
                 raise OSError("OWON SDS1104 SCPI enable handshake failed.")
