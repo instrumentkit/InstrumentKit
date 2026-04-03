@@ -396,4 +396,3 @@ Alias note:
   - `:MATH?`
   - `:MATH:FFT?`
 - Setter-only guesses such as `:FFT:display ON` and `:FFT:ch CH1` were accepted at the USB write level but produced no verified readback path or visible promoted behavior.
-

@@ -39,7 +39,9 @@ from _owon_capture_common import (
 
 def _raw_waveform_summary(scope, channel):
     metadata = scope.read_waveform_metadata()
-    point_count = scope._waveform_point_count(metadata)  # pylint: disable=protected-access
+    point_count = scope._waveform_point_count(
+        metadata
+    )  # pylint: disable=protected-access
     payload = scope._binary_query_exact(  # pylint: disable=protected-access
         f":DATA:WAVE:SCREEN:CH{channel}?",
         4 + 2 * point_count,
@@ -50,16 +52,19 @@ def _raw_waveform_summary(scope, channel):
     )
     raw_list = [int(value) for value in raw_adc]
     channel_meta = metadata["CHANNEL"][channel - 1]
-    return RawWaveformSummary(
-        channel=channel,
-        sample_count=len(raw_list),
-        raw_min=min(raw_list),
-        raw_max=max(raw_list),
-        raw_first_16=raw_list[:16],
-        metadata_scale=str(channel_meta.get("SCALE")),
-        metadata_probe=str(channel_meta.get("PROBE")),
-        metadata_offset=channel_meta.get("OFFSET"),
-    ), metadata
+    return (
+        RawWaveformSummary(
+            channel=channel,
+            sample_count=len(raw_list),
+            raw_min=min(raw_list),
+            raw_max=max(raw_list),
+            raw_first_16=raw_list[:16],
+            metadata_scale=str(channel_meta.get("SCALE")),
+            metadata_probe=str(channel_meta.get("PROBE")),
+            metadata_offset=channel_meta.get("OFFSET"),
+        ),
+        metadata,
+    )
 
 
 def _summarize_numeric_axis(values):
@@ -139,8 +144,12 @@ def _capture_waveform_truth(
         }
         converted_channels = {}
         for channel, raw_values in bundle.raw_channels.items():
-            x_axis = scope._waveform_time_axis(bundle.metadata, len(raw_values))  # pylint: disable=protected-access
-            y_axis = scope._waveform_voltage_axis(bundle.metadata, channel, raw_values)  # pylint: disable=protected-access
+            x_axis = scope._waveform_time_axis(
+                bundle.metadata, len(raw_values)
+            )  # pylint: disable=protected-access
+            y_axis = scope._waveform_voltage_axis(
+                bundle.metadata, channel, raw_values
+            )  # pylint: disable=protected-access
             x_values = [float(value) for value in x_axis]
             y_values = [float(value) for value in y_axis]
             converted_channels[f"CH{channel}"] = {
@@ -173,8 +182,12 @@ def _capture_waveform_truth(
                 raw_summary, metadata = _raw_waveform_summary(scope, channel)
                 truth["screen_waveforms"][f"CH{channel}"] = {
                     "raw_summary": asdict(raw_summary),
-                    "metadata_scale": str(metadata["CHANNEL"][channel - 1].get("SCALE")),
-                    "metadata_probe": str(metadata["CHANNEL"][channel - 1].get("PROBE")),
+                    "metadata_scale": str(
+                        metadata["CHANNEL"][channel - 1].get("SCALE")
+                    ),
+                    "metadata_probe": str(
+                        metadata["CHANNEL"][channel - 1].get("PROBE")
+                    ),
                     "metadata_offset": metadata["CHANNEL"][channel - 1].get("OFFSET"),
                 }
             except Exception as exc:
@@ -300,7 +313,11 @@ def _classify_error(text):
         return "malformed_length_prefix"
     if "deep_memory" in lowered or "deep-memory" in lowered or "depmem" in lowered:
         return "deep_memory_error"
-    if "waveform" in lowered or lowered.startswith("ch1:") or lowered.startswith("ch2:"):
+    if (
+        "waveform" in lowered
+        or lowered.startswith("ch1:")
+        or lowered.startswith("ch2:")
+    ):
         return "waveform_read_error"
     return "unknown_error"
 
@@ -364,14 +381,18 @@ def _snapshot_scope_state_minimal(scope):
             return f"error: {type(exc).__name__}: {exc}"
 
     return {
-        "trigger_status": capture(lambda: _clean_reply(scope.query(":TRIGger:STATUS?"))),
+        "trigger_status": capture(
+            lambda: _clean_reply(scope.query(":TRIGger:STATUS?"))
+        ),
         "trigger_sweep": capture(
             lambda: _clean_reply(scope.query(":TRIGger:SINGle:SWEEp?"))
         ),
         "raw_edge_level": capture(
             lambda: _clean_reply(scope.query(":TRIGger:SINGle:EDGE:LEVel?"))
         ),
-        "timebase_scale": capture(lambda: _clean_reply(scope.query(":HORIzontal:Scale?"))),
+        "timebase_scale": capture(
+            lambda: _clean_reply(scope.query(":HORIzontal:Scale?"))
+        ),
         "memory_depth": capture(lambda: _clean_reply(scope.query(":ACQUIRE:DEPMEM?"))),
     }
 
@@ -542,7 +563,9 @@ def _configure_scope(scope, args, trace_ctx):
             scope,
             f"horizontal_offset = {float(args.horizontal_offset_div)}",
             trace_ctx,
-            lambda: setattr(scope, "horizontal_offset", float(args.horizontal_offset_div)),
+            lambda: setattr(
+                scope, "horizontal_offset", float(args.horizontal_offset_div)
+            ),
         )
     if args.measurement_display == "on":
         _apply_state_step(
@@ -620,7 +643,9 @@ def _configure_scope(scope, args, trace_ctx):
             scope,
             "single_trigger_mode = PULSe",
             trace_ctx,
-            lambda: setattr(scope, "single_trigger_mode", scope.SingleTriggerMode.pulse),
+            lambda: setattr(
+                scope, "single_trigger_mode", scope.SingleTriggerMode.pulse
+            ),
         )
         _apply_state_step(
             scope,
@@ -648,7 +673,9 @@ def _configure_scope(scope, args, trace_ctx):
             scope,
             f"PULSe:DIR {args.pulse_dir.upper()}",
             trace_ctx,
-            lambda: scope.sendcmd(f":TRIGger:SINGle:PULSe:DIR {args.pulse_dir.upper()}"),
+            lambda: scope.sendcmd(
+                f":TRIGger:SINGle:PULSe:DIR {args.pulse_dir.upper()}"
+            ),
         )
         _apply_state_step(
             scope,
@@ -663,7 +690,9 @@ def _configure_scope(scope, args, trace_ctx):
             scope,
             "single_trigger_mode = SLOPe",
             trace_ctx,
-            lambda: setattr(scope, "single_trigger_mode", scope.SingleTriggerMode.slope),
+            lambda: setattr(
+                scope, "single_trigger_mode", scope.SingleTriggerMode.slope
+            ),
         )
         _apply_state_step(
             scope,
@@ -718,7 +747,9 @@ def _configure_scope(scope, args, trace_ctx):
         scope,
         f"trigger_holdoff = {args.trigger_holdoff_ns} ns",
         trace_ctx,
-        lambda: setattr(scope, "trigger_holdoff", args.trigger_holdoff_ns * u.nanosecond),
+        lambda: setattr(
+            scope, "trigger_holdoff", args.trigger_holdoff_ns * u.nanosecond
+        ),
     )
     sweep_readback = _apply_trigger_common(scope, args, trace_ctx)
 
@@ -1000,12 +1031,18 @@ def _write_report(
         "html_data_path": None if html_data_path is None else str(html_data_path),
         "scpi_trace_path": None if trace_ctx is None else trace_ctx.scpi_trace_path,
         "state_trace_path": None if trace_ctx is None else trace_ctx.state_trace_path,
-        "waveform_truth_path": None if waveform_truth_path is None else str(waveform_truth_path),
+        "waveform_truth_path": (
+            None if waveform_truth_path is None else str(waveform_truth_path)
+        ),
         "waveform_comparison_path": (
-            None if waveform_comparison is None else str(waveform_comparison["html_path"])
+            None
+            if waveform_comparison is None
+            else str(waveform_comparison["html_path"])
         ),
         "waveform_comparison_json_path": (
-            None if waveform_comparison is None else str(waveform_comparison["json_path"])
+            None
+            if waveform_comparison is None
+            else str(waveform_comparison["json_path"])
         ),
         "screenshot_error": screenshot_error,
         "waveforms": [asdict(summary) for summary in waveforms],
@@ -1058,13 +1095,15 @@ def _run_capture_case(scope, args, out_dir, esp_lines):
 
     if args.validate_waveforms:
         try:
-            waveform_truth, waveform_truth_path, waveform_comparison = _capture_waveform_truth(
-                scope,
-                out_dir,
-                args,
-                scope_state,
-                args.capture_channels,
-                deep_first=args.immediate_deep_probe,
+            waveform_truth, waveform_truth_path, waveform_comparison = (
+                _capture_waveform_truth(
+                    scope,
+                    out_dir,
+                    args,
+                    scope_state,
+                    args.capture_channels,
+                    deep_first=args.immediate_deep_probe,
+                )
             )
         except Exception as exc:
             waveform_errors.append(f"waveform truth capture: {exc}")
@@ -1129,33 +1168,45 @@ def _run_capture_case(scope, args, out_dir, esp_lines):
         primary_error = screenshot_error
     elif waveform_errors:
         primary_error = waveform_errors[0]
-    return {
-        "label": args.label,
-        "profile": args.profile,
-        "trigger_status": scope_state.get("trigger_status"),
-        "trigger_status_before_reads": after_arm_state.get("trigger_status"),
-        "trigger_status_after_finalize": after_finalize_state.get("trigger_status"),
-        "trigger_sweep": scope_state.get("trigger_sweep"),
-        "arm_method": args.arm_method,
-        "single_stop_first": args.single_stop_first,
-        "finalize_method": args.finalize_method,
-        "screenshot_path": None if screenshot_path is None else str(screenshot_path),
-        "screenshot_error": screenshot_error,
-        "failure_class": None if primary_error is None else _classify_error(primary_error),
-        "deep_metadata_ok": bool(
-            waveform_truth is not None and waveform_truth.get("deep_memory_metadata") is not None
-        ),
-        "deep_ch1_ok": bool(
-            waveform_truth is not None and "CH1" in waveform_truth.get("deep_memory_channels", {})
-        ),
-        "deep_bundle_ok": bool(
-            waveform_truth is not None and waveform_truth.get("deep_memory_bundle") is not None
-        ),
-        "session_error": None,
-        "waveform_errors": list(waveform_errors),
-        "report_path": str(report_path),
-        "json_path": str(json_path),
-    }, report_path, json_path, waveforms
+    return (
+        {
+            "label": args.label,
+            "profile": args.profile,
+            "trigger_status": scope_state.get("trigger_status"),
+            "trigger_status_before_reads": after_arm_state.get("trigger_status"),
+            "trigger_status_after_finalize": after_finalize_state.get("trigger_status"),
+            "trigger_sweep": scope_state.get("trigger_sweep"),
+            "arm_method": args.arm_method,
+            "single_stop_first": args.single_stop_first,
+            "finalize_method": args.finalize_method,
+            "screenshot_path": (
+                None if screenshot_path is None else str(screenshot_path)
+            ),
+            "screenshot_error": screenshot_error,
+            "failure_class": (
+                None if primary_error is None else _classify_error(primary_error)
+            ),
+            "deep_metadata_ok": bool(
+                waveform_truth is not None
+                and waveform_truth.get("deep_memory_metadata") is not None
+            ),
+            "deep_ch1_ok": bool(
+                waveform_truth is not None
+                and "CH1" in waveform_truth.get("deep_memory_channels", {})
+            ),
+            "deep_bundle_ok": bool(
+                waveform_truth is not None
+                and waveform_truth.get("deep_memory_bundle") is not None
+            ),
+            "session_error": None,
+            "waveform_errors": list(waveform_errors),
+            "report_path": str(report_path),
+            "json_path": str(json_path),
+        },
+        report_path,
+        json_path,
+        waveforms,
+    )
 
 
 def _build_verification_cases(args):
@@ -1226,12 +1277,48 @@ def _build_edge_arming_cases(args):
         ("edge_normal_legacy_stopfirst", "NORMal", "legacy_single", True, "none"),
         ("edge_normal_legacy_nostopfirst", "NORMal", "legacy_single", False, "none"),
         ("edge_single_legacy_stopfirst", "SINGle", "legacy_single", True, "none"),
-        ("edge_auto_running_stopfirst_runningstop", "AUTO", "running_run", True, "running_stop"),
-        ("edge_normal_running_stopfirst_runningstop", "NORMal", "running_run", True, "running_stop"),
-        ("edge_normal_running_nostopfirst_runningstop", "NORMal", "running_run", False, "running_stop"),
-        ("edge_single_running_stopfirst_runningstop", "SINGle", "running_run", True, "running_stop"),
-        ("edge_normal_legacy_nostopfirst_runningstop", "NORMal", "legacy_single", False, "running_stop"),
-        ("edge_normal_legacy_stopfirst_runningstop", "NORMal", "legacy_single", True, "running_stop"),
+        (
+            "edge_auto_running_stopfirst_runningstop",
+            "AUTO",
+            "running_run",
+            True,
+            "running_stop",
+        ),
+        (
+            "edge_normal_running_stopfirst_runningstop",
+            "NORMal",
+            "running_run",
+            True,
+            "running_stop",
+        ),
+        (
+            "edge_normal_running_nostopfirst_runningstop",
+            "NORMal",
+            "running_run",
+            False,
+            "running_stop",
+        ),
+        (
+            "edge_single_running_stopfirst_runningstop",
+            "SINGle",
+            "running_run",
+            True,
+            "running_stop",
+        ),
+        (
+            "edge_normal_legacy_nostopfirst_runningstop",
+            "NORMal",
+            "legacy_single",
+            False,
+            "running_stop",
+        ),
+        (
+            "edge_normal_legacy_stopfirst_runningstop",
+            "NORMal",
+            "legacy_single",
+            True,
+            "running_stop",
+        ),
     ]
     built = []
     for label, sweep, arm_method, stop_first, finalize_method in cases:

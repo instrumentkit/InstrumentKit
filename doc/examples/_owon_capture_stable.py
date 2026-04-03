@@ -124,9 +124,13 @@ def _run_proven_edge_capture_case(args, out_dir):
         time.sleep(0.5)
 
         status_text = _clean_reply(scope.query(":TRIGger:STATUS?"))
-        screen_metadata = owon_sds1104._parse_json_payload(  # pylint: disable=protected-access
-            scope._binary_query(":DATA:WAVE:SCREen:HEAD?"),  # pylint: disable=protected-access
-            "waveform metadata",
+        screen_metadata = (
+            owon_sds1104._parse_json_payload(  # pylint: disable=protected-access
+                scope._binary_query(
+                    ":DATA:WAVE:SCREen:HEAD?"
+                ),  # pylint: disable=protected-access
+                "waveform metadata",
+            )
         )
         screen_metadata_path = out_dir / "screen_waveform_metadata.json"
         _safe_json_write(screen_metadata_path, screen_metadata)

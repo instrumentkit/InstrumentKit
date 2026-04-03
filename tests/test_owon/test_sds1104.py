@@ -314,7 +314,9 @@ def test_scpi_trace_sendcmd_and_query(tmp_path):
         assert scope.trigger_status == scope.TriggerStatus.ready
         scope.disable_trace()
 
-    events = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    events = [
+        json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()
+    ]
     assert [event["direction"] for event in events] == ["sendcmd", "query"]
     assert events[0]["command"] == ":RUN"
     assert events[0]["ok"] is True
@@ -350,7 +352,9 @@ def test_scpi_trace_binary_queries(tmp_path):
     assert len(y_axis) == 4
     scope.disable_trace()
 
-    events = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    events = [
+        json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()
+    ]
     assert [event["direction"] for event in events] == [
         "binary_length_prefixed_query",
         "binary_query",
@@ -375,7 +379,9 @@ def test_scpi_trace_length_prefixed_header_timeout(tmp_path):
     scope.enable_trace(trace_path)
     with pytest.raises(usb.core.USBTimeoutError):
         scope._query_length_prefixed_binary(":DATA:WAVE:DEPMEM:HEAD?")
-    events = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    events = [
+        json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()
+    ]
     assert events[-1]["direction"] == "binary_length_prefixed_query"
     assert events[-1]["ok"] is False
     assert events[-1]["phase"] == "header"
@@ -389,7 +395,9 @@ def test_scpi_trace_length_prefixed_partial_header(tmp_path):
     scope.enable_trace(trace_path)
     with pytest.raises(_PartialReadError):
         scope._query_length_prefixed_binary(":DATA:WAVE:DEPMEM:HEAD?")
-    events = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    events = [
+        json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()
+    ]
     assert events[-1]["phase"] == "header"
     assert events[-1]["header_bytes_received"] == 2
     assert events[-1]["header_preview_hex"] == "0102"
@@ -400,13 +408,15 @@ def test_scpi_trace_length_prefixed_body_timeout(tmp_path):
     scope, _ = _make_binary_scope(
         exact_replies=[
             struct.pack("<I", 10),
-            _PartialReadError("body timeout", partial=b"\xAA\xBB\xCC"),
+            _PartialReadError("body timeout", partial=b"\xaa\xbb\xcc"),
         ]
     )
     scope.enable_trace(trace_path)
     with pytest.raises(_PartialReadError):
         scope._query_length_prefixed_binary(":DATA:WAVE:DEPMEM:HEAD?")
-    events = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    events = [
+        json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()
+    ]
     assert events[-1]["phase"] == "body"
     assert events[-1]["body_length_expected"] == 10
     assert events[-1]["body_bytes_received"] == 3
@@ -419,7 +429,9 @@ def test_scpi_trace_binary_query_exact_write_failure(tmp_path):
     scope._file.write_raw = lambda msg: (_ for _ in ()).throw(OSError("write fail"))
     with pytest.raises(OSError):
         scope._binary_query_exact(":DATA:WAVE:SCREEN:CH1?", 12)
-    events = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    events = [
+        json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()
+    ]
     assert events[-1]["direction"] == "binary_query_exact"
     assert events[-1]["phase"] == "write"
     assert events[-1]["ok"] is False
@@ -427,11 +439,15 @@ def test_scpi_trace_binary_query_exact_write_failure(tmp_path):
 
 def test_scpi_trace_binary_query_exact_read_failure(tmp_path):
     trace_path = tmp_path / "scpi_trace.jsonl"
-    scope, _ = _make_binary_scope(exact_replies=[_PartialReadError("read fail", partial=b"\x10\x20")])
+    scope, _ = _make_binary_scope(
+        exact_replies=[_PartialReadError("read fail", partial=b"\x10\x20")]
+    )
     scope.enable_trace(trace_path)
     with pytest.raises(_PartialReadError):
         scope._binary_query_exact(":DATA:WAVE:SCREEN:CH1?", 12)
-    events = [json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()]
+    events = [
+        json.loads(line) for line in trace_path.read_text(encoding="utf-8").splitlines()
+    ]
     assert events[-1]["direction"] == "binary_query_exact"
     assert events[-1]["phase"] == "read"
     assert events[-1]["expected_length"] == 12
@@ -522,7 +538,14 @@ def test_running_state_type_error():
 def test_arm_single_sequences():
     with expected_protocol(
         ik.owon.OWONSDS1104,
-        [":STOP", ":SINGle", ":SINGle", ":RUNning STOP", ":RUNning RUN", ":RUNning RUN"],
+        [
+            ":STOP",
+            ":SINGle",
+            ":SINGle",
+            ":RUNning STOP",
+            ":RUNning RUN",
+            ":RUNning RUN",
+        ],
         [],
     ) as scope:
         scope.arm_single(stop_first=True, settle_time=0, arm_method="legacy_single")
@@ -544,7 +567,10 @@ def test_arm_single_invalid_method():
     with expected_protocol(ik.owon.OWONSDS1104, [], []) as scope:
         with pytest.raises(ValueError) as err:
             scope.arm_single(arm_method="bad")
-        assert err.value.args[0] == "arm_method must be one of {'legacy_single', 'running_run'}."
+        assert (
+            err.value.args[0]
+            == "arm_method must be one of {'legacy_single', 'running_run'}."
+        )
 
 
 def test_freeze_acquisition_sequences():
@@ -561,7 +587,10 @@ def test_freeze_acquisition_invalid_method():
     with expected_protocol(ik.owon.OWONSDS1104, [], []) as scope:
         with pytest.raises(ValueError) as err:
             scope.freeze_acquisition(method="bad")
-        assert err.value.args[0] == "method must be one of {'legacy_stop', 'running_stop'}."
+        assert (
+            err.value.args[0]
+            == "method must be one of {'legacy_stop', 'running_stop'}."
+        )
 
 
 def test_trigger_status():
@@ -606,7 +635,9 @@ def test_single_trigger_mode_parsing(reply, expected_name):
         [":TRIGger:SINGle:MODE?"],
         [reply],
     ) as scope:
-        assert scope.single_trigger_mode == getattr(scope.SingleTriggerMode, expected_name)
+        assert scope.single_trigger_mode == getattr(
+            scope.SingleTriggerMode, expected_name
+        )
 
 
 def test_single_trigger_mode_and_trigger_mode_alias_setters():
@@ -826,7 +857,9 @@ def test_video_trigger_standard_parsing(reply, expected_name):
         [":TRIGger:SINGle:MODE?", ":TRIGger:SINGle:VIDeo:MODU?"],
         ["VIDEO", reply],
     ) as scope:
-        assert scope.video_trigger_standard == getattr(scope.VideoStandard, expected_name)
+        assert scope.video_trigger_standard == getattr(
+            scope.VideoStandard, expected_name
+        )
 
 
 @pytest.mark.parametrize(
@@ -1082,7 +1115,9 @@ def test_wait_for_trigger_status_success():
         ["AUTO", "READy", "TRIG"],
     ) as scope:
         assert (
-            scope.wait_for_trigger_status("trig", timeout=0.1 * u.second, poll_interval=0 * u.second)
+            scope.wait_for_trigger_status(
+                "trig", timeout=0.1 * u.second, poll_interval=0 * u.second
+            )
             == scope.TriggerStatus.trig
         )
 

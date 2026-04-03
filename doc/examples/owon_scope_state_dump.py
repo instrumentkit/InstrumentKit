@@ -97,7 +97,9 @@ def _trigger_state(scope):
     }
     mode = state["single_trigger_mode"]
     mode_name = (
-        mode["value"]["name"] if mode.get("ok") and isinstance(mode.get("value"), dict) else None
+        mode["value"]["name"]
+        if mode.get("ok") and isinstance(mode.get("value"), dict)
+        else None
     )
     if mode_name == "edge":
         state["edge"] = {
@@ -175,7 +177,9 @@ def main():
             "scope_pid": args.scope_pid,
             "identity": _capture("name", lambda: scope.name),
             "acquisition": {
-                "timebase_scale": _capture("timebase_scale", lambda: scope.timebase_scale),
+                "timebase_scale": _capture(
+                    "timebase_scale", lambda: scope.timebase_scale
+                ),
                 "horizontal_offset": _capture(
                     "horizontal_offset", lambda: scope.horizontal_offset
                 ),
@@ -190,7 +194,9 @@ def main():
                 ),
             },
             "trigger": _trigger_state(scope),
-            "channels": {f"CH{index}": _channel_state(scope, index) for index in range(1, 5)},
+            "channels": {
+                f"CH{index}": _channel_state(scope, index) for index in range(1, 5)
+            },
         }
 
         if args.include_screen_metadata:

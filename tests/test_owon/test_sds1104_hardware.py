@@ -257,9 +257,13 @@ def test_trigger_mode_switch_soak(single_trigger_scope):
     scope = single_trigger_scope
     for _ in range(20):
         scope.single_trigger_mode = scope.SingleTriggerMode.edge
-        assert scope.single_trigger_mode == scope.SingleTriggerMode.edge, _health_check(scope)
+        assert scope.single_trigger_mode == scope.SingleTriggerMode.edge, _health_check(
+            scope
+        )
         scope.single_trigger_mode = scope.SingleTriggerMode.video
-        assert scope.single_trigger_mode == scope.SingleTriggerMode.video, _health_check(scope)
+        assert (
+            scope.single_trigger_mode == scope.SingleTriggerMode.video
+        ), _health_check(scope)
         _health_check(scope)
 
 
@@ -357,11 +361,17 @@ def test_front_panel_compatibility_manual(hardware_scope):
     assert isinstance(mode, hardware_scope.SingleTriggerMode), health
 
     if mode == hardware_scope.SingleTriggerMode.pulse:
-        assert hardware_scope.single_trigger_mode == hardware_scope.SingleTriggerMode.pulse
+        assert (
+            hardware_scope.single_trigger_mode == hardware_scope.SingleTriggerMode.pulse
+        )
     elif mode == hardware_scope.SingleTriggerMode.slope:
-        assert hardware_scope.single_trigger_mode == hardware_scope.SingleTriggerMode.slope
+        assert (
+            hardware_scope.single_trigger_mode == hardware_scope.SingleTriggerMode.slope
+        )
     elif mode == hardware_scope.SingleTriggerMode.edge:
-        assert isinstance(hardware_scope.trigger_coupling, hardware_scope.TriggerCoupling)
+        assert isinstance(
+            hardware_scope.trigger_coupling, hardware_scope.TriggerCoupling
+        )
         assert isinstance(hardware_scope.trigger_source, hardware_scope.TriggerSource)
     elif mode == hardware_scope.SingleTriggerMode.video:
         assert isinstance(
@@ -379,12 +389,48 @@ def test_edge_arming_matrix_experimental(tmp_path):
         ("edge_normal_legacy_stopfirst", "NORMal", "legacy_single", True, "none"),
         ("edge_normal_legacy_nostopfirst", "NORMal", "legacy_single", False, "none"),
         ("edge_single_legacy_stopfirst", "SINGle", "legacy_single", True, "none"),
-        ("edge_auto_running_stopfirst_runningstop", "AUTO", "running_run", True, "running_stop"),
-        ("edge_normal_running_stopfirst_runningstop", "NORMal", "running_run", True, "running_stop"),
-        ("edge_normal_running_nostopfirst_runningstop", "NORMal", "running_run", False, "running_stop"),
-        ("edge_single_running_stopfirst_runningstop", "SINGle", "running_run", True, "running_stop"),
-        ("edge_normal_legacy_nostopfirst_runningstop", "NORMal", "legacy_single", False, "running_stop"),
-        ("edge_normal_legacy_stopfirst_runningstop", "NORMal", "legacy_single", True, "running_stop"),
+        (
+            "edge_auto_running_stopfirst_runningstop",
+            "AUTO",
+            "running_run",
+            True,
+            "running_stop",
+        ),
+        (
+            "edge_normal_running_stopfirst_runningstop",
+            "NORMal",
+            "running_run",
+            True,
+            "running_stop",
+        ),
+        (
+            "edge_normal_running_nostopfirst_runningstop",
+            "NORMal",
+            "running_run",
+            False,
+            "running_stop",
+        ),
+        (
+            "edge_single_running_stopfirst_runningstop",
+            "SINGle",
+            "running_run",
+            True,
+            "running_stop",
+        ),
+        (
+            "edge_normal_legacy_nostopfirst_runningstop",
+            "NORMal",
+            "legacy_single",
+            False,
+            "running_stop",
+        ),
+        (
+            "edge_normal_legacy_stopfirst_runningstop",
+            "NORMal",
+            "legacy_single",
+            True,
+            "running_stop",
+        ),
     ]
     results = []
 
@@ -423,11 +469,15 @@ def test_edge_arming_matrix_experimental(tmp_path):
             except Exception as exc:
                 result["screenshot_error"] = f"{type(exc).__name__}: {exc}"
             try:
-                result["screen_metadata"] = scope.read_waveform_metadata().get("SAMPLE", {})
+                result["screen_metadata"] = scope.read_waveform_metadata().get(
+                    "SAMPLE", {}
+                )
             except Exception as exc:
                 result["waveform_read_error"] = f"{type(exc).__name__}: {exc}"
             try:
-                result["deep_metadata"] = scope.read_deep_memory_metadata().get("SAMPLE", {})
+                result["deep_metadata"] = scope.read_deep_memory_metadata().get(
+                    "SAMPLE", {}
+                )
                 result["deep_metadata_ok"] = True
             except Exception as exc:
                 result["deep_metadata_ok"] = False
@@ -447,7 +497,9 @@ def test_edge_arming_matrix_experimental(tmp_path):
             )
         except Exception as exc:  # pragma: no cover - bench-only failure path
             result["session_error"] = f"{type(exc).__name__}: {exc}"
-            result["failure_class"] = _classify_hardware_failure(result["session_error"])
+            result["failure_class"] = _classify_hardware_failure(
+                result["session_error"]
+            )
         finally:
             if scope is not None:
                 try:
@@ -505,12 +557,16 @@ def test_trigger_transition_probe_experimental(tmp_path):
                 scope.single(stop_first=True, arm_method="legacy_single")
 
             try:
-                result["deep_metadata"] = scope.read_deep_memory_metadata().get("SAMPLE", {})
+                result["deep_metadata"] = scope.read_deep_memory_metadata().get(
+                    "SAMPLE", {}
+                )
                 result["deep_head_ok"] = True
             except Exception as exc:
                 result["deep_head_ok"] = False
                 result["session_error"] = f"{type(exc).__name__}: {exc}"
-                result["failure_class"] = _classify_hardware_failure(result["session_error"])
+                result["failure_class"] = _classify_hardware_failure(
+                    result["session_error"]
+                )
                 raise
 
             try:
@@ -519,12 +575,16 @@ def test_trigger_transition_probe_experimental(tmp_path):
             except Exception as exc:
                 result["deep_ch1_ok"] = False
                 result["deep_ch1_error"] = f"{type(exc).__name__}: {exc}"
-                result["failure_class"] = _classify_hardware_failure(result["deep_ch1_error"])
+                result["failure_class"] = _classify_hardware_failure(
+                    result["deep_ch1_error"]
+                )
                 raise
         except Exception as exc:  # pragma: no cover - bench-only path
             if "session_error" not in result:
                 result["session_error"] = f"{type(exc).__name__}: {exc}"
-                result["failure_class"] = _classify_hardware_failure(result["session_error"])
+                result["failure_class"] = _classify_hardware_failure(
+                    result["session_error"]
+                )
         finally:
             if scope is not None:
                 try:

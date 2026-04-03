@@ -252,16 +252,24 @@ def _capture_waveform(scope, channel, out_dir):
 
 
 def _capture_screen_channel_raw(scope, metadata, channel, out_dir):
-    point_count = scope._waveform_point_count(metadata)  # pylint: disable=protected-access
+    point_count = scope._waveform_point_count(
+        metadata
+    )  # pylint: disable=protected-access
     payload = scope._binary_query_exact(  # pylint: disable=protected-access
         f":DATA:WAVE:SCREen:CH{channel}?", 4 + 2 * point_count
     )
     raw_adc = owon_sds1104._parse_waveform_adc(  # pylint: disable=protected-access
-        owon_sds1104._strip_packet_prefix(payload, f"screen waveform CH{channel}"),  # pylint: disable=protected-access
+        owon_sds1104._strip_packet_prefix(
+            payload, f"screen waveform CH{channel}"
+        ),  # pylint: disable=protected-access
         f"screen waveform CH{channel}",
     )
-    x_axis = scope._waveform_time_axis(metadata, point_count)  # pylint: disable=protected-access
-    y_axis = scope._waveform_voltage_axis(metadata, channel, raw_adc)  # pylint: disable=protected-access
+    x_axis = scope._waveform_time_axis(
+        metadata, point_count
+    )  # pylint: disable=protected-access
+    y_axis = scope._waveform_voltage_axis(
+        metadata, channel, raw_adc
+    )  # pylint: disable=protected-access
     csv_path = out_dir / f"ch{channel}_waveform.csv"
 
     x_values = [float(value) for value in x_axis]
@@ -291,7 +299,9 @@ def _capture_depmem_all_summary_and_series(scope, out_dir):
     raw_payload = scope.read_deep_memory_all_raw()
     raw_path = out_dir / "depmem_all_raw.bin"
     raw_path.write_bytes(raw_payload)
-    capture = scope._parse_deep_memory_all_payload(raw_payload)  # pylint: disable=protected-access
+    capture = scope._parse_deep_memory_all_payload(
+        raw_payload
+    )  # pylint: disable=protected-access
     summary = {
         "metadata": {
             "timebase_scale": capture.metadata.get("TIMEBASE", {}).get("SCALE"),
@@ -317,8 +327,12 @@ def _capture_depmem_all_summary_and_series(scope, out_dir):
 
     series = {}
     for channel, raw_values in capture.raw_channels.items():
-        x_axis = scope._waveform_time_axis(capture.metadata, len(raw_values))  # pylint: disable=protected-access
-        y_axis = scope._waveform_voltage_axis(capture.metadata, channel, raw_values)  # pylint: disable=protected-access
+        x_axis = scope._waveform_time_axis(
+            capture.metadata, len(raw_values)
+        )  # pylint: disable=protected-access
+        y_axis = scope._waveform_voltage_axis(
+            capture.metadata, channel, raw_values
+        )  # pylint: disable=protected-access
         series[channel] = {
             "x": [float(value) for value in x_axis],
             "y": [float(value) for value in y_axis],
@@ -340,11 +354,15 @@ def _build_scope_html_data_from_series(
     first_channel = next(iter(waveform_data.values()), {"x": [0.0, 1.0], "y": []})
     time_window_s = None
     if len(first_channel["x"]) >= 2:
-        time_window_s = abs(float(first_channel["x"][-1]) - float(first_channel["x"][0]))
+        time_window_s = abs(
+            float(first_channel["x"][-1]) - float(first_channel["x"][0])
+        )
     if sample_rate_text is None:
         sample_rate_text = _format_sample_rate_text(first_channel["x"])
     if memory_depth_text is None:
-        memory_depth_text = str(len(first_channel["y"])) if first_channel["y"] else "unknown"
+        memory_depth_text = (
+            str(len(first_channel["y"])) if first_channel["y"] else "unknown"
+        )
 
     status_text = str(scope_state.get("trigger_status", "STOP"))
     if "." in status_text:
@@ -445,7 +463,9 @@ def _render_scope_html(out_dir, args, scope_state, waveforms, sample_rate_text=N
 def _max_abs_delta(values_a, values_b):
     if not values_a or not values_b:
         return 0.0
-    return max(abs(float(a) - float(b)) for a, b in zip(values_a, values_b, strict=True))
+    return max(
+        abs(float(a) - float(b)) for a, b in zip(values_a, values_b, strict=True)
+    )
 
 
 def _mean_abs_delta(values_a, values_b):
@@ -519,9 +539,9 @@ def _compare_waveform_series(name_a, series_a, name_b, series_b):
         "aligned_count": len(aligned["y_a"]),
         "alignment": aligned["alignment"],
         "max_abs_voltage_delta_v": max(delta_samples) if delta_samples else 0.0,
-        "mean_abs_voltage_delta_v": sum(delta_samples) / len(delta_samples)
-        if delta_samples
-        else 0.0,
+        "mean_abs_voltage_delta_v": (
+            sum(delta_samples) / len(delta_samples) if delta_samples else 0.0
+        ),
         "diff_sample_count": sum(1 for delta in delta_samples if delta > 1e-9),
         "max_abs_time_delta_s": _max_abs_delta(aligned["x_a"], aligned["x_b"]),
         "voltage_pp_a_v": (

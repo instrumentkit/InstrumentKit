@@ -89,7 +89,9 @@ def build_arg_parser():
     )
     parser.add_argument("--immediate-deep-probe", action="store_true")
 
-    parser.add_argument("--profile", choices=("edge", "pulse", "slope"), default="pulse")
+    parser.add_argument(
+        "--profile", choices=("edge", "pulse", "slope"), default="pulse"
+    )
     parser.add_argument("--capture-edge-pretty", action="store_true")
     parser.add_argument("--capture-edge-pretty-burst", action="store_true")
     parser.add_argument("--verify-pulse", action="store_true")
@@ -134,7 +136,9 @@ def build_arg_parser():
     parser.add_argument("--timebase-s-div", type=float, default=50e-6)
     parser.add_argument("--trigger-level-v", type=float, default=1.65)
     parser.add_argument("--trigger-holdoff-ns", type=int, default=100)
-    parser.add_argument("--trigger-sweep", choices=("AUTO", "NORMal", "SINGle"), default=None)
+    parser.add_argument(
+        "--trigger-sweep", choices=("AUTO", "NORMal", "SINGle"), default=None
+    )
     parser.add_argument("--edge-source", default="ch1")
     parser.add_argument("--edge-coupling", default="dc")
     parser.add_argument("--edge-slope", default="rise")
@@ -237,7 +241,9 @@ def main():
         report_path, json_path = _write_verification_report(out_dir, args, summaries)
         waveforms = []
     elif _is_pretty_edge_mode(args):
-        _, report_path, json_path, waveforms = _run_proven_edge_capture_case(args, out_dir)
+        _, report_path, json_path, waveforms = _run_proven_edge_capture_case(
+            args, out_dir
+        )
     else:
         from _owon_capture_common import _open_scope
 

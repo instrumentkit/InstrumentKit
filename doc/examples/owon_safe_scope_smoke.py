@@ -101,7 +101,9 @@ def _capture_deepmem_all(scope, out_dir):
     raw_payload = scope.read_deep_memory_all_raw()
     raw_path = out_dir / "depmem_all_raw.bin"
     raw_path.write_bytes(raw_payload)
-    capture = scope._parse_deep_memory_all_payload(raw_payload)  # pylint: disable=protected-access
+    capture = scope._parse_deep_memory_all_payload(
+        raw_payload
+    )  # pylint: disable=protected-access
     return {
         "raw_path": str(raw_path),
         "summary": _deep_bundle_summary(capture),
@@ -203,7 +205,9 @@ def main():
         _add_result(results, "trigger_status", lambda: scope.trigger_status)
         _add_result(results, "trigger_type", lambda: scope.trigger_type)
         _add_result(results, "single_trigger_mode", lambda: scope.single_trigger_mode)
-        sweep_result = _add_result(results, "trigger_sweep", lambda: scope.trigger_sweep)
+        sweep_result = _add_result(
+            results, "trigger_sweep", lambda: scope.trigger_sweep
+        )
         if sweep_result.get("ok"):
             original_sweep = sweep_result["value"]
             effective_sweep = original_sweep
@@ -280,7 +284,9 @@ def main():
         def _read_screen_metadata():
             metadata = scope.read_waveform_metadata()
             metadata_path = out_dir / "screen_waveform_metadata.json"
-            metadata_path.write_text(json.dumps(_jsonable(metadata), indent=2), encoding="utf-8")
+            metadata_path.write_text(
+                json.dumps(_jsonable(metadata), indent=2), encoding="utf-8"
+            )
             return metadata
 
         _add_result(results, "read_waveform_metadata", _read_screen_metadata)
@@ -317,6 +323,7 @@ def main():
                 lambda: _capture_deepmem_all(scope, out_dir),
             )
             if args.include_experimental_deep_path:
+
                 def _read_deep_metadata():
                     metadata = scope.read_deep_memory_metadata()
                     metadata_path = out_dir / "deep_memory_metadata.json"

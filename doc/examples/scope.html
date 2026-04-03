@@ -169,11 +169,11 @@
         font-size: 13px;
     }
     .panel:last-child { border-right: none; }
-    
+
     .panel-ch1 { color: #ffff00; border-bottom: 3px solid #ffff00; }
     .panel-ch2 { color: #00ffff; border-bottom: 3px solid #00ffff; }
     .panel-trigger { color: #ffaa00; display: flex; flex-direction: row; justify-content: space-between; align-items: center;}
-    
+
     .panel-hidden { display: none !important; }
 
     .val-large { font-size: 15px; font-weight: bold; }
@@ -201,7 +201,7 @@
         <canvas id="gridCanvas" width="1000" height="500"></canvas>
         <canvas id="waveCanvas" width="1000" height="500"></canvas>
         <canvas id="overlayCanvas" width="1000" height="500"></canvas>
-        
+
         <div class="channel-marker ch1-marker" id="marker-ch1" title="CH1 Zero Level">1&gt;</div>
         <div class="channel-marker ch2-marker" id="marker-ch2" title="CH2 Zero Level">2&gt;</div>
         <div class="trigger-marker-top" id="marker-trig-t" title="Trigger Position">T</div>
@@ -332,7 +332,7 @@
         });
     }
 
-    
+
     /**
      * Formatting Helpers
      */
@@ -354,7 +354,7 @@
         const statusEl = document.getElementById('ui-status');
         statusEl.innerText = scopeData.meta.status;
         statusEl.style.color = scopeData.meta.status === 'Stop' || scopeData.meta.status === 'STOP' ? '#ff3333' : '#33cc33';
-        
+
         document.getElementById('ui-top-time').innerText = `T: ${formatUnit(scopeData.trigger.horizontal_pos_s, 's')}`;
         document.getElementById('ui-timebase').innerText = `M: ${formatUnit(scopeData.meta.timebase_s_div, 's')}`;
         document.getElementById('ui-span').innerText = scopeData.meta.time_window_s == null
@@ -368,7 +368,7 @@
             const ch = scopeData.channels[chKey];
             const panel = document.getElementById(`panel-${chKey.toLowerCase()}`);
             const marker = document.getElementById(`marker-${chKey.toLowerCase()}`);
-            
+
             if (ch && ch.visible) {
                 panel.classList.remove('panel-hidden');
                 marker.style.display = 'block';
@@ -398,9 +398,9 @@
         const ctx = canvas.getContext('2d');
         const w = canvas.width;
         const h = canvas.height;
-        
+
         ctx.clearRect(0, 0, w, h);
-        
+
         const dx = w / COLS;
         const dy = h / ROWS;
 
@@ -424,7 +424,7 @@
         // Center crosshairs
         ctx.strokeStyle = '#666666';
         ctx.beginPath();
-        
+
         // Vertical center line with tick marks
         const centerX = (COLS / 2) * dx;
         ctx.moveTo(centerX, 0);
@@ -444,7 +444,7 @@
             ctx.moveTo(tx, centerY - 3);
             ctx.lineTo(tx, centerY + 3);
         }
-        
+
         ctx.stroke();
     }
 
@@ -453,9 +453,9 @@
         const ctx = canvas.getContext('2d');
         const w = canvas.width;
         const h = canvas.height;
-        
+
         ctx.clearRect(0, 0, w, h);
-        
+
         const dy = h / ROWS;
         const gridCenterY = h / 2;
 
@@ -468,11 +468,11 @@
             ctx.lineWidth = 1.5;
 
             const dataLen = ch.data.length;
-            
+
             for (let i = 0; i < dataLen; i++) {
                 // Map array index to X pixel
                 let px = (i / (dataLen - 1)) * w;
-                
+
                 // Map voltage to Y pixel
                 let v = ch.data[i];
                 let py = gridCenterY - (ch.position_div * dy) - (v / ch.volts_per_div * dy);
@@ -489,7 +489,7 @@
         const ctx = canvas.getContext('2d');
         const w = canvas.width;
         const h = canvas.height;
-        
+
         ctx.clearRect(0, 0, w, h);
 
         const dx = w / COLS;
@@ -515,7 +515,7 @@
         // Trigger position maps physical time offset to screen space
         // Typically, T=0 is screen center. If horizontal_pos_s > 0, trigger is shifted right.
         let trigPxX = gridCenterX + (scopeData.trigger.horizontal_pos_s / totalTime) * w;
-        
+
         // Position Trigger T Marker (Top Edge)
         const markerTrigT = document.getElementById('marker-trig-t');
         trigPxX = Math.max(10, Math.min(w - 10, trigPxX)); // Clamp
@@ -534,13 +534,13 @@
         // Position Trigger Level Marker (Right Edge)
         const trigSrc = scopeData.channels[scopeData.trigger.source];
         const markerTrigL = document.getElementById('marker-trig-l');
-        
+
         if (trigSrc && trigSrc.visible) {
             markerTrigL.style.display = 'block';
             let trigPy = gridCenterY - (trigSrc.position_div * dy) - (scopeData.trigger.level_v / trigSrc.volts_per_div * dy);
             trigPy = Math.max(6, Math.min(h - 6, trigPy)); // Clamp
             markerTrigL.style.top = `${trigPy}px`;
-            
+
             // Draw Faint Trigger Horizontal Line (optional, common on some scopes on hover, we'll keep it subtle)
             ctx.beginPath();
             ctx.strokeStyle = 'rgba(255, 170, 0, 0.2)';

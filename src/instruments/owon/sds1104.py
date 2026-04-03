@@ -218,7 +218,9 @@ def _parse_quantity_token(token, units_map, field_name):
     Parses a quantity token like ``100mV`` or ``1ms``.
     """
     cleaned = _clean_reply(token).strip().lower()
-    for suffix, scale in sorted(units_map.items(), key=lambda item: len(item[0]), reverse=True):
+    for suffix, scale in sorted(
+        units_map.items(), key=lambda item: len(item[0]), reverse=True
+    ):
         if cleaned.endswith(suffix):
             magnitude = cleaned[: -len(suffix)]
             try:
@@ -344,7 +346,9 @@ def _format_scaled_token(base_magnitude, unit_scales, allowed_units, field_name)
     return f"{_format_decimal_string(chosen['scaled'])}{chosen['unit']}"
 
 
-def _format_quantity_token(value, allowed_units=("uv", "mv", "v"), prefer_smallest_exact=True):
+def _format_quantity_token(
+    value, allowed_units=("uv", "mv", "v"), prefer_smallest_exact=True
+):
     """
     Formats a voltage-like quantity token without scientific notation.
     """
@@ -358,7 +362,9 @@ def _format_quantity_token(value, allowed_units=("uv", "mv", "v"), prefer_smalle
     )
 
 
-def _format_time_token(value, allowed_units=("ns", "us", "ms", "s"), prefer_smallest_exact=True):
+def _format_time_token(
+    value, allowed_units=("ns", "us", "ms", "s"), prefer_smallest_exact=True
+):
     """
     Formats a time quantity token without scientific notation.
     """
@@ -1935,9 +1941,7 @@ class OWONSDS1104(
     @trigger_level.setter
     def trigger_level(self, newval):
         self._require_edge_trigger_mode()
-        self.sendcmd(
-            f":TRIGger:SINGle:EDGE:LEVel {_format_quantity_token(newval)}"
-        )
+        self.sendcmd(f":TRIGger:SINGle:EDGE:LEVel {_format_quantity_token(newval)}")
 
     @property
     def edge_trigger_source(self):
@@ -2001,9 +2005,7 @@ class OWONSDS1104(
     def trigger_holdoff(self, newval):
         holdoff = assume_units(newval, u.second).to(u.second)
         if holdoff < 100 * u.nanosecond or holdoff > 10 * u.second:
-            raise ValueError(
-                "Trigger holdoff must be between 100 ns and 10 s."
-            )
+            raise ValueError("Trigger holdoff must be between 100 ns and 10 s.")
         self.sendcmd(f":TRIGger:SINGle:HOLDoff {_format_time_token(holdoff)}")
 
     @property
@@ -2257,9 +2259,7 @@ class OWONSDS1104(
         documented ``:RUNning STOP`` path.
         """
         if method not in {"legacy_stop", "running_stop"}:
-            raise ValueError(
-                "method must be one of {'legacy_stop', 'running_stop'}."
-            )
+            raise ValueError("method must be one of {'legacy_stop', 'running_stop'}.")
 
         if method == "legacy_stop":
             self.stop()
@@ -2332,7 +2332,9 @@ class OWONSDS1104(
         :rtype: `OWONSDS1104.TriggerStatus`
         """
         if isinstance(target, str):
-            target = _parse_enum_token(target, self.TriggerStatus, "target trigger status")
+            target = _parse_enum_token(
+                target, self.TriggerStatus, "target trigger status"
+            )
         if not isinstance(target, self.TriggerStatus):
             raise TypeError(
                 "Trigger status target must be a `OWONSDS1104.TriggerStatus` "
@@ -2798,7 +2800,9 @@ class OWONSDS1104(
             ":DATA:WAVE:DEPMem:All?", max_body_size=100_000_000
         )
 
-    def _parse_deep_memory_all_payload(self, payload):  # pylint: disable=too-many-locals,too-many-branches
+    def _parse_deep_memory_all_payload(
+        self, payload
+    ):  # pylint: disable=too-many-locals,too-many-branches
         """
         Parses a raw ``:DATA:WAVE:DEPMem:All?`` payload into metadata plus raw channels.
         """
