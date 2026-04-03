@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oscilloscope Waveform Viewer</title>
+<style>
+    /* Reset and Base Styles */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        background-color: #1e1e1e;
+        color: #ffffff;
+        font-family: 'Consolas', 'Courier New', monospace;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    /* Scope Container */
+    .scope-container {
+        background-color: #000000;
+        border: 2px solid #444;
+        border-radius: 8px;
+        width: 1000px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    /* Header */
+    .scope-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #111;
+        padding: 5px 15px;
+        border-bottom: 1px solid #333;
+        font-size: 14px;
+    }
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .brand {
+        font-weight: bold;
+        color: #ccc;
+        letter-spacing: 2px;
+    }
+    .status-indicator {
+        color: #ff3333; /* Default Stop */
+        font-weight: bold;
+        cursor: pointer;
+        user-select: none;
+        padding: 2px 8px;
+        border: 1px solid transparent;
+    }
+    .status-indicator:hover {
+        border-color: #555;
+        background: #222;
+    }
+    .header-right {
+        color: #aaa;
+    }
+
+    /* Screen Area (Canvas + Absolute Overlays) */
+    .scope-screen-wrapper {
+        position: relative;
+        width: 100%;
+        height: 500px; /* 8 divisions */
+        background-color: #050505;
+        overflow: hidden;
+    }
+    canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    #gridCanvas { z-index: 1; }
+    #waveCanvas { z-index: 2; }
+    #overlayCanvas { z-index: 3; }
+
+    /* Absolute UI Overlays */
+    .channel-marker {
+        position: absolute;
+        left: 0;
+        width: 20px;
+        height: 16px;
+        line-height: 16px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: bold;
+        color: #000;
+        z-index: 4;
+        transform: translateY(-50%);
+        border-radius: 0 4px 4px 0;
+    }
+    .ch1-marker { background-color: #ffff00; }
+    .ch2-marker { background-color: #00ffff; }
+    .ch3-marker { background-color: #ff8800; display: none; } /* Optional */
+
+    .trigger-marker-top {
+        position: absolute;
+        top: 0;
+        width: 20px;
+        height: 16px;
+        line-height: 16px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: bold;
+        background-color: #ffaa00;
+        color: #000;
+        z-index: 4;
+        transform: translateX(-50%);
+        border-radius: 0 0 4px 4px;
+        border: 1px solid #cc8800;
+    }
+    .trigger-marker-right {
+        position: absolute;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        font-size: 10px;
+        line-height: 12px;
+        text-align: center;
+        font-weight: bold;
+        background-color: #ffaa00;
+        color: #000;
+        z-index: 4;
+        transform: translateY(-50%);
+        clip-path: polygon(100% 0, 100% 100%, 0 50%);
+    }
+
+    /* Footer / Bottom Info Panels */
+    .scope-footer {
+        background-color: #111;
+        border-top: 1px solid #333;
+        display: flex;
+        flex-direction: column;
+    }
+    .footer-top {
+        display: flex;
+        padding: 5px 15px;
+        font-size: 13px;
+        color: #aaa;
+        border-bottom: 1px solid #222;
+        gap: 30px;
+    }
+    .footer-panels {
+        display: flex;
+        height: 50px;
+    }
+    .panel {
+        flex: 1;
+        padding: 5px 10px;
+        border-right: 1px solid #222;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        font-size: 13px;
+    }
+    .panel:last-child { border-right: none; }
+    
+    .panel-ch1 { color: #ffff00; border-bottom: 3px solid #ffff00; }
+    .panel-ch2 { color: #00ffff; border-bottom: 3px solid #00ffff; }
+    .panel-trigger { color: #ffaa00; display: flex; flex-direction: row; justify-content: space-between; align-items: center;}
+    
+    .panel-hidden { display: none !important; }
+
+    .val-large { font-size: 15px; font-weight: bold; }
+    .val-small { font-size: 12px; color: #888; }
+    .trig-edge { font-size: 16px; font-weight: bold; }
+
+</style>
+</head>
+<body>
+
+<div class="scope-container">
+    <div class="scope-header">
+        <div class="header-left">
+            <div class="brand">HANMA</div>
+            <div class="status-indicator" id="ui-status" onclick="toggleStatus()">Stop</div>
+        </div>
+        <div class="header-right">
+            <span id="ui-top-time">T: 0.00us</span>
+            <button id="load-json-btn" style="margin-left: 16px; padding: 2px 8px; background: #222; color: #ddd; border: 1px solid #555; cursor: pointer;">Load JSON</button>
+            <input id="json-file-input" type="file" accept=".json,application/json" style="display: none;">
+        </div>
+    </div>
+
+    <div class="scope-screen-wrapper">
+        <canvas id="gridCanvas" width="1000" height="500"></canvas>
+        <canvas id="waveCanvas" width="1000" height="500"></canvas>
+        <canvas id="overlayCanvas" width="1000" height="500"></canvas>
+        
+        <div class="channel-marker ch1-marker" id="marker-ch1" title="CH1 Zero Level">1&gt;</div>
+        <div class="channel-marker ch2-marker" id="marker-ch2" title="CH2 Zero Level">2&gt;</div>
+        <div class="trigger-marker-top" id="marker-trig-t" title="Trigger Position">T</div>
+        <div class="trigger-marker-right" id="marker-trig-l" title="Trigger Level"></div>
+    </div>
+
+    <div class="scope-footer">
+        <div class="footer-top">
+            <div id="ui-timebase">M: 200us</div>
+            <div id="ui-span">Span: n/a</div>
+            <div id="ui-samplerate" style="color: #ffcc00;">(1MS/s)</div>
+            <div id="ui-depth">Depth: 10k</div>
+        </div>
+        <div class="footer-panels">
+            <div class="panel panel-ch1" id="panel-ch1">
+                <div class="val-large">CH1 <span id="ui-ch1-volt">1.00V</span></div>
+                <div class="val-small" id="ui-ch1-pos">0.00div</div>
+            </div>
+            <div class="panel panel-ch2" id="panel-ch2">
+                <div class="val-large">CH2 <span id="ui-ch2-volt">1.00V</span></div>
+                <div class="val-small" id="ui-ch2-pos">0.00div</div>
+            </div>
+            <div class="panel"></div>
+            <div class="panel panel-trigger">
+                <div>
+                    <div><span id="ui-trig-src">CH1</span>:<span id="ui-trig-coup">DC</span> <span class="trig-edge" id="ui-trig-edge">&#8600;</span></div>
+                </div>
+                <div class="val-large" id="ui-trig-level">1.64V</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="scope_view_data.js"></script>
+<script>
+    /**
+     * =========================================================================
+     * DATA LOADING
+     * =========================================================================
+     * This page prefers one of the following sources, in order:
+     *
+     * 1. `scope_view_data.js` setting `window.__SCOPE_DATA__`
+     * 2. a `?data=...` query parameter pointing to a JSON file
+     * 3. a sibling `scope_view.json` file when fetch is allowed
+     * 4. manual JSON file selection via the header button
+     */
+    function createEmptyScopeData() {
+        return {
+            meta: {
+                status: "STOP",
+                timebase_s_div: 200e-6,
+                time_window_s: null,
+                sample_rate_text: "unknown",
+                memory_depth_text: "unknown"
+            },
+            trigger: {
+                source: "CH1",
+                coupling: "DC",
+                edge: "rising",
+                level_v: 0.0,
+                horizontal_pos_s: 0.0
+            },
+            channels: {
+                CH1: { visible: false, volts_per_div: 1.0, position_div: 0.0, color: "#ffff00", data: [] },
+                CH2: { visible: false, volts_per_div: 1.0, position_div: 0.0, color: "#00ffff", data: [] },
+                CH3: { visible: false, volts_per_div: 1.0, position_div: 0.0, color: "#ff8800", data: [] }
+            }
+        };
+    }
+
+    let scopeData = createEmptyScopeData();
+
+    function mergeScopeData(newData) {
+        scopeData = {
+            ...createEmptyScopeData(),
+            ...newData,
+            meta: { ...createEmptyScopeData().meta, ...(newData.meta || {}) },
+            trigger: { ...createEmptyScopeData().trigger, ...(newData.trigger || {}) },
+            channels: {
+                CH1: { ...createEmptyScopeData().channels.CH1, ...((newData.channels || {}).CH1 || {}) },
+                CH2: { ...createEmptyScopeData().channels.CH2, ...((newData.channels || {}).CH2 || {}) },
+                CH3: { ...createEmptyScopeData().channels.CH3, ...((newData.channels || {}).CH3 || {}) }
+            }
+        };
+        updateUI();
+        drawGrid();
+        drawWaveforms();
+        drawOverlaysAndMarkers();
+    }
+
+    async function tryFetchJson(url) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return false;
+            const data = await response.json();
+            mergeScopeData(data);
+            return true;
+        } catch (_err) {
+            return false;
+        }
+    }
+
+    async function loadInitialData() {
+        if (window.__SCOPE_DATA__) {
+            mergeScopeData(window.__SCOPE_DATA__);
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const fromQuery = params.get("data");
+        if (fromQuery && await tryFetchJson(fromQuery)) {
+            return;
+        }
+
+        await tryFetchJson("scope_view.json");
+    }
+
+    function wireJsonLoader() {
+        const button = document.getElementById("load-json-btn");
+        const input = document.getElementById("json-file-input");
+
+        button.addEventListener("click", () => input.click());
+        input.addEventListener("change", async (event) => {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            mergeScopeData(JSON.parse(text));
+        });
+    }
+
+    
+    /**
+     * Formatting Helpers
+     */
+    function formatUnit(value, unit) {
+        if (value === 0) return `0.00${unit}`;
+        const absVal = Math.abs(value);
+        if (absVal >= 1) return `${value.toFixed(2)}${unit}`;
+        if (absVal >= 1e-3) return `${(value * 1e3).toFixed(2)}m${unit}`;
+        if (absVal >= 1e-6) return `${(value * 1e6).toFixed(2)}u${unit}`;
+        if (absVal >= 1e-9) return `${(value * 1e9).toFixed(2)}n${unit}`;
+        return `${value.toExponential(2)}${unit}`;
+    }
+
+    /**
+     * UI Updates
+     */
+    function updateUI() {
+        // Header & Meta
+        const statusEl = document.getElementById('ui-status');
+        statusEl.innerText = scopeData.meta.status;
+        statusEl.style.color = scopeData.meta.status === 'Stop' || scopeData.meta.status === 'STOP' ? '#ff3333' : '#33cc33';
+        
+        document.getElementById('ui-top-time').innerText = `T: ${formatUnit(scopeData.trigger.horizontal_pos_s, 's')}`;
+        document.getElementById('ui-timebase').innerText = `M: ${formatUnit(scopeData.meta.timebase_s_div, 's')}`;
+        document.getElementById('ui-span').innerText = scopeData.meta.time_window_s == null
+            ? 'Span: n/a'
+            : `Span: ${formatUnit(scopeData.meta.time_window_s, 's')}`;
+        document.getElementById('ui-samplerate').innerText = `(${scopeData.meta.sample_rate_text})`;
+        document.getElementById('ui-depth').innerText = `Depth: ${scopeData.meta.memory_depth_text}`;
+
+        // Channels
+        ['CH1', 'CH2'].forEach(chKey => {
+            const ch = scopeData.channels[chKey];
+            const panel = document.getElementById(`panel-${chKey.toLowerCase()}`);
+            const marker = document.getElementById(`marker-${chKey.toLowerCase()}`);
+            
+            if (ch && ch.visible) {
+                panel.classList.remove('panel-hidden');
+                marker.style.display = 'block';
+                document.getElementById(`ui-${chKey.toLowerCase()}-volt`).innerText = formatUnit(ch.volts_per_div, 'V');
+                document.getElementById(`ui-${chKey.toLowerCase()}-pos`).innerText = `${ch.position_div > 0 ? '+' : ''}${ch.position_div.toFixed(2)}div`;
+            } else {
+                panel.classList.add('panel-hidden');
+                marker.style.display = 'none';
+            }
+        });
+
+        // Trigger
+        document.getElementById('ui-trig-src').innerText = scopeData.trigger.source;
+        document.getElementById('ui-trig-coup').innerText = scopeData.trigger.coupling;
+        document.getElementById('ui-trig-level').innerText = formatUnit(scopeData.trigger.level_v, 'V');
+        document.getElementById('ui-trig-edge').innerHTML = scopeData.trigger.edge === 'falling' ? '&#8600;' : '&#8599;'; // Diagonal arrows
+    }
+
+    /**
+     * Canvas Rendering
+     */
+    const COLS = 14; // Typical horizontal divisions
+    const ROWS = 8;  // Typical vertical divisions
+
+    function drawGrid() {
+        const canvas = document.getElementById('gridCanvas');
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        ctx.clearRect(0, 0, w, h);
+        
+        const dx = w / COLS;
+        const dy = h / ROWS;
+
+        ctx.strokeStyle = '#333333';
+        ctx.lineWidth = 1;
+
+        // Minor grid (dotted/dashed)
+        ctx.setLineDash([2, 4]);
+        ctx.beginPath();
+        for (let i = 1; i < COLS; i++) {
+            ctx.moveTo(i * dx, 0);
+            ctx.lineTo(i * dx, h);
+        }
+        for (let j = 1; j < ROWS; j++) {
+            ctx.moveTo(0, j * dy);
+            ctx.lineTo(w, j * dy);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset
+
+        // Center crosshairs
+        ctx.strokeStyle = '#666666';
+        ctx.beginPath();
+        
+        // Vertical center line with tick marks
+        const centerX = (COLS / 2) * dx;
+        ctx.moveTo(centerX, 0);
+        ctx.lineTo(centerX, h);
+        for(let j = 0; j <= ROWS * 5; j++) {
+            let ty = j * (dy / 5);
+            ctx.moveTo(centerX - 3, ty);
+            ctx.lineTo(centerX + 3, ty);
+        }
+
+        // Horizontal center line with tick marks
+        const centerY = (ROWS / 2) * dy;
+        ctx.moveTo(0, centerY);
+        ctx.lineTo(w, centerY);
+        for(let i = 0; i <= COLS * 5; i++) {
+            let tx = i * (dx / 5);
+            ctx.moveTo(tx, centerY - 3);
+            ctx.lineTo(tx, centerY + 3);
+        }
+        
+        ctx.stroke();
+    }
+
+    function drawWaveforms() {
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        ctx.clearRect(0, 0, w, h);
+        
+        const dy = h / ROWS;
+        const gridCenterY = h / 2;
+
+        ['CH1', 'CH2'].forEach(chKey => {
+            const ch = scopeData.channels[chKey];
+            if (!ch || !ch.visible || !ch.data || ch.data.length === 0) return;
+
+            ctx.beginPath();
+            ctx.strokeStyle = ch.color;
+            ctx.lineWidth = 1.5;
+
+            const dataLen = ch.data.length;
+            
+            for (let i = 0; i < dataLen; i++) {
+                // Map array index to X pixel
+                let px = (i / (dataLen - 1)) * w;
+                
+                // Map voltage to Y pixel
+                let v = ch.data[i];
+                let py = gridCenterY - (ch.position_div * dy) - (v / ch.volts_per_div * dy);
+
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+        });
+    }
+
+    function drawOverlaysAndMarkers() {
+        const canvas = document.getElementById('overlayCanvas');
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        ctx.clearRect(0, 0, w, h);
+
+        const dx = w / COLS;
+        const dy = h / ROWS;
+        const gridCenterX = w / 2;
+        const gridCenterY = h / 2;
+
+        // Position Channel Zero Markers (Left Edge)
+        ['CH1', 'CH2'].forEach(chKey => {
+            const ch = scopeData.channels[chKey];
+            const marker = document.getElementById(`marker-${chKey.toLowerCase()}`);
+            if (ch && ch.visible) {
+                let py = gridCenterY - (ch.position_div * dy);
+                // Clamp visually inside container
+                py = Math.max(8, Math.min(h - 8, py));
+                marker.style.top = `${py}px`;
+            }
+        });
+
+        // Calculate Trigger X Position
+        // Assuming data maps 1:1 to screen width, total time = COLS * timebase
+        const totalTime = COLS * scopeData.meta.timebase_s_div;
+        // Trigger position maps physical time offset to screen space
+        // Typically, T=0 is screen center. If horizontal_pos_s > 0, trigger is shifted right.
+        let trigPxX = gridCenterX + (scopeData.trigger.horizontal_pos_s / totalTime) * w;
+        
+        // Position Trigger T Marker (Top Edge)
+        const markerTrigT = document.getElementById('marker-trig-t');
+        trigPxX = Math.max(10, Math.min(w - 10, trigPxX)); // Clamp
+        markerTrigT.style.left = `${trigPxX}px`;
+
+        // Draw Faint Trigger Vertical Line
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(255, 170, 0, 0.4)'; // Faint orange
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(trigPxX, 0);
+        ctx.lineTo(trigPxX, h);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Position Trigger Level Marker (Right Edge)
+        const trigSrc = scopeData.channels[scopeData.trigger.source];
+        const markerTrigL = document.getElementById('marker-trig-l');
+        
+        if (trigSrc && trigSrc.visible) {
+            markerTrigL.style.display = 'block';
+            let trigPy = gridCenterY - (trigSrc.position_div * dy) - (scopeData.trigger.level_v / trigSrc.volts_per_div * dy);
+            trigPy = Math.max(6, Math.min(h - 6, trigPy)); // Clamp
+            markerTrigL.style.top = `${trigPy}px`;
+            
+            // Draw Faint Trigger Horizontal Line (optional, common on some scopes on hover, we'll keep it subtle)
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255, 170, 0, 0.2)';
+            ctx.moveTo(trigPxX - 20, trigPy);
+            ctx.lineTo(trigPxX + 20, trigPy);
+            ctx.stroke();
+        } else {
+            markerTrigL.style.display = 'none';
+        }
+    }
+
+    /**
+     * Interactive Helper (Standalone Demo)
+     */
+    function toggleStatus() {
+        const states = ["Stop", "READY", "TRIG", "AUTO"];
+        let curr = scopeData.meta.status;
+        let nextIdx = (states.indexOf(curr) + 1) % states.length;
+        scopeData.meta.status = states[nextIdx];
+        updateUI();
+    }
+
+    // Initialize all
+    window.onload = async function() {
+        wireJsonLoader();
+        updateUI();
+        drawGrid();
+        drawWaveforms();
+        drawOverlaysAndMarkers();
+        await loadInitialData();
+    };
+</script>
+
+</body>
+</html>

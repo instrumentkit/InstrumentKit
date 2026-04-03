@@ -74,3 +74,8 @@ universal = 1
 
 [tool.setuptools_scm]
 write_to = "src/instruments/_version.py"
+
+[tool.pytest.ini_options]
+markers = [
+    "hardware: requires real OWON SDS1104 / HANMATEK DOS1104 hardware",
+]

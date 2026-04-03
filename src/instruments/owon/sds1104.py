@@ -9,6 +9,8 @@ Provides support for the OWON SDS1104 oscilloscope family.
 
 
 from dataclasses import dataclass
+from decimal import Decimal
+from datetime import datetime, timezone
 from enum import Enum
 import json
 import re
@@ -41,6 +43,7 @@ _TIME_UNITS = {
 }
 
 _VERTICAL_UNITS = {
+    "uv": 1e-6,
     "mv": 1e-3,
     "v": 1.0,
     "kv": 1e3,
@@ -75,9 +78,9 @@ _TIMEBASE_TOKENS = {
     100e-9: "100ns",
     200e-9: "200ns",
     500e-9: "500ns",
-    1e-6: "1us",
-    2e-6: "2us",
-    5e-6: "5us",
+    1e-6: "1.0us",
+    2e-6: "2.0us",
+    5e-6: "5.0us",
     10e-6: "10us",
     20e-6: "20us",
     50e-6: "50us",
@@ -136,6 +139,13 @@ _MEASUREMENT_CHANNEL_BLOCK_RE = re.compile(
 )
 
 
+def _normalize_enum_token(token):
+    """
+    Normalizes a reply or user token for enum matching.
+    """
+    return _clean_reply(str(token)).strip().upper()
+
+
 def _clean_reply(reply):
     """
     Normalizes a DOS1104 text reply.
@@ -153,6 +163,30 @@ def _strip_packet_prefix(payload, field_name):
     if len(payload) < 4:
         raise ValueError(f"{field_name} payload is too short.")
     return payload[4:]
+
+
+def _trace_hex_preview(data, max_bytes=8):
+    """
+    Renders a compact hexadecimal preview for trace logs.
+    """
+    if not data:
+        return ""
+    return bytes(data[:max_bytes]).hex()
+
+
+def _extract_trace_bytes(exc):
+    """
+    Best-effort extraction of partial bytes from an exception object.
+    """
+    for attribute in ("bytes_received", "partial", "received", "data", "payload"):
+        value = getattr(exc, attribute, None)
+        if isinstance(value, (bytes, bytearray)):
+            return bytes(value)
+    if exc.args:
+        first = exc.args[0]
+        if isinstance(first, (bytes, bytearray)):
+            return bytes(first)
+    return b""
 
 
 def _parse_bool(reply, field_name):
@@ -183,13 +217,27 @@ def _parse_quantity_token(token, units_map, field_name):
     Parses a quantity token like ``100mV`` or ``1ms``.
     """
     cleaned = _clean_reply(token).strip().lower()
-    for suffix, scale in units_map.items():
+    for suffix, scale in sorted(units_map.items(), key=lambda item: len(item[0]), reverse=True):
         if cleaned.endswith(suffix):
             magnitude = cleaned[: -len(suffix)]
             try:
                 return float(magnitude) * scale
             except ValueError as exc:
                 raise ValueError(f"Invalid {field_name} reply: {token!r}") from exc
+    raise ValueError(f"Invalid {field_name} reply: {token!r}")
+
+
+def _parse_enum_token(token, enum_cls, field_name):
+    """
+    Parses a mixed-case reply into an enum member.
+    """
+    normalized = _normalize_enum_token(token)
+    for member in enum_cls:
+        if normalized in {
+            _normalize_enum_token(member.name),
+            _normalize_enum_token(member.value),
+        }:
+            return member
     raise ValueError(f"Invalid {field_name} reply: {token!r}")
 
 
@@ -234,6 +282,93 @@ def _format_probe_token(value):
     if value not in {1, 10, 100, 1000}:
         raise ValueError("Probe attenuation must be one of 1, 10, 100, or 1000.")
     return f"{value}X"
+
+
+def _decimal_from_magnitude(value):
+    """
+    Converts a numeric magnitude into a finite decimal representation.
+    """
+    return Decimal(format(float(value), ".15g"))
+
+
+def _format_decimal_string(value):
+    """
+    Formats a decimal without scientific notation.
+    """
+    text = format(value, "f")
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    if text in {"-0", ""}:
+        return "0"
+    return text
+
+
+def _format_scaled_token(base_magnitude, unit_scales, allowed_units, field_name):
+    """
+    Formats a base-unit magnitude using engineering-style unit tokens.
+    """
+    base = _decimal_from_magnitude(base_magnitude)
+    scale_map = {
+        unit: _decimal_from_magnitude(scale)
+        for unit, scale in unit_scales.items()
+        if unit in allowed_units
+    }
+    if len(scale_map) != len(tuple(allowed_units)):
+        missing = [unit for unit in allowed_units if unit not in scale_map]
+        raise ValueError(f"Unsupported {field_name} units: {missing!r}")
+
+    candidates = []
+    for unit in allowed_units:
+        scaled = base / scale_map[unit]
+        magnitude = abs(scaled)
+        candidates.append(
+            {
+                "unit": unit,
+                "scaled": scaled,
+                "in_window": Decimal("1") <= magnitude < Decimal("1000"),
+            }
+        )
+
+    if base == 0:
+        chosen = candidates[-1]
+    else:
+        in_window = [candidate for candidate in candidates if candidate["in_window"]]
+        if in_window:
+            chosen = in_window[0]
+        elif abs(candidates[0]["scaled"]) < Decimal("1"):
+            chosen = candidates[0]
+        else:
+            chosen = candidates[-1]
+
+    return f"{_format_decimal_string(chosen['scaled'])}{chosen['unit']}"
+
+
+def _format_quantity_token(value, allowed_units=("uv", "mv", "v"), prefer_smallest_exact=True):
+    """
+    Formats a voltage-like quantity token without scientific notation.
+    """
+    if not prefer_smallest_exact:
+        allowed_units = tuple(reversed(tuple(allowed_units)))
+    return _format_scaled_token(
+        assume_units(value, u.volt).to(u.volt).magnitude,
+        _VERTICAL_UNITS,
+        tuple(allowed_units),
+        "quantity",
+    )
+
+
+def _format_time_token(value, allowed_units=("ns", "us", "ms", "s"), prefer_smallest_exact=True):
+    """
+    Formats a time quantity token without scientific notation.
+    """
+    if not prefer_smallest_exact:
+        allowed_units = tuple(reversed(tuple(allowed_units)))
+    return _format_scaled_token(
+        assume_units(value, u.second).to(u.second).magnitude,
+        _TIME_UNITS,
+        tuple(allowed_units),
+        "time",
+    )
 
 
 def _parse_memory_depth_token(token):
@@ -406,6 +541,7 @@ def _parse_sample_rate(token):
     Parses a sample rate token such as ``1MS/s``.
     """
     cleaned = _clean_reply(token).strip().lower()
+    cleaned = cleaned.replace("(", "").replace(")", "")
     units = {
         "ks/s": 1e3,
         "ms/s": 1e6,
@@ -484,6 +620,10 @@ class _OWONPromptUSBCommunicator(USBCommunicator):  # pylint: disable=abstract-m
 class SDS1104DeepMemoryCapture:
     """
     Parsed deep-memory bundle returned by ``:DATA:WAVE:DEPMem:All?``.
+
+    ``raw_channels`` contains the raw ADC samples exactly as returned by the
+    instrument. Use ``read_deep_memory_channel()`` when you want converted
+    time/voltage axes.
     """
 
     metadata: dict[str, Any]
@@ -498,6 +638,27 @@ class SDS1104SavedWaveformEntry:
 
     index: str
     raw: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class SDS1104TriggerConfiguration:
+    """
+    Snapshot of the current SDS1104 trigger configuration.
+    """
+
+    status: Any
+    trigger_type: Any
+    single_trigger_mode: Any
+    holdoff: Any
+    trigger_sweep: Any = None
+    edge_source: Any = None
+    edge_coupling: Any = None
+    edge_slope: Any = None
+    edge_level: Any = None
+    video_source: Any = None
+    video_standard: Any = None
+    video_sync: Any = None
+    video_line_number: int | None = None
 
 
 class OWONSDS1104(
@@ -559,15 +720,31 @@ class OWONSDS1104(
         scan = "SCAN"
         stop = "STOP"
 
-    class TriggerMode(Enum):
+    class TriggerType(Enum):
         """
-        General trigger modes supported by the verified SDS1104 API surface.
+        Top-level trigger types reported by ``:TRIGger:TYPE?``.
+        """
+
+        # pylint: disable=invalid-name
+
+        single = "SINGle"
+        alt = "ALT"
+        logic = "LOGic"
+        bus = "BUS"
+
+    class SingleTriggerMode(Enum):
+        """
+        Single-trigger modes supported by the verified SDS1104 API surface.
         """
 
         # pylint: disable=invalid-name
 
         edge = "EDGE"
         video = "VIDEO"
+        pulse = "PULSe"
+        slope = "SLOPe"
+
+    TriggerMode = SingleTriggerMode
 
     class TriggerSource(Enum):
         """
@@ -580,6 +757,9 @@ class OWONSDS1104(
         ch2 = "CH2"
         ch3 = "CH3"
         ch4 = "CH4"
+        ext = "EXT"
+        ext_div5 = "EXT/5"
+        ac_line = "ACLine"
 
     class TriggerCoupling(Enum):
         """
@@ -590,6 +770,7 @@ class OWONSDS1104(
 
         ac = "AC"
         dc = "DC"
+        hf = "HF"
 
     class TriggerSlope(Enum):
         """
@@ -600,6 +781,51 @@ class OWONSDS1104(
 
         rise = "RISE"
         fall = "FALL"
+
+    class TriggerSweep(Enum):
+        """
+        Single-trigger sweep modes.
+        """
+
+        # pylint: disable=invalid-name
+
+        auto = "AUTO"
+        normal = "NORMal"
+        single = "SINGle"
+
+    class RunningState(Enum):
+        """
+        Front-panel-equivalent running states.
+        """
+
+        # pylint: disable=invalid-name
+
+        run = "RUN"
+        stop = "STOP"
+
+    class VideoStandard(Enum):
+        """
+        Video trigger standards verified on the SDS1104 family.
+        """
+
+        # pylint: disable=invalid-name
+
+        pal = "PAL"
+        secam = "SECam"
+        ntsc = "NTSC"
+
+    class VideoSync(Enum):
+        """
+        Video trigger synchronization modes verified on the SDS1104 family.
+        """
+
+        # pylint: disable=invalid-name
+
+        line = "LINE"
+        field = "FIELD"
+        odd = "ODD"
+        even = "EVEN"
+        lnum = "LNUM"
 
     class DataSource(Oscilloscope.DataSource):
         """
@@ -812,21 +1038,150 @@ class OWONSDS1104(
 
         def read_deep_memory(self):
             """
-            Reads the deep-memory waveform for this channel.
+            Experimental / undocumented deep-memory waveform query for this channel.
             """
             return self._parent.read_deep_memory_channel(self._idx)
 
     def __init__(self, filelike):
         super().__init__(filelike)
         self._file.timeout = 1 * u.second
+        self._trace_path = None
+        self._trace_seq = 0
 
-    def close(self):
+    def enable_trace(self, trace_path):
         """
-        Closes the underlying transport if it exposes a close method.
+        Enables best-effort SCPI trace logging to a JSONL file.
+        """
+        self._trace_path = str(trace_path)
+        self._trace_seq = 0
+
+    def disable_trace(self):
+        """
+        Disables SCPI trace logging.
+        """
+        self._trace_path = None
+
+    def _trace_timestamp(self):
+        return datetime.now(timezone.utc).isoformat(timespec="microseconds")
+
+    def _trace_event(self, event):
+        if not self._trace_path:
+            return
+        try:
+            self._trace_seq += 1
+            payload = {"ts": self._trace_timestamp(), "seq": self._trace_seq}
+            payload.update(event)
+            with open(self._trace_path, "a", encoding="utf-8") as handle:
+                handle.write(json.dumps(payload, ensure_ascii=True) + "\n")
+        except Exception:
+            pass
+
+    def sendcmd(self, cmd):
+        start = time.monotonic()
+        command = str(cmd)
+        try:
+            super().sendcmd(command)
+            self._trace_event(
+                {
+                    "direction": "sendcmd",
+                    "command": command,
+                    "ok": True,
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+        except Exception as exc:
+            self._trace_event(
+                {
+                    "direction": "sendcmd",
+                    "command": command,
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
+
+    def query(self, cmd, size=-1):
+        start = time.monotonic()
+        command = str(cmd)
+        try:
+            reply = super().query(command, size=size)
+            self._trace_event(
+                {
+                    "direction": "query",
+                    "command": command,
+                    "reply_kind": "text",
+                    "reply_text": str(reply),
+                    "ok": True,
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            return reply
+        except Exception as exc:
+            self._trace_event(
+                {
+                    "direction": "query",
+                    "command": command,
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
+
+    def _close_transport_best_effort(self):
+        """
+        Closes the underlying transport without raising cleanup errors.
         """
         close_method = getattr(self._file, "close", None)
         if callable(close_method):
-            close_method()
+            try:
+                close_method()
+            except Exception:
+                pass
+
+    def reset_usb_device(self, settle_time=1.0):
+        """
+        Best-effort hard USB device reset for contaminated sessions.
+        """
+        dev = getattr(self._file, "_dev", None)
+
+        flush_method = getattr(self._file, "flush_input", None)
+        if callable(flush_method):
+            try:
+                flush_method()
+            except Exception:
+                pass
+
+        self._close_transport_best_effort()
+
+        if dev is not None and hasattr(dev, "reset"):
+            try:
+                dev.reset()
+            except Exception:
+                pass
+
+        if dev is not None:
+            try:
+                usb.util.dispose_resources(dev)
+            except Exception:
+                pass
+
+        time.sleep(max(float(settle_time), 0.0))
+
+    def close(self, reset_device=False, settle_time=0.0):
+        """
+        Closes the underlying transport.
+
+        :param bool reset_device: When ``True``, attempt a hard USB reset.
+        :param float settle_time: Delay after a hard reset.
+        """
+        if reset_device:
+            self.reset_usb_device(settle_time=settle_time)
+            return
+        self._close_transport_best_effort()
 
     @classmethod
     def open_usb(
@@ -892,56 +1247,283 @@ class OWONSDS1104(
         """
         return self.ensure_scpi_mode(strict=False, settle_time=settle_time)
 
+    def _flush_input_best_effort(self, suppress_errors=True):
+        """
+        Flushes any stale USB input bytes before a binary transfer.
+
+        Text setters on the OWON family can leave a trailing prompt token in
+        the input buffer. If a binary read starts with that stale prompt, the
+        next binary parser sees garbage such as ``b'>\\n'`` instead of the
+        expected payload header.
+        """
+        flush_method = getattr(self._file, "flush_input", None)
+        if callable(flush_method):
+            try:
+                time.sleep(0.05)
+                flush_method()
+                time.sleep(0.02)
+                flush_method()
+            except Exception:
+                if suppress_errors:
+                    pass
+                else:
+                    raise
+
     def _binary_query(self, command):
         """
         Sends a raw USB command and reads a binary reply.
         """
-        self._file.write_raw(command.encode("ascii"))
+        start = time.monotonic()
         if not hasattr(self._file, "read_binary"):
             raise NotImplementedError(
                 "Binary waveform support requires a communicator that "
                 "implements read_binary()."
             )
-        return self._file.read_binary()
+        try:
+            self._flush_input_best_effort(suppress_errors=False)
+            self._file.write_raw(command.encode("ascii"))
+        except Exception as exc:
+            self._trace_event(
+                {
+                    "direction": "binary_query",
+                    "command": command,
+                    "phase": "write",
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
+        try:
+            payload = self._file.read_binary()
+            self._trace_event(
+                {
+                    "direction": "binary_query",
+                    "command": command,
+                    "reply_kind": "binary",
+                    "phase": "read",
+                    "payload_length": len(payload),
+                    "ok": True,
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            return payload
+        except Exception as exc:
+            partial = _extract_trace_bytes(exc)
+            self._trace_event(
+                {
+                    "direction": "binary_query",
+                    "command": command,
+                    "phase": "read",
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "bytes_received": len(partial),
+                    "header_preview_hex": _trace_hex_preview(partial),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
 
     def _binary_query_exact(self, command, size):
         """
         Sends a raw USB command and reads an exact-size binary reply.
         """
-        self._file.write_raw(command.encode("ascii"))
+        start = time.monotonic()
         if not hasattr(self._file, "read_exact"):
             raise NotImplementedError(
                 "Binary waveform support requires a communicator that "
                 "implements read_exact()."
             )
-        return self._file.read_exact(size)
+        try:
+            self._flush_input_best_effort(suppress_errors=False)
+            self._file.write_raw(command.encode("ascii"))
+        except Exception as exc:
+            self._trace_event(
+                {
+                    "direction": "binary_query_exact",
+                    "command": command,
+                    "phase": "write",
+                    "expected_length": size,
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
+        try:
+            payload = self._file.read_exact(size)
+            self._trace_event(
+                {
+                    "direction": "binary_query_exact",
+                    "command": command,
+                    "reply_kind": "binary",
+                    "phase": "read",
+                    "expected_length": size,
+                    "payload_length": len(payload),
+                    "ok": True,
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            return payload
+        except Exception as exc:
+            partial = _extract_trace_bytes(exc)
+            self._trace_event(
+                {
+                    "direction": "binary_query_exact",
+                    "command": command,
+                    "phase": "read",
+                    "expected_length": size,
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "bytes_received": len(partial),
+                    "header_preview_hex": _trace_hex_preview(partial),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
 
     def _query_length_prefixed_binary(self, command, max_body_size=20_000_000):
         """
         Sends a raw USB command and reads a little-endian length-prefixed body.
         """
-        self._file.write_raw(command.encode("ascii"))
+        start = time.monotonic()
         if not hasattr(self._file, "read_exact"):
             raise NotImplementedError(
                 "Length-prefixed binary support requires a communicator that "
                 "implements read_exact()."
             )
+        try:
+            self._flush_input_best_effort(suppress_errors=False)
+        except Exception as exc:
+            self._trace_event(
+                {
+                    "direction": "binary_length_prefixed_query",
+                    "command": command,
+                    "phase": "flush",
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
 
-        header = self._file.read_exact(4)
+        try:
+            self._file.write_raw(command.encode("ascii"))
+        except Exception as exc:
+            self._trace_event(
+                {
+                    "direction": "binary_length_prefixed_query",
+                    "command": command,
+                    "phase": "write",
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
+
+        try:
+            header = self._file.read_exact(4)
+        except Exception as exc:
+            partial = _extract_trace_bytes(exc)
+            self._trace_event(
+                {
+                    "direction": "binary_length_prefixed_query",
+                    "command": command,
+                    "phase": "header",
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "header_bytes_received": len(partial),
+                    "header_preview_hex": _trace_hex_preview(partial),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
+
         if len(header) < 4:
-            raise ValueError(f"Length-prefixed reply too short for {command!r}.")
+            exc = ValueError(f"Length-prefixed reply too short for {command!r}.")
+            self._trace_event(
+                {
+                    "direction": "binary_length_prefixed_query",
+                    "command": command,
+                    "phase": "header",
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "header_bytes_received": len(header),
+                    "header_preview_hex": _trace_hex_preview(header),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise exc
 
-        body_size = int.from_bytes(header, byteorder="little", signed=False)
-        if body_size <= 0:
-            raise ValueError(
-                f"Invalid length-prefixed body size for {command!r}: {body_size}"
+        try:
+            body_size = int.from_bytes(header, byteorder="little", signed=False)
+            if body_size <= 0:
+                raise ValueError(
+                    f"Invalid length-prefixed body size for {command!r}: {body_size}"
+                )
+            if body_size > max_body_size:
+                raise ValueError(
+                    f"Length-prefixed body for {command!r} exceeds safety limit: "
+                    f"{body_size}"
+                )
+        except Exception as exc:
+            self._trace_event(
+                {
+                    "direction": "binary_length_prefixed_query",
+                    "command": command,
+                    "phase": "header_parse",
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "header_bytes_received": len(header),
+                    "header_preview_hex": _trace_hex_preview(header),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
             )
-        if body_size > max_body_size:
-            raise ValueError(
-                f"Length-prefixed body for {command!r} exceeds safety limit: "
-                f"{body_size}"
+            raise
+        try:
+            body = self._file.read_exact(body_size)
+            payload = header + body
+            self._trace_event(
+                {
+                    "direction": "binary_length_prefixed_query",
+                    "command": command,
+                    "reply_kind": "binary",
+                    "phase": "complete",
+                    "header_length": body_size,
+                    "payload_length": len(body),
+                    "ok": True,
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
             )
-        return header + self._file.read_exact(body_size)
+            return payload
+        except Exception as exc:
+            partial = _extract_trace_bytes(exc)
+            self._trace_event(
+                {
+                    "direction": "binary_length_prefixed_query",
+                    "command": command,
+                    "phase": "body",
+                    "ok": False,
+                    "error_type": type(exc).__name__,
+                    "error_text": str(exc),
+                    "header_bytes_received": len(header),
+                    "header_preview_hex": _trace_hex_preview(header),
+                    "body_length_expected": body_size,
+                    "body_bytes_received": len(partial),
+                    "duration_ms": (time.monotonic() - start) * 1000.0,
+                }
+            )
+            raise
 
     def _waveform_metadata(self):
         """
@@ -1002,6 +1584,14 @@ class OWONSDS1104(
         channel_metadata = self._extract_channel_metadata(metadata, channel)
         return _parse_probe_token(str(channel_metadata["PROBE"]))
 
+    def _waveform_counts_per_div(self, metadata, channel):
+        channel_metadata = self._extract_channel_metadata(metadata, channel)
+        current_rate = channel_metadata.get("Current_Rate")
+        current_ratio = channel_metadata.get("Current_Ratio")
+        if current_rate is None or current_ratio in {None, 0, 0.0}:
+            return None
+        return float(current_rate) / float(current_ratio)
+
     def _waveform_time_axis(self, metadata, point_count):
         sample_rate = self._sample_rate_hz(metadata)
         sample_time = 5.0 / sample_rate
@@ -1019,6 +1609,23 @@ class OWONSDS1104(
         vertical_offset = self._vertical_offset_pixels(metadata, channel)
         volts_per_div = self._vertical_scale_v_div(metadata, channel)
         probe = self._probe_attenuation(metadata, channel)
+        counts_per_div = self._waveform_counts_per_div(metadata, channel)
+        if counts_per_div is not None:
+            # Empirical DOS1104 screen/deep-memory scaling:
+            # OFFSET steps are 1/50 div and the zero-volt raw baseline is
+            # approximately ``OFFSET * 128 - 256`` counts.
+            raw_zero = vertical_offset * 128.0 - 256.0
+            if numpy is not None and isinstance(raw_adc, numpy.ndarray):
+                return (
+                    volts_per_div
+                    * probe
+                    * (raw_adc.astype(float) - raw_zero)
+                    / counts_per_div
+                )
+            return tuple(
+                volts_per_div * probe * (sample - raw_zero) / counts_per_div
+                for sample in raw_adc
+            )
         if numpy is not None and isinstance(raw_adc, numpy.ndarray):
             return (
                 volts_per_div
@@ -1145,40 +1752,71 @@ class OWONSDS1104(
 
         :type: `OWONSDS1104.TriggerStatus`
         """
-        reply = _clean_reply(self.query(":TRIGger:STATUS?")).upper()
-        try:
-            return self.TriggerStatus(reply)
-        except ValueError as exc:
-            raise ValueError(f"Invalid trigger status reply: {reply!r}") from exc
+        return _parse_enum_token(
+            self.query(":TRIGger:STATUS?"), self.TriggerStatus, "trigger status"
+        )
+
+    @property
+    def trigger_type(self):
+        """
+        Gets the current top-level trigger type.
+
+        This is query-only because the alternative write paths are not yet
+        reproducible enough to promote in this driver.
+
+        :type: `OWONSDS1104.TriggerType`
+        """
+        return _parse_enum_token(
+            self.query(":TRIGger:TYPE?"), self.TriggerType, "trigger type"
+        )
+
+    @property
+    def single_trigger_mode(self):
+        """
+        Gets/sets the current single-trigger mode.
+
+        :type: `OWONSDS1104.SingleTriggerMode`
+        """
+        return _parse_enum_token(
+            self.query(":TRIGger:SINGle:MODE?"),
+            self.SingleTriggerMode,
+            "single trigger mode",
+        )
+
+    @single_trigger_mode.setter
+    def single_trigger_mode(self, newval):
+        if not isinstance(newval, self.SingleTriggerMode):
+            raise TypeError(
+                "Trigger mode must be specified with a "
+                "`OWONSDS1104.SingleTriggerMode` value."
+            )
+        self.sendcmd(f":TRIGger:SINGle:MODE {newval.value}")
 
     @property
     def trigger_mode(self):
         """
-        Gets/sets the current trigger mode.
-
-        :type: `OWONSDS1104.TriggerMode`
+        Backward-compatible alias for :attr:`single_trigger_mode`.
         """
-        reply = _clean_reply(self.query(":TRIGger:SINGle:MODE?")).upper()
-        try:
-            return self.TriggerMode(reply)
-        except ValueError as exc:
-            raise ValueError(f"Invalid trigger mode reply: {reply!r}") from exc
+        return self.single_trigger_mode
 
     @trigger_mode.setter
     def trigger_mode(self, newval):
-        if not isinstance(newval, self.TriggerMode):
-            raise TypeError(
-                "Trigger mode must be specified with a "
-                "`OWONSDS1104.TriggerMode` value."
-            )
-        self.sendcmd(f":TRIGger:SINGle:MODE {newval.value}")
+        self.single_trigger_mode = newval
 
     def _require_edge_trigger_mode(self):
-        mode = self.trigger_mode
-        if mode != self.TriggerMode.edge:
+        mode = self.single_trigger_mode
+        if mode != self.SingleTriggerMode.edge:
             raise NotImplementedError(
-                "Trigger source, coupling, slope, and level are only exposed "
-                "for EDGE trigger mode in this driver."
+                "Edge trigger source, coupling, slope, and level are only "
+                "exposed when single_trigger_mode is EDGE in this driver."
+            )
+
+    def _require_video_trigger_mode(self):
+        mode = self.single_trigger_mode
+        if mode != self.SingleTriggerMode.video:
+            raise NotImplementedError(
+                "Video trigger source, standard, sync, and line number are only "
+                "exposed when single_trigger_mode is VIDEO in this driver."
             )
 
     @property
@@ -1186,16 +1824,17 @@ class OWONSDS1104(
         """
         Gets/sets the edge-trigger source.
 
-        This property is only available when ``trigger_mode`` is ``EDGE``.
+        This property is only available when ``single_trigger_mode`` is
+        ``EDGE``.
 
         :type: `OWONSDS1104.TriggerSource`
         """
         self._require_edge_trigger_mode()
-        reply = _clean_reply(self.query(":TRIGger:SINGle:EDGE:SOURce?")).upper()
-        try:
-            return self.TriggerSource(reply)
-        except ValueError as exc:
-            raise ValueError(f"Invalid trigger source reply: {reply!r}") from exc
+        return _parse_enum_token(
+            self.query(":TRIGger:SINGle:EDGE:SOURce?"),
+            self.TriggerSource,
+            "trigger source",
+        )
 
     @trigger_source.setter
     def trigger_source(self, newval):
@@ -1205,6 +1844,17 @@ class OWONSDS1104(
                 "Trigger source must be specified with a "
                 "`OWONSDS1104.TriggerSource` value."
             )
+        if newval not in {
+            self.TriggerSource.ch1,
+            self.TriggerSource.ch2,
+            self.TriggerSource.ch3,
+            self.TriggerSource.ch4,
+            self.TriggerSource.ac_line,
+        }:
+            raise ValueError(
+                "Edge trigger source write support is currently verified only "
+                "for CH1-CH4 and ACLine."
+            )
         self.sendcmd(f":TRIGger:SINGle:EDGE:SOURce {newval.value}")
 
     @property
@@ -1212,16 +1862,17 @@ class OWONSDS1104(
         """
         Gets/sets the edge-trigger coupling.
 
-        This property is only available when ``trigger_mode`` is ``EDGE``.
+        This property is only available when ``single_trigger_mode`` is
+        ``EDGE``.
 
         :type: `OWONSDS1104.TriggerCoupling`
         """
         self._require_edge_trigger_mode()
-        reply = _clean_reply(self.query(":TRIGger:SINGle:EDGE:COUPling?")).upper()
-        try:
-            return self.TriggerCoupling(reply)
-        except ValueError as exc:
-            raise ValueError(f"Invalid trigger coupling reply: {reply!r}") from exc
+        return _parse_enum_token(
+            self.query(":TRIGger:SINGle:EDGE:COUPling?"),
+            self.TriggerCoupling,
+            "trigger coupling",
+        )
 
     @trigger_coupling.setter
     def trigger_coupling(self, newval):
@@ -1238,16 +1889,17 @@ class OWONSDS1104(
         """
         Gets/sets the edge-trigger slope.
 
-        This property is only available when ``trigger_mode`` is ``EDGE``.
+        This property is only available when ``single_trigger_mode`` is
+        ``EDGE``.
 
         :type: `OWONSDS1104.TriggerSlope`
         """
         self._require_edge_trigger_mode()
-        reply = _clean_reply(self.query(":TRIGger:SINGle:EDGE:SLOPe?")).upper()
-        try:
-            return self.TriggerSlope(reply)
-        except ValueError as exc:
-            raise ValueError(f"Invalid trigger slope reply: {reply!r}") from exc
+        return _parse_enum_token(
+            self.query(":TRIGger:SINGle:EDGE:SLOPe?"),
+            self.TriggerSlope,
+            "trigger slope",
+        )
 
     @trigger_slope.setter
     def trigger_slope(self, newval):
@@ -1264,21 +1916,219 @@ class OWONSDS1104(
         """
         Gets/sets the edge-trigger level.
 
-        This property is only available when ``trigger_mode`` is ``EDGE``.
+        This property is only available when ``single_trigger_mode`` is
+        ``EDGE``.
 
         :type: `~pint.Quantity`
         """
         self._require_edge_trigger_mode()
-        value = _parse_measurement_token(
-            self.query(":TRIGger:SINGle:EDGE:LEVel?"), "trigger level"
+        value = _parse_quantity_token(
+            self.query(":TRIGger:SINGle:EDGE:LEVel?"),
+            {"uv": 1e-6, "mv": 1e-3, "v": 1.0},
+            "trigger level",
         )
         return u.Quantity(value, u.volt)
 
     @trigger_level.setter
     def trigger_level(self, newval):
         self._require_edge_trigger_mode()
-        newval = assume_units(newval, u.volt).to(u.volt)
-        self.sendcmd(f":TRIGger:SINGle:EDGE:LEVel {newval.magnitude}V")
+        self.sendcmd(
+            f":TRIGger:SINGle:EDGE:LEVel {_format_quantity_token(newval)}"
+        )
+
+    @property
+    def edge_trigger_source(self):
+        """
+        Preferred alias for :attr:`trigger_source`.
+        """
+        return self.trigger_source
+
+    @edge_trigger_source.setter
+    def edge_trigger_source(self, newval):
+        self.trigger_source = newval
+
+    @property
+    def edge_trigger_coupling(self):
+        """
+        Preferred alias for :attr:`trigger_coupling`.
+        """
+        return self.trigger_coupling
+
+    @edge_trigger_coupling.setter
+    def edge_trigger_coupling(self, newval):
+        self.trigger_coupling = newval
+
+    @property
+    def edge_trigger_slope(self):
+        """
+        Preferred alias for :attr:`trigger_slope`.
+        """
+        return self.trigger_slope
+
+    @edge_trigger_slope.setter
+    def edge_trigger_slope(self, newval):
+        self.trigger_slope = newval
+
+    @property
+    def edge_trigger_level(self):
+        """
+        Preferred alias for :attr:`trigger_level`.
+        """
+        return self.trigger_level
+
+    @edge_trigger_level.setter
+    def edge_trigger_level(self, newval):
+        self.trigger_level = newval
+
+    @property
+    def trigger_holdoff(self):
+        """
+        Gets/sets the single-trigger holdoff time.
+
+        :type: `~pint.Quantity`
+        """
+        return u.Quantity(
+            _parse_quantity_token(
+                self.query(":TRIGger:SINGle:HOLDoff?"), _TIME_UNITS, "trigger holdoff"
+            ),
+            u.second,
+        )
+
+    @trigger_holdoff.setter
+    def trigger_holdoff(self, newval):
+        holdoff = assume_units(newval, u.second).to(u.second)
+        if holdoff < 100 * u.nanosecond or holdoff > 10 * u.second:
+            raise ValueError(
+                "Trigger holdoff must be between 100 ns and 10 s."
+            )
+        self.sendcmd(f":TRIGger:SINGle:HOLDoff {_format_time_token(holdoff)}")
+
+    @property
+    def trigger_sweep(self):
+        """
+        Gets/sets the single-trigger sweep mode.
+
+        :type: `OWONSDS1104.TriggerSweep`
+        """
+        return _parse_enum_token(
+            self.query(":TRIGger:SINGle:SWEEp?"),
+            self.TriggerSweep,
+            "trigger sweep",
+        )
+
+    @trigger_sweep.setter
+    def trigger_sweep(self, newval):
+        if not isinstance(newval, self.TriggerSweep):
+            raise TypeError(
+                "Trigger sweep must be specified with a `OWONSDS1104.TriggerSweep` value."
+            )
+        self.sendcmd(f":TRIGger:SINGle:SWEEp {newval.value}")
+
+    @property
+    def video_trigger_source(self):
+        """
+        Gets/sets the video-trigger source.
+
+        :type: `OWONSDS1104.TriggerSource`
+        """
+        self._require_video_trigger_mode()
+        return _parse_enum_token(
+            self.query(":TRIGger:SINGle:VIDeo:SOURce?"),
+            self.TriggerSource,
+            "video trigger source",
+        )
+
+    @video_trigger_source.setter
+    def video_trigger_source(self, newval):
+        self._require_video_trigger_mode()
+        if not isinstance(newval, self.TriggerSource):
+            raise TypeError(
+                "Video trigger source must be specified with a "
+                "`OWONSDS1104.TriggerSource` value."
+            )
+        if newval not in {self.TriggerSource.ch1, self.TriggerSource.ch2}:
+            raise ValueError(
+                "Video trigger source write support is currently verified only "
+                "for CH1 and CH2."
+            )
+        self.sendcmd(f":TRIGger:SINGle:VIDeo:SOURce {newval.value}")
+
+    @property
+    def video_trigger_standard(self):
+        """
+        Gets/sets the video-trigger standard.
+
+        Query uses ``:TRIGger:SINGle:VIDeo:MODU?`` while writes use the
+        verified ``:TRIGger:SINGle:System`` command path.
+
+        :type: `OWONSDS1104.VideoStandard`
+        """
+        self._require_video_trigger_mode()
+        return _parse_enum_token(
+            self.query(":TRIGger:SINGle:VIDeo:MODU?"),
+            self.VideoStandard,
+            "video trigger standard",
+        )
+
+    @video_trigger_standard.setter
+    def video_trigger_standard(self, newval):
+        self._require_video_trigger_mode()
+        if not isinstance(newval, self.VideoStandard):
+            raise TypeError(
+                "Video trigger standard must be specified with a "
+                "`OWONSDS1104.VideoStandard` value."
+            )
+        self.sendcmd(f":TRIGger:SINGle:System {newval.value}")
+
+    @property
+    def video_trigger_sync(self):
+        """
+        Gets/sets the video-trigger synchronization mode.
+
+        Query uses ``:TRIGger:SINGle:VIDeo:SYNC?`` while writes use the
+        verified ``:TRIGger:SINGle:Sync`` command path.
+
+        :type: `OWONSDS1104.VideoSync`
+        """
+        self._require_video_trigger_mode()
+        return _parse_enum_token(
+            self.query(":TRIGger:SINGle:VIDeo:SYNC?"),
+            self.VideoSync,
+            "video trigger sync",
+        )
+
+    @video_trigger_sync.setter
+    def video_trigger_sync(self, newval):
+        self._require_video_trigger_mode()
+        if not isinstance(newval, self.VideoSync):
+            raise TypeError(
+                "Video trigger sync must be specified with a "
+                "`OWONSDS1104.VideoSync` value."
+            )
+        self.sendcmd(f":TRIGger:SINGle:Sync {newval.value}")
+
+    @property
+    def video_trigger_line_number(self):
+        """
+        Gets/sets the video-trigger line number.
+
+        The line number is only meaningful when ``video_trigger_sync`` is
+        ``LNUM``.
+
+        :type: `int`
+        """
+        self._require_video_trigger_mode()
+        return int(_clean_reply(self.query(":TRIGger:SINGle:VIDeo:LNUM?")))
+
+    @video_trigger_line_number.setter
+    def video_trigger_line_number(self, newval):
+        self._require_video_trigger_mode()
+        if self.video_trigger_sync != self.VideoSync.lnum:
+            raise ValueError(
+                "Video trigger line number can only be set when "
+                "video_trigger_sync is LNUM."
+            )
+        self.sendcmd(f":TRIGger:SINGle:LineNum {int(newval)}")
 
     @property
     def horizontal_offset(self):
@@ -1318,11 +2168,102 @@ class OWONSDS1104(
         """
         self.sendcmd(":RUN")
 
+    def set_running_state(self, newval):
+        """
+        Sets the front-panel-equivalent running state.
+        """
+        if not isinstance(newval, self.RunningState):
+            raise TypeError(
+                "Running state must be specified with a `OWONSDS1104.RunningState` value."
+            )
+        self.sendcmd(f":RUNning {newval.value}")
+
+    def run_front_panel(self):
+        """
+        Starts acquisition via the documented ``:RUNning RUN`` path.
+        """
+        self.set_running_state(self.RunningState.run)
+
+    def stop_front_panel(self):
+        """
+        Stops acquisition via the documented ``:RUNning STOP`` path.
+        """
+        self.set_running_state(self.RunningState.stop)
+
+    def arm_single(self, stop_first=True, settle_time=0.05, arm_method="legacy_single"):
+        """
+        Arms a single acquisition using either the legacy ``:SINGle`` command
+        or the documented ``:RUNning RUN`` path.
+        """
+        if arm_method not in {"legacy_single", "running_run"}:
+            raise ValueError(
+                "arm_method must be one of {'legacy_single', 'running_run'}."
+            )
+
+        if stop_first:
+            if arm_method == "legacy_single":
+                self.stop()
+            else:
+                self.stop_front_panel()
+            time.sleep(max(float(settle_time), 0.0))
+
+        if arm_method == "legacy_single":
+            self.sendcmd(":SINGle")
+        else:
+            self.run_front_panel()
+
+    def single(self, stop_first=True, settle_time=0.05, arm_method="legacy_single"):
+        """
+        Arms a single acquisition.
+
+        On the DOS1104/SDS1104 family, issuing ``:SINGle`` directly after a
+        prior run state can be unreliable. A short best-effort ``:STOP`` first
+        makes the single-acquisition arm behavior more deterministic on the
+        units we have on the bench.
+
+        Example
+
+        >>> import instruments as ik
+        >>> from instruments.units import ureg as u
+        >>> scope = ik.owon.OWONSDS1104.open_usb()
+        >>> scope.stop()
+        >>> scope.single_trigger_mode = scope.SingleTriggerMode.edge
+        >>> scope.trigger_source = scope.TriggerSource.ch1
+        >>> scope.trigger_coupling = scope.TriggerCoupling.dc
+        >>> scope.trigger_slope = scope.TriggerSlope.rise
+        >>> scope.trigger_level = 25 * u.millivolt
+        >>> scope.trigger_holdoff = 100 * u.nanosecond
+        >>> scope.single()
+        >>> scope.wait_for_trigger_status(scope.TriggerStatus.trig, timeout=2 * u.second)
+        """
+        self.arm_single(
+            stop_first=stop_first,
+            settle_time=settle_time,
+            arm_method=arm_method,
+        )
+
     def stop(self):
         """
         Stops acquisition.
         """
         self.sendcmd(":STOP")
+
+    def freeze_acquisition(self, method="legacy_stop", settle_time=0.05):
+        """
+        Freezes acquisition using either the legacy ``:STOP`` command or the
+        documented ``:RUNning STOP`` path.
+        """
+        if method not in {"legacy_stop", "running_stop"}:
+            raise ValueError(
+                "method must be one of {'legacy_stop', 'running_stop'}."
+            )
+
+        if method == "legacy_stop":
+            self.stop()
+        else:
+            self.stop_front_panel()
+
+        time.sleep(max(float(settle_time), 0.0))
 
     def autoscale(self):
         """
@@ -1332,6 +2273,83 @@ class OWONSDS1104(
         may reconfigure acquisition, timebase, and channel settings.
         """
         self.sendcmd(":AUTOscale ON")
+
+    def read_trigger_configuration(self):
+        """
+        Reads a coherent snapshot of the current trigger configuration.
+
+        :rtype: `SDS1104TriggerConfiguration`
+        """
+        config = SDS1104TriggerConfiguration(
+            status=self.trigger_status,
+            trigger_type=self.trigger_type,
+            single_trigger_mode=self.single_trigger_mode,
+            holdoff=self.trigger_holdoff,
+            trigger_sweep=self.trigger_sweep,
+        )
+
+        if config.single_trigger_mode == self.SingleTriggerMode.edge:
+            return SDS1104TriggerConfiguration(
+                status=config.status,
+                trigger_type=config.trigger_type,
+                single_trigger_mode=config.single_trigger_mode,
+                holdoff=config.holdoff,
+                trigger_sweep=config.trigger_sweep,
+                edge_source=self.trigger_source,
+                edge_coupling=self.trigger_coupling,
+                edge_slope=self.trigger_slope,
+                edge_level=self.trigger_level,
+            )
+
+        if config.single_trigger_mode == self.SingleTriggerMode.video:
+            return SDS1104TriggerConfiguration(
+                status=config.status,
+                trigger_type=config.trigger_type,
+                single_trigger_mode=config.single_trigger_mode,
+                holdoff=config.holdoff,
+                trigger_sweep=config.trigger_sweep,
+                video_source=self.video_trigger_source,
+                video_standard=self.video_trigger_standard,
+                video_sync=self.video_trigger_sync,
+                video_line_number=self.video_trigger_line_number,
+            )
+
+        return config
+
+    def wait_for_trigger_status(
+        self, target, timeout=1 * u.second, poll_interval=50 * u.millisecond
+    ):
+        """
+        Polls until the trigger status reaches ``target`` or times out.
+
+        :param target: Target trigger status enum member or case-insensitive
+            status string.
+        :param timeout: Maximum time to wait.
+        :param poll_interval: Delay between polls.
+        :rtype: `OWONSDS1104.TriggerStatus`
+        """
+        if isinstance(target, str):
+            target = _parse_enum_token(target, self.TriggerStatus, "target trigger status")
+        if not isinstance(target, self.TriggerStatus):
+            raise TypeError(
+                "Trigger status target must be a `OWONSDS1104.TriggerStatus` "
+                "value or a case-insensitive status string."
+            )
+
+        timeout_s = assume_units(timeout, u.second).to(u.second).magnitude
+        poll_interval_s = assume_units(poll_interval, u.second).to(u.second).magnitude
+        deadline = time.monotonic() + max(timeout_s, 0.0)
+
+        while True:
+            status = self.trigger_status
+            if status == target:
+                return status
+            if time.monotonic() >= deadline:
+                raise TimeoutError(
+                    f"Timed out waiting for trigger status {target.value!r}; "
+                    f"last status was {status.value!r}."
+                )
+            time.sleep(max(poll_interval_s, 0.0))
 
     def read_waveform(self, channel):
         """
@@ -1363,7 +2381,8 @@ class OWONSDS1104(
 
     def force_trigger(self):
         raise NotImplementedError(
-            "The initial OWON SDS1104 driver does not expose trigger control."
+            "No verified force-trigger command is currently promoted for the "
+            "OWON SDS1104 / HANMATEK DOS1104 family."
         )
 
     def _validate_channel(self, channel):
@@ -1726,7 +2745,10 @@ class OWONSDS1104(
 
     def read_deep_memory_metadata(self):
         """
-        Reads the deep-memory metadata JSON.
+        Experimental / undocumented deep-memory metadata query.
+
+        This command family is not listed in the official SDS1000 SCPI PDF.
+        Prefer ``read_deep_memory_all()`` for the documented deep-memory path.
 
         :rtype: `dict`
         """
@@ -1737,7 +2759,10 @@ class OWONSDS1104(
 
     def read_deep_memory_channel(self, channel):
         """
-        Reads the deep-memory waveform for a channel.
+        Experimental / undocumented deep-memory channel query.
+
+        This command family is not listed in the official SDS1000 SCPI PDF.
+        Prefer ``read_deep_memory_all()`` for the documented deep-memory path.
 
         :param int channel: One-based channel number from 1 to 4.
         :rtype: `tuple`
@@ -1757,15 +2782,23 @@ class OWONSDS1104(
             allow_metadata_short_by_one=True,
         )
 
-    def read_deep_memory_all(self):  # pylint: disable=too-many-locals,too-many-branches
+    def read_deep_memory_all_raw(self):
         """
-        Reads the bundled deep-memory capture as metadata plus raw channel data.
+        Reads the raw bundled deep-memory payload bytes.
 
-        :rtype: `SDS1104DeepMemoryCapture`
+        The returned payload includes the outer 4-byte little-endian body
+        length header exactly as received from the instrument.
+
+        :rtype: `bytes`
         """
-        payload = self._query_length_prefixed_binary(
+        return self._query_length_prefixed_binary(
             ":DATA:WAVE:DEPMem:All?", max_body_size=100_000_000
         )
+
+    def _parse_deep_memory_all_payload(self, payload):  # pylint: disable=too-many-locals,too-many-branches
+        """
+        Parses a raw ``:DATA:WAVE:DEPMem:All?`` payload into metadata plus raw channels.
+        """
         body = payload[4:]
         if len(body) < 4:
             raise ValueError(
@@ -1841,10 +2874,19 @@ class OWONSDS1104(
         for channel_id, raw_adc in zip(channel_ids, raw_blocks, strict=True):
             raw_channels[channel_id] = raw_adc
 
-        return SDS1104DeepMemoryCapture(
-            metadata=metadata,
-            raw_channels=raw_channels,
-        )
+        return SDS1104DeepMemoryCapture(metadata=metadata, raw_channels=raw_channels)
+
+    def read_deep_memory_all(self):  # pylint: disable=too-many-locals,too-many-branches
+        """
+        Reads the bundled deep-memory capture as metadata plus raw channel data.
+
+        This method preserves the raw ADC payloads. For converted deep-memory
+        time/voltage axes, use ``read_deep_memory_channel()``.
+
+        :rtype: `SDS1104DeepMemoryCapture`
+        """
+        payload = self.read_deep_memory_all_raw()
+        return self._parse_deep_memory_all_payload(payload)
 
     def list_saved_waveforms(self):
         """
