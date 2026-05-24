@@ -84,7 +84,7 @@ class ThorLabsInstrument(Instrument):
                 break
             else:
                 tic = time.time()
-                if tic - t_start > timeout:
+                if tic - t_start >= timeout:
                     break
 
         if not resp:

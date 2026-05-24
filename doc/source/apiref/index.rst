@@ -24,12 +24,14 @@ Contents:
     holzworth
     hp
     keithley
+    kiprim
     lakeshore
     minghe
     mettler_toledo
     newport
     ondax
     oxford
+    owon
     pfeiffer
     phasematrix
     picowatt
