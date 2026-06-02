@@ -30,6 +30,7 @@ Contents:
     newport
     ondax
     oxford
+    owon
     pfeiffer
     phasematrix
     picowatt

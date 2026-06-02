@@ -112,7 +112,7 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
     @timeout.setter
     def timeout(self, newval):
         newval = assume_units(newval, u.second).to(u.ms).magnitude
-        self._dev.default_timeout = newval
+        self._dev.default_timeout = int(round(newval))
 
     # FILE-LIKE METHODS #
 
@@ -136,13 +136,82 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         if size == -1:
             size = self._max_packet_size
         term = self._terminator.encode("utf-8")
-        read_val = bytes(self._ep_in.read(size))
+        read_val = self.read_packet(size)
         if term not in read_val:
             raise OSError(
                 f"Did not find the terminator in the returned string. "
                 f"Total size of {size} might not be enough."
             )
         return read_val.rstrip(term)
+
+    def read_packet(self, size=-1):
+        """
+        Read a single raw USB packet without interpreting terminators.
+
+        :param int size: Number of bytes requested from the USB endpoint.
+            A value of ``-1`` reads one full endpoint packet.
+        :rtype: `bytes`
+        """
+        if size == -1:
+            size = self._max_packet_size
+        return bytes(self._ep_in.read(size))
+
+    def read_exact(self, size, chunk_size=None):
+        """
+        Read exactly ``size`` raw bytes from the USB endpoint.
+
+        :param int size: Total number of bytes to read.
+        :param int chunk_size: Optional packet request size to use for each
+            underlying endpoint read.
+        :rtype: `bytes`
+        """
+        if size < 0:
+            raise ValueError("Size must be non-negative.")
+        if chunk_size is None:
+            chunk_size = self._max_packet_size
+        if chunk_size <= 0:
+            raise ValueError("Chunk size must be positive.")
+
+        result = bytearray()
+        while len(result) < size:
+            packet = self.read_packet(min(chunk_size, size - len(result)))
+            result.extend(packet)
+        return bytes(result)
+
+    def read_binary(self, size=-1):
+        """
+        Read raw binary data without looking for a terminator.
+
+        If ``size`` is negative, this reads packets until a short packet or a
+        USB timeout indicates the transfer has completed. If ``size`` is
+        non-negative, this reads exactly that many bytes.
+
+        :param int size: Number of bytes to read, or ``-1`` to read until the
+            transfer completes.
+        :rtype: `bytes`
+        """
+        if size >= 0:
+            return self.read_exact(size)
+
+        result = bytearray()
+        while True:
+            try:
+                packet = self.read_packet()
+            except usb.core.USBTimeoutError:
+                if result:
+                    break
+                raise
+            except usb.core.USBError as exc:
+                if result and "timeout" in str(exc).lower():
+                    break
+                raise
+
+            if not packet:
+                break
+            result.extend(packet)
+            if len(packet) < self._max_packet_size:
+                break
+        return bytes(result)
 
     def write_raw(self, msg):
         """Write bytes to the raw usb connection object.
@@ -152,10 +221,10 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         """
         self._ep_out.write(msg)
 
-    def seek(self, offset):  # pylint: disable=unused-argument,no-self-use
+    def seek(self, offset):  # pylint: disable=unused-argument
         raise NotImplementedError
 
-    def tell(self):  # pylint: disable=no-self-use
+    def tell(self):
         raise NotImplementedError
 
     def flush_input(self):
@@ -163,7 +232,22 @@ class USBCommunicator(io.IOBase, AbstractCommunicator):
         Instruct the communicator to flush the input buffer, discarding the
         entirety of its contents.
         """
-        self._ep_in.read(self._max_packet_size)
+        original_timeout = self._dev.default_timeout
+        self._dev.default_timeout = 50
+        try:
+            while True:
+                try:
+                    packet = self.read_packet()
+                except usb.core.USBTimeoutError:
+                    break
+                except usb.core.USBError as exc:
+                    if "timeout" in str(exc).lower():
+                        break
+                    raise
+                if not packet:
+                    break
+        finally:
+            self._dev.default_timeout = original_timeout
 
     # METHODS #
 

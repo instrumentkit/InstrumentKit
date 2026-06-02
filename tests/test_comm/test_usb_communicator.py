@@ -127,6 +127,7 @@ def test_timeout_set_unitless(inst):
     set_val = inst._dev.default_timeout
     exp_val = 1000 * val
     assert set_val == exp_val
+    assert isinstance(set_val, int)
 
 
 def test_timeout_set_minutes(inst):
@@ -157,6 +158,14 @@ def test_read_raw(inst):
     assert inst.read_raw() == msg_exp
 
 
+def test_read_packet(inst):
+    """Read a single raw USB packet."""
+    msg = b"\x01\x02\x03"
+    inst._ep_in.read.return_value = msg
+
+    assert inst.read_packet() == msg
+
+
 def test_read_raw_size(inst):
     """If size is -1, read 1000 bytes."""
     msg = b"message\n"
@@ -168,6 +177,46 @@ def test_read_raw_size(inst):
 
     _ = inst.read_raw(size=-1)
     inst._ep_in.read.assert_called_with(max_size)
+
+
+def test_read_exact(inst):
+    """Read an exact number of raw USB bytes."""
+    inst.read_packet = mock.MagicMock(side_effect=[b"\x01\x02", b"\x03\x04"])
+
+    assert inst.read_exact(4, chunk_size=2) == b"\x01\x02\x03\x04"
+
+
+def test_read_exact_negative_size(inst):
+    """Reject a negative exact read size."""
+    with pytest.raises(ValueError) as err:
+        inst.read_exact(-1)
+    assert err.value.args[0] == "Size must be non-negative."
+
+
+def test_read_binary_exact(inst):
+    """Read a binary reply with explicit size."""
+    inst.read_exact = mock.MagicMock(return_value=b"\x00\x01")
+
+    assert inst.read_binary(2) == b"\x00\x01"
+    inst.read_exact.assert_called_with(2)
+
+
+def test_read_binary_until_short_packet(inst):
+    """Read a binary reply until the device sends a short packet."""
+    inst._max_packet_size = 4
+    inst.read_packet = mock.MagicMock(side_effect=[b"1234", b"56"])
+
+    assert inst.read_binary() == b"123456"
+
+
+def test_read_binary_until_timeout(inst):
+    """Read a binary reply until a timeout after receiving data."""
+    inst._max_packet_size = 4
+    inst.read_packet = mock.MagicMock(
+        side_effect=[b"1234", usb.core.USBTimeoutError("timeout")]
+    )
+
+    assert inst.read_binary() == b"1234"
 
 
 def test_read_raw_termination_char_not_found(inst):
@@ -209,9 +258,9 @@ def test_tell(inst):
 
 def test_flush_input(inst):
     """Flush the input out by trying to read until no more available."""
-    inst._ep_in.read.side_effect = [b"message\n", usb.core.USBTimeoutError]
+    inst._ep_in.read.side_effect = [b"message\n", usb.core.USBTimeoutError("timeout")]
     inst.flush_input()
-    inst._ep_in.read.assert_called()
+    assert inst._ep_in.read.call_count == 2
 
 
 def test_sendcmd(inst):
