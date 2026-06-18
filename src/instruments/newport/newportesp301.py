@@ -251,6 +251,7 @@ class NewportESP301(Instrument):
 
         @velocity.setter
         def velocity(self, velocity):
+            velocity = abs(velocity)
             velocity = float(
                 assume_units(velocity, self._units / (u.s))
                 .to(self._units / u.s)
@@ -867,11 +868,13 @@ class NewportESP301(Instrument):
             """
             self._newport_cmd("MT", target=self.axis_id)
 
-        def move_indefinitely(self):
+        def move_indefinitely(self, direction: str = "+"):
             """
-            Move until told to stop
+            Move until told to stop in the direction ("+" or "-") passed.
             """
-            self._newport_cmd("MV", target=self.axis_id)
+            if direction not in ("+", "-"):
+                raise ValueError("Direction must be '+' or '-'")
+            self._newport_cmd(f"MV{direction}", target=self.axis_id)
 
         def abort_motion(self):
             """
