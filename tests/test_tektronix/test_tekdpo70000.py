@@ -68,7 +68,7 @@ def test_data_source_name():
         assert inst.channel[channel].name == f"CH{channel+1}"
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
+@pytest.mark.parametrize("channel", [*range(4)])
 @given(
     values=st.lists(
         st.integers(min_value=-2147483648, max_value=2147483647), min_size=1
@@ -223,7 +223,7 @@ def test_data_source_read_waveform_with_old_data_source():
 # MATH #
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
+@pytest.mark.parametrize("math", [*range(4)])
 def test_math_init(math):
     """Initialize a math channel."""
     with expected_protocol(ik.tektronix.TekDPO70000, [], []) as inst:
@@ -231,7 +231,7 @@ def test_math_init(math):
         assert inst.math[math]._idx == math + 1
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
+@pytest.mark.parametrize("math", [*range(4)])
 def test_math_sendcmd(math):
     """Send a command from a math channel."""
     cmd = "TEST"
@@ -241,7 +241,7 @@ def test_math_sendcmd(math):
         inst.math[math].sendcmd(cmd)
 
 
-@pytest.mark.parametrize("math", [it for it in range(4)])
+@pytest.mark.parametrize("math", [*range(4)])
 def test_math_query(math):
     """Query from a math channel."""
     cmd = "TEST"
@@ -711,7 +711,7 @@ def test_math_scale_raw_data(values):
 # CHANNEL #
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
+@pytest.mark.parametrize("channel", [*range(4)])
 def test_channel_init(channel):
     """Initialize a channel."""
     with expected_protocol(ik.tektronix.TekDPO70000, [], []) as inst:
@@ -719,7 +719,7 @@ def test_channel_init(channel):
         assert inst.channel[channel]._idx == channel + 1
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
+@pytest.mark.parametrize("channel", [*range(4)])
 def test_channel_sendcmd(channel):
     """Send a command from a channel."""
     cmd = "TEST"
@@ -729,7 +729,7 @@ def test_channel_sendcmd(channel):
         inst.channel[channel].sendcmd(cmd)
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
+@pytest.mark.parametrize("channel", [*range(4)])
 def test_channel_query(channel):
     """Send a query from a channel."""
     cmd = "TEST"
@@ -1188,7 +1188,7 @@ def test_data_sync_sources(value):
         assert inst.data_sync_sources == value
 
 
-valid_channel_range = [it for it in range(4)]
+valid_channel_range = [*range(4)]
 
 
 @pytest.mark.parametrize("no", valid_channel_range)
@@ -1205,7 +1205,7 @@ def test_data_source_channel(no):
         assert inst.data_source == channel
 
 
-valid_math_range = [it for it in range(4)]
+valid_math_range = [*range(4)]
 
 
 @pytest.mark.parametrize("no", valid_math_range)
