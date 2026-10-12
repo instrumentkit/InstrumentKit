@@ -37,7 +37,7 @@ test_tektds5xx_name = make_name_test(ik.tektronix.TekTDS5xx)
 # MEASUREMENT #
 
 
-@pytest.mark.parametrize("msr", [it for it in range(3)])
+@pytest.mark.parametrize("msr", [*range(3)])
 def test_measurement_init(msr):
     """Initialize a new measurement."""
     meas_categories = [
@@ -61,7 +61,7 @@ def test_measurement_init(msr):
         assert measurement._data == data_expected
 
 
-@pytest.mark.parametrize("msr", [it for it in range(3)])
+@pytest.mark.parametrize("msr", [*range(3)])
 @given(value=st.floats(allow_nan=False))
 def test_measurement_read_enabled_true(msr, value):
     """Read a new measurement value since enabled is true."""
@@ -231,7 +231,7 @@ def test_data_source_read_waveform_ascii(values):
 # CHANNEL #
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
+@pytest.mark.parametrize("channel", [*range(4)])
 def test_channel_init(channel):
     """Initialize a new channel."""
     with expected_protocol(ik.tektronix.TekTDS5xx, [], []) as inst:
@@ -402,7 +402,7 @@ def test_sources(states):
         assert active_read == active_sources
 
 
-@pytest.mark.parametrize("channel", [it for it in range(4)])
+@pytest.mark.parametrize("channel", [*range(4)])
 def test_data_source_channel(channel):
     """Get / set channel data source for waveform transfer."""
     with expected_protocol(
@@ -418,7 +418,7 @@ def test_data_source_channel(channel):
         assert inst.data_source == data_source
 
 
-@pytest.mark.parametrize("channel", [it for it in range(3)])
+@pytest.mark.parametrize("channel", [*range(3)])
 def test_data_source_math(channel):
     """Get / set math data source for waveform transfer."""
     with expected_protocol(
@@ -434,7 +434,7 @@ def test_data_source_math(channel):
         assert inst.data_source == data_source
 
 
-@pytest.mark.parametrize("channel", [it for it in range(3)])
+@pytest.mark.parametrize("channel", [*range(3)])
 def test_data_source_ref(channel):
     """Get / set ref data source for waveform transfer."""
     with expected_protocol(
